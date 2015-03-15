@@ -323,7 +323,9 @@ abstract public class GeoWaveTestEnvironment
 			}
 			finally {
 				IOUtils.closeQuietly(featureIterator);
-				dataStore.dispose();
+				if (dataStore != null) {
+					dataStore.dispose();
+				}
 			}
 		}
 		return new ExpectedResults(
@@ -387,7 +389,7 @@ abstract public class GeoWaveTestEnvironment
 			if (endObj instanceof Calendar) {
 				endDate = ((Calendar) endObj).getTime();
 			}
-			else if (startObj instanceof Date) {
+			else if (endObj instanceof Date) {
 				endDate = (Date) endObj;
 			}
 			if ((startDate != null) && (endDate != null)) {
@@ -405,7 +407,9 @@ abstract public class GeoWaveTestEnvironment
 	public static void addAuthorization(
 			final String auth ) {
 		try {
-			accumuloOperations.insureAuthorization(auth);
+			synchronized (MUTEX) {
+				accumuloOperations.insureAuthorization(auth);
+			}
 		}
 		catch (AccumuloException | AccumuloSecurityException e) {
 			LOGGER.warn(

@@ -18,6 +18,7 @@ import mil.nga.giat.geowave.store.query.Query;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.apache.log4j.Logger;
 
 /**
  * 
@@ -30,6 +31,7 @@ import org.apache.accumulo.core.client.AccumuloSecurityException;
  */
 public class StatsTool
 {
+	private static final Logger LOGGER = Logger.getLogger(StatsTool.class);
 
 	public static boolean calculateStastics(
 			final AccumuloOperations accumuloOperations,
@@ -75,6 +77,12 @@ public class StatsTool
 			}
 		}
 		statsTool.flush();
+		try {
+			statsTool.close();
+		}
+		catch (Exception ex){
+			LOGGER.error("Error closing statsTool", ex);
+		}
 		return true;
 	}
 

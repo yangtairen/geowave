@@ -615,6 +615,7 @@ public class GeoWaveRasterReader extends
 					resolutionLevels[imageChoice.intValue()][1]);
 		}
 
+
 		final CloseableIterator<GridCoverage> gridCoverageIt = queryForTiles(
 				pixelDimension,
 				state.getRequestEnvelopeTransformed(),

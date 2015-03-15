@@ -68,6 +68,7 @@ import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
@@ -663,6 +664,12 @@ public class AccumuloDataStore implements
 					adapterId);
 		}
 
+		try {
+			//issue; going to call .flush() internally even if success = false;
+			statsCompositionTool.close();
+		} catch (Exception ex) {
+			LOGGER.error("Error closing statsCompositionTool", ex);
+		}
 		return success;
 
 	}

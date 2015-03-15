@@ -20,6 +20,7 @@ public class NoDataMergeStrategy implements
 	public NoDataMergeStrategy() {}
 
 	private static final long serialVersionUID = 38473874l;
+	private static final Logger LOGGER = Logger.getLogger(NoDataMergeStrategy.class);
 
 	@Override
 	public void merge(
@@ -87,11 +88,15 @@ public class NoDataMergeStrategy implements
 					}
 				}
 				if (recalculateMetadata) {
-					thisTile.setMetadata(NoDataMetadataFactory.mergeMetadata(
-							thisTileMetadata,
-							thisRaster,
-							nextTileMetadata,
-							nextRaster));
+					if (nextTileMetadata == null) {
+						LOGGER.error("Error merging raster tiles, nextTileMetadata was null.");
+					}
+					else {
+						thisTile.setMetadata(
+								NoDataMetadataFactory.mergeMetadata(
+										thisTileMetadata, thisRaster, nextTileMetadata, nextRaster));
+
+					}
 				}
 			}
 		}
