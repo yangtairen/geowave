@@ -1,7 +1,5 @@
 package mil.nga.giat.geowave.test;
 
-import mil.nga.giat.geowave.test.mapreduce.BasicMapReduceIT;
-import mil.nga.giat.geowave.test.mapreduce.GeoWaveKMeansIT;
 import mil.nga.giat.geowave.test.service.GeoServerIT;
 import mil.nga.giat.geowave.test.service.GeoWaveServicesIT;
 
@@ -17,8 +15,6 @@ import org.junit.runners.Suite.SuiteClasses;
 	GeoWaveBasicIT.class,
 	GeoWaveFeatureCollectionIT.class,
 	GeoWaveRasterIT.class,
-	BasicMapReduceIT.class,
-	GeoWaveKMeansIT.class,
 	// KDEMapReduceIT.class, //for now this is commented out, further
 	// investigation is required
 	GeoServerIT.class,

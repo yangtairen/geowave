@@ -66,6 +66,13 @@ public class CqlQueryFilterIterator extends
 		URL.setURLStreamHandlerFactory(new FsUrlStreamHandlerFactory());
 	}
 
+	public static byte[] copyBytes(Text text){
+		byte[] bytes = new byte[text.getLength()];
+		System.arraycopy(text.getBytes(), 0, bytes, 0, text.getLength());
+		return bytes;
+	}
+
+
 	@Override
 	protected boolean filter(
 			final Text currentRow,
@@ -73,7 +80,7 @@ public class CqlQueryFilterIterator extends
 			final List<Value> values ) {
 		if ((gtFilter != null) && (model != null) && (dataAdapter != null)) {
 			final AccumuloRowId rowId = new AccumuloRowId(
-					currentRow.copyBytes());
+					copyBytes(currentRow));
 			final PersistentDataset<CommonIndexValue> commonData = new PersistentDataset<CommonIndexValue>();
 			final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
 			for (int i = 0; (i < keys.size()) && (i < values.size()); i++) {

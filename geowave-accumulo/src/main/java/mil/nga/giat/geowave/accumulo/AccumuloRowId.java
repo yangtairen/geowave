@@ -26,8 +26,13 @@ public class AccumuloRowId
 
 	public AccumuloRowId(
 			final Key key ) {
-		this(
-				key.getRow().copyBytes());
+		this(copyBytes(key));
+	}
+
+	public static byte[] copyBytes(Key key){
+		byte[] bytes = new byte[key.getRow().getLength()];
+		System.arraycopy(key.getRow().getBytes(), 0, bytes, 0, key.getRow().getLength());
+		return bytes;
 	}
 
 	public AccumuloRowId(

@@ -161,7 +161,7 @@ public class AccumuloUtils
 			final QueryFilter clientFilter,
 			final Index index ) {
 		final AccumuloRowId rowId = new AccumuloRowId(
-				key.getRow().copyBytes());
+				key);
 		return decodeRowObj(
 				key,
 				value,
@@ -181,8 +181,7 @@ public class AccumuloUtils
 			final QueryFilter clientFilter,
 			final Index index,
 			final ScanCallback<T> scanCallback ) {
-		final AccumuloRowId rowId = new AccumuloRowId(
-				key.getRow().copyBytes());
+		final AccumuloRowId rowId = new AccumuloRowId(key);
 		return (T) decodeRowObj(
 				key,
 				value,

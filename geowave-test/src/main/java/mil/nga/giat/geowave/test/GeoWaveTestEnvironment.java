@@ -35,7 +35,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.util.VersionInfo;
-import org.apache.hadoop.util.VersionUtil;
 import org.apache.log4j.Logger;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
@@ -74,9 +73,7 @@ abstract public class GeoWaveTestEnvironment
 	protected static boolean DEFER_CLEANUP = false;
 
 	protected static boolean isYarn() {
-		return VersionUtil.compareVersions(
-				VersionInfo.getVersion(),
-				"2.2.0") >= 0;
+		return false;
 	}
 
 	@BeforeClass

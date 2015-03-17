@@ -25,7 +25,7 @@
         <hadoop.env.classifier>hadoop2</hadoop.env.classifier>
         <geoserver.version>2.6.2</geoserver.version>
         <accumulo.version>1.6.2</accumulo.version>
-        <hadoop.version>2.6.0</hadoop.version>
+        <hadoop.version>1.2.1</hadoop.version>
         <avro.version>1.7.6</avro.version>
         <commons.cli.version>1.2</commons.cli.version>
         <geotools.scope>compile</geotools.scope>
@@ -381,9 +381,7 @@
                 <configuration>
                     <jacocoReports>
                         <jacocoReport>${project.basedir}/geowave-index/target/site/jacoco-ut/jacoco.xml</jacocoReport>
-                        <jacocoReport>${project.basedir}/geowave-analytics/target/site/jacoco-ut/jacoco.xml</jacocoReport>
                         <jacocoReport>${project.basedir}/geowave-ingest/target/site/jacoco-ut/jacoco.xml</jacocoReport>
-                        <jacocoReport>${project.basedir}/geowave-raster/target/site/jacoco-ut/jacoco.xml</jacocoReport>
                         <jacocoReport>${project.basedir}/geowave-store/target/site/jacoco-ut/jacoco.xml</jacocoReport>
                         <jacocoReport>${project.basedir}/geowave-types/target/site/jacoco-ut/jacoco.xml</jacocoReport>
                         <jacocoReport>${project.basedir}/geowave-vector/target/site/jacoco-ut/jacoco.xml</jacocoReport>
@@ -426,15 +424,12 @@
         <module>geowave-store</module>
         <module>geowave-accumulo</module>
         <module>geowave-vector</module>
-        <module>geowave-raster</module>
         <module>geowave-ingest</module>
         <module>geowave-types</module>
-        <module>geowave-analytics</module>
         <module>geowave-utils</module>
         <module>geowave-client</module>
         <module>geowave-services</module>
         <module>geowave-deploy</module>
-        <module>geowave-benchmark</module>
         <module>geowave-test</module>
     </modules>
     <repositories>

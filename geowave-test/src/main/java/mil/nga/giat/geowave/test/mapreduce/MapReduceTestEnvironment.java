@@ -11,7 +11,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -130,9 +129,6 @@ abstract public class MapReduceTestEnvironment extends
 				"mapreduce.jobtracker.address",
 				jobtracker);
 		// for travis-ci to run, we want to limit the memory consumption
-		conf.setInt(
-				MRJobConfig.IO_SORT_MB,
-				10);
 
 		filterConfiguration(conf);
 

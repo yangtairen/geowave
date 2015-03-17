@@ -1322,7 +1322,7 @@ public class AccumuloDataStore implements
 					final Value value ) {
 				if (!foundOne) {
 					final AccumuloRowId rowId = new AccumuloRowId(
-							key.getRow().copyBytes());
+							key);
 					AccumuloUtils.decodeRow(
 							key,
 							value,
