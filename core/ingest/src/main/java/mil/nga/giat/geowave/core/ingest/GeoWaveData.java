@@ -4,14 +4,14 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.output.GeoWaveOutputKey;
+import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputKey;
 
 import org.apache.log4j.Logger;
 
 /**
  * This models any information that is necessary to ingest an entry into
  * GeoWave: the adapter and index you wish to use as well as the actual data
- * 
+ *
  * @param <T>
  *            The java type for the actual data being ingested
  */

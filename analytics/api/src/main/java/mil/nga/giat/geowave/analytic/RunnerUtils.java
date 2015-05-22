@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
+import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;

@@ -89,10 +89,10 @@ import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.AttachedIteratorDataAdapter;
 import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.HadoopDataAdapter;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.HadoopWritableSerializer;
 import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper.Converter;
+import mil.nga.giat.geowave.mapreduce.HadoopDataAdapter;
+import mil.nga.giat.geowave.mapreduce.HadoopWritableSerializer;
 
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.IteratorSetting.Column;

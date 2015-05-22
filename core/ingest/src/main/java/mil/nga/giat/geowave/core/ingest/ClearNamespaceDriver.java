@@ -2,12 +2,8 @@ package mil.nga.giat.geowave.core.ingest;
 
 import java.util.List;
 
-import mil.nga.giat.geowave.core.store.IndexWriter;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -21,9 +17,8 @@ public class ClearNamespaceDriver extends
 		AbstractIngestCommandLineDriver
 {
 	private final static Logger LOGGER = Logger.getLogger(ClearNamespaceDriver.class);
-	protected AccumuloCommandLineOptions accumulo;
+	protected DataStoreCommandLineOptions dataStoreOptions;
 	protected IngestCommandLineOptions ingest;
-	protected IndexWriter indexWriter;
 
 	public ClearNamespaceDriver(
 			final String operation ) {
@@ -35,14 +30,14 @@ public class ClearNamespaceDriver extends
 	public void parseOptionsInternal(
 			final CommandLine commandLine )
 			throws ParseException {
-		accumulo = AccumuloCommandLineOptions.parseOptions(commandLine);
+		dataStoreOptions = DataStoreCommandLineOptions.parseOptions(commandLine);
 		ingest = IngestCommandLineOptions.parseOptions(commandLine);
 	}
 
 	@Override
 	public void applyOptionsInternal(
 			final Options allOptions ) {
-		AccumuloCommandLineOptions.applyOptions(allOptions);
+		DataStoreCommandLineOptions.applyOptions(allOptions);
 		IngestCommandLineOptions.applyOptions(allOptions);
 	}
 
@@ -53,30 +48,17 @@ public class ClearNamespaceDriver extends
 		// just check if the flag to clear namespaces is set, and even if it is
 		// not, clear it, but only if a namespace is provided
 		if (!ingest.isClearNamespace()) {
-			try {
-				clearNamespace();
-			}
-			catch (AccumuloException | AccumuloSecurityException e) {
-				LOGGER.fatal(
-						"Unable to connect to Accumulo with the specified options",
-						e);
-			}
+			clearNamespace();
 		}
 	}
 
-	protected void clearNamespace()
-			throws AccumuloException,
-			AccumuloSecurityException {
+	protected void clearNamespace() {
 		// don't delete all tables in the case that no namespace is given
-		if ((accumulo.getNamespace() != null) && !accumulo.getNamespace().isEmpty()) {
-			LOGGER.info("deleting all tables prefixed by '" + accumulo.getNamespace() + "'");
-			try {
-				accumulo.getAccumuloOperations().deleteAll();
-			}
-			catch (TableNotFoundException | AccumuloSecurityException | AccumuloException e) {
-				LOGGER.error("Unable to clear accumulo namespace");
-			}
-
+		if ((ingest.getNamespace() != null) && !ingest.getNamespace().isEmpty()) {
+			LOGGER.info("deleting everything in namespace '" + ingest.getNamespace() + "'");
+			dataStoreOptions.createDataStore(
+					ingest.getNamespace()).delete(
+					null);
 		}
 		else {
 			LOGGER.error("cannot clear a namespace if no namespace is provided");

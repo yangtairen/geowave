@@ -6,12 +6,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.ingest.AbstractIngestCommandLineDriver;
 import mil.nga.giat.geowave.core.ingest.IngestCommandLineOptions;
 import mil.nga.giat.geowave.core.ingest.IngestFormatPluginProviderSpi;
 import mil.nga.giat.geowave.core.ingest.hdfs.HdfsCommandLineOptions;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloCommandLineOptions;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
+import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -33,7 +33,7 @@ public class IngestFromHdfsDriver extends
 	private final static int NUM_CONCURRENT_JOBS = 5;
 	private final static int DAYS_TO_AWAIT_COMPLETION = 999;
 	private HdfsCommandLineOptions hdfsOptions;
-	private AccumuloCommandLineOptions accumuloOptions;
+	private DataStoreCommandLineOptions dataStoreOptions;
 	private IngestCommandLineOptions ingestOptions;
 	private MapReduceCommandLineOptions mapReduceOptions;
 	private static ExecutorService singletonExecutor;
@@ -131,7 +131,7 @@ public class IngestFromHdfsDriver extends
 				AbstractMapReduceIngest jobRunner = null;
 				if (ingestWithReducer != null) {
 					jobRunner = new IngestWithReducerJobRunner(
-							accumuloOptions,
+							dataStoreOptions,
 							ingestOptions,
 							inputFile,
 							pluginProvider.getIngestFormatName(),
@@ -141,7 +141,7 @@ public class IngestFromHdfsDriver extends
 				}
 				else if (ingestWithMapper != null) {
 					jobRunner = new IngestWithMapperJobRunner(
-							accumuloOptions,
+							dataStoreOptions,
 							ingestOptions,
 							inputFile,
 							pluginProvider.getIngestFormatName(),
@@ -220,7 +220,7 @@ public class IngestFromHdfsDriver extends
 	protected void parseOptionsInternal(
 			final CommandLine commandLine )
 			throws ParseException {
-		accumuloOptions = AccumuloCommandLineOptions.parseOptions(commandLine);
+		dataStoreOptions = DataStoreCommandLineOptions.parseOptions(commandLine);
 		ingestOptions = IngestCommandLineOptions.parseOptions(commandLine);
 		hdfsOptions = HdfsCommandLineOptions.parseOptions(commandLine);
 		mapReduceOptions = MapReduceCommandLineOptions.parseOptions(commandLine);
@@ -229,7 +229,7 @@ public class IngestFromHdfsDriver extends
 	@Override
 	protected void applyOptionsInternal(
 			final Options allOptions ) {
-		AccumuloCommandLineOptions.applyOptions(allOptions);
+		DataStoreCommandLineOptions.applyOptions(allOptions);
 		IngestCommandLineOptions.applyOptions(allOptions);
 		HdfsCommandLineOptions.applyOptions(allOptions);
 		MapReduceCommandLineOptions.applyOptions(allOptions);

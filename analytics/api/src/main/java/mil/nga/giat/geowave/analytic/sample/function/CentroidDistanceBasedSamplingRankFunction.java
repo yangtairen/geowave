@@ -21,7 +21,7 @@ import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.SampleParameters;
 import mil.nga.giat.geowave.analytic.sample.RandomProbabilitySampleFn;
 import mil.nga.giat.geowave.analytic.sample.SampleProbabilityFn;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
+import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;

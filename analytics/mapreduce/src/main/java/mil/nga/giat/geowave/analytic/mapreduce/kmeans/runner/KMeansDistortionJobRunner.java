@@ -11,12 +11,11 @@ import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.JumpParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
-
 import mil.nga.giat.geowave.core.index.StringUtils;
-
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputFormat;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
+import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
+
+import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 
 //@formatter:off
 /*if[ACCUMULO_1.5.2]

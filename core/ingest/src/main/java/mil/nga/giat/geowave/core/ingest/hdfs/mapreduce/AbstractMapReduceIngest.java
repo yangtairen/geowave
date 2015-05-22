@@ -1,5 +1,6 @@
 package mil.nga.giat.geowave.core.ingest.hdfs.mapreduce;
 
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
@@ -7,9 +8,9 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.ingest.DataAdapterProvider;
 import mil.nga.giat.geowave.core.ingest.IngestCommandLineOptions;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
+import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloCommandLineOptions;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.output.GeoWaveOutputFormat;
+import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputFormat;
 
 import org.apache.avro.mapreduce.AvroJob;
 import org.apache.avro.mapreduce.AvroKeyInputFormat;
@@ -23,7 +24,7 @@ import org.apache.hadoop.util.Tool;
 /**
  * This class can be sub-classed to run map-reduce jobs within the ingest
  * framework using plugins provided by types that are discovered through SPI.
- * 
+ *
  * @param <T>
  *            The type of map-reduce ingest plugin that can be persisted to the
  *            map-reduce job configuration and used by the mapper and/or reducer
@@ -37,7 +38,7 @@ abstract public class AbstractMapReduceIngest<T extends Persistable & DataAdapte
 	public static final String GLOBAL_VISIBILITY_KEY = "GLOBAL_VISIBILITY";
 	public static final String PRIMARY_INDEX_ID_KEY = "PRIMARY_INDEX_ID";
 	private static String JOB_NAME = "%s ingest from %s to namespace %s (%s)";
-	protected final AccumuloCommandLineOptions accumuloOptions;
+	protected final DataStoreCommandLineOptions dataStoreOptions;
 	protected final IngestCommandLineOptions ingestOptions;
 	protected final Path inputFile;
 	protected final String typeName;
@@ -45,13 +46,13 @@ abstract public class AbstractMapReduceIngest<T extends Persistable & DataAdapte
 	protected final T ingestPlugin;
 
 	public AbstractMapReduceIngest(
-			final AccumuloCommandLineOptions accumuloOptions,
+			final DataStoreCommandLineOptions dataStoreOptions,
 			final IngestCommandLineOptions ingestOptions,
 			final Path inputFile,
 			final String typeName,
 			final IngestFromHdfsPlugin parentPlugin,
 			final T ingestPlugin ) {
-		this.accumuloOptions = accumuloOptions;
+		this.dataStoreOptions = dataStoreOptions;
 		this.ingestOptions = ingestOptions;
 		this.inputFile = inputFile;
 		this.typeName = typeName;
@@ -64,7 +65,7 @@ abstract public class AbstractMapReduceIngest<T extends Persistable & DataAdapte
 				JOB_NAME,
 				typeName,
 				inputFile.toString(),
-				accumuloOptions.getNamespace(),
+				ingestOptions.getNamespace(),
 				getIngestDescription());
 	}
 
@@ -108,15 +109,14 @@ abstract public class AbstractMapReduceIngest<T extends Persistable & DataAdapte
 		// set geowave output format
 		job.setOutputFormatClass(GeoWaveOutputFormat.class);
 
-		// set accumulo operations
-		GeoWaveOutputFormat.setAccumuloOperationsInfo(
+		// set data store info
+		GeoWaveOutputFormat.setDataStoreInfo(
 				job,
-				accumuloOptions.getZookeepers(), // zookeepers
-				accumuloOptions.getInstanceId(), // accumuloInstance
-				accumuloOptions.getUser(), // accumuloUser
-				accumuloOptions.getPassword(), // accumuloPass
-				accumuloOptions.getNamespace()); // geowaveNamespace
-
+				dataStoreOptions.getFactory().getName(),
+				ConfigUtils.valuesToStrings(
+						dataStoreOptions.getConfigOptions(),
+						dataStoreOptions.getFactory().getOptions()),
+				ingestOptions.getNamespace());
 		final WritableDataAdapter<?>[] dataAdapters = ingestPlugin.getDataAdapters(ingestOptions.getVisibility());
 		for (final WritableDataAdapter<?> dataAdapter : dataAdapters) {
 			GeoWaveOutputFormat.addDataAdapter(

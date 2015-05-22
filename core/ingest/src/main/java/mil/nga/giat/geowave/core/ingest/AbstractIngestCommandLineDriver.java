@@ -12,6 +12,9 @@ import java.util.ServiceLoader;
 
 import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.store.DataStoreFactorySpi;
+import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
+import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -29,7 +32,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * of ingest format plugins and using them to drive an ingestion process. The
  * class is sub-classed to perform the specific ingestion required based on the
  * operation set by the user.
- * 
+ *
  */
 abstract public class AbstractIngestCommandLineDriver implements
 		CLIOperationDriver
@@ -52,20 +55,9 @@ abstract public class AbstractIngestCommandLineDriver implements
 		while (pluginProviders.hasNext()) {
 			final IngestFormatPluginProviderSpi pluginProvider = pluginProviders.next();
 			pluginProviderRegistry.put(
-					cleanIngestFormatName(pluginProvider.getIngestFormatName()),
+					ConfigUtils.cleanOptionName(pluginProvider.getIngestFormatName()),
 					pluginProvider);
 		}
-	}
-
-	private static String cleanIngestFormatName(
-			String ingestFormatName ) {
-		ingestFormatName = ingestFormatName.trim().toLowerCase().replaceAll(
-				" ",
-				"_");
-		ingestFormatName = ingestFormatName.replaceAll(
-				",",
-				"");
-		return ingestFormatName;
 	}
 
 	@Override
@@ -94,7 +86,7 @@ abstract public class AbstractIngestCommandLineDriver implements
 				"l",
 				"list",
 				false,
-				"List the available ingest formats"));
+				"List the available ingest formats and available data stores"));
 		baseOptionGroup.addOption(new Option(
 				"f",
 				"formats",
@@ -125,6 +117,20 @@ abstract public class AbstractIngestCommandLineDriver implements
 					final IngestFormatPluginProviderSpi<?, ?> pluginProvider = pluginProviderEntry.getValue();
 					final String desc = pluginProvider.getIngestFormatDescription() == null ? "no description" : pluginProvider.getIngestFormatDescription();
 					final String text = pluginProviderEntry.getKey() + ":\n" + desc;
+
+					formatter.printWrapped(
+							pw,
+							formatter.getWidth(),
+							5,
+							text);
+					pw.println();
+				}
+				pw.println("Available datastores currently registered:\n");
+				Map<String, DataStoreFactorySpi> dataStoreFactories = GeoWaveStoreFinder.getRegisteredDataStoreFactories();
+				for (final Entry<String, DataStoreFactorySpi> dataStoreFactoryEntry : dataStoreFactories.entrySet()) {
+					final DataStoreFactorySpi dataStoreFactory = dataStoreFactoryEntry.getValue();
+					final String desc = dataStoreFactory.getDescription() == null ? "no description" : dataStoreFactory.getDescription();
+					final String text = dataStoreFactory.getName() + ":\n" + desc;
 
 					formatter.printWrapped(
 							pw,

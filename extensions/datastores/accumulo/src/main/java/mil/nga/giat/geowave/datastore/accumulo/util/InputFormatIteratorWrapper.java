@@ -10,8 +10,6 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloRowId;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.HadoopWritableSerializationTool;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
 
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
@@ -24,7 +22,7 @@ import org.apache.commons.lang.ArrayUtils;
  * reference to the next value. It maintains the adapter ID, data ID, and
  * original accumulo key in the GeoWaveInputKey for use by the
  * GeoWaveInputFormat.
- * 
+ *
  * @param <T>
  *            The type for the entry
  */
@@ -85,7 +83,7 @@ public class InputFormatIteratorWrapper<T> implements
 		}
 		final ByteArrayId adapterId = new ByteArrayId(
 				rowId.getAdapterId());
-		T result = (T) (isOutputWritable ? serializationTool.getHadoopWritableSerializerForAdapter(
+		final T result = (T) (isOutputWritable ? serializationTool.getHadoopWritableSerializerForAdapter(
 				adapterId).toWritable(
 				value) : value);
 		final GeoWaveInputKey key = new GeoWaveInputKey(

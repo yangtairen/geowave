@@ -2,7 +2,7 @@ package mil.nga.giat.geowave.analytic.mapreduce;
 
 import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
+import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 
 import org.apache.hadoop.mapreduce.JobContext;
 import org.slf4j.Logger;

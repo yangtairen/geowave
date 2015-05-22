@@ -24,9 +24,9 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.dedupe.GeoWaveDedupeJobRunner;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.output.GeoWaveOutputFormat;
+import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
+import mil.nga.giat.geowave.mapreduce.dedupe.GeoWaveDedupeJobRunner;
+import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputFormat;
 
 import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;

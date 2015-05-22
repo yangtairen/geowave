@@ -20,7 +20,7 @@ import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveJobRunner;
+import mil.nga.giat.geowave.mapreduce.GeoWaveJobRunner;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;

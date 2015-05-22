@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.store.config.AbstractConfigOption;
+import mil.nga.giat.geowave.core.store.config.StringConfigOption;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.ConnectorPool;
 
@@ -49,6 +51,25 @@ public class BasicAccumuloOperations implements
 		AccumuloOperations
 {
 	private final static Logger LOGGER = Logger.getLogger(BasicAccumuloOperations.class);
+	private static final String ZOOKEEPER_CONFIG_NAME = "zookeeper";
+	private static final String INSTANCE_CONFIG_NAME = "instance";
+	private static final String USER_CONFIG_NAME = "user";
+	private static final String PASSWORD_CONFIG_NAME = "password";
+	private static final AbstractConfigOption<?>[] CONFIG_OPTIONS = new AbstractConfigOption[] {
+		new StringConfigOption(
+				ZOOKEEPER_CONFIG_NAME,
+				"A comma-separated list of zookeeper servers that an Accumulo instance is using"),
+		new StringConfigOption(
+				INSTANCE_CONFIG_NAME,
+				"The Accumulo instance ID"),
+		new StringConfigOption(
+				USER_CONFIG_NAME,
+				"A valid Accumulo user ID"),
+		new StringConfigOption(
+				PASSWORD_CONFIG_NAME,
+				"The password for the user")
+	};
+
 	private static final int DEFAULT_NUM_THREADS = 16;
 	private static final long DEFAULT_TIMEOUT_MILLIS = 1000L; // 1 second
 	private static final long DEFAULT_BYTE_BUFFER_SIZE = 1048576L; // 1 MB
@@ -67,7 +88,7 @@ public class BasicAccumuloOperations implements
 	 * This is will create an Accumulo connector based on passed in connection
 	 * information and credentials for convenience convenience. It will also use
 	 * reasonable defaults for unspecified parameters.
-	 * 
+	 *
 	 * @param zookeeperUrl
 	 *            The comma-delimited URLs for all zookeeper servers, this will
 	 *            be directly used to instantiate a ZookeeperInstance
@@ -109,7 +130,7 @@ public class BasicAccumuloOperations implements
 	/**
 	 * This constructor uses reasonable defaults and only requires an Accumulo
 	 * connector
-	 * 
+	 *
 	 * @param connector
 	 *            The connector to use for all operations
 	 */
@@ -123,7 +144,7 @@ public class BasicAccumuloOperations implements
 	/**
 	 * This constructor uses reasonable defaults and requires an Accumulo
 	 * connector and table namespace
-	 * 
+	 *
 	 * @param connector
 	 *            The connector to use for all operations
 	 * @param tableNamespace
@@ -144,7 +165,7 @@ public class BasicAccumuloOperations implements
 	/**
 	 * This is the full constructor for the operation factory and should be used
 	 * if any of the defaults are insufficient.
-	 * 
+	 *
 	 * @param numThreads
 	 *            The number of threads to use for a batch scanner and batch
 	 *            writer
@@ -654,9 +675,9 @@ public class BasicAccumuloOperations implements
 							// see if the options are the same, if they are not
 							// the same, apply a merge with the existing options
 							// and the configured options
-							Iterator<IteratorScope> it = existingScopes.iterator();
+							final Iterator<IteratorScope> it = existingScopes.iterator();
 							while (it.hasNext()) {
-								IteratorScope scope = it.next();
+								final IteratorScope scope = it.next();
 								final IteratorSetting setting = connector.tableOperations().getIteratorSetting(
 										qName,
 										iteratorSetting.getName(),
@@ -745,5 +766,26 @@ public class BasicAccumuloOperations implements
 					e);
 		}
 		return false;
+	}
+
+	public static AbstractConfigOption<?>[] getOptions() {
+		return CONFIG_OPTIONS;
+	}
+
+	public static BasicAccumuloOperations createOperations(
+			final Map<String, Object> configOptions,
+			final String namespace )
+			throws AccumuloException,
+			AccumuloSecurityException {
+		return new BasicAccumuloOperations(
+				configOptions.get(
+						ZOOKEEPER_CONFIG_NAME).toString(),
+				configOptions.get(
+						INSTANCE_CONFIG_NAME).toString(),
+				configOptions.get(
+						USER_CONFIG_NAME).toString(),
+				configOptions.get(
+						PASSWORD_CONFIG_NAME).toString(),
+				namespace);
 	}
 }

@@ -17,7 +17,7 @@
 		</dependency>
 		<dependency>
 			<groupId>mil.nga.giat</groupId>
-			<artifactId>geowave-core-index</artifactId>
+			<artifactId>geowave-core-store</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

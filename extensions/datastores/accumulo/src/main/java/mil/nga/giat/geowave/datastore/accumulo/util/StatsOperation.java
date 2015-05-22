@@ -3,13 +3,13 @@ package mil.nga.giat.geowave.datastore.accumulo.util;
 import java.io.IOException;
 
 import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.Query;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloCommandLineOptions;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOptions;
@@ -26,9 +26,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * 
  * Simple command line tool to recalculate statistics for an adapter.
- *
+ * 
  */
 public class StatsOperation implements
 		CLIOperationDriver
@@ -94,15 +94,15 @@ public class StatsOperation implements
 			AccumuloSecurityException,
 			IOException {
 		final Options allOptions = new Options();
-		AccumuloCommandLineOptions.applyOptions(allOptions);
+		DataStoreCommandLineOptions.applyOptions(allOptions);
 		StatsCommandLineOptions.applyOptions(allOptions);
 		final BasicParser parser = new BasicParser();
 		try {
 			final CommandLine commandLine = parser.parse(
 					allOptions,
 					args);
-			AccumuloCommandLineOptions accumuloOperations;
-			accumuloOperations = AccumuloCommandLineOptions.parseOptions(commandLine);
+			DataStoreCommandLineOptions accumuloOperations;
+			accumuloOperations = DataStoreCommandLineOptions.parseOptions(commandLine);
 
 			final StatsCommandLineOptions statsOperations = StatsCommandLineOptions.parseOptions(commandLine);
 			System.exit(calculateStastics(

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.ingest.GeoWaveData;
 import mil.nga.giat.geowave.core.ingest.IngestCommandLineOptions;
 import mil.nga.giat.geowave.core.ingest.IngestFormatPluginProviderSpi;
@@ -16,12 +17,7 @@ import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloCommandLineOptions;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -35,7 +31,7 @@ public class LocalFileIngestDriver extends
 		AbstractLocalFileDriver<LocalFileIngestPlugin<?>, IngestRunData>
 {
 	private final static Logger LOGGER = Logger.getLogger(LocalFileIngestDriver.class);
-	protected AccumuloCommandLineOptions accumulo;
+	protected DataStoreCommandLineOptions dataStoreOptions;
 	protected IngestCommandLineOptions ingest;
 
 	public LocalFileIngestDriver(
@@ -48,7 +44,7 @@ public class LocalFileIngestDriver extends
 	protected void parseOptionsInternal(
 			final CommandLine commandLine )
 			throws ParseException {
-		accumulo = AccumuloCommandLineOptions.parseOptions(commandLine);
+		dataStoreOptions = DataStoreCommandLineOptions.parseOptions(commandLine);
 		ingest = IngestCommandLineOptions.parseOptions(commandLine);
 		super.parseOptionsInternal(commandLine);
 	}
@@ -56,7 +52,7 @@ public class LocalFileIngestDriver extends
 	@Override
 	protected void applyOptionsInternal(
 			final Options allOptions ) {
-		AccumuloCommandLineOptions.applyOptions(allOptions);
+		DataStoreCommandLineOptions.applyOptions(allOptions);
 		IngestCommandLineOptions.applyOptions(allOptions);
 		super.applyOptionsInternal(allOptions);
 	}
@@ -95,23 +91,7 @@ public class LocalFileIngestDriver extends
 			adapters.addAll(Arrays.asList(localFileIngestPlugin.getDataAdapters(ingest.getVisibility())));
 		}
 
-		AccumuloOperations operations;
-		try {
-			operations = accumulo.getAccumuloOperations();
-
-		}
-		catch (AccumuloException | AccumuloSecurityException e) {
-			LOGGER.fatal(
-					"Unable to connect to Accumulo with the specified options",
-					e);
-			return;
-		}
-		if (localFileIngestPlugins.isEmpty()) {
-			LOGGER.fatal("There were no local file ingest type plugin providers found");
-			return;
-		}
-		final DataStore dataStore = new AccumuloDataStore(
-				operations);
+		final DataStore dataStore = dataStoreOptions.createDataStore(ingest.getNamespace());
 		try (IngestRunData runData = new IngestRunData(
 				adapters,
 				dataStore)) {

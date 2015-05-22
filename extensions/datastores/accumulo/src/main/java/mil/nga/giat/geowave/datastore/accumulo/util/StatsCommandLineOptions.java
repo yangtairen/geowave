@@ -1,7 +1,5 @@
 package mil.nga.giat.geowave.datastore.accumulo.util;
 
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloCommandLineOptions;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -11,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 public class StatsCommandLineOptions
 {
-	private final static Logger LOGGER = LoggerFactory.getLogger(AccumuloCommandLineOptions.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(StatsCommandLineOptions.class);
 	private final String typeName;
 	private final String authorizations;
 

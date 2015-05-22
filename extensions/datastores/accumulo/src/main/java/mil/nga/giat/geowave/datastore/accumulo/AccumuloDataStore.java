@@ -300,7 +300,7 @@ public class AccumuloDataStore implements
 			try {
 				statisticsTool.close();
 			}
-			catch (Exception e) {
+			catch (final Exception e) {
 				LOGGER.error("Unable to close statistics tool");
 			}
 		}
@@ -680,7 +680,7 @@ public class AccumuloDataStore implements
 			// issue; going to call .flush() internally even if success = false;
 			statsCompositionTool.close();
 		}
-		catch (Exception ex) {
+		catch (final Exception ex) {
 			LOGGER.error(
 					"Error closing statsCompositionTool",
 					ex);
@@ -1109,7 +1109,7 @@ public class AccumuloDataStore implements
 
 	@Override
 	public <T> CloseableIterator<T> query(
-			Index index,
+			final Index index,
 			final Query query,
 			final QueryOptions queryOptions ) {
 		return query(
@@ -1228,6 +1228,29 @@ public class AccumuloDataStore implements
 				authorizations);
 	}
 
+	@Override
+	public void delete(
+			final Query query ) {
+		// TODO: we need a general purpose method to delete entries matching a
+		// query, for now this is intended to merely replace the dependencies of
+		// any module external to geowave-datastore-accumulo that had been using
+		// the AccumuloOperations object to delete all tables in a namespace
+		if (query == null) {
+			try {
+				accumuloOperations.deleteAll();
+			}
+			catch (TableNotFoundException | AccumuloException | AccumuloSecurityException e) {
+				LOGGER.error(
+						"Unable to delete all tables",
+						e);
+			}
+		}
+		else {
+			// TODO general purpose delete entries using some criteria goes here
+		}
+
+	}
+
 	public <T> void deleteEntries(
 			final DataAdapter<T> adapter,
 			final Index index,
@@ -1265,12 +1288,14 @@ public class AccumuloDataStore implements
 	}
 
 	private <T> void synchronizeStatsWithStore(
-			StatsCompositionTool<T> compositionTool,
-			boolean commitStats ) {
-		if (commitStats)
+			final StatsCompositionTool<T> compositionTool,
+			final boolean commitStats ) {
+		if (commitStats) {
 			compositionTool.flush();
-		else
+		}
+		else {
 			compositionTool.reset();
+		}
 	}
 
 	private boolean deleteAll(
@@ -1305,7 +1330,7 @@ public class AccumuloDataStore implements
 
 	/**
 	 * Delete rows associated with a single entry
-	 * 
+	 *
 	 * @param tableName
 	 * @param rows
 	 * @param deleteRowObserver
