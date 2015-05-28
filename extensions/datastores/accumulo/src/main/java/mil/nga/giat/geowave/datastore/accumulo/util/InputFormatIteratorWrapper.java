@@ -10,6 +10,8 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloRowId;
+import mil.nga.giat.geowave.mapreduce.HadoopWritableSerializationTool;
+import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
@@ -98,7 +100,6 @@ public class InputFormatIteratorWrapper<T> implements
 										index.getId().getBytes(),
 										rowId.getInsertionId()),
 								rowId.getDataId())));
-		key.setAccumuloKey(row.getKey());
 		return new GeoWaveInputFormatEntry(
 				key,
 				result);

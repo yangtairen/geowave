@@ -7,6 +7,7 @@ import java.util.Map;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
@@ -14,9 +15,11 @@ import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.JobContextIndexStore;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -25,7 +28,6 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
@@ -45,38 +47,40 @@ public class GeoWaveOutputFormat extends
 			throws IOException,
 			InterruptedException {
 		try {
-			// TODO expose GeoWave's AccumuloOptions
-			final AccumuloOperations accumuloOperations = getAccumuloOperations(context);
-			final AdapterStore accumuloAdapterStore = new AccumuloAdapterStore(
-					accumuloOperations);
+			final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getConfigOptions(context));
+			final String namespace = getNamespace(context);
+			final AdapterStore persistentAdapterStore = GeoWaveStoreFinder.createAdapterStore(
+					configOptions,
+					namespace);
 			final DataAdapter<?>[] adapters = JobContextAdapterStore.getDataAdapters(context);
 			for (final DataAdapter<?> a : adapters) {
-				if (!accumuloAdapterStore.adapterExists(a.getAdapterId())) {
-					accumuloAdapterStore.addAdapter(a);
+				if (!persistentAdapterStore.adapterExists(a.getAdapterId())) {
+					persistentAdapterStore.addAdapter(a);
 				}
 			}
-			final IndexStore accumuloIndexStore = new AccumuloIndexStore(
-					accumuloOperations);
+			final IndexStore persistentIndexStore = GeoWaveStoreFinder.createIndexStore(
+					configOptions,
+					namespace);
 			final Index[] indices = JobContextIndexStore.getIndices(context);
 			for (final Index i : indices) {
-				if (!accumuloIndexStore.indexExists(i.getId())) {
-					accumuloIndexStore.addIndex(i);
+				if (!persistentIndexStore.indexExists(i.getId())) {
+					persistentIndexStore.addIndex(i);
 				}
 			}
-			final AdapterStore jobContextAdapterStore = getDataAdapterStore(
+			final AdapterStore jobContextAdapterStore = new JobContextAdapterStore(
 					context,
-					accumuloOperations);
-			final IndexStore jobContextIndexStore = getIndexStore(
+					persistentAdapterStore);
+			final IndexStore jobContextIndexStore = new JobContextIndexStore(
 					context,
-					accumuloOperations);
-			final DataStatisticsStore statisticsStore = new AccumuloDataStatisticsStore(
-					accumuloOperations);
+					persistentIndexStore);
+			final DataStore dataStore = GeoWaveStoreFinder.createDataStore(
+					configOptions,
+					namespace);
 			return new GeoWaveRecordWriter(
 					context,
-					accumuloOperations,
+					dataStore,
 					jobContextIndexStore,
-					jobContextAdapterStore,
-					statisticsStore);
+					jobContextAdapterStore);
 		}
 		catch (final Exception e) {
 			throw new IOException(
@@ -100,20 +104,26 @@ public class GeoWaveOutputFormat extends
 				adapter);
 	}
 
-	protected static IndexStore getIndexStore(
-			final JobContext context,
-			final AccumuloOperations accumuloOperations ) {
+	protected static IndexStore getJobContextIndexStore(
+			final JobContext context ) {
+		final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getConfigOptions(context));
+		final String namespace = getNamespace(context);
 		return new JobContextIndexStore(
 				context,
-				accumuloOperations);
+				GeoWaveStoreFinder.createIndexStore(
+						configOptions,
+						namespace));
 	}
 
-	protected static AdapterStore getDataAdapterStore(
-			final JobContext context,
-			final AccumuloOperations accumuloOperations ) {
+	protected static AdapterStore getJobContextAdapterStore(
+			final JobContext context ) {
+		final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getConfigOptions(context));
+		final String namespace = getNamespace(context);
 		return new JobContextAdapterStore(
 				context,
-				accumuloOperations);
+				GeoWaveStoreFinder.createAdapterStore(
+						configOptions,
+						namespace));
 	}
 
 	@Override
@@ -121,31 +131,62 @@ public class GeoWaveOutputFormat extends
 			final JobContext context )
 			throws IOException,
 			InterruptedException {
-		// the two required elements are the AccumuloOperations info and the
-		// Index
+		// attempt to get each of the GeoWave stores from the job context
 		try {
-			// this should attempt to use the connection info to successfully
-			// connect
-			if (getAccumuloOperations(context) == null) {
-				LOGGER.warn("Zookeeper connection for accumulo is null");
+			final String namespace = getNamespace(context);
+
+			final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getConfigOptions(context));
+			if (GeoWaveStoreFinder.createDataStore(
+					configOptions,
+					namespace) == null) {
+				final String msg = "Unable to find GeoWave data store";
+				LOGGER.warn(msg);
 				throw new IOException(
-						"Zookeeper connection for accumulo is null");
+						msg);
+			}
+			if (GeoWaveStoreFinder.createIndexStore(
+					configOptions,
+					namespace) == null) {
+				final String msg = "Unable to find GeoWave index store";
+				LOGGER.warn(msg);
+				throw new IOException(
+						msg);
+			}
+			if (GeoWaveStoreFinder.createAdapterStore(
+					configOptions,
+					namespace) == null) {
+				final String msg = "Unable to find GeoWave adapter store";
+				LOGGER.warn(msg);
+				throw new IOException(
+						msg);
+			}
+			if (GeoWaveStoreFinder.createDataStatisticsStore(
+					configOptions,
+					namespace) == null) {
+				final String msg = "Unable to find GeoWave data statistics store";
+				LOGGER.warn(msg);
+				throw new IOException(
+						msg);
 			}
 		}
-		catch (final AccumuloException e) {
+		catch (final Exception e) {
 			LOGGER.warn(
-					"Error establishing zookeeper connection for accumulo",
+					"Error finding GeoWave stores",
 					e);
 			throw new IOException(
+					"Error finding GeoWave stores",
 					e);
 		}
-		catch (final AccumuloSecurityException e) {
-			LOGGER.warn(
-					"Security error while establishing connection to accumulo",
-					e);
-			throw new IOException(
-					e);
-		}
+	}
+
+	public static String getNamespace(
+			final JobContext context ) {
+
+	}
+
+	public static Map<String, String> getConfigOptions(
+			final JobContext context ) {
+
 	}
 
 	@Override
@@ -170,22 +211,10 @@ public class GeoWaveOutputFormat extends
 
 		protected GeoWaveRecordWriter(
 				final TaskAttemptContext context,
-				final AccumuloOperations accumuloOperations,
+				final DataStore dataStore,
 				final IndexStore indexStore,
-				final AdapterStore adapterStore,
-				final DataStatisticsStore statisticsStore )
-				throws AccumuloException,
-				AccumuloSecurityException,
-				IOException {
-			final Level l = getLogLevel(context);
-			if (l != null) {
-				LOGGER.setLevel(getLogLevel(context));
-			}
-			dataStore = new AccumuloDataStore(
-					indexStore,
-					adapterStore,
-					statisticsStore,
-					accumuloOperations);
+				final AdapterStore adapterStore ) {
+			this.dataStore = dataStore;
 			this.adapterStore = adapterStore;
 			this.indexStore = indexStore;
 		}
@@ -254,52 +283,7 @@ public class GeoWaveOutputFormat extends
 
 	/**
 	 * Configures a {@link AccumuloOperations} for this job.
-	 * 
-	 * @param config
-	 *            hadoop configuration
-	 * @param zooKeepers
-	 *            a comma-separated list of zookeeper servers
-	 * @param instanceName
-	 *            the Accumulo instance name
-	 * @param userName
-	 *            the Accumulo user name
-	 * @param password
-	 *            the Accumulo password
-	 * @param geowaveTableNamespace
-	 *            the GeoWave table namespace
-	 */
-	public static void setAccumuloOperationsInfo(
-			final Configuration config,
-			final String zooKeepers,
-			final String instanceName,
-			final String userName,
-			final String password,
-			final String geowaveTableNamespace ) {
-		GeoWaveConfiguratorBase.setZookeeperUrl(
-				CLASS,
-				config,
-				zooKeepers);
-		GeoWaveConfiguratorBase.setInstanceName(
-				CLASS,
-				config,
-				instanceName);
-		GeoWaveConfiguratorBase.setUserName(
-				CLASS,
-				config,
-				userName);
-		GeoWaveConfiguratorBase.setPassword(
-				CLASS,
-				config,
-				password);
-		GeoWaveConfiguratorBase.setTableNamespace(
-				CLASS,
-				config,
-				geowaveTableNamespace);
-	}
-
-	/**
-	 * Configures a {@link AccumuloOperations} for this job.
-	 * 
+	 *
 	 * @param job
 	 *            the Hadoop job instance to be configured
 	 * @param zooKeepers
@@ -313,11 +297,10 @@ public class GeoWaveOutputFormat extends
 	 * @param geowaveTableNamespace
 	 *            the GeoWave table namespace
 	 */
-	public static void setDataStoreInfo(
+	public static void setDataStoreName(
 			final Job job,
-			final String dataStoreName,
-			final Map<String, String> options,
-			final String geowaveNamespace ) {
+			final String dataStoreName ) {
+		final setda
 		setAccumuloOperationsInfo(
 				job.getConfiguration(),
 				zooKeepers,
@@ -325,88 +308,5 @@ public class GeoWaveOutputFormat extends
 				userName,
 				password,
 				geowaveTableNamespace);
-	}
-
-	/**
-	 * Sets the log level for this job.
-	 * 
-	 * @param job
-	 *            the Hadoop job instance to be configured
-	 * @param level
-	 *            the logging level
-	 * @since 1.5.0
-	 */
-	public static void setLogLevel(
-			Configuration config,
-			final Level level ) {
-		ConfiguratorBase.setLogLevel(
-				CLASS,
-				config,
-				level);
-	}
-
-	/**
-	 * Gets the log level from this configuration.
-	 * 
-	 * @param context
-	 *            the Hadoop context for the configured job
-	 * @return the log level
-	 * @since 1.5.0
-	 * @see #setLogLevel(Job, Level)
-	 */
-	protected static Level getLogLevel(
-			final JobContext context ) {
-		return ConfiguratorBase.getLogLevel(
-				CLASS,
-				GeoWaveConfiguratorBase.getConfiguration(context));
-	}
-
-	// TODO add enabling/disabling features such as automatic table, data
-	// adapter, and index creation; for now that is not an option exposed in
-	// GeoWaveDataStore so it will automatically create anything that doesn't
-	// exist
-	/**
-	 * Sets the directive to create new tables, as necessary. Table names can
-	 * only be alpha-numeric and underscores.
-	 * 
-	 * <p>
-	 * By default, this feature is <b>disabled</b>.
-	 * 
-	 * @param job
-	 *            the Hadoop job instance to be configured
-	 * @param enableFeature
-	 *            the feature is enabled if true, disabled otherwise
-	 */
-	// public static void setCreateTables(
-	// final Job job,
-	// final boolean enableFeature ) {
-	// GeoWaveOutputConfigurator.setCreateTables(
-	// CLASS,
-	// job,
-	// enableFeature);
-	// }
-
-	/**
-	 * Determines whether tables are permitted to be created as needed.
-	 * 
-	 * @param context
-	 *            the Hadoop context for the configured job
-	 * @return true if the feature is disabled, false otherwise
-	 * @see #setCreateTables(Job, boolean)
-	 */
-	// protected static Boolean canCreateTables(
-	// final JobContext context ) {
-	// return GeoWaveOutputConfigurator.canCreateTables(
-	// CLASS,
-	// context);
-	// }
-
-	public static AccumuloOperations getAccumuloOperations(
-			final JobContext context )
-			throws AccumuloException,
-			AccumuloSecurityException {
-		return GeoWaveConfiguratorBase.getAccumuloOperations(
-				CLASS,
-				context);
 	}
 }

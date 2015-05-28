@@ -1,42 +1,24 @@
-package mil.nga.giat.geowave.datastore.accumulo.util;
+package mil.nga.giat.geowave.core.store;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 
-import mil.nga.giat.geowave.core.store.CloseableIterator;
-
-import org.apache.accumulo.core.client.ScannerBase;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * This is a simple wrapper around the batch scanner's default iterator to
- * ensure that the caller can close the scanner when it is finished being used.
- * 
+ * This is a simple wrapper around an iterator and a closeable to ensure that
+ * the caller can close the closeable when it is finished being used by the
+ * iterator.
+ *
  * @param <E>
  *            The type to iterate on
  */
 public class CloseableIteratorWrapper<E> implements
 		CloseableIterator<E>
 {
-	private final static Logger LOGGER = Logger.getLogger(CloseableIteratorWrapper.class);
-
-	public static class ScannerClosableWrapper implements
-			Closeable
-	{
-		private final ScannerBase scanner;
-
-		public ScannerClosableWrapper(
-				final ScannerBase scanner ) {
-			this.scanner = scanner;
-		}
-
-		@Override
-		public void close() {
-			scanner.close();
-		}
-
-	}
+	private final static Logger LOGGER = LoggerFactory.getLogger(CloseableIteratorWrapper.class);
 
 	private final Closeable closeable;
 	private final Iterator<E> iterator;

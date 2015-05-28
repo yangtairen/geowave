@@ -32,7 +32,10 @@ public class GeoWaveConfiguratorBase
 
 	protected static enum GeneralConfig {
 		DATA_STORE_NAME,
-		DATA_STORE_CONFIG_OPTION,
+		ADAPTER_STORE_NAME,
+		INDEX_STORE_NAME,
+		DATA_STATISTICS_STORE_NAME,
+		STORE_CONFIG_OPTION,
 		GEOWAVE_NAMESPACE
 	}
 
@@ -142,7 +145,7 @@ public class GeoWaveConfiguratorBase
 		}
 	}
 
-	public static void setDataStoreConfigOptions(
+	public static void setStoreConfigOptions(
 			final Class<?> implementingClass,
 			final Configuration config,
 			final Map<String, String> dataStoreConfigOptions ) {
@@ -151,7 +154,7 @@ public class GeoWaveConfiguratorBase
 				config.set(
 						enumToConfKey(
 								implementingClass,
-								GeneralConfig.DATA_STORE_CONFIG_OPTION,
+								GeneralConfig.STORE_CONFIG_OPTION,
 								entry.getKey()),
 						entry.getValue());
 			}

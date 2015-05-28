@@ -5,11 +5,9 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
-import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.collections.Transformer;
@@ -26,15 +24,14 @@ public class JobContextIndexStore implements
 {
 	private static final Class<?> CLASS = JobContextIndexStore.class;
 	private final JobContext context;
-	private final AccumuloOperations accumuloOperations;
+	private final IndexStore persistentIndexStore;
 	private final Map<ByteArrayId, Index> indexCache = new HashMap<ByteArrayId, Index>();
 
 	public JobContextIndexStore(
 			final JobContext context,
-			final AccumuloOperations accumuloOperations ) {
+			final IndexStore persistentIndexStore ) {
 		this.context = context;
-		this.accumuloOperations = accumuloOperations;
-
+		this.persistentIndexStore = persistentIndexStore;
 	}
 
 	@Override
@@ -73,9 +70,7 @@ public class JobContextIndexStore implements
 				indexId);
 		if (index == null) {
 			// then try to get it from the accumulo persistent store
-			final AccumuloIndexStore indexStore = new AccumuloIndexStore(
-					accumuloOperations);
-			index = indexStore.getIndex(indexId);
+			index = persistentIndexStore.getIndex(indexId);
 		}
 
 		if (index != null) {
@@ -88,9 +83,7 @@ public class JobContextIndexStore implements
 
 	@Override
 	public CloseableIterator<Index> getIndices() {
-		final AccumuloIndexStore indexStore = new AccumuloIndexStore(
-				accumuloOperations);
-		final CloseableIterator<Index> it = indexStore.getIndices();
+		final CloseableIterator<Index> it = persistentIndexStore.getIndices();
 		// cache any results
 		return new CloseableIteratorWrapper<Index>(
 				it,

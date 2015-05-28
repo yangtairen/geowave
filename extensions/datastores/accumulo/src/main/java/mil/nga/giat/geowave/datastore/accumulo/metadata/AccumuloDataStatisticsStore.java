@@ -25,11 +25,11 @@ import org.apache.hadoop.io.Text;
 /**
  * This class will persist Index objects within an Accumulo table for GeoWave
  * metadata. The adapters will be persisted in an "INDEX" column family.
- * 
+ *
  * There is an LRU cache associated with it so staying in sync with external
  * updates is not practical - it assumes the objects are not updated often or at
  * all. The objects are stored in their own table.
- * 
+ *
  **/
 public class AccumuloDataStatisticsStore extends
 		AbstractAccumuloPersistence<DataStatistics<?>> implements
@@ -129,7 +129,7 @@ public class AccumuloDataStatisticsStore extends
 	public DataStatistics<?> getDataStatistics(
 			final ByteArrayId adapterId,
 			final ByteArrayId statisticsId,
-			String... authorizations ) {
+			final String... authorizations ) {
 		return getObject(
 				statisticsId,
 				adapterId,
@@ -173,7 +173,7 @@ public class AccumuloDataStatisticsStore extends
 
 	@Override
 	public CloseableIterator<DataStatistics<?>> getAllDataStatistics(
-			String... authorizations ) {
+			final String... authorizations ) {
 		return getObjects(authorizations);
 	}
 
@@ -181,7 +181,7 @@ public class AccumuloDataStatisticsStore extends
 	public boolean removeStatistics(
 			final ByteArrayId adapterId,
 			final ByteArrayId statisticsId,
-			String... authorizations ) {
+			final String... authorizations ) {
 		return deleteObject(
 				statisticsId,
 				adapterId,
@@ -191,7 +191,7 @@ public class AccumuloDataStatisticsStore extends
 	@Override
 	public CloseableIterator<DataStatistics<?>> getDataStatistics(
 			final ByteArrayId adapterId,
-			String... authorizations ) {
+			final String... authorizations ) {
 		return getAllObjectsWithSecondaryId(
 				adapterId,
 				authorizations);
@@ -206,5 +206,14 @@ public class AccumuloDataStatisticsStore extends
 	protected byte[] getAccumuloVisibility(
 			final DataStatistics<?> entry ) {
 		return entry.getVisibility();
+	}
+
+	@Override
+	public void removeAllStatistics(
+			final ByteArrayId adapterId,
+			final String... authorizations ) {
+		deleteObjects(
+				adapterId,
+				authorizations);
 	}
 }

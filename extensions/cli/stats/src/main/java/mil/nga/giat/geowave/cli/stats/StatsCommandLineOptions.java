@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.datastore.accumulo.util;
+package mil.nga.giat.geowave.cli.stats;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -12,12 +12,15 @@ public class StatsCommandLineOptions
 	private final static Logger LOGGER = LoggerFactory.getLogger(StatsCommandLineOptions.class);
 	private final String typeName;
 	private final String authorizations;
+	private final String namespace;
 
 	public StatsCommandLineOptions(
 			final String typeName,
-			final String authorizations ) {
+			final String authorizations,
+			final String namespace ) {
 		this.typeName = typeName;
 		this.authorizations = authorizations;
+		this.namespace = namespace;
 
 	}
 
@@ -29,6 +32,10 @@ public class StatsCommandLineOptions
 		return authorizations;
 	}
 
+	public String getNamespace() {
+		return namespace;
+	}
+
 	public static StatsCommandLineOptions parseOptions(
 			final CommandLine commandLine )
 			throws ParseException {
@@ -36,9 +43,13 @@ public class StatsCommandLineOptions
 		final String auth = commandLine.getOptionValue(
 				"auth",
 				"");
+		final String namespace = commandLine.getOptionValue(
+				"n",
+				"");
 		return new StatsCommandLineOptions(
 				type,
-				auth);
+				auth,
+				namespace);
 	}
 
 	public static void applyOptions(
@@ -56,5 +67,12 @@ public class StatsCommandLineOptions
 				"The authorizations used for the statistics calculation as a subset of the accumulo user authorization; by default all authorizations are used.");
 		auth.setRequired(false);
 		allOptions.addOption(auth);
+		final Option namespace = new Option(
+				"n",
+				"namespace",
+				true,
+				"The geowave namespace (optional; default is no namespace)");
+		namespace.setRequired(false);
+		allOptions.addOption(namespace);
 	}
 }

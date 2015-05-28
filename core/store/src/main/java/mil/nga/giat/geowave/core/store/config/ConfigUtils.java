@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
+
 public class ConfigUtils
 {
 	public static String cleanOptionName(
@@ -65,6 +67,13 @@ public class ConfigUtils
 					option.valueToString(objectValue.getValue()));
 		}
 		return stringValues;
+	}
+
+	public static Map<String, Object> valuesFromStrings(
+			final Map<String, String> stringValues ) {
+		return valuesFromStrings(
+				stringValues,
+				GeoWaveStoreFinder.getAllOptions());
 	}
 
 	public static Map<String, Object> valuesFromStrings(

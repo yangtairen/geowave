@@ -15,33 +15,12 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.JobContextIndexStore;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputConfigurator.InputConfig;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat.IntermediateSplitInfo.RangeLocationPair;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.Instance;
-import org.apache.accumulo.core.client.TableDeletedException;
-import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.client.TableOfflineException;
-import org.apache.accumulo.core.client.impl.Tables;
-import org.apache.accumulo.core.client.impl.TabletLocator;
-import org.apache.accumulo.core.client.mapreduce.lib.util.ConfiguratorBase;
-import org.apache.accumulo.core.client.mock.MockInstance;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
-import org.apache.accumulo.core.data.ArrayByteSequence;
-import org.apache.accumulo.core.data.ByteSequence;
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.KeyExtent;
-import org.apache.accumulo.core.data.Range;
-import org.apache.accumulo.core.master.state.tables.TableState;
-import org.apache.accumulo.core.security.Credentials;
-import org.apache.accumulo.core.util.UtilWaitThread;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.hadoop.conf.Configuration;
@@ -97,38 +76,6 @@ public class GeoWaveInputFormat<T> extends
 		GeoWaveConfiguratorBase.setAccumuloOperationsInfo(
 				CLASS,
 				config,
-				zooKeepers,
-				instanceName,
-				userName,
-				password,
-				geowaveTableNamespace);
-	}
-
-	/**
-	 * Configures a {@link AccumuloOperations} for this job.
-	 * 
-	 * @param job
-	 *            the Hadoop job instance to be configured
-	 * @param zooKeepers
-	 *            a comma-separated list of zookeeper servers
-	 * @param instanceName
-	 *            the Accumulo instance name
-	 * @param userName
-	 *            the Accumulo user name
-	 * @param password
-	 *            the Accumulo password
-	 * @param geowaveTableNamespace
-	 *            the GeoWave table namespace
-	 */
-	public static void setAccumuloOperationsInfo(
-			final Job job,
-			final String zooKeepers,
-			final String instanceName,
-			final String userName,
-			final String password,
-			final String geowaveTableNamespace ) {
-		setAccumuloOperationsInfo(
-				job.getConfiguration(),
 				zooKeepers,
 				instanceName,
 				userName,
@@ -215,23 +162,9 @@ public class GeoWaveInputFormat<T> extends
 				context);
 	}
 
-	protected static String getTableNamespace(
+	protected static String getGeoWaveNamespace(
 			final JobContext context ) {
-		return GeoWaveConfiguratorBase.getTableNamespace(
-				CLASS,
-				context);
-	}
-
-	protected static String getUserName(
-			final JobContext context ) {
-		return GeoWaveConfiguratorBase.getUserName(
-				CLASS,
-				context);
-	}
-
-	protected static String getPassword(
-			final JobContext context ) {
-		return GeoWaveConfiguratorBase.getPassword(
+		return GeoWaveConfiguratorBase.getGeoWaveNamespace(
 				CLASS,
 				context);
 	}
@@ -360,7 +293,6 @@ public class GeoWaveInputFormat<T> extends
 			final JobContext context )
 			throws IOException,
 			InterruptedException {
-		LOGGER.setLevel(getLogLevel(context));
 		validateOptions(context);
 		final Integer minSplits = getMinimumSplitCount(context);
 		final Integer maxSplits = getMaximumSplitCount(context);
@@ -1070,43 +1002,9 @@ public class GeoWaveInputFormat<T> extends
 			final TaskAttemptContext context )
 			throws IOException,
 			InterruptedException {
-		LOGGER.setLevel(getLogLevel(context));
 		return new GeoWaveRecordReader<T>();
 	}
 
-	/**
-	 * Sets the log level for this job.
-	 * 
-	 * @param job
-	 *            the Hadoop job instance to be configured
-	 * @param level
-	 *            the logging level
-	 * @since 1.5.0
-	 */
-	public static void setLogLevel(
-			final Configuration config,
-			final Level level ) {
-		ConfiguratorBase.setLogLevel(
-				CLASS,
-				config,
-				level);
-	}
-
-	/**
-	 * Gets the log level from this configuration.
-	 * 
-	 * @param context
-	 *            the Hadoop context for the configured job
-	 * @return the log level
-	 * @since 1.5.0
-	 * @see #setLogLevel(Job, Level)
-	 */
-	protected static Level getLogLevel(
-			final JobContext context ) {
-		return ConfiguratorBase.getLogLevel(
-				CLASS,
-				GeoWaveConfiguratorBase.getConfiguration(context));
-	}
 
 	/**
 	 * Check whether a configuration is fully configured to be used with an

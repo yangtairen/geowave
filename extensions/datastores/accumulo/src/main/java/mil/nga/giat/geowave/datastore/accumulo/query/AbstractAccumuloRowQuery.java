@@ -1,13 +1,13 @@
 package mil.nga.giat.geowave.datastore.accumulo.query;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.ScanCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.EntryIteratorWrapper;
-import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper.ScannerClosableWrapper;
+import mil.nga.giat.geowave.datastore.accumulo.util.ScannerClosableWrapper;
 
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.ScannerBase;
@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
 /**
  * Represents a query operation by an Accumulo row. This abstraction is
  * re-usable for both exact row ID queries and row prefix queries.
- * 
+ *
  */
 abstract public class AbstractAccumuloRowQuery<T> extends
 		AccumuloQuery

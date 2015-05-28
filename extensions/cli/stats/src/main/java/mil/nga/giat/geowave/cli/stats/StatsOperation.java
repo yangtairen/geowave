@@ -1,24 +1,23 @@
-package mil.nga.giat.geowave.datastore.accumulo.util;
+package mil.nga.giat.geowave.cli.stats;
 
 import java.io.IOException;
 
+import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
+import mil.nga.giat.geowave.core.cli.DataStatisticsStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.Query;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOptions;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -26,9 +25,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
 /**
- * 
+ *
  * Simple command line tool to recalculate statistics for an adapter.
- * 
+ *
  */
 public class StatsOperation implements
 		CLIOperationDriver
@@ -36,27 +35,19 @@ public class StatsOperation implements
 	private static final Logger LOGGER = Logger.getLogger(StatsOperationCLIProvider.class);
 
 	public static boolean calculateStastics(
-			final AccumuloOperations accumuloOperations,
+			final DataStore dataStore,
+			final IndexStore indexStore,
+			final AdapterStore adapterStore,
+			final DataStatisticsStore statsStore,
 			final ByteArrayId adapterId,
 			final String[] authorizations )
 			throws IOException {
-		final AccumuloOptions accumuloOptions = new AccumuloOptions();
-		accumuloOptions.setPersistDataStatistics(true);
-		final AccumuloDataStore dataStore = new AccumuloDataStore(
-				accumuloOperations,
-				accumuloOptions);
-		final AccumuloAdapterStore adapterStore = new AccumuloAdapterStore(
-				accumuloOperations);
-		final AccumuloIndexStore indexStore = new AccumuloIndexStore(
-				accumuloOperations);
-		final AccumuloDataStatisticsStore statsStore = new AccumuloDataStatisticsStore(
-				accumuloOperations);
 		final DataAdapter<?> adapter = adapterStore.getAdapter(adapterId);
 		if (adapter == null) {
 			LOGGER.error("Unknown adapter " + adapterId);
 			return false;
 		}
-		statsStore.deleteObjects(
+		statsStore.removeAllStatistics(
 				adapter.getAdapterId(),
 				authorizations);
 		try (StatsCompositionTool<?> statsTool = new StatsCompositionTool(
@@ -89,29 +80,38 @@ public class StatsOperation implements
 	}
 
 	public static void main(
-			final String args[] )
-			throws AccumuloException,
-			AccumuloSecurityException,
-			IOException {
+			final String args[] ) {
 		final Options allOptions = new Options();
 		DataStoreCommandLineOptions.applyOptions(allOptions);
+		AdapterStoreCommandLineOptions.applyOptions(allOptions);
+		IndexStoreCommandLineOptions.applyOptions(allOptions);
+		DataStatisticsStoreCommandLineOptions.applyOptions(allOptions);
 		StatsCommandLineOptions.applyOptions(allOptions);
 		final BasicParser parser = new BasicParser();
 		try {
 			final CommandLine commandLine = parser.parse(
 					allOptions,
 					args);
-			DataStoreCommandLineOptions accumuloOperations;
-			accumuloOperations = DataStoreCommandLineOptions.parseOptions(commandLine);
-
+			final DataStoreCommandLineOptions dataStoreCli = DataStoreCommandLineOptions.parseOptions(commandLine);
+			final AdapterStoreCommandLineOptions adapterStoreCli = AdapterStoreCommandLineOptions.parseOptions(commandLine);
+			final IndexStoreCommandLineOptions indexStoreCli = IndexStoreCommandLineOptions.parseOptions(commandLine);
+			final DataStatisticsStoreCommandLineOptions statsStoreCli = DataStatisticsStoreCommandLineOptions.parseOptions(commandLine);
 			final StatsCommandLineOptions statsOperations = StatsCommandLineOptions.parseOptions(commandLine);
 			System.exit(calculateStastics(
-					accumuloOperations.getAccumuloOperations(),
+					dataStoreCli.createStore(statsOperations.getNamespace()),
+					indexStoreCli.createStore(statsOperations.getNamespace()),
+					adapterStoreCli.createStore(statsOperations.getNamespace()),
+					statsStoreCli.createStore(statsOperations.getNamespace()),
 					new ByteArrayId(
 							statsOperations.getTypeName()),
 					getAuthorizations(statsOperations.getAuthorizations())) ? 0 : -1);
 		}
 		catch (final ParseException e) {
+			LOGGER.error(
+					"Unable to parse stats tool arguments",
+					e);
+		}
+		catch (final IOException e) {
 			LOGGER.error(
 					"Unable to parse stats tool arguments",
 					e);
@@ -135,14 +135,7 @@ public class StatsOperation implements
 	public void run(
 			final String[] args )
 			throws ParseException {
-		try {
-			main(args);
-		}
-		catch (AccumuloException | AccumuloSecurityException | IOException e) {
-			LOGGER.error(
-					"Error while calculating statistics.",
-					e);
-		}
+		main(args);
 	}
 
 }

@@ -7,11 +7,9 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.collections.Transformer;
@@ -29,14 +27,14 @@ public class JobContextAdapterStore implements
 {
 	private static final Class<?> CLASS = JobContextAdapterStore.class;
 	private final JobContext context;
-	private final AccumuloOperations accumuloOperations;
+	private final AdapterStore persistentAdapterStore;
 	private final Map<ByteArrayId, DataAdapter<?>> adapterCache = new HashMap<ByteArrayId, DataAdapter<?>>();
 
 	public JobContextAdapterStore(
 			final JobContext context,
-			final AccumuloOperations accumuloOperations ) {
+			final AdapterStore persistentAdapterStore ) {
 		this.context = context;
-		this.accumuloOperations = accumuloOperations;
+		this.persistentAdapterStore = persistentAdapterStore;
 
 	}
 
@@ -75,10 +73,8 @@ public class JobContextAdapterStore implements
 				context,
 				adapterId);
 		if (adapter == null) {
-			// then try to get it from the accumulo persistent store
-			final AccumuloAdapterStore adapterStore = new AccumuloAdapterStore(
-					accumuloOperations);
-			adapter = adapterStore.getAdapter(adapterId);
+			// then try to get it from the persistent store
+			adapter = persistentAdapterStore.getAdapter(adapterId);
 		}
 
 		if (adapter != null) {
@@ -91,9 +87,7 @@ public class JobContextAdapterStore implements
 
 	@Override
 	public CloseableIterator<DataAdapter<?>> getAdapters() {
-		final AccumuloAdapterStore adapterStore = new AccumuloAdapterStore(
-				accumuloOperations);
-		final CloseableIterator<DataAdapter<?>> it = adapterStore.getAdapters();
+		final CloseableIterator<DataAdapter<?>> it = persistentAdapterStore.getAdapters();
 		// cache any results
 		return new CloseableIteratorWrapper<DataAdapter<?>>(
 				it,

@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.core.store;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -205,6 +206,23 @@ public class GeoWaveStoreFinder
 				IndexStoreFactorySpi.class,
 				registeredIndexStoreFactories);
 		return registeredIndexStoreFactories;
+	}
+
+	public static synchronized AbstractConfigOption<?>[] getAllOptions() {
+		final List<AbstractConfigOption<?>> allOptions = new ArrayList<AbstractConfigOption<?>>();
+		for (final DataStoreFactorySpi f : getRegisteredDataStoreFactories().values()) {
+			allOptions.addAll(Arrays.asList(f.getOptions()));
+		}
+		for (final IndexStoreFactorySpi f : getRegisteredIndexStoreFactories().values()) {
+			allOptions.addAll(Arrays.asList(f.getOptions()));
+		}
+		for (final DataStatisticsStoreFactorySpi f : getRegisteredDataStatisticsStoreFactories().values()) {
+			allOptions.addAll(Arrays.asList(f.getOptions()));
+		}
+		for (final AdapterStoreFactorySpi f : getRegisteredAdapterStoreFactories().values()) {
+			allOptions.addAll(Arrays.asList(f.getOptions()));
+		}
+		return allOptions.toArray(new AbstractConfigOption[] {});
 	}
 
 	private static <T extends GenericStoreFactory<?>> Map<String, T> getRegisteredFactories(
