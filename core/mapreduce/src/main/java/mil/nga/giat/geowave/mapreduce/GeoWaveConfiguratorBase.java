@@ -10,9 +10,17 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.DataStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStoreFactorySpi;
+import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.index.IndexStoreFactorySpi;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -120,9 +128,19 @@ public class GeoWaveConfiguratorBase
 		final String dataStoreName = getDataStoreName(
 				implementingClass,
 				context);
-		if ((dataStoreName != null) && (dataStoreName.length() > 0)) {
-			GeoWaveStoreFinder.createDataStore(
-					getDataStoreConfigOptions(),
+		if ((dataStoreName != null) && (!dataStoreName.isEmpty())) {
+			final DataStoreFactorySpi factory = GeoWaveStoreFinder.getRegisteredDataStoreFactories().get(
+					dataStoreName);
+			final Map<String, String> configOptions = getStoreConfigOptions(
+					implementingClass,
+					context);
+			configOptions.put(
+					GeoWaveStoreFinder.STORE_HINT_OPTION.getName(),
+					dataStoreName);
+			return GeoWaveStoreFinder.createDataStore(
+					ConfigUtils.valuesFromStrings(
+							configOptions,
+							factory.getOptions()),
 					getGeoWaveNamespace(
 							implementingClass,
 							context));
@@ -130,6 +148,102 @@ public class GeoWaveConfiguratorBase
 		else {
 			return null;
 		}
+	}
+
+	public static AdapterStore getAdapterStore(
+			final Class<?> implementingClass,
+			final JobContext context ) {
+		// use adapter store name and if thats not set, use the data store name
+		String adapterStoreName = getAdapterStoreName(
+				implementingClass,
+				context);
+		if ((adapterStoreName == null) || (adapterStoreName.isEmpty())) {
+			adapterStoreName = getDataStoreName(
+					implementingClass,
+					context);
+			if ((adapterStoreName == null) || adapterStoreName.isEmpty()) {
+				return null;
+			}
+		}
+		final AdapterStoreFactorySpi factory = GeoWaveStoreFinder.getRegisteredAdapterStoreFactories().get(
+				adapterStoreName);
+		final Map<String, String> configOptions = getStoreConfigOptions(
+				implementingClass,
+				context);
+		configOptions.put(
+				GeoWaveStoreFinder.STORE_HINT_OPTION.getName(),
+				adapterStoreName);
+		return GeoWaveStoreFinder.createAdapterStore(
+				ConfigUtils.valuesFromStrings(
+						configOptions,
+						factory.getOptions()),
+				getGeoWaveNamespace(
+						implementingClass,
+						context));
+	}
+
+	public static IndexStore getIndexStore(
+			final Class<?> implementingClass,
+			final JobContext context ) {
+		// use index store name and if thats not set, use the data store name
+		String indexStoreName = getIndexStoreName(
+				implementingClass,
+				context);
+		if ((indexStoreName == null) || (indexStoreName.isEmpty())) {
+			indexStoreName = getDataStoreName(
+					implementingClass,
+					context);
+			if ((indexStoreName == null) || indexStoreName.isEmpty()) {
+				return null;
+			}
+		}
+		final IndexStoreFactorySpi factory = GeoWaveStoreFinder.getRegisteredIndexStoreFactories().get(
+				indexStoreName);
+		final Map<String, String> configOptions = getStoreConfigOptions(
+				implementingClass,
+				context);
+		configOptions.put(
+				GeoWaveStoreFinder.STORE_HINT_OPTION.getName(),
+				indexStoreName);
+		return GeoWaveStoreFinder.createIndexStore(
+				ConfigUtils.valuesFromStrings(
+						configOptions,
+						factory.getOptions()),
+				getGeoWaveNamespace(
+						implementingClass,
+						context));
+	}
+
+	public static DataStatisticsStore getDataStatisticsStore(
+			final Class<?> implementingClass,
+			final JobContext context ) {
+		// use adapter store name and if thats not set, use the data store name
+		String dataStatisticsStoreName = getAdapterStoreName(
+				implementingClass,
+				context);
+		if ((dataStatisticsStoreName == null) || (dataStatisticsStoreName.isEmpty())) {
+			dataStatisticsStoreName = getDataStoreName(
+					implementingClass,
+					context);
+			if ((dataStatisticsStoreName == null) || dataStatisticsStoreName.isEmpty()) {
+				return null;
+			}
+		}
+		final DataStatisticsStoreFactorySpi factory = GeoWaveStoreFinder.getRegisteredDataStatisticsStoreFactories().get(
+				dataStatisticsStoreName);
+		final Map<String, String> configOptions = getStoreConfigOptions(
+				implementingClass,
+				context);
+		configOptions.put(
+				GeoWaveStoreFinder.STORE_HINT_OPTION.getName(),
+				dataStatisticsStoreName);
+		return GeoWaveStoreFinder.createDataStatisticsStore(
+				ConfigUtils.valuesFromStrings(
+						configOptions,
+						factory.getOptions()),
+				getGeoWaveNamespace(
+						implementingClass,
+						context));
 	}
 
 	public static void setDataStoreName(
@@ -140,7 +254,46 @@ public class GeoWaveConfiguratorBase
 			config.set(
 					enumToConfKey(
 							implementingClass,
-							GeneralConfig.GEOWAVE_NAMESPACE),
+							GeneralConfig.DATA_STORE_NAME),
+					dataStoreName);
+		}
+	}
+
+	public static void setAdapterStoreName(
+			final Class<?> implementingClass,
+			final Configuration config,
+			final String dataStoreName ) {
+		if (dataStoreName != null) {
+			config.set(
+					enumToConfKey(
+							implementingClass,
+							GeneralConfig.ADAPTER_STORE_NAME),
+					dataStoreName);
+		}
+	}
+
+	public static void setDataStatisticsStoreName(
+			final Class<?> implementingClass,
+			final Configuration config,
+			final String dataStoreName ) {
+		if (dataStoreName != null) {
+			config.set(
+					enumToConfKey(
+							implementingClass,
+							GeneralConfig.DATA_STATISTICS_STORE_NAME),
+					dataStoreName);
+		}
+	}
+
+	public static void setIndexStoreName(
+			final Class<?> implementingClass,
+			final Configuration config,
+			final String dataStoreName ) {
+		if (dataStoreName != null) {
+			config.set(
+					enumToConfKey(
+							implementingClass,
+							GeneralConfig.INDEX_STORE_NAME),
 					dataStoreName);
 		}
 	}
@@ -161,14 +314,42 @@ public class GeoWaveConfiguratorBase
 		}
 	}
 
-	public static Map<String, String> getDataStoreConfigOptions() {
-
+	public static Map<String, String> getStoreConfigOptions(
+			final Class<?> implementingClass,
+			final JobContext context ) {
+		return getConfigOptionsInternal(
+				implementingClass,
+				getConfiguration(context));
 	}
 
 	public static String getDataStoreName(
 			final Class<?> implementingClass,
 			final JobContext context ) {
-		return getGeoWaveNamespaceInternal(
+		return getDataStoreNameInternal(
+				implementingClass,
+				getConfiguration(context));
+	}
+
+	public static String getAdapterStoreName(
+			final Class<?> implementingClass,
+			final JobContext context ) {
+		return getAdapterStoreNameInternal(
+				implementingClass,
+				getConfiguration(context));
+	}
+
+	public static String getIndexStoreName(
+			final Class<?> implementingClass,
+			final JobContext context ) {
+		return getIndexStoreNameInternal(
+				implementingClass,
+				getConfiguration(context));
+	}
+
+	public static String getDataStatisticsStoreName(
+			final Class<?> implementingClass,
+			final JobContext context ) {
+		return getDataStatisticsStoreNameInternal(
 				implementingClass,
 				getConfiguration(context));
 	}
@@ -267,6 +448,14 @@ public class GeoWaveConfiguratorBase
 				getConfiguration(context));
 	}
 
+	private static Map<String, String> getConfigOptionsInternal(
+			final Class<?> implementingClass,
+			final Configuration configuration ) {
+		return configuration.getValByRegex(enumToConfKey(
+				implementingClass,
+				GeneralConfig.STORE_CONFIG_OPTION) + "*");
+	}
+
 	private static DataAdapter<?>[] getDataAdaptersInternal(
 			final Class<?> implementingClass,
 			final Configuration configuration ) {
@@ -342,6 +531,36 @@ public class GeoWaveConfiguratorBase
 				"");
 	}
 
+	private static String getAdapterStoreNameInternal(
+			final Class<?> implementingClass,
+			final Configuration configuration ) {
+		return configuration.get(
+				enumToConfKey(
+						implementingClass,
+						GeneralConfig.ADAPTER_STORE_NAME),
+				"");
+	}
+
+	private static String getDataStatisticsStoreNameInternal(
+			final Class<?> implementingClass,
+			final Configuration configuration ) {
+		return configuration.get(
+				enumToConfKey(
+						implementingClass,
+						GeneralConfig.DATA_STATISTICS_STORE_NAME),
+				"");
+	}
+
+	private static String getIndexStoreNameInternal(
+			final Class<?> implementingClass,
+			final Configuration configuration ) {
+		return configuration.get(
+				enumToConfKey(
+						implementingClass,
+						GeneralConfig.INDEX_STORE_NAME),
+				"");
+	}
+
 	private static String getGeoWaveNamespaceInternal(
 			final Class<?> implementingClass,
 			final Configuration configuration ) {
@@ -410,51 +629,5 @@ public class GeoWaveConfiguratorBase
 		conf.set(
 				"yarn.app.mapreduce.am.staging-dir",
 				"/tmp/hadoop-" + user);
-	}
-
-	/**
-	 * Configures a {@link AccumuloOperations} for this job.
-	 *
-	 * @param config
-	 *            the Hadoop configuration instance
-	 * @param zooKeepers
-	 *            a comma-separated list of zookeeper servers
-	 * @param instanceName
-	 *            the Accumulo instance name
-	 * @param userName
-	 *            the Accumulo user name
-	 * @param password
-	 *            the Accumulo password
-	 * @param geowaveTableNamespace
-	 *            the GeoWave table namespace
-	 */
-	public static void setAccumuloOperationsInfo(
-			final Class<?> scope,
-			final Configuration config,
-			final String zooKeepers,
-			final String instanceName,
-			final String userName,
-			final String password,
-			final String geowaveTableNamespace ) {
-		GeoWaveConfiguratorBase.setZookeeperUrl(
-				scope,
-				config,
-				zooKeepers);
-		GeoWaveConfiguratorBase.setInstanceName(
-				scope,
-				config,
-				instanceName);
-		GeoWaveConfiguratorBase.setUserName(
-				scope,
-				config,
-				userName);
-		GeoWaveConfiguratorBase.setPassword(
-				scope,
-				config,
-				password);
-		GeoWaveConfiguratorBase.setTableNamespace(
-				scope,
-				config,
-				geowaveTableNamespace);
 	}
 }

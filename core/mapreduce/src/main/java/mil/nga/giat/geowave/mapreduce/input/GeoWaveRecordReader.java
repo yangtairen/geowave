@@ -15,6 +15,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
@@ -50,11 +51,11 @@ public class GeoWaveRecordReader<T> extends
 {
 	private static final class RangeIndexPair
 	{
-		private final Range range;
+		private final ByteArrayRange range;
 		private final Index index;
 
 		public RangeIndexPair(
-				final Range range,
+				final ByteArrayRange range,
 				final Index index ) {
 			this.range = range;
 			this.index = index;
@@ -123,7 +124,6 @@ public class GeoWaveRecordReader<T> extends
 	protected static final Logger LOGGER = Logger.getLogger(GeoWaveRecordReader.class);
 	protected long numKeysRead;
 	protected CloseableIterator<?> iterator;
-	protected Key currentAccumuloKey = null;
 	protected Map<RangeIndexPair, ProgressPerRange> progressPerRange;
 	protected GeoWaveInputKey currentGeoWaveKey = null;
 	protected RangeIndexPair currentGeoWaveRangeIndexPair = null;
@@ -283,12 +283,6 @@ public class GeoWaveRecordReader<T> extends
 				if (value instanceof Entry) {
 					final Entry<GeoWaveInputKey, T> entry = (Entry<GeoWaveInputKey, T>) value;
 					currentGeoWaveKey = entry.getKey();
-					if (currentGeoWaveKey == null) {
-						currentAccumuloKey = null;
-					}
-					else {
-						currentAccumuloKey = currentGeoWaveKey.getAccumuloKey();
-					}
 					currentValue = entry.getValue();
 				}
 				return true;
@@ -316,81 +310,6 @@ public class GeoWaveRecordReader<T> extends
 				currentGeoWaveRangeIndexPair.range,
 				currentAccumuloKey,
 				progress);
-	}
-
-	private static float getOverallProgress(
-			final Range range,
-			final Key currentKey,
-			final ProgressPerRange progress ) {
-		final float rangeProgress = getProgressForRange(
-				range,
-				currentKey);
-		return progress.getOverallProgress(rangeProgress);
-	}
-
-	private static float getProgressForRange(
-			final ByteSequence start,
-			final ByteSequence end,
-			final ByteSequence position ) {
-		final int maxDepth = Math.min(
-				Math.max(
-						end.length(),
-						start.length()),
-				position.length());
-		final BigInteger startBI = new BigInteger(
-				GeoWaveInputFormat.extractBytes(
-						start,
-						maxDepth));
-		final BigInteger endBI = new BigInteger(
-				GeoWaveInputFormat.extractBytes(
-						end,
-						maxDepth));
-		final BigInteger positionBI = new BigInteger(
-				GeoWaveInputFormat.extractBytes(
-						position,
-						maxDepth));
-		return (float) (positionBI.subtract(
-				startBI).doubleValue() / endBI.subtract(
-				startBI).doubleValue());
-	}
-
-	private static float getProgressForRange(
-			final Range range,
-			final Key currentKey ) {
-		if (currentKey == null) {
-			return 0f;
-		}
-		if ((range.getStartKey() != null) && (range.getEndKey() != null)) {
-			if (!range.getStartKey().equals(
-					range.getEndKey(),
-					PartialKey.ROW)) {
-				// just look at the row progress
-				return getProgressForRange(
-						range.getStartKey().getRowData(),
-						range.getEndKey().getRowData(),
-						currentKey.getRowData());
-			}
-			else if (!range.getStartKey().equals(
-					range.getEndKey(),
-					PartialKey.ROW_COLFAM)) {
-				// just look at the column family progress
-				return getProgressForRange(
-						range.getStartKey().getColumnFamilyData(),
-						range.getEndKey().getColumnFamilyData(),
-						currentKey.getColumnFamilyData());
-			}
-			else if (!range.getStartKey().equals(
-					range.getEndKey(),
-					PartialKey.ROW_COLFAM_COLQUAL)) {
-				// just look at the column qualifier progress
-				return getProgressForRange(
-						range.getStartKey().getColumnQualifierData(),
-						range.getEndKey().getColumnQualifierData(),
-						currentKey.getColumnQualifierData());
-			}
-		}
-		// if we can't figure it out, then claim no progress
-		return 0f;
 	}
 
 	@Override

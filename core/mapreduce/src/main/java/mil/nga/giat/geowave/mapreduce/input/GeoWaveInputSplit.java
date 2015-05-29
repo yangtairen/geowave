@@ -10,11 +10,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
 
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputSplit;
 
@@ -60,28 +60,19 @@ public class GeoWaveInputSplit extends
 		long diff = 0;
 		for (final Entry<Index, List<ByteArrayRange>> indexEntry : ranges.entrySet()) {
 			for (final ByteArrayRange range : indexEntry.getValue()) {
-				final Text startRow = range.isInfiniteStartKey() ? new Text(
-						new byte[] {
-							Byte.MIN_VALUE
-						}) : range.getStartKey().getRow();
-				final Text stopRow = range.isInfiniteStopKey() ? new Text(
-						new byte[] {
-							Byte.MAX_VALUE
-						}) : range.getEndKey().getRow();
+				final byte[] start = range.getStart().getBytes();
+				final byte[] stop = range.getEnd().getBytes();
 				final int maxCommon = Math.min(
 						7,
 						Math.min(
-								startRow.getLength(),
-								stopRow.getLength()));
-
-				final byte[] start = startRow.getBytes();
-				final byte[] stop = stopRow.getBytes();
+								start.length,
+								stop.length));
 				for (int i = 0; i < maxCommon; ++i) {
 					diff |= 0xff & (start[i] ^ stop[i]);
 					diff <<= Byte.SIZE;
 				}
 
-				if (startRow.getLength() != stopRow.getLength()) {
+				if (start.length != stop.length) {
 					diff |= 0xff;
 				}
 			}
@@ -114,16 +105,17 @@ public class GeoWaveInputSplit extends
 					numRanges);
 
 			for (int j = 0; j < numRanges; j++) {
-				try {
-					final Range range = Range.class.newInstance();
-					range.readFields(in);
-					rangeList.add(range);
-				}
-				catch (InstantiationException | IllegalAccessException e) {
-					throw new IOException(
-							"Unable to instantiate range",
-							e);
-				}
+				int length = in.readInt();
+				final byte[] start = new byte[length];
+				in.readFully(start);
+				length = in.readInt();
+				final byte[] end = new byte[length];
+				in.readFully(end);
+				rangeList.add(new ByteArrayRange(
+						new ByteArrayId(
+								start),
+						new ByteArrayId(
+								end)));
 			}
 			ranges.put(
 					index,
@@ -148,7 +140,12 @@ public class GeoWaveInputSplit extends
 			final List<ByteArrayRange> rangeList = range.getValue();
 			out.writeInt(rangeList.size());
 			for (final ByteArrayRange r : rangeList) {
-				r.write(out);
+				final byte[] start = r.getStart().getBytes();
+				final byte[] end = r.getEnd().getBytes();
+				out.writeInt(start.length);
+				out.write(start);
+				out.writeInt(end.length);
+				out.write(end);
 			}
 		}
 		out.writeInt(locations.length);

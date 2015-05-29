@@ -36,6 +36,7 @@ import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
 import mil.nga.giat.geowave.core.store.filter.MultiIndexDedupeFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
@@ -47,12 +48,14 @@ import mil.nga.giat.geowave.datastore.accumulo.query.AccumuloRowIdQuery;
 import mil.nga.giat.geowave.datastore.accumulo.query.AccumuloRowPrefixQuery;
 import mil.nga.giat.geowave.datastore.accumulo.query.QueryFilterIterator;
 import mil.nga.giat.geowave.datastore.accumulo.query.SingleEntryFilterIterator;
+import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloMRUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.AltIndexIngestCallback;
 import mil.nga.giat.geowave.datastore.accumulo.util.DataAdapterAndIndexCache;
 import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper.Callback;
 import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper.Converter;
+import mil.nga.giat.geowave.mapreduce.MapReduceDataStore;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -69,6 +72,8 @@ import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.Iterators;
@@ -87,7 +92,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * used in subsequent queries.
  */
 public class AccumuloDataStore implements
-		DataStore
+		MapReduceDataStore
 {
 	private final static Logger LOGGER = Logger.getLogger(AccumuloDataStore.class);
 
@@ -1431,4 +1436,20 @@ public class AccumuloDataStore implements
 				Key key,
 				Value value );
 	}
+
+	@Override
+	public List<InputSplit> getSplits(
+			Index[] indices,
+			DistributableQuery query,
+			String geowaveNamespace,
+			Integer minSplits,
+			Integer maxSplits ) {
+		return AccumuloMRUtils.getSplits(
+				indices,
+				query,
+				geowaveNamespace,
+				minSplits,
+				maxSplits);
+	}
+
 }

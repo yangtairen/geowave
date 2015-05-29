@@ -12,16 +12,14 @@ import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
+import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
-import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.JobContextIndexStore;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.OutputCommitter;
 import org.apache.hadoop.mapreduce.OutputFormat;
@@ -37,7 +35,6 @@ import org.apache.log4j.Logger;
 public class GeoWaveOutputFormat extends
 		OutputFormat<GeoWaveOutputKey, Object>
 {
-
 	private static final Class<?> CLASS = GeoWaveOutputFormat.class;
 	protected static final Logger LOGGER = Logger.getLogger(CLASS);
 
@@ -47,8 +44,8 @@ public class GeoWaveOutputFormat extends
 			throws IOException,
 			InterruptedException {
 		try {
-			final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getConfigOptions(context));
-			final String namespace = getNamespace(context);
+			final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getStoreConfigOptions(context));
+			final String namespace = getGeoWaveNamespace(context);
 			final AdapterStore persistentAdapterStore = GeoWaveStoreFinder.createAdapterStore(
 					configOptions,
 					namespace);
@@ -106,8 +103,8 @@ public class GeoWaveOutputFormat extends
 
 	protected static IndexStore getJobContextIndexStore(
 			final JobContext context ) {
-		final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getConfigOptions(context));
-		final String namespace = getNamespace(context);
+		final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getStoreConfigOptions(context));
+		final String namespace = getGeoWaveNamespace(context);
 		return new JobContextIndexStore(
 				context,
 				GeoWaveStoreFinder.createIndexStore(
@@ -117,13 +114,27 @@ public class GeoWaveOutputFormat extends
 
 	protected static AdapterStore getJobContextAdapterStore(
 			final JobContext context ) {
-		final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getConfigOptions(context));
-		final String namespace = getNamespace(context);
+		final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getStoreConfigOptions(context));
+		final String namespace = getGeoWaveNamespace(context);
 		return new JobContextAdapterStore(
 				context,
 				GeoWaveStoreFinder.createAdapterStore(
 						configOptions,
 						namespace));
+	}
+
+	public static String getGeoWaveNamespace(
+			final JobContext context ) {
+		return GeoWaveConfiguratorBase.getGeoWaveNamespace(
+				CLASS,
+				context);
+	}
+
+	public static Map<String, String> getStoreConfigOptions(
+			final JobContext context ) {
+		return GeoWaveConfiguratorBase.getStoreConfigOptions(
+				CLASS,
+				context);
 	}
 
 	@Override
@@ -133,9 +144,9 @@ public class GeoWaveOutputFormat extends
 			InterruptedException {
 		// attempt to get each of the GeoWave stores from the job context
 		try {
-			final String namespace = getNamespace(context);
+			final String namespace = getGeoWaveNamespace(context);
 
-			final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getConfigOptions(context));
+			final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getStoreConfigOptions(context));
 			if (GeoWaveStoreFinder.createDataStore(
 					configOptions,
 					namespace) == null) {
@@ -177,16 +188,6 @@ public class GeoWaveOutputFormat extends
 					"Error finding GeoWave stores",
 					e);
 		}
-	}
-
-	public static String getNamespace(
-			final JobContext context ) {
-
-	}
-
-	public static Map<String, String> getConfigOptions(
-			final JobContext context ) {
-
 	}
 
 	@Override
@@ -281,32 +282,4 @@ public class GeoWaveOutputFormat extends
 		}
 	}
 
-	/**
-	 * Configures a {@link AccumuloOperations} for this job.
-	 *
-	 * @param job
-	 *            the Hadoop job instance to be configured
-	 * @param zooKeepers
-	 *            a comma-separated list of zookeeper servers
-	 * @param instanceName
-	 *            the Accumulo instance name
-	 * @param userName
-	 *            the Accumulo user name
-	 * @param password
-	 *            the Accumulo password
-	 * @param geowaveTableNamespace
-	 *            the GeoWave table namespace
-	 */
-	public static void setDataStoreName(
-			final Job job,
-			final String dataStoreName ) {
-		final setda
-		setAccumuloOperationsInfo(
-				job.getConfiguration(),
-				zooKeepers,
-				instanceName,
-				userName,
-				password,
-				geowaveTableNamespace);
-	}
 }

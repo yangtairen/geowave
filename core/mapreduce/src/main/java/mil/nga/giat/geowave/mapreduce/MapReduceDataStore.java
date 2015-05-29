@@ -1,15 +1,20 @@
 package mil.nga.giat.geowave.mapreduce;
 
-import java.io.IOException;
 import java.util.List;
 
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.JobContext;
+import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 
-public interface MapReduceDataStore
+import org.apache.hadoop.mapreduce.InputSplit;
+
+public interface MapReduceDataStore extends
+		DataStore
 {
 	public List<InputSplit> getSplits(
-			final JobContext context )
-			throws IOException,
-			InterruptedException;
+			Index[] indices,
+			DistributableQuery query,
+			String geowaveNamespace,
+			final Integer minSplits,
+			final Integer maxSplits );
 }
