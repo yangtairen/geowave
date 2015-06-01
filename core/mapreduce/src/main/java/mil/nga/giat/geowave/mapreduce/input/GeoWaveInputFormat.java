@@ -1,7 +1,6 @@
 package mil.nga.giat.geowave.mapreduce.input;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +12,7 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
@@ -30,21 +30,11 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
 
-// @formatter:off
-/*if[ACCUMULO_1.5.2]
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.nio.ByteBuffer;
-import org.apache.accumulo.core.security.thrift.TCredentials;
-end[ACCUMULO_1.5.2]*/
-// @formatter:on
-
 public class GeoWaveInputFormat<T> extends
 		InputFormat<GeoWaveInputKey, T>
 {
 	private static final Class<?> CLASS = GeoWaveInputFormat.class;
 	protected static final Logger LOGGER = Logger.getLogger(CLASS);
-	private static final BigInteger TWO = BigInteger.valueOf(2L);
 
 	/**
 	 * Add an adapter specific to the input format
@@ -64,6 +54,20 @@ public class GeoWaveInputFormat<T> extends
 				CLASS,
 				config,
 				adapter);
+	}
+
+	public static IndexStore getJobContextIndexStore(
+			final JobContext context ) {
+		return GeoWaveConfiguratorBase.getJobContextIndexStore(
+				CLASS,
+				context);
+	}
+
+	public static AdapterStore getJobContextAdapterStore(
+			final JobContext context ) {
+		return GeoWaveConfiguratorBase.getJobContextAdapterStore(
+				CLASS,
+				context);
 	}
 
 	public static void addIndex(
@@ -156,13 +160,43 @@ public class GeoWaveInputFormat<T> extends
 				context);
 	}
 
+	public static void addAuthorization(
+			final Configuration config,
+			final String authorization ) {
+		GeoWaveInputConfigurator.addAuthorization(
+				CLASS,
+				config,
+				authorization);
+	}
+
 	@Override
 	public RecordReader<GeoWaveInputKey, T> createRecordReader(
 			final InputSplit split,
 			final TaskAttemptContext context )
 			throws IOException,
 			InterruptedException {
-		return new GeoWaveRecordReader<T>();
+		final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getStoreConfigOptions(context));
+		final String namespace = getGeoWaveNamespace(context);
+		final DataStore dataStore = GeoWaveStoreFinder.createDataStore(
+				configOptions,
+				namespace);
+		final AdapterStore adapterStore = getJobContextAdapterStore(context);
+		if ((dataStore != null) && (dataStore instanceof MapReduceDataStore)) {
+			return (RecordReader<GeoWaveInputKey, T>) ((MapReduceDataStore) dataStore).createRecordReader(
+					getIndices(context),
+					getAdapterIds(
+							context,
+							adapterStore),
+					getQuery(context),
+					adapterStore,
+					getJobContextIndexStore(context),
+					isOutputWritable(context),
+					getAuthorizations(context),
+					split);
+		}
+		LOGGER.error("Data Store does not support map reduce");
+		throw new IOException(
+				"Data Store does not support map reduce");
 	}
 
 	/**
@@ -288,11 +322,17 @@ public class GeoWaveInputFormat<T> extends
 		final DataStore dataStore = GeoWaveStoreFinder.createDataStore(
 				configOptions,
 				namespace);
+		final AdapterStore adapterStore = getJobContextAdapterStore(context);
 		if ((dataStore != null) && (dataStore instanceof MapReduceDataStore)) {
 			return ((MapReduceDataStore) dataStore).getSplits(
 					getIndices(context),
+					getAdapterIds(
+							context,
+							adapterStore),
 					getQuery(context),
-					getGeoWaveNamespace(context),
+					adapterStore,
+					getJobContextIndexStore(context),
+					getAuthorizations(context),
 					getMinimumSplitCount(context),
 					getMaximumSplitCount(context));
 		}
@@ -300,5 +340,4 @@ public class GeoWaveInputFormat<T> extends
 		throw new IOException(
 				"Data Store does not support map reduce");
 	}
-
 }

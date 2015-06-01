@@ -27,6 +27,7 @@ import org.apache.accumulo.core.client.BatchDeleter;
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.BatchWriterConfig;
 import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.RowIterator;
@@ -83,6 +84,7 @@ public class BasicAccumuloOperations implements
 	protected Connector connector;
 	private final Map<String, Long> locGrpCache;
 	private long cacheTimeoutMillis;
+	private String password;
 
 	/**
 	 * This is will create an Accumulo connector based on passed in connection
@@ -119,7 +121,7 @@ public class BasicAccumuloOperations implements
 		this(
 				null,
 				tableNamespace);
-
+		this.password = password;
 		connector = ConnectorPool.getInstance().getConnector(
 				zookeeperUrl,
 				instanceName,
@@ -147,6 +149,8 @@ public class BasicAccumuloOperations implements
 	 *
 	 * @param connector
 	 *            The connector to use for all operations
+	 * @param password
+	 *            An optional string that is prefixed to any of the table names
 	 * @param tableNamespace
 	 *            An optional string that is prefixed to any of the table names
 	 */
@@ -209,6 +213,7 @@ public class BasicAccumuloOperations implements
 		return byteBufferSize;
 	}
 
+	@Override
 	public Connector getConnector() {
 		return connector;
 	}
@@ -787,5 +792,50 @@ public class BasicAccumuloOperations implements
 				configOptions.get(
 						PASSWORD_CONFIG_NAME).toString(),
 				namespace);
+	}
+
+	public static Connector getConnector(
+			final Map<String, Object> configOptions )
+			throws AccumuloException,
+			AccumuloSecurityException {
+		return createOperations(
+				configOptions,
+				null).connector;
+	}
+
+	public static String getUsername(
+			final Map<String, Object> configOptions )
+			throws AccumuloException,
+			AccumuloSecurityException {
+		return configOptions.get(
+				USER_CONFIG_NAME).toString();
+	}
+
+	public static String getPassword(
+			final Map<String, Object> configOptions )
+			throws AccumuloException,
+			AccumuloSecurityException {
+		return configOptions.get(
+				PASSWORD_CONFIG_NAME).toString();
+	}
+
+	@Override
+	public String getGeoWaveNamespace() {
+		return tableNamespace;
+	}
+
+	@Override
+	public String getUsername() {
+		return connector.whoami();
+	}
+
+	@Override
+	public String getPassword() {
+		return password;
+	}
+
+	@Override
+	public Instance getInstance() {
+		return connector.getInstance();
 	}
 }

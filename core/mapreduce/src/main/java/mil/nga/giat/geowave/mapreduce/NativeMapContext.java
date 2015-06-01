@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
+import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configuration.IntegerRanges;
@@ -28,7 +28,7 @@ import org.apache.hadoop.security.Credentials;
  * This class wraps an existing map context that will write hadoop writable
  * objects as a map context that writes the native object for ease of
  * implementing mapreduce jobs.
- * 
+ *
  * @param <KEYIN>
  *            The map context's input type
  * @param <VALUEIN>

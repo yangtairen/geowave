@@ -103,24 +103,16 @@ public class GeoWaveOutputFormat extends
 
 	protected static IndexStore getJobContextIndexStore(
 			final JobContext context ) {
-		final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getStoreConfigOptions(context));
-		final String namespace = getGeoWaveNamespace(context);
-		return new JobContextIndexStore(
-				context,
-				GeoWaveStoreFinder.createIndexStore(
-						configOptions,
-						namespace));
+		return GeoWaveConfiguratorBase.getJobContextIndexStore(
+				CLASS,
+				context);
 	}
 
 	protected static AdapterStore getJobContextAdapterStore(
 			final JobContext context ) {
-		final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getStoreConfigOptions(context));
-		final String namespace = getGeoWaveNamespace(context);
-		return new JobContextAdapterStore(
-				context,
-				GeoWaveStoreFinder.createAdapterStore(
-						configOptions,
-						namespace));
+		return GeoWaveConfiguratorBase.getJobContextAdapterStore(
+				CLASS,
+				context);
 	}
 
 	public static String getGeoWaveNamespace(

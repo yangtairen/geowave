@@ -7,7 +7,6 @@ import java.io.IOException;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.mapreduce.GeoWaveKey;
 
-import org.apache.accumulo.core.data.Key;
 import org.apache.hadoop.io.WritableComparator;
 
 /**

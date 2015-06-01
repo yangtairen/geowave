@@ -501,6 +501,38 @@ public class GeoWaveConfiguratorBase
 				getConfiguration(context));
 	}
 
+	public static IndexStore getJobContextIndexStore(
+			final Class<?> implementingClass,
+			final JobContext context ) {
+		final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getStoreConfigOptions(
+				implementingClass,
+				context));
+		final String namespace = getGeoWaveNamespace(
+				implementingClass,
+				context);
+		return new JobContextIndexStore(
+				context,
+				GeoWaveStoreFinder.createIndexStore(
+						configOptions,
+						namespace));
+	}
+
+	public static AdapterStore getJobContextAdapterStore(
+			final Class<?> implementingClass,
+			final JobContext context ) {
+		final Map<String, Object> configOptions = ConfigUtils.valuesFromStrings(getStoreConfigOptions(
+				implementingClass,
+				context));
+		final String namespace = getGeoWaveNamespace(
+				implementingClass,
+				context);
+		return new JobContextAdapterStore(
+				context,
+				GeoWaveStoreFinder.createAdapterStore(
+						configOptions,
+						namespace));
+	}
+
 	private static Index[] getIndicesInternal(
 			final Class<?> implementingClass,
 			final Configuration configuration ) {
@@ -576,7 +608,7 @@ public class GeoWaveConfiguratorBase
 	public static Configuration getConfiguration(
 			final JobContext context ) {
 		try {
-			final Class<?> c = InputFormatBase.class.getClassLoader().loadClass(
+			final Class<?> c = GeoWaveConfiguratorBase.class.getClassLoader().loadClass(
 					"org.apache.hadoop.mapreduce.JobContext");
 			final Method m = c.getMethod("getConfiguration");
 			final Object o = m.invoke(

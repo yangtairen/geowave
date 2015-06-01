@@ -16,7 +16,6 @@ import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
-import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.IngestCallback;
@@ -39,6 +38,8 @@ import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
+import mil.nga.giat.geowave.datastore.accumulo.mapreduce.AccumuloMRUtils;
+import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveAccumuloRecordReader;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
@@ -48,7 +49,6 @@ import mil.nga.giat.geowave.datastore.accumulo.query.AccumuloRowIdQuery;
 import mil.nga.giat.geowave.datastore.accumulo.query.AccumuloRowPrefixQuery;
 import mil.nga.giat.geowave.datastore.accumulo.query.QueryFilterIterator;
 import mil.nga.giat.geowave.datastore.accumulo.query.SingleEntryFilterIterator;
-import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloMRUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.AltIndexIngestCallback;
 import mil.nga.giat.geowave.datastore.accumulo.util.DataAdapterAndIndexCache;
@@ -56,6 +56,7 @@ import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper.Callback;
 import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper.Converter;
 import mil.nga.giat.geowave.mapreduce.MapReduceDataStore;
+import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -73,7 +74,7 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.Iterators;
@@ -1439,17 +1440,38 @@ public class AccumuloDataStore implements
 
 	@Override
 	public List<InputSplit> getSplits(
-			Index[] indices,
-			DistributableQuery query,
-			String geowaveNamespace,
-			Integer minSplits,
-			Integer maxSplits ) {
+			final Index[] indices,
+			final List<ByteArrayId> adapterIds,
+			final DistributableQuery query,
+			final AdapterStore adapterStore,
+			final IndexStore indexStore,
+			final String[] additionalAuthorizations,
+			final Integer minSplits,
+			final Integer maxSplits ) {
 		return AccumuloMRUtils.getSplits(
+				accumuloOperations,
 				indices,
 				query,
-				geowaveNamespace,
 				minSplits,
 				maxSplits);
 	}
 
+	@Override
+	public RecordReader<GeoWaveInputKey, ?> createRecordReader(
+			final Index[] indices,
+			final List<ByteArrayId> adapterIds,
+			final DistributableQuery query,
+			final AdapterStore adapterStore,
+			final IndexStore indexStore,
+			final boolean isOutputWritable,
+			final String[] additionalAuthorizations,
+			final InputSplit inputSplit ) {
+		return new GeoWaveAccumuloRecordReader(
+				query,
+				isOutputWritable,
+				additionalAuthorizations,
+				adapterIds,
+				adapterStore,
+				accumuloOperations);
+	}
 }

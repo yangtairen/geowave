@@ -2,12 +2,13 @@ package mil.nga.giat.geowave.mapreduce;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputFormat;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.output.GeoWaveOutputFormat;
+import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
+import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputFormat;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -27,10 +28,7 @@ public abstract class GeoWaveJobRunner extends
 
 	protected static final Logger LOGGER = Logger.getLogger(GeoWaveJobRunner.class);
 
-	protected String user;
-	protected String password;
-	protected String instance;
-	protected String zookeeper;
+	protected Map<String, Object> configOptions;
 	protected String namespace;
 	protected List<DataAdapter<?>> adapters = new ArrayList<DataAdapter<?>>();
 	protected List<Index> indices = new ArrayList<Index>();

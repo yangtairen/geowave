@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.datastore.accumulo.util;
+package mil.nga.giat.geowave.datastore.accumulo.mapreduce;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -15,10 +15,15 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
+import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.mapreduce.AccumuloMRUtils.IntermediateSplitInfo.RangeLocationPair;
+import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputSplit;
 
 import org.apache.accumulo.core.client.AccumuloException;
@@ -27,36 +32,59 @@ import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.TableDeletedException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.TableOfflineException;
+import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.core.client.impl.TabletLocator;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.ArrayByteSequence;
 import org.apache.accumulo.core.data.ByteSequence;
+import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.KeyExtent;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.master.state.tables.TableState;
+import org.apache.accumulo.core.security.Credentials;
+import org.apache.accumulo.core.util.UtilWaitThread;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.hadoop.security.Credentials;
+import org.apache.log4j.Logger;
 
-import com.google.common.collect.Tables;
+//@formatter:off
+/*if[ACCUMULO_1.5.2]
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.nio.ByteBuffer;
+import org.apache.accumulo.core.security.thrift.TCredentials;
+end[ACCUMULO_1.5.2]*/
+//@formatter:on
 
 public class AccumuloMRUtils
 {
+	private final static Logger LOGGER = Logger.getLogger(AccumuloMRUtils.class);
+	private static final BigInteger TWO = BigInteger.valueOf(2L);
 
 	/**
 	 * Read the metadata table to get tablets and match up ranges to them.
 	 */
 	public static List<InputSplit> getSplits(
-			final JobContext context )
-			throws IOException,
-			InterruptedException {
-		final Integer minSplits = GeoWaveInputFormat.getMinimumSplitCount(context);
-		final Integer maxSplits = getMaximumSplitCount(context);
-		final TreeSet<IntermediateSplitInfo> splits = getIntermediateSplits(
-				context,
-				maxSplits);
+			final AccumuloOperations operations,
+			final Index[] indices,
+			final DistributableQuery query,
+			final Integer minSplits,
+			final Integer maxSplits ) {
+		TreeSet<IntermediateSplitInfo> splits;
+		try {
+			splits = getIntermediateSplits(
+					operations,
+					indices,
+					query,
+					maxSplits);
+		}
+		catch (final IOException e) {
+			LOGGER.error(
+					"Unable to calculate splits",
+					e);
+			return new ArrayList<InputSplit>();
+		}
 		// this is an incremental algorithm, it may be better use the target
 		// split count to drive it (ie. to get 3 splits this will split 1 large
 		// range into two down the middle and then split one of those ranges
@@ -99,12 +127,11 @@ public class AccumuloMRUtils
 	}
 
 	private static TreeSet<IntermediateSplitInfo> getIntermediateSplits(
-			final JobContext context,
+			final AccumuloOperations operations,
+			final Index[] indices,
+			final DistributableQuery query,
 			final Integer maxSplits )
 			throws IOException {
-		final Index[] indices = getIndices(context);
-		final DistributableQuery query = getQuery(context);
-		final String tableNamespace = getTableNamespace(context);
 
 		final TreeSet<IntermediateSplitInfo> splits = new TreeSet<IntermediateSplitInfo>();
 		for (final Index index : indices) {
@@ -112,7 +139,7 @@ public class AccumuloMRUtils
 				continue;
 			}
 			final String tableName = AccumuloUtils.getQualifiedTableName(
-					tableNamespace,
+					operations.getGeoWaveNamespace(),
 					index.getId().getString());
 			final NumericIndexStrategy indexStrategy = index.getIndexStrategy();
 			final TreeSet<Range> ranges;
@@ -138,7 +165,7 @@ public class AccumuloMRUtils
 			final Map<String, Map<KeyExtent, List<Range>>> tserverBinnedRanges = new HashMap<String, Map<KeyExtent, List<Range>>>();
 			TabletLocator tl;
 			try {
-				final Instance instance = getInstance(context);
+				final Instance instance = operations.getInstance();
 				final String tableId = Tables.getTableId(
 						instance,
 						tableName);
@@ -155,8 +182,8 @@ public class AccumuloMRUtils
 				final Random r = new Random();
 				while (!binRanges(
 						rangeList,
-						getUserName(context),
-						getPassword(context),
+						operations.getUsername(),
+						operations.getPassword(),
 						tserverBinnedRanges,
 						tl,
 						instanceId)) {
@@ -525,14 +552,18 @@ public class AccumuloMRUtils
 		}
 
 		private synchronized GeoWaveInputSplit toFinalSplit() {
-			final Map<Index, List<Range>> rangesPerIndex = new HashMap<Index, List<Range>>();
+			final Map<Index, List<ByteArrayRange>> rangesPerIndex = new HashMap<Index, List<ByteArrayRange>>();
 			final Set<String> locations = new HashSet<String>();
 			for (final Entry<Index, List<RangeLocationPair>> entry : splitInfo.entrySet()) {
-				final List<Range> ranges = new ArrayList<Range>(
+				final List<ByteArrayRange> ranges = new ArrayList<ByteArrayRange>(
 						entry.getValue().size());
 				for (final RangeLocationPair pair : entry.getValue()) {
 					locations.add(pair.location);
-					ranges.add(pair.range);
+					ranges.add(new ByteArrayRange(
+							new ByteArrayId(
+									pair.range.getStartKey().getRow().copyBytes()),
+							new ByteArrayId(
+									pair.range.getEndKey().getRow().copyBytes())));
 				}
 				rangesPerIndex.put(
 						entry.getKey(),
