@@ -1,36 +1,45 @@
 package mil.nga.giat.geowave.analytic.param;
 
+import java.util.Set;
+
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
-import mil.nga.giat.geowave.core.store.DataStore;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 
-public class GlobalParameters
+public class DataStoreParameters
 {
-	public enum Global
+	public enum DataStoreParam
 			implements
-			ParameterEnum {
-		PARENT_BATCH_ID(
+			GroupParameterEnum {
+		ZOOKEEKER(
 				String.class,
-				"pb",
-				"Batch ID",
+				"z",
+				"A comma-separated list of zookeeper servers used by an Accumulo instance.",
 				true),
-		CRS_ID(
+		ACCUMULO_INSTANCE(
 				String.class,
-				"crs",
-				"CRS ID",
+				"i",
+				"The Accumulo instance ID",
 				true),
-		BATCH_ID(
+		ACCUMULO_USER(
 				String.class,
-				"b",
-				"Batch ID",
+				"u",
+				"A valid Accumulo user ID",
+				true),
+		ACCUMULO_PASSWORD(
+				String.class,
+				"p",
+				"The password for the Accumulo user",
+				true),
+		ACCUMULO_NAMESPACE(
+				String.class,
+				"n",
+				"The table namespace (optional; default is no namespace)",
 				true);
 		private final Class<?> baseClass;
 		private final Option option;
 
-		Global(
+		DataStoreParam(
 				final Class<?> baseClass,
 				final String name,
 				final String description,
@@ -56,6 +65,12 @@ public class GlobalParameters
 		@Override
 		public Option getOption() {
 			return option;
+		}
+
+		@Override
+		public void fillOptions(
+				Set<Option> options ) {
+
 		}
 	}
 }

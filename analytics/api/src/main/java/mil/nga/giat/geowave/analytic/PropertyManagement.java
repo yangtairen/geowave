@@ -12,7 +12,8 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.Set;
 
-import mil.nga.giat.geowave.analytic.param.GlobalParameters;
+import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
+import mil.nga.giat.geowave.analytic.param.GroupParameterEnum;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters.Global;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
@@ -141,7 +142,9 @@ public class PropertyManagement implements
 			final PropertyConverter<T> converter ) {
 		Serializable convertedValue;
 		try {
-			convertedValue = converter.convert(value);
+			convertedValue = converter.convert(
+					value,
+					this);
 		}
 		catch (final Exception e) {
 			throw new IllegalArgumentException(
@@ -299,7 +302,9 @@ public class PropertyManagement implements
 						converter.baseClass())) {
 					return this.validate(
 							property,
-							converter.convert(value));
+							converter.convert(
+									value,
+									this));
 				}
 			}
 		}
@@ -323,7 +328,9 @@ public class PropertyManagement implements
 			throws Exception {
 
 		final Serializable value = properties.get(toPropertyName(property));
-		return converter.convert(value);
+		return converter.convert(
+				value,
+				this);
 	}
 
 	public byte[] getPropertyAsBytes(
@@ -533,7 +540,9 @@ public class PropertyManagement implements
 		if (val != null) {
 			return (DistributableQuery) validate(
 					property,
-					new QueryConverter().convert(val));
+					new QueryConverter().convert(
+							val,
+							this));
 		}
 		return null;
 	}
@@ -545,7 +554,9 @@ public class PropertyManagement implements
 		if (val != null) {
 			return (Path) validate(
 					property,
-					new PathConverter().convert(val));
+					new PathConverter().convert(
+							val,
+							this));
 		}
 		return null;
 	}
@@ -558,7 +569,9 @@ public class PropertyManagement implements
 		if (val != null) {
 			return (Persistable) validate(
 					property,
-					new PersistableConverter().convert(val));
+					new PersistableConverter().convert(
+							val,
+							this));
 		}
 		return null;
 	}
@@ -581,7 +594,11 @@ public class PropertyManagement implements
 	 * {@link AbstractGeoWaveJobRunner}
 	 */
 	public static final ParameterEnum[] GeoWaveRunnerArguments = new ParameterEnum[] {
-		GlobalParameters.Global.DATA_STORE
+		DataStoreParameters.DataStoreParam.ZOOKEEKER,
+		DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+		DataStoreParameters.DataStoreParam.ACCUMULO_USER,
+		DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+		DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE
 	};
 
 	public String[] toGeoWaveRunnerArguments() {
@@ -643,7 +660,6 @@ public class PropertyManagement implements
 	@Override
 	public int getInt(
 			final Enum<?> property,
-			final Class<?> scope,
 			final int defaultValue ) {
 		return getPropertyAsInt(
 				(ParameterEnum) (property),
@@ -653,7 +669,6 @@ public class PropertyManagement implements
 	@Override
 	public double getDouble(
 			final Enum<?> property,
-			final Class<?> scope,
 			final double defaultValue ) {
 		return getPropertyAsDouble(
 				(ParameterEnum) (property),
@@ -663,7 +678,6 @@ public class PropertyManagement implements
 	@Override
 	public String getString(
 			final Enum<?> property,
-			final Class<?> scope,
 			final String defaultValue ) {
 		return this.getPropertyAsString(
 				(ParameterEnum) (property),
@@ -673,7 +687,6 @@ public class PropertyManagement implements
 	@Override
 	public <T> T getInstance(
 			final Enum<?> property,
-			final Class<?> scope,
 			final Class<T> iface,
 			final Class<? extends T> defaultValue )
 			throws InstantiationException,
@@ -686,8 +699,7 @@ public class PropertyManagement implements
 
 	@Override
 	public byte[] getBytes(
-			final Enum<?> property,
-			final Class<?> scope ) {
+			final Enum<?> property ) {
 		return getPropertyAsBytes((ParameterEnum) property);
 	}
 
@@ -791,7 +803,9 @@ public class PropertyManagement implements
 			final PropertyConverter converter : converters) {
 				if (property.getBaseClass().isAssignableFrom(
 						converter.baseClass())) {
-					return converter.convert(value);
+					return converter.convert(
+							value,
+							this);
 				}
 			}
 		}
@@ -801,7 +815,11 @@ public class PropertyManagement implements
 			final PropertyConverter converter : converters) {
 				if (property.getBaseClass().isAssignableFrom(
 						converter.baseClass())) {
-					return converter.convert(converter.convert(value.toString()));
+					return converter.convert(
+							converter.convert(
+									value.toString(),
+									this),
+							this);
 				}
 			}
 		}
@@ -812,11 +830,13 @@ public class PropertyManagement implements
 			Serializable
 	{
 		public Serializable convert(
-				T ob )
+				T ob,
+				PropertyManagement requesterContext )
 				throws Exception;
 
 		public T convert(
-				Serializable ob )
+				Serializable ob,
+				PropertyManagement requesterContext )
 				throws Exception;
 
 		public Class<T> baseClass();
@@ -843,7 +863,8 @@ public class PropertyManagement implements
 
 		@Override
 		public Serializable convert(
-				final DistributableQuery ob ) {
+				final DistributableQuery ob,
+				final PropertyManagement requesterContext ) {
 			try {
 				return toBytes(ob);
 			}
@@ -858,7 +879,8 @@ public class PropertyManagement implements
 
 		@Override
 		public DistributableQuery convert(
-				final Serializable ob )
+				final Serializable ob,
+				final PropertyManagement requesterContext )
 				throws Exception {
 			if (ob instanceof byte[]) {
 				return (DistributableQuery) PropertyManagement.fromBytes(
@@ -891,13 +913,15 @@ public class PropertyManagement implements
 
 		@Override
 		public Serializable convert(
-				final Path ob ) {
+				final Path ob,
+				final PropertyManagement requesterContext ) {
 			return ob.toUri().toString();
 		}
 
 		@Override
 		public Path convert(
-				final Serializable ob )
+				final Serializable ob,
+				final PropertyManagement requesterContext )
 				throws Exception {
 			return new Path(
 					ob.toString());
@@ -920,7 +944,8 @@ public class PropertyManagement implements
 
 		@Override
 		public Serializable convert(
-				final Persistable ob ) {
+				final Persistable ob,
+				final PropertyManagement requesterContext ) {
 			try {
 				return toBytes(ob);
 			}
@@ -935,7 +960,8 @@ public class PropertyManagement implements
 
 		@Override
 		public Persistable convert(
-				final Serializable ob )
+				final Serializable ob,
+				final PropertyManagement requesterContext )
 				throws Exception {
 			if (ob instanceof byte[]) {
 				return fromBytes(
@@ -952,7 +978,17 @@ public class PropertyManagement implements
 		public Class<Persistable> baseClass() {
 			return Persistable.class;
 		}
+	}
 
+	public static final void fillOptions(
+			final Set<Option> options,
+			final ParameterEnum[] params ) {
+		for (ParameterEnum param : params) {
+			options.add(param.getOption());
+			if (param instanceof GroupParameterEnum) {
+				((GroupParameterEnum) param).fillOptions(options);
+			}
+		}
 	}
 
 	public static class DataStorePropertyGroup implements

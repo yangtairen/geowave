@@ -14,6 +14,7 @@ import mil.nga.giat.geowave.analytic.db.DirectBasicAccumuloOperationsFactory;
 import mil.nga.giat.geowave.analytic.extract.DimensionExtractor;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
+import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
@@ -148,10 +149,10 @@ public class ClusteringUtils
 			final PropertyManagement propertyManagement ) {
 		BasicAccumuloOperations ops;
 		final String zookeeper = propertyManagement.getPropertyAsString(
-				GlobalParameters.Global.ZOOKEEKER,
+				DataStoreParameters.DataStoreParam.ZOOKEEKER,
 				"localhost:2181");
 		final String accumuloInstance = propertyManagement.getPropertyAsString(
-				GlobalParameters.Global.ACCUMULO_INSTANCE,
+				DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
 				"miniInstance");
 
 		try {
@@ -159,11 +160,7 @@ public class ClusteringUtils
 					CommonParameters.Common.ACCUMULO_CONNECT_FACTORY,
 					BasicAccumuloOperationsFactory.class,
 					DirectBasicAccumuloOperationsFactory.class).build(
-					zookeeper,
-					accumuloInstance,
-					propertyManagement.getPropertyAsString(GlobalParameters.Global.ACCUMULO_USER),
-					propertyManagement.getPropertyAsString(GlobalParameters.Global.ACCUMULO_PASSWORD),
-					propertyManagement.getPropertyAsString(GlobalParameters.Global.ACCUMULO_NAMESPACE));
+					propertyManagement);
 
 			final IndexStore indexStore = new AccumuloIndexStore(
 					ops);
@@ -217,11 +214,11 @@ public class ClusteringUtils
 			throws Exception {
 		return ClusteringUtils.createIndex(
 				propertyManagement.getPropertyAsString(CentroidParameters.Centroid.INDEX_ID),
-				propertyManagement.getPropertyAsString(GlobalParameters.Global.ZOOKEEKER),
-				propertyManagement.getPropertyAsString(GlobalParameters.Global.ACCUMULO_INSTANCE),
-				propertyManagement.getPropertyAsString(GlobalParameters.Global.ACCUMULO_USER),
-				propertyManagement.getPropertyAsString(GlobalParameters.Global.ACCUMULO_PASSWORD),
-				propertyManagement.getPropertyAsString(GlobalParameters.Global.ACCUMULO_NAMESPACE));
+				propertyManagement.getPropertyAsString(DataStoreParameters.DataStoreParam.ZOOKEEKER),
+				propertyManagement.getPropertyAsString(DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE),
+				propertyManagement.getPropertyAsString(DataStoreParameters.DataStoreParam.ACCUMULO_USER),
+				propertyManagement.getPropertyAsString(DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD),
+				propertyManagement.getPropertyAsString(DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE));
 
 	}
 
@@ -232,11 +229,7 @@ public class ClusteringUtils
 				CommonParameters.Common.ACCUMULO_CONNECT_FACTORY,
 				BasicAccumuloOperationsFactory.class,
 				DirectBasicAccumuloOperationsFactory.class).build(
-				propertyManagement.getPropertyAsString(GlobalParameters.Global.ZOOKEEKER),
-				propertyManagement.getPropertyAsString(GlobalParameters.Global.ACCUMULO_INSTANCE),
-				propertyManagement.getPropertyAsString(GlobalParameters.Global.ACCUMULO_USER),
-				propertyManagement.getPropertyAsString(GlobalParameters.Global.ACCUMULO_PASSWORD),
-				propertyManagement.getPropertyAsString(GlobalParameters.Global.ACCUMULO_NAMESPACE));
+				propertyManagement);
 
 	}
 

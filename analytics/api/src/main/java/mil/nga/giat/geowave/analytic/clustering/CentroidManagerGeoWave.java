@@ -8,18 +8,19 @@ import java.util.Set;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.query.AccumuloCqlConstraintsQuery;
+import mil.nga.giat.geowave.analytic.AnalyticFeature.ClusterFeatureAttribute;
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapper;
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.RunnerUtils;
 import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
-import mil.nga.giat.geowave.analytic.AnalyticFeature.ClusterFeatureAttribute;
 import mil.nga.giat.geowave.analytic.clustering.exception.MatchingCentroidNotFoundException;
 import mil.nga.giat.geowave.analytic.db.BasicAccumuloOperationsFactory;
 import mil.nga.giat.geowave.analytic.db.DirectBasicAccumuloOperationsFactory;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
+import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.core.geotime.IndexType;
@@ -184,7 +185,6 @@ public class CentroidManagerGeoWave<T> implements
 		try {
 			centroidFactory = context.getInstance(
 					CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
-					this.getClass(),
 					AnalyticItemWrapperFactory.class,
 					SimpleFeatureItemWrapperFactory.class);
 			centroidFactory.initialize(context);
@@ -200,52 +200,30 @@ public class CentroidManagerGeoWave<T> implements
 
 		this.level = context.getInt(
 				CentroidParameters.Centroid.ZOOM_LEVEL,
-				this.getClass(),
 				1);
 
 		centroidDataTypeId = context.getString(
 				CentroidParameters.Centroid.DATA_TYPE_ID,
-				this.getClass(),
 				"centroid");
 
 		batchId = context.getString(
 				GlobalParameters.Global.BATCH_ID,
-				this.getClass(),
 				Long.toString(Calendar.getInstance().getTime().getTime()));
 
 		final String indexId = context.getString(
 				CentroidParameters.Centroid.INDEX_ID,
-				this.getClass(),
 				IndexType.SPATIAL_VECTOR.getDefaultId());
 
 		try {
 			final String zk = context.getString(
-					GlobalParameters.Global.ZOOKEEKER,
-					this.getClass(),
+					DataStoreParameters.DataStoreParam.ZOOKEEKER,
 					"localhost:2181");
 
 			basicAccumuloOperations = context.getInstance(
 					CommonParameters.Common.ACCUMULO_CONNECT_FACTORY,
-					this.getClass(),
 					BasicAccumuloOperationsFactory.class,
 					DirectBasicAccumuloOperationsFactory.class).build(
-					zk,
-					context.getString(
-							GlobalParameters.Global.ACCUMULO_INSTANCE,
-							this.getClass(),
-							""),
-					context.getString(
-							GlobalParameters.Global.ACCUMULO_USER,
-							this.getClass(),
-							"root"),
-					context.getString(
-							GlobalParameters.Global.ACCUMULO_PASSWORD,
-							this.getClass(),
-							""),
-					context.getString(
-							GlobalParameters.Global.ACCUMULO_NAMESPACE,
-							this.getClass(),
-							""));
+					context);
 
 		}
 		catch (final Exception e) {
@@ -297,14 +275,9 @@ public class CentroidManagerGeoWave<T> implements
 		try {
 			basicAccumuloOperations = runTimeProperties.getInstance(
 					CommonParameters.Common.ACCUMULO_CONNECT_FACTORY,
-					this.getClass(),
 					BasicAccumuloOperationsFactory.class,
 					DirectBasicAccumuloOperationsFactory.class).build(
-					runTimeProperties.getPropertyAsString(GlobalParameters.Global.ZOOKEEKER),
-					runTimeProperties.getPropertyAsString(GlobalParameters.Global.ACCUMULO_INSTANCE),
-					runTimeProperties.getPropertyAsString(GlobalParameters.Global.ACCUMULO_USER),
-					runTimeProperties.getPropertyAsString(GlobalParameters.Global.ACCUMULO_PASSWORD),
-					runTimeProperties.getPropertyAsString(GlobalParameters.Global.ACCUMULO_NAMESPACE));
+					runTimeProperties);
 		}
 		catch (InstantiationException | IllegalAccessException e) {
 			throw new IOException(
@@ -596,26 +569,17 @@ public class CentroidManagerGeoWave<T> implements
 
 	public static void fillOptions(
 			final Set<Option> options ) {
-		GlobalParameters.fillOptions(
-				options,
-				new GlobalParameters.Global[] {
-					GlobalParameters.Global.ZOOKEEKER,
-					GlobalParameters.Global.ACCUMULO_INSTANCE,
-					GlobalParameters.Global.ACCUMULO_PASSWORD,
-					GlobalParameters.Global.ACCUMULO_USER,
-					GlobalParameters.Global.ACCUMULO_NAMESPACE,
-					GlobalParameters.Global.BATCH_ID
-				});
 
-		CommonParameters.fillOptions(
+		PropertyManagement.fillOptions(
 				options,
-				new CommonParameters.Common[] {
-					CommonParameters.Common.ACCUMULO_CONNECT_FACTORY
-				});
-
-		CentroidParameters.fillOptions(
-				options,
-				new CentroidParameters.Centroid[] {
+				new ParameterEnum[] {
+					DataStoreParameters.DataStoreParam.ZOOKEEKER,
+					DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+					DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+					DataStoreParameters.DataStoreParam.ACCUMULO_USER,
+					DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
+					GlobalParameters.Global.BATCH_ID,
+					CommonParameters.Common.ACCUMULO_CONNECT_FACTORY,
 					CentroidParameters.Centroid.DATA_TYPE_ID,
 					CentroidParameters.Centroid.DATA_NAMESPACE_URI,
 					CentroidParameters.Centroid.INDEX_ID,
@@ -656,21 +620,22 @@ public class CentroidManagerGeoWave<T> implements
 					CentroidParameters.Centroid.DATA_TYPE_ID,
 					CentroidParameters.Centroid.INDEX_ID,
 					GlobalParameters.Global.BATCH_ID,
-					GlobalParameters.Global.ZOOKEEKER,
-					GlobalParameters.Global.ACCUMULO_INSTANCE,
-					GlobalParameters.Global.ACCUMULO_USER,
-					GlobalParameters.Global.ACCUMULO_PASSWORD,
-					GlobalParameters.Global.ACCUMULO_NAMESPACE,
+					DataStoreParameters.DataStoreParam.ZOOKEEKER,
+					DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+					DataStoreParameters.DataStoreParam.ACCUMULO_USER,
+					DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+					DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
 					CentroidParameters.Centroid.ZOOM_LEVEL,
 				});
 	}
 
 	public static void setParameters(
 			final Configuration config,
+			final Class<?> scope,
 			final PropertyManagement runTimeProperties ) {
 		RunnerUtils.setParameter(
 				config,
-				CentroidManagerGeoWave.class,
+				scope,
 				runTimeProperties,
 				new ParameterEnum[] {
 					CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
@@ -679,12 +644,12 @@ public class CentroidManagerGeoWave<T> implements
 					CentroidParameters.Centroid.DATA_NAMESPACE_URI,
 					CentroidParameters.Centroid.INDEX_ID,
 					GlobalParameters.Global.BATCH_ID,
-					GlobalParameters.Global.ZOOKEEKER,
-					GlobalParameters.Global.ACCUMULO_INSTANCE,
-					GlobalParameters.Global.ACCUMULO_PASSWORD,
-					GlobalParameters.Global.ACCUMULO_USER,
+					DataStoreParameters.DataStoreParam.ZOOKEEKER,
+					DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+					DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+					DataStoreParameters.DataStoreParam.ACCUMULO_USER,
 					CentroidParameters.Centroid.ZOOM_LEVEL,
-					GlobalParameters.Global.ACCUMULO_NAMESPACE,
+					DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
 				});
 	}
 

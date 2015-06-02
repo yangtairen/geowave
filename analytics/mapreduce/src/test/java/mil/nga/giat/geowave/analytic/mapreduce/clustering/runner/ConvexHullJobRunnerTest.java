@@ -23,6 +23,7 @@ import mil.nga.giat.geowave.analytic.mapreduce.clustering.ConvexHullMapReduce;
 import mil.nga.giat.geowave.analytic.mapreduce.clustering.runner.ConvexHullJobRunner;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
+import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.HullParameters;
 import mil.nga.giat.geowave.analytic.param.InputParameters;
@@ -69,6 +70,7 @@ public class ConvexHullJobRunnerTest
 				tool.setConf(configuration);
 				FeatureDataAdapterStoreFactory.transferState(
 						configuration,
+						ConvexHullMapReduce.class,
 						runTimeProperties);
 				return tool.run(runTimeProperties.toGeoWaveRunnerArguments());
 			}
@@ -87,7 +89,8 @@ public class ConvexHullJobRunnerTest
 						10,
 						job.getNumReduceTasks());
 				final JobContextConfigurationWrapper configWrapper = new JobContextConfigurationWrapper(
-						job);
+						job,
+						ConvexHullMapReduce.class);
 				Assert.assertEquals(
 						"file://foo/bin",
 						job.getConfiguration().get(
@@ -102,7 +105,6 @@ public class ConvexHullJobRunnerTest
 
 					final AdapterStoreFactory adapterStoreFactory = configWrapper.getInstance(
 							CommonParameters.Common.ADAPTER_STORE_FACTORY,
-							ConvexHullMapReduce.class,
 							AdapterStoreFactory.class,
 							AccumuloAdapterStoreFactory.class);
 
@@ -117,7 +119,6 @@ public class ConvexHullJobRunnerTest
 
 					final Projection<?> projection = configWrapper.getInstance(
 							HullParameters.Hull.PROJECTION_CLASS,
-							ConvexHullMapReduce.class,
 							Projection.class,
 							SimpleFeatureProjection.class);
 
@@ -144,7 +145,6 @@ public class ConvexHullJobRunnerTest
 						2,
 						configWrapper.getInt(
 								CentroidParameters.Centroid.ZOOM_LEVEL,
-								NestedGroupCentroidAssignment.class,
 								-1));
 				return true;
 			}
@@ -167,19 +167,19 @@ public class ConvexHullJobRunnerTest
 				new Path(
 						"file://foo/bin"));
 		runTimeProperties.store(
-				GlobalParameters.Global.ZOOKEEKER,
+				DataStoreParameters.DataStoreParam.ZOOKEEKER,
 				"localhost:3000");
 		runTimeProperties.store(
-				GlobalParameters.Global.ACCUMULO_INSTANCE,
+				DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
 				"accumulo");
 		runTimeProperties.store(
-				GlobalParameters.Global.ACCUMULO_USER,
+				DataStoreParameters.DataStoreParam.ACCUMULO_USER,
 				"root");
 		runTimeProperties.store(
-				GlobalParameters.Global.ACCUMULO_PASSWORD,
+				DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
 				"pwd");
 		runTimeProperties.store(
-				GlobalParameters.Global.ACCUMULO_NAMESPACE,
+				DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
 				"test");
 		runTimeProperties.store(
 				GlobalParameters.Global.BATCH_ID,
@@ -263,22 +263,22 @@ public class ConvexHullJobRunnerTest
 
 		assertTrue(PropertyManagement.hasOption(
 				options,
-				GlobalParameters.Global.ZOOKEEKER));
+				DataStoreParameters.DataStoreParam.ZOOKEEKER));
 		assertTrue(PropertyManagement.hasOption(
 				options,
-				GlobalParameters.Global.ACCUMULO_INSTANCE));
+				DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE));
 		assertTrue(PropertyManagement.hasOption(
 				options,
-				GlobalParameters.Global.ACCUMULO_USER));
+				DataStoreParameters.DataStoreParam.ACCUMULO_USER));
 		assertTrue(PropertyManagement.hasOption(
 				options,
-				GlobalParameters.Global.ACCUMULO_PASSWORD));
+				DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD));
 		assertTrue(PropertyManagement.hasOption(
 				options,
 				GlobalParameters.Global.BATCH_ID));
 		assertTrue(PropertyManagement.hasOption(
 				options,
-				GlobalParameters.Global.ACCUMULO_NAMESPACE));
+				DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE));
 	}
 
 	@Test

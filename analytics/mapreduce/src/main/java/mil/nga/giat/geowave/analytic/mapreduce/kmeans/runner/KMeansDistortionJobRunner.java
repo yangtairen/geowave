@@ -8,10 +8,13 @@ import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveAnalyticJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.kmeans.KMeansDistortionMapReduce;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
+import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.JumpParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
+import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputFormat;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 
@@ -130,9 +133,7 @@ public class KMeansDistortionJobRunner extends
 				authToken);
 
 		// @formatter:off
-		/* if[ACCUMULO_1.5.2]
-		AccumuloOutputFormat.setZooKeeperInstance(job, instanceName, zookeeper);
-		else[ACCUMULO_1.5.2]*/
+		/* if[ACCUMULO_1.5.2] AccumuloOutputFormat.setZooKeeperInstance(job, instanceName, zookeeper); else[ACCUMULO_1.5.2] */
 		final ClientConfiguration config = new ClientConfiguration().withZkHosts(
 				zookeeper).withInstance(
 				instanceName);
@@ -166,7 +167,7 @@ public class KMeansDistortionJobRunner extends
 			throws Exception {
 
 		distortationTableName = AccumuloUtils.getQualifiedTableName(
-				runTimeProperties.getPropertyAsString(GlobalParameters.Global.ACCUMULO_NAMESPACE),
+				runTimeProperties.getPropertyAsString(DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE),
 				runTimeProperties.getPropertyAsString(
 						CentroidParameters.Centroid.DISTORTION_TABLE_NAME,
 						"KmeansDistortion"));
@@ -175,7 +176,7 @@ public class KMeansDistortionJobRunner extends
 				super.getReducerCount()));
 		RunnerUtils.setParameter(
 				config,
-				KMeansDistortionMapReduce.class,
+				getScope(),
 				runTimeProperties,
 				new ParameterEnum[] {
 					CentroidParameters.Centroid.EXTRACTOR_CLASS,
@@ -184,6 +185,7 @@ public class KMeansDistortionJobRunner extends
 
 		NestedGroupCentroidAssignment.setParameters(
 				config,
+				getScope(),
 				runTimeProperties);
 
 		return super.run(

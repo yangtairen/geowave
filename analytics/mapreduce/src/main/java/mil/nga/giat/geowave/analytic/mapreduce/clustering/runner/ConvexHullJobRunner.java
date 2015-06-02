@@ -14,11 +14,11 @@ import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveAnalyticJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveOutputFormatConfiguration;
 import mil.nga.giat.geowave.analytic.mapreduce.clustering.ConvexHullMapReduce;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
+import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.HullParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
-import mil.nga.giat.geowave.core.geotime.DimensionalityType;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
@@ -149,9 +149,11 @@ public class ConvexHullJobRunner extends
 				4));
 		CentroidManagerGeoWave.setParameters(
 				config,
+				getScope(),
 				runTimeProperties);
 		NestedGroupCentroidAssignment.setParameters(
 				config,
+				getScope(),
 				runTimeProperties);
 
 		int localZoomLevel = runTimeProperties.getPropertyAsInt(
@@ -160,6 +162,7 @@ public class ConvexHullJobRunner extends
 		// getting group from next level, now that the prior level is complete
 		NestedGroupCentroidAssignment.setZoomLevel(
 				config,
+				getScope(),
 				localZoomLevel + 1);
 
 		addDataAdapter(
@@ -177,23 +180,23 @@ public class ConvexHullJobRunner extends
 			Set<Option> options ) {
 		super.fillOptions(options);
 
-		GlobalParameters.fillOptions(
+		PropertyManagement.fillOptions(
 				options,
-				new GlobalParameters.Global[] {
-					GlobalParameters.Global.ZOOKEEKER,
-					GlobalParameters.Global.ACCUMULO_INSTANCE,
-					GlobalParameters.Global.ACCUMULO_PASSWORD,
-					GlobalParameters.Global.ACCUMULO_USER,
-					GlobalParameters.Global.ACCUMULO_NAMESPACE,
+				new ParameterEnum[] {
+					DataStoreParameters.DataStoreParam.ZOOKEEKER,
+					DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+					DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+					DataStoreParameters.DataStoreParam.ACCUMULO_USER,
+					DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
 					GlobalParameters.Global.BATCH_ID
 				});
 
 		MapReduceParameters.fillOptions(options);
 		NestedGroupCentroidAssignment.fillOptions(options);
 
-		HullParameters.fillOptions(
+		PropertyManagement.fillOptions(
 				options,
-				new HullParameters.Hull[] {
+				new ParameterEnum[] {
 					HullParameters.Hull.WRAPPER_FACTORY_CLASS,
 					HullParameters.Hull.PROJECTION_CLASS,
 					HullParameters.Hull.REDUCER_COUNT,

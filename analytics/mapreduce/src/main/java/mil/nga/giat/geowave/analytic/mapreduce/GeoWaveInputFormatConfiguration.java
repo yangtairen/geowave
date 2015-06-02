@@ -6,11 +6,11 @@ import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
+import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
 import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
-import mil.nga.giat.geowave.analytic.param.GlobalParameters.Global;
-import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
@@ -54,19 +54,19 @@ public class GeoWaveInputFormatConfiguration implements
 		GeoWaveInputFormat.setDataStoreName(
 				configuration,
 				runTimeProperties.getPropertyAsString(
-						GlobalParameters.Global.DATA_STORE,
+						DataStoreParameters.DataStoreParam.ZOOKEEKER,
 						"localhost:2181"),
 				runTimeProperties.getPropertyAsString(
-						GlobalParameters.Global.ACCUMULO_INSTANCE,
+						DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
 						"miniInstance"),
 				runTimeProperties.getPropertyAsString(
-						GlobalParameters.Global.ACCUMULO_USER,
+						DataStoreParameters.DataStoreParam.ACCUMULO_USER,
 						"root"),
 				runTimeProperties.getPropertyAsString(
-						GlobalParameters.Global.ACCUMULO_PASSWORD,
+						DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
 						"password"),
 				runTimeProperties.getPropertyAsString(
-						GlobalParameters.Global.ACCUMULO_NAMESPACE,
+						DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
 						"undefined"));
 
 		final String indexId = runTimeProperties.getPropertyAsString(ExtractParameters.Extract.INDEX_ID);
@@ -167,15 +167,14 @@ public class GeoWaveInputFormatConfiguration implements
 	@Override
 	public void fillOptions(
 			final Set<Option> options ) {
-		GlobalParameters.fillOptions(
+		PropertyManagement.fillOptions(
 				options,
-				new GlobalParameters.Global[] {
-					GlobalParameters.Global.DATA_STORE
-				});
-
-		ExtractParameters.fillOptions(
-				options,
-				new ExtractParameters.Extract[] {
+				new ParameterEnum[] {
+					DataStoreParameters.DataStoreParam.ZOOKEEKER,
+					DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+					DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+					DataStoreParameters.DataStoreParam.ACCUMULO_USER,
+					DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
 					ExtractParameters.Extract.INDEX_ID,
 					ExtractParameters.Extract.ADAPTER_ID,
 					ExtractParameters.Extract.QUERY,

@@ -11,6 +11,7 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.MemoryAdapterStore;
 
+import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,14 +46,20 @@ public class FeatureDataAdapterStoreFactory implements
 			return this;
 		}
 
+		@Override
+		public Option getOption() {
+			return null;
+		}
+
 	}
 
 	public static void transferState(
 			Configuration configuration,
+			Class<?> scope,
 			PropertyManagement runTimeProperties ) {
 		RunnerUtils.setParameter(
 				configuration,
-				FeatureDataAdapterStoreFactory.class,
+				scope,
 				runTimeProperties,
 				new ParameterEnum[] {
 					MyData.DATA
@@ -74,9 +81,7 @@ public class FeatureDataAdapterStoreFactory implements
 		return new MemoryAdapterStore(
 				new DataAdapter[] {
 					PersistenceUtils.fromBinary(
-							context.getBytes(
-									MyData.DATA,
-									this.getClass()),
+							context.getBytes(MyData.DATA),
 							DataAdapter.class)
 				});
 	}

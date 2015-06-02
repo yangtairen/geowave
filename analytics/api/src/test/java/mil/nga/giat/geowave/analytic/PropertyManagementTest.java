@@ -15,6 +15,7 @@ import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.extract.EmptyDimensionExtractor;
+import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
 import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
@@ -155,20 +156,19 @@ public class PropertyManagementTest
 	@Test
 	public void testOption() {
 		final Set<Option> options = new HashSet<Option>();
-
-		GlobalParameters.fillOptions(
+		PropertyManagement.fillOptions(
 				options,
-				new GlobalParameters.Global[] {
-					GlobalParameters.Global.ACCUMULO_INSTANCE
+				new ParameterEnum[] {
+					DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
 				});
 		assertEquals(
-				4,
+				1,
 				options.size());
 		PropertyManagement.removeOption(
 				options,
-				GlobalParameters.Global.ACCUMULO_INSTANCE);
+				DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE);
 		assertEquals(
-				3,
+				0,
 				options.size());
 	}
 
@@ -192,6 +192,12 @@ public class PropertyManagementTest
 		public Enum<?> self() {
 			return this;
 		}
+
+		@Override
+		public Option getOption() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}
 
 	@Test
@@ -206,14 +212,16 @@ public class PropertyManagementTest
 
 			@Override
 			public Serializable convert(
-					final NonSerializableExample ob )
+					final NonSerializableExample ob,
+					final PropertyManagement pm )
 					throws Exception {
 				return Integer.valueOf(1);
 			}
 
 			@Override
 			public NonSerializableExample convert(
-					final Serializable ob )
+					final Serializable ob,
+					PropertyManagement pm )
 					throws Exception {
 				assertTrue(ob instanceof Integer);
 				return new NonSerializableExample();
@@ -280,17 +288,45 @@ public class PropertyManagementTest
 			implements
 			ParameterEnum {
 
-		BOOLEAN_ARG1,
-		BOOLEAN_ARG2;
+		BOOLEAN_ARG1(
+				Boolean.class,
+				"mi",
+				"test id",
+				false),
+		BOOLEAN_ARG2(
+				Boolean.class,
+				"rd",
+				"test id",
+				false);
+		private final Option option;
+		private final Class<?> baseClass;
+
+		MyLocalBoolEnum(
+				final Class<?> baseClass,
+				final String name,
+				final String description,
+				boolean hasArg ) {
+			this.baseClass = baseClass;
+			this.option = PropertyManagement.newOption(
+					this,
+					name,
+					description,
+					hasArg);
+		}
 
 		@Override
 		public Class<?> getBaseClass() {
-			return Boolean.class;
+			return baseClass;
 		}
 
 		@Override
 		public Enum<?> self() {
 			return this;
+		}
+
+		@Override
+		public Option getOption() {
+			return option;
 		}
 	}
 
@@ -304,16 +340,8 @@ public class PropertyManagementTest
 				"id",
 				"test id",
 				true));
-		options.addOption(PropertyManagement.newOption(
-				MyLocalBoolEnum.BOOLEAN_ARG1,
-				"mi",
-				"test id",
-				false));
-		options.addOption(PropertyManagement.newOption(
-				MyLocalBoolEnum.BOOLEAN_ARG2,
-				"rd",
-				"test id",
-				false));
+		options.addOption(MyLocalBoolEnum.BOOLEAN_ARG1.getOption());
+		options.addOption(MyLocalBoolEnum.BOOLEAN_ARG2.getOption());
 		final BasicParser parser = new BasicParser();
 		final CommandLine commandLine = parser.parse(
 				options,

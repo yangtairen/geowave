@@ -14,9 +14,11 @@ import mil.nga.giat.geowave.analytic.mapreduce.MapReduceJobRunner;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
+import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
+import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.SampleParameters;
 
 import org.apache.commons.cli.Option;
@@ -151,8 +153,8 @@ public class SampleMultipleSetsJobRunner<T> extends
 				CentroidParameters.Centroid.INDEX_ID,
 				SampleParameters.Sample.INDEX_ID);
 
-		NestedGroupCentroidAssignment.setZoomLevel(
-				config,
+		runTimeProperties.store(
+				CentroidParameters.Centroid.ZOOM_LEVEL,
 				zoomLevel);
 
 		stage1Setup();
@@ -178,36 +180,24 @@ public class SampleMultipleSetsJobRunner<T> extends
 	@Override
 	public void fillOptions(
 			final Set<Option> options ) {
-		SampleParameters.fillOptions(
+		PropertyManagement.fillOptions(
 				options,
-				new SampleParameters.Sample[] {
+				new ParameterEnum[] {
 					SampleParameters.Sample.MAX_SAMPLE_SIZE,
 					SampleParameters.Sample.SAMPLE_ITERATIONS,
-					SampleParameters.Sample.MIN_SAMPLE_SIZE
-				});
-		CentroidParameters.fillOptions(
-				options,
-				new CentroidParameters.Centroid[] {
+					SampleParameters.Sample.MIN_SAMPLE_SIZE,
 					CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
 					CentroidParameters.Centroid.INDEX_ID,
 					CentroidParameters.Centroid.DATA_TYPE_ID,
 					CentroidParameters.Centroid.DATA_NAMESPACE_URI,
 					CentroidParameters.Centroid.EXTRACTOR_CLASS,
-				});
-		CommonParameters.fillOptions(
-				options,
-				new CommonParameters.Common[] {
 					CommonParameters.Common.DISTANCE_FUNCTION_CLASS,
-					CommonParameters.Common.DIMENSION_EXTRACT_CLASS
-				});
-		GlobalParameters.fillOptions(
-				options,
-				new GlobalParameters.Global[] {
-					GlobalParameters.Global.ZOOKEEKER,
-					GlobalParameters.Global.ACCUMULO_INSTANCE,
-					GlobalParameters.Global.ACCUMULO_PASSWORD,
-					GlobalParameters.Global.ACCUMULO_USER,
-					GlobalParameters.Global.ACCUMULO_NAMESPACE,
+					CommonParameters.Common.DIMENSION_EXTRACT_CLASS,
+					DataStoreParameters.DataStoreParam.ZOOKEEKER,
+					DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+					DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+					DataStoreParameters.DataStoreParam.ACCUMULO_USER,
+					DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
 					GlobalParameters.Global.BATCH_ID
 				});
 

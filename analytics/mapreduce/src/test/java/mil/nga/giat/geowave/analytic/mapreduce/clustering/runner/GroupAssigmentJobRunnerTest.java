@@ -21,9 +21,9 @@ import mil.nga.giat.geowave.analytic.mapreduce.JobContextConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.mapreduce.MapReduceIntegration;
 import mil.nga.giat.geowave.analytic.mapreduce.SequenceFileInputFormatConfiguration;
 import mil.nga.giat.geowave.analytic.mapreduce.clustering.GroupAssignmentMapReduce;
-import mil.nga.giat.geowave.analytic.mapreduce.clustering.runner.GroupAssigmentJobRunner;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
+import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters.MRConfig;
 import mil.nga.giat.geowave.analytic.partitioner.FeatureDataAdapterStoreFactory;
@@ -66,6 +66,7 @@ public class GroupAssigmentJobRunnerTest
 				tool.setConf(configuration);
 				FeatureDataAdapterStoreFactory.transferState(
 						configuration,
+						GroupAssignmentMapReduce.class,
 						runTimeProperties);
 				return tool.run(runTimeProperties.toGeoWaveRunnerArguments());
 			}
@@ -84,7 +85,8 @@ public class GroupAssigmentJobRunnerTest
 						10,
 						job.getNumReduceTasks());
 				final JobContextConfigurationWrapper configWrapper = new JobContextConfigurationWrapper(
-						job);
+						job,
+						GroupAssignmentMapReduce.class);
 				Assert.assertEquals(
 						"file://foo/bin",
 						job.getConfiguration().get(
@@ -94,25 +96,21 @@ public class GroupAssigmentJobRunnerTest
 						3,
 						configWrapper.getInt(
 								CentroidParameters.Centroid.ZOOM_LEVEL,
-								NestedGroupCentroidAssignment.class,
 								-1));
 				Assert.assertEquals(
 						"b1234",
 						configWrapper.getString(
 								GlobalParameters.Global.PARENT_BATCH_ID,
-								NestedGroupCentroidAssignment.class,
 								""));
 				Assert.assertEquals(
 						"b12345",
 						configWrapper.getString(
 								GlobalParameters.Global.BATCH_ID,
-								NestedGroupCentroidAssignment.class,
 								""));
 
 				try {
 					final AnalyticItemWrapperFactory<?> wrapper = configWrapper.getInstance(
 							CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
-							GroupAssignmentMapReduce.class,
 							AnalyticItemWrapperFactory.class,
 							SimpleFeatureItemWrapperFactory.class);
 
@@ -122,7 +120,6 @@ public class GroupAssigmentJobRunnerTest
 
 					final DistanceFn<?> distancFn = configWrapper.getInstance(
 							CommonParameters.Common.DISTANCE_FUNCTION_CLASS,
-							NestedGroupCentroidAssignment.class,
 							DistanceFn.class,
 							GeometryCentroidDistanceFn.class);
 
@@ -168,20 +165,20 @@ public class GroupAssigmentJobRunnerTest
 				"/");
 
 		runTimeProperties.store(
-				GlobalParameters.Global.ZOOKEEKER,
+				DataStoreParameters.DataStoreParam.ZOOKEEKER,
 				"localhost:3000");
 
 		runTimeProperties.store(
-				GlobalParameters.Global.ACCUMULO_INSTANCE,
+				DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
 				"accumulo");
 		runTimeProperties.store(
-				GlobalParameters.Global.ACCUMULO_USER,
+				DataStoreParameters.DataStoreParam.ACCUMULO_USER,
 				"root");
 		runTimeProperties.store(
-				GlobalParameters.Global.ACCUMULO_PASSWORD,
+				DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
 				"pwd");
 		runTimeProperties.store(
-				GlobalParameters.Global.ACCUMULO_NAMESPACE,
+				DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
 				"test");
 		runTimeProperties.store(
 				GlobalParameters.Global.BATCH_ID,
@@ -226,7 +223,7 @@ public class GroupAssigmentJobRunnerTest
 
 		assertTrue(PropertyManagement.hasOption(
 				options,
-				GlobalParameters.Global.ACCUMULO_INSTANCE));
+				DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE));
 
 		assertTrue(PropertyManagement.hasOption(
 				options,
