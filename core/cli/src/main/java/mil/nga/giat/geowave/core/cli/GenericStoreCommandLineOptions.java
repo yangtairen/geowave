@@ -1,5 +1,6 @@
 package mil.nga.giat.geowave.core.cli;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,22 +18,25 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract public class GenericStoreCommandLineOptions<T>
+abstract public class GenericStoreCommandLineOptions<T> implements
+		Serializable
 {
 	private final static Logger LOGGER = LoggerFactory.getLogger(GenericStoreCommandLineOptions.class);
 
 	protected final GenericStoreFactory<T> factory;
 	protected final Map<String, Object> configOptions;
+	protected final String namespace;
 
 	public GenericStoreCommandLineOptions(
 			final GenericStoreFactory<T> factory,
-			final Map<String, Object> configOptions ) {
+			final Map<String, Object> configOptions,
+			final String namespace ) {
 		this.factory = factory;
 		this.configOptions = configOptions;
+		this.namespace = namespace;
 	}
 
-	abstract public T createStore(
-			final String namespace );
+	abstract public T createStore();
 
 	public GenericStoreFactory<T> getFactory() {
 		return factory;
@@ -40,6 +44,10 @@ abstract public class GenericStoreCommandLineOptions<T>
 
 	public Map<String, Object> getConfigOptions() {
 		return configOptions;
+	}
+
+	public String getNamespace() {
+		return namespace;
 	}
 
 	private static Options storeOptionsToCliOptions(
@@ -110,6 +118,13 @@ abstract public class GenericStoreCommandLineOptions<T>
 				"Explicitly set the " + optionName + " by name, if not set, an " + optionName + " will be used if all of its required options are provided. " + ConfigUtils.getOptions(
 						helper.getRegisteredFactories().keySet(),
 						"Available " + optionName + "s: ")));
+		final Option namespace = new Option(
+				"n",
+				"namespace",
+				true,
+				"The geowave namespace (optional; default is no namespace)");
+		namespace.setRequired(false);
+		allOptions.addOption(namespace);
 	}
 
 	public static <T, F extends GenericStoreFactory<T>> GenericStoreCommandLineOptions<T> parseOptions(
@@ -117,6 +132,9 @@ abstract public class GenericStoreCommandLineOptions<T>
 			final CommandLineHelper<T, F> helper )
 			throws ParseException {
 		final String optionName = helper.getOptionName();
+		final String namespace = commandLine.getOptionValue(
+				"n",
+				"");
 		if (commandLine.hasOption(optionName)) {
 			// if data store is given, make sure the commandline options
 			// properly match the options for this store
@@ -136,7 +154,8 @@ abstract public class GenericStoreCommandLineOptions<T>
 						selectedStoreFactory);
 				return helper.createCommandLineOptions(
 						selectedStoreFactory,
-						configOptions);
+						configOptions,
+						namespace);
 			}
 			catch (final Exception e) {
 				LOGGER.error(
@@ -159,7 +178,8 @@ abstract public class GenericStoreCommandLineOptions<T>
 						factoryEntry.getValue());
 				return helper.createCommandLineOptions(
 						factoryEntry.getValue(),
-						configOptions);
+						configOptions,
+						namespace);
 			}
 			catch (final Exception e) {
 				// it just means this store is not compatible with the
@@ -189,6 +209,7 @@ abstract public class GenericStoreCommandLineOptions<T>
 
 		public GenericStoreCommandLineOptions<T> createCommandLineOptions(
 				GenericStoreFactory<T> factory,
-				Map<String, Object> configOptions );
+				Map<String, Object> configOptions,
+				String namespace );
 	}
 }

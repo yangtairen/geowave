@@ -23,6 +23,7 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.CustomIdIndex;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
@@ -164,7 +165,7 @@ public class ClusteringUtils
 					propertyManagement.getPropertyAsString(GlobalParameters.Global.ACCUMULO_PASSWORD),
 					propertyManagement.getPropertyAsString(GlobalParameters.Global.ACCUMULO_NAMESPACE));
 
-			final AccumuloIndexStore indexStore = new AccumuloIndexStore(
+			final IndexStore indexStore = new AccumuloIndexStore(
 					ops);
 			final mil.nga.giat.geowave.core.store.CloseableIterator<Index> it = indexStore.getIndices();
 			final List<Index> indices = new LinkedList<Index>();

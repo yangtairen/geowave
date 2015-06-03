@@ -24,17 +24,14 @@ public class IngestCommandLineOptions
 	private final String visibility;
 	private final boolean clearNamespace;
 	private final String dimensionalityType;
-	private final String namespace;
 
 	public IngestCommandLineOptions(
 			final String visibility,
 			final boolean clearNamespace,
-			final String dimensionalityType,
-			final String namespace ) {
+			final String dimensionalityType ) {
 		this.visibility = visibility;
 		this.clearNamespace = clearNamespace;
 		this.dimensionalityType = dimensionalityType;
-		this.namespace = namespace;
 	}
 
 	public String getVisibility() {
@@ -47,10 +44,6 @@ public class IngestCommandLineOptions
 
 	public boolean isClearNamespace() {
 		return clearNamespace;
-	}
-
-	public String getNamespace() {
-		return namespace;
 	}
 
 	public Index getIndex(
@@ -154,14 +147,10 @@ public class IngestCommandLineOptions
 			throw new ParseException(
 					"Required option is missing");
 		}
-		final String namespace = commandLine.getOptionValue(
-				"n",
-				"");
 		return new IngestCommandLineOptions(
 				visibility,
 				clearNamespace,
-				dimensionalityType,
-				namespace);
+				dimensionalityType);
 	}
 
 	public static void applyOptions(
@@ -184,11 +173,5 @@ public class IngestCommandLineOptions
 				"clear",
 				false,
 				"Clear ALL data stored with the same prefix as this namespace (optional; default is to append data to the namespace if it exists)"));
-		final Option namespace = new Option(
-				"n",
-				"namespace",
-				true,
-				"The geowave namespace (optional; default is no namespace)");
-		allOptions.addOption(namespace);
 	}
 }

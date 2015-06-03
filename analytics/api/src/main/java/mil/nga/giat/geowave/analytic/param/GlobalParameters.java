@@ -4,24 +4,19 @@ import java.util.Arrays;
 import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.store.DataStore;
 
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 
 public class GlobalParameters
 {
 	public enum Global
 			implements
 			ParameterEnum {
-		ZOOKEEKER(
-				String.class),
-		ACCUMULO_INSTANCE(
-				String.class),
-		ACCUMULO_USER(
-				String.class),
-		ACCUMULO_PASSWORD(
-				String.class),
-		ACCUMULO_NAMESPACE(
-				String.class),
+		DATA_STORE(
+				DataStoreCommandLineOptions.class),
 		PARENT_BATCH_ID(
 				String.class),
 		CRS_ID(
@@ -51,12 +46,10 @@ public class GlobalParameters
 			final Global[] params ) {
 		if (contains(
 				params,
-				Global.ZOOKEEKER)) {
-			options.add(PropertyManagement.newOption(
-					Global.ZOOKEEKER,
-					"z",
-					"A comma-separated list of zookeeper servers used by an Accumulo instance.",
-					true));
+				Global.DATA_STORE)) {
+			final Options allOptions = new Options();
+			DataStoreCommandLineOptions.applyOptions(allOptions);
+			options.addAll(allOptions.getOptions());
 		}
 		if (contains(
 				params,
@@ -83,30 +76,6 @@ public class GlobalParameters
 					Global.CRS_ID,
 					"crs",
 					"CRS ID",
-					true));
-		}
-		if (contains(
-				params,
-				Global.ACCUMULO_INSTANCE)) {
-			options.add(PropertyManagement.newOption(
-					Global.ACCUMULO_INSTANCE,
-					"i",
-					"The Accumulo instance ID",
-					true));
-			options.add(PropertyManagement.newOption(
-					Global.ACCUMULO_USER,
-					"u",
-					"A valid Accumulo user ID",
-					true));
-			options.add(PropertyManagement.newOption(
-					Global.ACCUMULO_PASSWORD,
-					"p",
-					"The password for the Accumulo user",
-					true));
-			options.add(PropertyManagement.newOption(
-					Global.ACCUMULO_NAMESPACE,
-					"n",
-					"The table namespace (optional; default is no namespace)",
 					true));
 		}
 	}

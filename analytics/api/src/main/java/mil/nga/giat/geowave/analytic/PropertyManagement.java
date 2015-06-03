@@ -13,14 +13,16 @@ import java.util.Properties;
 import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
+import mil.nga.giat.geowave.analytic.param.GlobalParameters.Global;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
-import mil.nga.giat.geowave.mapreduce.GeoWaveJobRunner;
+import mil.nga.giat.geowave.mapreduce.AbstractGeoWaveJobRunner;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -37,20 +39,20 @@ import com.vividsolutions.jts.io.WKTReader;
  * Manage properties used by the Map Reduce environment that are provided
  * through the API (e.g. command). Allow these arguments to be placed an 'args'
  * list for 'main' executables (e.g. ToolRunner).
- * 
+ *
  * The class supports some basic conversions.
- * 
+ *
  * Non-serializable objects: {@link Persistable} instances are converted to and
  * from byte formats. {@link DistributableQuery} is a special case, supporting
  * WKT String. {@link Path} are converted to a from string representation of the
  * their URI.
- * 
+ *
  * Serializable objects: {@link NumericRange} supports min,max in string
  * representation (e.g. "1.0,2.0")
- * 
- * 
+ *
+ *
  * NOTE: ConfigutationWrapper implementation is scopeless.
- * 
+ *
  * EXPECTED FUTURE WORK: I am bit unsatisfied with the duality of the parameters
  * base class. In one case, in is treated a description for a class value and,
  * in the other case, it is treated as a description for the type of a property
@@ -60,20 +62,21 @@ import com.vividsolutions.jts.io.WKTReader;
  * goal is to uniformly provide feedback to parameters from command line
  * arguments and property files on submission to the manager rather than on
  * extraction from the manager.
- * 
+ *
  */
 public class PropertyManagement implements
 		ConfigurationWrapper,
 		Serializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -4186468044516636362L;
 	final static Logger LOGGER = LoggerFactory.getLogger(PropertyManagement.class);
 
 	private final HashMap<String, Serializable> properties = new HashMap<String, Serializable>();
 	private final ArrayList<PropertyConverter<?>> converters = new ArrayList<PropertyConverter<?>>();
+	private final ArrayList<PropertyGroup<?>> groups = new ArrayList<PropertyGroup<?>>();
 
 	public static final Option newOption(
 			final ParameterEnum e,
@@ -121,6 +124,7 @@ public class PropertyManagement implements
 		converters.add(new QueryConverter());
 		converters.add(new PathConverter());
 		converters.add(new PersistableConverter());
+		groups.add(new DataStorePropertyGroup());
 		store(
 				names,
 				values);
@@ -179,7 +183,7 @@ public class PropertyManagement implements
 
 	/**
 	 * Does not work for non-serializable data (e.g. Path or Persistable)
-	 * 
+	 *
 	 */
 
 	public synchronized Serializable storeIfEmpty(
@@ -279,7 +283,7 @@ public class PropertyManagement implements
 	/**
 	 * Returns the value as, without conversion from the properties. Throws an
 	 * exception if a conversion is required to a specific type
-	 * 
+	 *
 	 * @param property
 	 * @return
 	 * @throws Exception
@@ -288,7 +292,6 @@ public class PropertyManagement implements
 	public Object getProperty(
 			final ParameterEnum property )
 			throws Exception {
-
 		final Serializable value = properties.get(toPropertyName(property));
 		if (!Serializable.class.isAssignableFrom(property.getBaseClass())) {
 			for (final PropertyConverter converter : converters) {
@@ -308,7 +311,7 @@ public class PropertyManagement implements
 	/**
 	 * Returns the value after conversion. Throws an exception if a conversion
 	 * fails.
-	 * 
+	 *
 	 * @param property
 	 * @return
 	 * @throws Exception
@@ -574,14 +577,11 @@ public class PropertyManagement implements
 	}
 
 	/**
-	 * Arguments, in the correct order, passed to {@link GeoWaveJobRunner}
+	 * Arguments, in the correct order, passed to
+	 * {@link AbstractGeoWaveJobRunner}
 	 */
 	public static final ParameterEnum[] GeoWaveRunnerArguments = new ParameterEnum[] {
-		GlobalParameters.Global.ZOOKEEKER,
-		GlobalParameters.Global.ACCUMULO_INSTANCE,
-		GlobalParameters.Global.ACCUMULO_USER,
-		GlobalParameters.Global.ACCUMULO_PASSWORD,
-		GlobalParameters.Global.ACCUMULO_NAMESPACE
+		GlobalParameters.Global.DATA_STORE
 	};
 
 	public String[] toGeoWaveRunnerArguments() {
@@ -590,13 +590,18 @@ public class PropertyManagement implements
 
 	/**
 	 * Does not validate the option values.
-	 * 
+	 *
 	 * @param commandLine
 	 * @throws ParseException
 	 */
 	public synchronized void buildFromOptions(
 			final CommandLine commandLine )
 			throws ParseException {
+		for (final PropertyGroup group : groups) {
+			properties.put(
+					toPropertyName(group.getParameter()),
+					group.convert(commandLine));
+		}
 		for (final Option option : commandLine.getOptions()) {
 			if (!option.hasArg()) {
 				properties.put(
@@ -719,11 +724,11 @@ public class PropertyManagement implements
 	/**
 	 * Add to the set of converters used to take a String representation of a
 	 * value and convert it into another serializable form.
-	 * 
+	 *
 	 * This is done if the preferred internal representation does not match that
 	 * of a string. For example, a query is maintained as bytes even though it
 	 * can be provided as a query
-	 * 
+	 *
 	 * @param converter
 	 */
 	public synchronized void addConverter(
@@ -817,12 +822,22 @@ public class PropertyManagement implements
 		public Class<T> baseClass();
 	}
 
+	public interface PropertyGroup<T extends Serializable> extends
+			Serializable
+	{
+		public T convert(
+				CommandLine commandLine )
+				throws ParseException;
+
+		public ParameterEnum getParameter();
+	}
+
 	public static class QueryConverter implements
 			PropertyConverter<DistributableQuery>
 	{
 
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 1L;
 
@@ -870,7 +885,7 @@ public class PropertyManagement implements
 			PropertyConverter<Path>
 	{
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 1L;
 
@@ -899,8 +914,8 @@ public class PropertyManagement implements
 	{
 
 		/**
-		 * 
-		 */
+ *
+ */
 		private static final long serialVersionUID = 1L;
 
 		@Override
@@ -936,6 +951,29 @@ public class PropertyManagement implements
 		@Override
 		public Class<Persistable> baseClass() {
 			return Persistable.class;
+		}
+
+	}
+
+	public static class DataStorePropertyGroup implements
+			PropertyGroup<DataStoreCommandLineOptions>
+	{
+
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public DataStoreCommandLineOptions convert(
+				final CommandLine commandLine )
+				throws ParseException {
+			return DataStoreCommandLineOptions.parseOptions(commandLine);
+		}
+
+		@Override
+		public ParameterEnum getParameter() {
+			return Global.DATA_STORE;
 		}
 
 	}

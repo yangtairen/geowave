@@ -9,9 +9,12 @@ import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
+import mil.nga.giat.geowave.analytic.param.GlobalParameters.Global;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
@@ -33,13 +36,25 @@ public class GeoWaveInputFormatConfiguration implements
 
 	@Override
 	public void setup(
-			PropertyManagement runTimeProperties,
-			Configuration configuration )
+			final PropertyManagement runTimeProperties,
+			final Configuration configuration )
 			throws Exception {
-		GeoWaveInputFormat.setAccumuloOperationsInfo(
+		DataStoreCommandLineOptions dataStoreOptions = (DataStoreCommandLineOptions) runTimeProperties.get(Global.DATA_STORE);
+		GeoWaveInputFormat.setDataStoreName(
+				conf,
+				dataStoreFactory.getName());
+		GeoWaveInputFormat.setStoreConfigOptions(
+				conf,
+				ConfigUtils.valuesToStrings(
+						configOptions,
+						dataStoreFactory.getOptions()));
+		GeoWaveInputFormat.setGeoWaveNamespace(
+				conf,
+				namespace);
+		GeoWaveInputFormat.setDataStoreName(
 				configuration,
 				runTimeProperties.getPropertyAsString(
-						GlobalParameters.Global.ZOOKEEKER,
+						GlobalParameters.Global.DATA_STORE,
 						"localhost:2181"),
 				runTimeProperties.getPropertyAsString(
 						GlobalParameters.Global.ACCUMULO_INSTANCE,
@@ -69,7 +84,7 @@ public class GeoWaveInputFormatConfiguration implements
 				}
 			}
 		}
-		for (Index index : indices) {
+		for (final Index index : indices) {
 			GeoWaveInputFormat.addIndex(
 					configuration,
 					index);
@@ -87,13 +102,13 @@ public class GeoWaveInputFormatConfiguration implements
 				}
 			}
 		}
-		for (DataAdapter<?> adapter : adapters) {
+		for (final DataAdapter<?> adapter : adapters) {
 			GeoWaveInputFormat.addDataAdapter(
 					configuration,
 					adapter);
 		}
 
-		DistributableQuery query = runTimeProperties.getPropertyAsQuery(ExtractParameters.Extract.QUERY);
+		final DistributableQuery query = runTimeProperties.getPropertyAsQuery(ExtractParameters.Extract.QUERY);
 
 		if (query != null) {
 			GeoWaveInputFormat.setQuery(
@@ -144,22 +159,18 @@ public class GeoWaveInputFormatConfiguration implements
 
 	@Override
 	public void setDataIsWritable(
-			boolean isWritable ) {
+			final boolean isWritable ) {
 		isDataWritable = isWritable;
 
 	}
 
 	@Override
 	public void fillOptions(
-			Set<Option> options ) {
+			final Set<Option> options ) {
 		GlobalParameters.fillOptions(
 				options,
 				new GlobalParameters.Global[] {
-					GlobalParameters.Global.ZOOKEEKER,
-					GlobalParameters.Global.ACCUMULO_INSTANCE,
-					GlobalParameters.Global.ACCUMULO_PASSWORD,
-					GlobalParameters.Global.ACCUMULO_USER,
-					GlobalParameters.Global.ACCUMULO_NAMESPACE
+					GlobalParameters.Global.DATA_STORE
 				});
 
 		ExtractParameters.fillOptions(

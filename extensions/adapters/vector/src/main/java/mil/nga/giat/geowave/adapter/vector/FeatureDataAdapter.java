@@ -10,7 +10,6 @@ import mil.nga.giat.geowave.adapter.vector.plugin.visibility.JsonDefinitionColum
 import mil.nga.giat.geowave.adapter.vector.stats.StatsManager;
 import mil.nga.giat.geowave.adapter.vector.util.FeatureDataUtils;
 import mil.nga.giat.geowave.adapter.vector.utils.TimeDescriptors;
-import mil.nga.giat.geowave.core.geotime.store.dimension.Time;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.adapter.AbstractDataAdapter;
@@ -29,8 +28,7 @@ import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
 import mil.nga.giat.geowave.core.store.data.visibility.VisibilityManagement;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.HadoopDataAdapter;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.HadoopWritableSerializer;
+import mil.nga.giat.geowave.mapreduce.HadoopDataAdapter;
 
 import org.apache.log4j.Logger;
 import org.geotools.data.DataUtilities;

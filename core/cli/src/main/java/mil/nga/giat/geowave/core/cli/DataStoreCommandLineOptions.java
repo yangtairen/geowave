@@ -16,10 +16,12 @@ public class DataStoreCommandLineOptions extends
 {
 	public DataStoreCommandLineOptions(
 			final GenericStoreFactory<DataStore> factory,
-			final Map<String, Object> configOptions ) {
+			final Map<String, Object> configOptions,
+			final String namespace ) {
 		super(
 				factory,
-				configOptions);
+				configOptions,
+				namespace);
 	}
 
 	public static void applyOptions(
@@ -38,8 +40,7 @@ public class DataStoreCommandLineOptions extends
 	}
 
 	@Override
-	public DataStore createStore(
-			final String namespace ) {
+	public DataStore createStore() {
 		return GeoWaveStoreFinder.createDataStore(
 				configOptions,
 				namespace);
@@ -61,10 +62,12 @@ public class DataStoreCommandLineOptions extends
 		@Override
 		public GenericStoreCommandLineOptions<DataStore> createCommandLineOptions(
 				final GenericStoreFactory<DataStore> factory,
-				final Map<String, Object> configOptions ) {
+				final Map<String, Object> configOptions,
+				final String namespace ) {
 			return new DataStoreCommandLineOptions(
 					factory,
-					configOptions);
+					configOptions,
+					namespace);
 		}
 	}
 }

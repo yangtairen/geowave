@@ -61,7 +61,7 @@ abstract public class AbstractIngestCommandLineDriver implements
 	}
 
 	@Override
-	public void run(
+	public void runOperation(
 			final String[] args )
 			throws ParseException {
 		final List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders = applyArguments(args);

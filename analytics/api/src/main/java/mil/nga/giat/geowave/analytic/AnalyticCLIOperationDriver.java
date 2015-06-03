@@ -28,7 +28,7 @@ public class AnalyticCLIOperationDriver implements
 	}
 
 	@Override
-	public void run(
+	public void runOperation(
 			final String[] args )
 			throws ParseException {
 		final Options options = new Options();

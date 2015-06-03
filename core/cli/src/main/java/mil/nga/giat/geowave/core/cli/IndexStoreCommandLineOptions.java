@@ -16,10 +16,12 @@ public class IndexStoreCommandLineOptions extends
 {
 	public IndexStoreCommandLineOptions(
 			final GenericStoreFactory<IndexStore> factory,
-			final Map<String, Object> configOptions ) {
+			final Map<String, Object> configOptions,
+			final String namespace ) {
 		super(
 				factory,
-				configOptions);
+				configOptions,
+				namespace);
 	}
 
 	public static void applyOptions(
@@ -38,8 +40,7 @@ public class IndexStoreCommandLineOptions extends
 	}
 
 	@Override
-	public IndexStore createStore(
-			final String namespace ) {
+	public IndexStore createStore() {
 		return GeoWaveStoreFinder.createIndexStore(
 				configOptions,
 				namespace);
@@ -61,10 +62,12 @@ public class IndexStoreCommandLineOptions extends
 		@Override
 		public GenericStoreCommandLineOptions<IndexStore> createCommandLineOptions(
 				final GenericStoreFactory<IndexStore> factory,
-				final Map<String, Object> configOptions ) {
+				final Map<String, Object> configOptions,
+				final String namespace ) {
 			return new IndexStoreCommandLineOptions(
 					factory,
-					configOptions);
+					configOptions,
+					namespace);
 		}
 	}
 }

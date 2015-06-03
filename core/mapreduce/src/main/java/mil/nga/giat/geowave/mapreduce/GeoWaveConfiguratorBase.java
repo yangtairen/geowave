@@ -357,13 +357,13 @@ public class GeoWaveConfiguratorBase
 	public static void setGeoWaveNamespace(
 			final Class<?> implementingClass,
 			final Configuration config,
-			final String tableNamespace ) {
-		if (tableNamespace != null) {
+			final String namespace ) {
+		if (namespace != null) {
 			config.set(
 					enumToConfKey(
 							implementingClass,
 							GeneralConfig.GEOWAVE_NAMESPACE),
-					tableNamespace);
+					namespace);
 		}
 	}
 

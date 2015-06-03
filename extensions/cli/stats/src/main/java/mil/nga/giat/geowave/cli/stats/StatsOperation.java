@@ -98,10 +98,10 @@ public class StatsOperation implements
 			final DataStatisticsStoreCommandLineOptions statsStoreCli = DataStatisticsStoreCommandLineOptions.parseOptions(commandLine);
 			final StatsCommandLineOptions statsOperations = StatsCommandLineOptions.parseOptions(commandLine);
 			System.exit(calculateStastics(
-					dataStoreCli.createStore(statsOperations.getNamespace()),
-					indexStoreCli.createStore(statsOperations.getNamespace()),
-					adapterStoreCli.createStore(statsOperations.getNamespace()),
-					statsStoreCli.createStore(statsOperations.getNamespace()),
+					dataStoreCli.createStore(),
+					indexStoreCli.createStore(),
+					adapterStoreCli.createStore(),
+					statsStoreCli.createStore(),
 					new ByteArrayId(
 							statsOperations.getTypeName()),
 					getAuthorizations(statsOperations.getAuthorizations())) ? 0 : -1);
@@ -132,7 +132,7 @@ public class StatsOperation implements
 	}
 
 	@Override
-	public void run(
+	public void runOperation(
 			final String[] args )
 			throws ParseException {
 		main(args);

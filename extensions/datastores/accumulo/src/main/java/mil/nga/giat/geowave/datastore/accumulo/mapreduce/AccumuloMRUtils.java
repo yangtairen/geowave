@@ -15,8 +15,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
-import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.index.Index;
@@ -24,7 +22,6 @@ import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.AccumuloMRUtils.IntermediateSplitInfo.RangeLocationPair;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
-import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputSplit;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -551,25 +548,21 @@ public class AccumuloMRUtils
 					otherSplitInfo);
 		}
 
-		private synchronized GeoWaveInputSplit toFinalSplit() {
-			final Map<Index, List<ByteArrayRange>> rangesPerIndex = new HashMap<Index, List<ByteArrayRange>>();
+		private synchronized GeoWaveAccumuloInputSplit toFinalSplit() {
+			final Map<Index, List<Range>> rangesPerIndex = new HashMap<Index, List<Range>>();
 			final Set<String> locations = new HashSet<String>();
 			for (final Entry<Index, List<RangeLocationPair>> entry : splitInfo.entrySet()) {
-				final List<ByteArrayRange> ranges = new ArrayList<ByteArrayRange>(
+				final List<Range> ranges = new ArrayList<Range>(
 						entry.getValue().size());
 				for (final RangeLocationPair pair : entry.getValue()) {
 					locations.add(pair.location);
-					ranges.add(new ByteArrayRange(
-							new ByteArrayId(
-									pair.range.getStartKey().getRow().copyBytes()),
-							new ByteArrayId(
-									pair.range.getEndKey().getRow().copyBytes())));
+					ranges.add(pair.range);
 				}
 				rangesPerIndex.put(
 						entry.getKey(),
 						ranges);
 			}
-			return new GeoWaveInputSplit(
+			return new GeoWaveAccumuloInputSplit(
 					rangesPerIndex,
 					locations.toArray(new String[locations.size()]));
 		}

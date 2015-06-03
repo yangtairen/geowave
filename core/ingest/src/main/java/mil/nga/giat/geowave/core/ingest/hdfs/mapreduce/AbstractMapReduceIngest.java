@@ -65,7 +65,7 @@ abstract public class AbstractMapReduceIngest<T extends Persistable & DataAdapte
 				JOB_NAME,
 				typeName,
 				inputFile.toString(),
-				ingestOptions.getNamespace(),
+				dataStoreOptions.getNamespace(),
 				getIngestDescription());
 	}
 
@@ -110,13 +110,17 @@ abstract public class AbstractMapReduceIngest<T extends Persistable & DataAdapte
 		job.setOutputFormatClass(GeoWaveOutputFormat.class);
 
 		// set data store info
-		GeoWaveOutputFormat.setDataStoreInfo(
-				job,
-				dataStoreOptions.getFactory().getName(),
+		GeoWaveOutputFormat.setDataStoreName(
+				job.getConfiguration(),
+				dataStoreOptions.getFactory().getName());
+		GeoWaveOutputFormat.setStoreConfigOptions(
+				job.getConfiguration(),
 				ConfigUtils.valuesToStrings(
 						dataStoreOptions.getConfigOptions(),
-						dataStoreOptions.getFactory().getOptions()),
-				ingestOptions.getNamespace());
+						dataStoreOptions.getFactory().getOptions()));
+		GeoWaveOutputFormat.setGeoWaveNamespace(
+				job.getConfiguration(),
+				dataStoreOptions.getNamespace());
 		final WritableDataAdapter<?>[] dataAdapters = ingestPlugin.getDataAdapters(ingestOptions.getVisibility());
 		for (final WritableDataAdapter<?> dataAdapter : dataAdapters) {
 			GeoWaveOutputFormat.addDataAdapter(

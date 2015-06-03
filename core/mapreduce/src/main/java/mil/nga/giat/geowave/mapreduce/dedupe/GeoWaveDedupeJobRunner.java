@@ -1,6 +1,6 @@
 package mil.nga.giat.geowave.mapreduce.dedupe;
 
-import mil.nga.giat.geowave.mapreduce.GeoWaveJobRunner;
+import mil.nga.giat.geowave.mapreduce.AbstractGeoWaveJobRunner;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 
@@ -21,7 +21,7 @@ import org.apache.hadoop.util.ToolRunner;
  * extended for more advanced capabilities or job chaining.
  */
 public class GeoWaveDedupeJobRunner extends
-		GeoWaveJobRunner
+		AbstractGeoWaveJobRunner
 {
 
 	@Override

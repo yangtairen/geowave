@@ -54,10 +54,9 @@ public class ClearNamespaceDriver extends
 
 	protected void clearNamespace() {
 		// don't delete all tables in the case that no namespace is given
-		if ((ingest.getNamespace() != null) && !ingest.getNamespace().isEmpty()) {
-			LOGGER.info("deleting everything in namespace '" + ingest.getNamespace() + "'");
-			dataStoreOptions.createStore(
-					ingest.getNamespace()).delete(
+		if ((dataStoreOptions.getNamespace() != null) && !dataStoreOptions.getNamespace().isEmpty()) {
+			LOGGER.info("deleting everything in namespace '" + dataStoreOptions.getNamespace() + "'");
+			dataStoreOptions.createStore().delete(
 					null);
 		}
 		else {

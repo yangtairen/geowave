@@ -85,6 +85,33 @@ public class GeoWaveOutputFormat extends
 		}
 	}
 
+	public static void setDataStoreName(
+			final Configuration config,
+			final String dataStoreName ) {
+		GeoWaveConfiguratorBase.setDataStoreName(
+				CLASS,
+				config,
+				dataStoreName);
+	}
+
+	public static void setGeoWaveNamespace(
+			final Configuration config,
+			final String namespace ) {
+		GeoWaveConfiguratorBase.setGeoWaveNamespace(
+				CLASS,
+				config,
+				namespace);
+	}
+
+	public static void setStoreConfigOptions(
+			final Configuration config,
+			final Map<String, String> storeConfigOptions ) {
+		GeoWaveConfiguratorBase.setStoreConfigOptions(
+				CLASS,
+				config,
+				storeConfigOptions);
+	}
+
 	public static void addIndex(
 			final Configuration config,
 			final Index index ) {

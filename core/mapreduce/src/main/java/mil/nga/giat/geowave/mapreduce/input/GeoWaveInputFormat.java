@@ -56,6 +56,33 @@ public class GeoWaveInputFormat<T> extends
 				adapter);
 	}
 
+	public static void setDataStoreName(
+			final Configuration config,
+			final String dataStoreName ) {
+		GeoWaveConfiguratorBase.setDataStoreName(
+				CLASS,
+				config,
+				dataStoreName);
+	}
+
+	public static void setGeoWaveNamespace(
+			final Configuration config,
+			final String namespace ) {
+		GeoWaveConfiguratorBase.setGeoWaveNamespace(
+				CLASS,
+				config,
+				namespace);
+	}
+
+	public static void setStoreConfigOptions(
+			final Configuration config,
+			final Map<String, String> storeConfigOptions ) {
+		GeoWaveConfiguratorBase.setStoreConfigOptions(
+				CLASS,
+				config,
+				storeConfigOptions);
+	}
+
 	public static IndexStore getJobContextIndexStore(
 			final JobContext context ) {
 		return GeoWaveConfiguratorBase.getJobContextIndexStore(

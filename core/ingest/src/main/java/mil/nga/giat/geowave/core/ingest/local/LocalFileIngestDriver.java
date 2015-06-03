@@ -91,7 +91,7 @@ public class LocalFileIngestDriver extends
 			adapters.addAll(Arrays.asList(localFileIngestPlugin.getDataAdapters(ingest.getVisibility())));
 		}
 
-		final DataStore dataStore = dataStoreOptions.createStore(ingest.getNamespace());
+		final DataStore dataStore = dataStoreOptions.createStore();
 		try (IngestRunData runData = new IngestRunData(
 				adapters,
 				dataStore)) {
