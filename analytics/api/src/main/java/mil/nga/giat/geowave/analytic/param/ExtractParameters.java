@@ -1,10 +1,12 @@
 package mil.nga.giat.geowave.analytic.param;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
+import mil.nga.giat.geowave.analytic.RunnerUtils;
 import mil.nga.giat.geowave.analytic.extract.DimensionExtractor;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 
 import org.apache.commons.cli.Option;
+import org.apache.hadoop.conf.Configuration;
 
 public class ExtractParameters
 {
@@ -63,19 +65,21 @@ public class ExtractParameters
 				true);
 
 		private final Class<?> baseClass;
-		private final Option option;
+		private final Option[] options;
 
 		Extract(
 				final Class<?> baseClass,
 				final String name,
 				final String description,
-				boolean hasArg ) {
+				final boolean hasArg ) {
 			this.baseClass = baseClass;
-			this.option = PropertyManagement.newOption(
-					this,
-					name,
-					description,
-					hasArg);
+			options = new Option[] {
+				PropertyManagement.newOption(
+						this,
+						name,
+						description,
+						hasArg)
+			};
 		}
 
 		@Override
@@ -89,8 +93,20 @@ public class ExtractParameters
 		}
 
 		@Override
-		public Option getOption() {
-			return option;
+		public Option[] getOptions() {
+			return options;
+		}
+
+		@Override
+		public void setParameter(
+				final Configuration jobConfig,
+				final Class<?> jobScope,
+				final PropertyManagement propertyValues ) {
+			RunnerUtils.setParameter(
+					jobConfig,
+					jobScope,
+					propertyValues,
+					this);
 		}
 	}
 }

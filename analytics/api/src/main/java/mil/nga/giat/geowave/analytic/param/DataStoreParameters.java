@@ -10,7 +10,7 @@ public class DataStoreParameters
 {
 	public enum DataStoreParam
 			implements
-			GroupParameterEnum {
+			ParameterEnum {
 		ZOOKEEKER(
 				String.class,
 				"z",
@@ -55,11 +55,6 @@ public class DataStoreParameters
 		@Override
 		public Class<?> getBaseClass() {
 			return baseClass;
-		}
-
-		@Override
-		public Enum<?> self() {
-			return this;
 		}
 
 		@Override

@@ -7,8 +7,6 @@ import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.kmeans.AssociationNotification;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,11 +42,6 @@ public class CentroidItemWrapperFactory<T> implements
 		try {
 			nestedGroupCentroidAssignment = new NestedGroupCentroidAssignment<T>(
 					context);
-		}
-		catch (AccumuloException | AccumuloSecurityException e) {
-			throw new IOException(
-					"Failed to connect to Accumulo",
-					e);
 		}
 		catch (InstantiationException | IllegalAccessException e) {
 			throw new IOException(

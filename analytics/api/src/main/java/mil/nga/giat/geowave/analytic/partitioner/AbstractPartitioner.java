@@ -9,7 +9,6 @@ import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.RunnerUtils;
 import mil.nga.giat.geowave.analytic.model.IndexModelBuilder;
 import mil.nga.giat.geowave.analytic.model.SpatialIndexModelBuilder;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
@@ -29,7 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 
 /**
  * Basic support class for Partitioners (e.g {@link Paritioner}
- * 
+ *
  * @param <T>
  */
 public abstract class AbstractPartitioner<T> implements
@@ -169,14 +168,16 @@ public abstract class AbstractPartitioner<T> implements
 			final PropertyManagement runTimeProperties,
 			final Class<?> scope,
 			final Configuration configuration ) {
-		RunnerUtils.setParameter(
-				configuration,
-				scope,
-				runTimeProperties,
-				new ParameterEnum[] {
-					CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS,
-					ClusteringParameters.Clustering.DISTANCE_THRESHOLDS
-				});
+		final ParameterEnum[] params = new ParameterEnum[] {
+			CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS,
+			ClusteringParameters.Clustering.DISTANCE_THRESHOLDS
+		};
+		for (final ParameterEnum p : params) {
+			p.setParameter(
+					configuration,
+					scope,
+					runTimeProperties);
+		}
 	}
 
 	protected void initIndex(
@@ -208,7 +209,7 @@ public abstract class AbstractPartitioner<T> implements
 
 		indexStrategy.setMaxEstimatedDuplicateIds((int) Math.pow(
 				dimensions.length,
-				4));
+				2));
 
 		index = new Index(
 				indexStrategy,

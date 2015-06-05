@@ -17,8 +17,6 @@ import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 
@@ -140,9 +138,7 @@ public class NestedGroupCentroidAssignment<T>
 			final ConfigurationWrapper wrapper )
 			throws InstantiationException,
 			IllegalAccessException,
-			AccumuloException,
-			IOException,
-			AccumuloSecurityException {
+			IOException{
 		endZoomLevel = wrapper.getInt(
 				CentroidParameters.Centroid.ZOOM_LEVEL,
 				1);

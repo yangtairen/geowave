@@ -47,8 +47,15 @@ public class FeatureDataAdapterStoreFactory implements
 		}
 
 		@Override
-		public Option getOption() {
+		public Option[] getOptions() {
 			return null;
+		}
+
+		@Override
+		public void setParameter(
+				Configuration jobConfig,
+				Class<?> jobScope,
+				PropertyManagement propertyValues ) {			
 		}
 
 	}

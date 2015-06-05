@@ -1,12 +1,20 @@
 package mil.nga.giat.geowave.analytic.param;
 
+import mil.nga.giat.geowave.analytic.PropertyManagement;
+
 import org.apache.commons.cli.Option;
+import org.apache.hadoop.conf.Configuration;
 
 public interface ParameterEnum
 {
-	Class<?> getBaseClass();
+	public Class<?> getBaseClass();
+	
+	public Option[] getOptions();
 
-	Enum<?> self();
+	public void setParameter(
+			final Configuration jobConfig,
+			final Class<?> jobScope,
+			final PropertyManagement propertyValues );
 
-	Option getOption();
+	public Enum<?> self();
 }

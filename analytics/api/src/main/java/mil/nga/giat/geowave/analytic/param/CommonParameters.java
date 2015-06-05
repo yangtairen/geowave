@@ -1,14 +1,13 @@
 package mil.nga.giat.geowave.analytic.param;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.db.AdapterStoreFactory;
-import mil.nga.giat.geowave.analytic.db.BasicAccumuloOperationsFactory;
-import mil.nga.giat.geowave.analytic.db.IndexStoreFactory;
+import mil.nga.giat.geowave.analytic.RunnerUtils;
 import mil.nga.giat.geowave.analytic.distance.DistanceFn;
 import mil.nga.giat.geowave.analytic.extract.DimensionExtractor;
 import mil.nga.giat.geowave.analytic.model.IndexModelBuilder;
 
 import org.apache.commons.cli.Option;
+import org.apache.hadoop.conf.Configuration;
 
 public class CommonParameters
 {
@@ -19,21 +18,6 @@ public class CommonParameters
 				DimensionExtractor.class,
 				"dde",
 				"Dimension Extractor Class implements mil.nga.giat.geowave.analytics.extract.DimensionExtractor",
-				true),
-		ACCUMULO_CONNECT_FACTORY(
-				BasicAccumuloOperationsFactory.class,
-				"ccf",
-				"Data Store Connection Factory implements mil.nga.giat.geowave.analytics.tools.dbops.BasicAccumuloOperationsFactory",
-				true),
-		ADAPTER_STORE_FACTORY(
-				AdapterStoreFactory.class,
-				"caf",
-				"Adapter Store factory implements mil.nga.giat.geowave.analytics.tools.dbops.AdapterStoreFactory",
-				true),
-		INDEX_STORE_FACTORY(
-				IndexStoreFactory.class,
-				"cif",
-				"Index Store factory implements mil.nga.giat.geowave.analytics.tools.dbops.IndexStoreFactory",
 				true),
 		DISTANCE_FUNCTION_CLASS(
 				DistanceFn.class,
@@ -48,19 +32,21 @@ public class CommonParameters
 
 		private final Class<?> baseClass;
 
-		private final Option option;
+		private final Option[] options;
 
 		Common(
 				final Class<?> baseClass,
 				final String name,
 				final String description,
-				boolean hasArg ) {
+				final boolean hasArg ) {
 			this.baseClass = baseClass;
-			this.option = PropertyManagement.newOption(
-					this,
-					name,
-					description,
-					hasArg);
+			options = new Option[] {
+				PropertyManagement.newOption(
+						this,
+						name,
+						description,
+						hasArg)
+			};
 		}
 
 		@Override
@@ -74,8 +60,20 @@ public class CommonParameters
 		}
 
 		@Override
-		public Option getOption() {
-			return option;
+		public Option[] getOptions() {
+			return options;
+		}
+
+		@Override
+		public void setParameter(
+				final Configuration jobConfig,
+				final Class<?> jobScope,
+				final PropertyManagement propertyValues ) {
+			RunnerUtils.setParameter(
+					jobConfig,
+					jobScope,
+					propertyValues,
+					this);
 		}
 	}
 

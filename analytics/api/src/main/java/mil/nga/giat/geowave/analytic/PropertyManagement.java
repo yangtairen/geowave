@@ -8,7 +8,9 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -76,8 +78,7 @@ public class PropertyManagement implements
 	final static Logger LOGGER = LoggerFactory.getLogger(PropertyManagement.class);
 
 	private final HashMap<String, Serializable> properties = new HashMap<String, Serializable>();
-	private final ArrayList<PropertyConverter<?>> converters = new ArrayList<PropertyConverter<?>>();
-	private final ArrayList<PropertyGroup<?>> groups = new ArrayList<PropertyGroup<?>>();
+	private final List<PropertyConverter<?>> converters = new ArrayList<PropertyConverter<?>>();
 
 	public static final Option newOption(
 			final ParameterEnum e,
@@ -99,9 +100,6 @@ public class PropertyManagement implements
 	}
 
 	public PropertyManagement() {
-		converters.add(new QueryConverter());
-		converters.add(new PathConverter());
-		converters.add(new PersistableConverter());
 	}
 
 	public PropertyManagement(
@@ -125,7 +123,6 @@ public class PropertyManagement implements
 		converters.add(new QueryConverter());
 		converters.add(new PathConverter());
 		converters.add(new PersistableConverter());
-		groups.add(new DataStorePropertyGroup());
 		store(
 				names,
 				values);
@@ -614,11 +611,6 @@ public class PropertyManagement implements
 	public synchronized void buildFromOptions(
 			final CommandLine commandLine )
 			throws ParseException {
-		for (final PropertyGroup group : groups) {
-			properties.put(
-					toPropertyName(group.getParameter()),
-					group.convert(commandLine));
-		}
 		for (final Option option : commandLine.getOptions()) {
 			if (!option.hasArg()) {
 				properties.put(
@@ -984,33 +976,7 @@ public class PropertyManagement implements
 			final Set<Option> options,
 			final ParameterEnum[] params ) {
 		for (ParameterEnum param : params) {
-			options.add(param.getOption());
-			if (param instanceof GroupParameterEnum) {
-				((GroupParameterEnum) param).fillOptions(options);
-			}
+			options.addAll(Arrays.asList(param.getOptions()));
 		}
-	}
-
-	public static class DataStorePropertyGroup implements
-			PropertyGroup<DataStoreCommandLineOptions>
-	{
-
-		/**
-		 *
-		 */
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public DataStoreCommandLineOptions convert(
-				final CommandLine commandLine )
-				throws ParseException {
-			return DataStoreCommandLineOptions.parseOptions(commandLine);
-		}
-
-		@Override
-		public ParameterEnum getParameter() {
-			return Global.DATA_STORE;
-		}
-
 	}
 }

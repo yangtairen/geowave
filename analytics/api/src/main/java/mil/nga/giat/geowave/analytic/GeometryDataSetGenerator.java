@@ -13,15 +13,7 @@ import mil.nga.giat.geowave.analytic.distance.FeatureCentroidDistanceFn;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.Instance;
-import org.apache.accumulo.core.client.ZooKeeperInstance;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.commons.lang3.tuple.Pair;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -41,7 +33,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * Generate clusters of geometries.
- * 
+ *
  */
 public class GeometryDataSetGenerator
 {
@@ -71,7 +63,7 @@ public class GeometryDataSetGenerator
 	}
 
 	public void setIncludePolygons(
-			boolean includePolygons ) {
+			final boolean includePolygons ) {
 		this.includePolygons = includePolygons;
 	}
 
@@ -111,7 +103,7 @@ public class GeometryDataSetGenerator
 
 	/**
 	 * Calculate the range for the given bounds
-	 * 
+	 *
 	 * @param factor
 	 * @param minAxis
 	 * @param maxAxis
@@ -132,7 +124,7 @@ public class GeometryDataSetGenerator
 	 * Pick a random grid cell and supply the boundary. The grid is determined
 	 * by the parameter,which provides a percentage of distance over the total
 	 * range for each cell.
-	 * 
+	 *
 	 * @param minCenterDistanceFactor
 	 * @return
 	 */
@@ -160,53 +152,28 @@ public class GeometryDataSetGenerator
 	}
 
 	public void writeToGeoWave(
-			final String zookeeper,
-			final String instance,
-			final String user,
-			final String password,
-			final String namespace,
+			final DataStore dataStore,
 			final List<SimpleFeature> featureData )
 			throws IOException {
-		final Instance zookeeperInstance = new ZooKeeperInstance(
-				instance,
-				zookeeper);
-		try {
-			final Connector accumuloConnector = zookeeperInstance.getConnector(
-					user,
-					new PasswordToken(
-							password));
+		final Index index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
+		final FeatureDataAdapter adapter = new FeatureDataAdapter(
+				featureData.get(
+						0).getFeatureType());
+		final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
+				featureData.get(
+						0).getFeatureType());
 
-			final DataStore dataStore = new AccumuloDataStore(
-					new BasicAccumuloOperations(
-							accumuloConnector,
-							namespace));
-			final Index index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
-			final FeatureDataAdapter adapter = new FeatureDataAdapter(
-					featureData.get(
-							0).getFeatureType());
-			final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
-					featureData.get(
-							0).getFeatureType());
+		LOGGER.info("Writing " + featureData.size() + " records to " + adapter.getType().getTypeName());
+		Integer idCounter = 0;
+		for (final SimpleFeature feature : featureData) {
 
-			LOGGER.info("Accumulo " + zookeeper + " instance " + instance + " namespace " + namespace);
-			LOGGER.info("Writing " + featureData.size() + " records to " + adapter.getType().getTypeName());
-			Integer idCounter = 0;
-			for (final SimpleFeature feature : featureData) {
+			dataStore.ingest(
+					adapter,
+					index,
+					feature);
+			featureBuilder.reset();
 
-				dataStore.ingest(
-						adapter,
-						index,
-						feature);
-				featureBuilder.reset();
-
-				idCounter++;
-			}
-
-		}
-		catch (AccumuloException | AccumuloSecurityException e) {
-			throw new IOException(
-					"Cannot write to " + instance,
-					e);
+			idCounter++;
 		}
 	}
 
@@ -252,7 +219,7 @@ public class GeometryDataSetGenerator
 
 		/**
 		 * Pick the initial centers which have minimum distance from each other.
-		 * 
+		 *
 		 */
 		while (pointSet.size() < numberOfCenters) {
 
@@ -314,7 +281,7 @@ public class GeometryDataSetGenerator
 	}
 
 	public List<SimpleFeature> addRandomNoisePoints(
-			List<SimpleFeature> pointSet,
+			final List<SimpleFeature> pointSet,
 			final int minSetSize,
 			final double minAxis[],
 			final double maxAxis[] ) {
@@ -367,7 +334,7 @@ public class GeometryDataSetGenerator
 	 * Find the distance maximum distance of the entire space and multiply that
 	 * by the distance factor to determine a minimum distance each initial
 	 * center point occurs from each other.
-	 * 
+	 *
 	 * @param minCenterDistanceFactor
 	 * @return
 	 */
@@ -447,7 +414,7 @@ public class GeometryDataSetGenerator
 	/**
 	 * Change the constrain min and max to center around the coordinate to keep
 	 * the polygons tight.
-	 * 
+	 *
 	 * @param coordinate
 	 * @param constrainedMaxAxis
 	 * @param constrainedMinAxis
@@ -570,7 +537,7 @@ public class GeometryDataSetGenerator
 	}
 
 	private static SimpleFeatureBuilder getBuilder(
-			String name ) {
+			final String name ) {
 		final SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
 		typeBuilder.setName(name);
 		typeBuilder.setCRS(DefaultGeographicCRS.WGS84); // <- Coordinate

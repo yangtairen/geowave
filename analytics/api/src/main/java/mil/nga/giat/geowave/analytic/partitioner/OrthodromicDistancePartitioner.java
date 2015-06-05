@@ -11,7 +11,6 @@ import javax.measure.unit.Unit;
 import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.GeometryCalculations;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.RunnerUtils;
 import mil.nga.giat.geowave.analytic.extract.DimensionExtractor;
 import mil.nga.giat.geowave.analytic.extract.SimpleFeatureGeometryExtractor;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
@@ -43,11 +42,11 @@ import com.vividsolutions.jts.geom.Geometry;
 /*
  * Calculates distance use orthodromic distance to calculate the bounding box around each
  * point.
- * 
+ *
  * The approach is slow and more accurate, resulting in more partitions of smaller size.
  * The class requires {@link CoordinateReferenceSystem} for the distance calculation
  * and {@link DimensionExtractor} to extract geometries and other dimensions.
- * 
+ *
  * The order of distances provided must match the order or dimensions extracted from the dimension
  * extractor.
  */
@@ -98,7 +97,7 @@ public class OrthodromicDistancePartitioner<T> extends
 				getDistancePerDimension());
 		final MultiDimensionalNumericData[] values = new MultiDimensionalNumericData[geometries.size()];
 		int i = 0;
-		for (Geometry geometry : geometries) {
+		for (final Geometry geometry : geometries) {
 			values[i++] = getNumericData(
 					geometry.getEnvelope(),
 					otherDimensionData);
@@ -108,8 +107,8 @@ public class OrthodromicDistancePartitioner<T> extends
 	}
 
 	private MultiDimensionalNumericData getNumericData(
-			Geometry geometry,
-			double[] otherDimensionData ) {
+			final Geometry geometry,
+			final double[] otherDimensionData ) {
 		final DimensionField<?>[] dimensionFields = getIndex().getIndexModel().getDimensions();
 		final NumericData[] numericData = new NumericData[dimensionFields.length];
 		final double[] distancePerDimension = getDistancePerDimension();
@@ -118,7 +117,9 @@ public class OrthodromicDistancePartitioner<T> extends
 		for (int i = 0; i < dimensionFields.length; i++) {
 			final double minValue = (i == this.longDimensionPosition) ? geometry.getEnvelopeInternal().getMinX() : (i == this.latDimensionPosition ? geometry.getEnvelopeInternal().getMinY() : otherDimensionData[otherIndex] - distancePerDimension[i]);
 			final double maxValue = (i == this.longDimensionPosition) ? geometry.getEnvelopeInternal().getMaxX() : (i == this.latDimensionPosition ? geometry.getEnvelopeInternal().getMaxY() : otherDimensionData[otherIndex] + distancePerDimension[i]);
-			if (i != this.longDimensionPosition && i != latDimensionPosition) otherIndex++;
+			if ((i != this.longDimensionPosition) && (i != latDimensionPosition)) {
+				otherIndex++;
+			}
 			numericData[i] = new NumericRange(
 					minValue,
 					maxValue);
@@ -146,7 +147,9 @@ public class OrthodromicDistancePartitioner<T> extends
 			final Class<? extends NumericDimensionDefinition> clazz ) {
 
 		for (int i = 0; i < fields.length; i++) {
-			if (clazz.isInstance(fields[i].getBaseDefinition())) return i;
+			if (clazz.isInstance(fields[i].getBaseDefinition())) {
+				return i;
+			}
 		}
 		return -1;
 	}
@@ -171,7 +174,7 @@ public class OrthodromicDistancePartitioner<T> extends
 						"EPSG:4326",
 						true);
 			}
-			catch (FactoryException e) {
+			catch (final FactoryException e) {
 				LOGGER.error(
 						"CRS not providd and default EPSG:4326 cannot be instantiated",
 						e);
@@ -238,7 +241,7 @@ public class OrthodromicDistancePartitioner<T> extends
 					DimensionExtractor.class,
 					SimpleFeatureGeometryExtractor.class);
 		}
-		catch (Exception ex) {
+		catch (final Exception ex) {
 			throw new IOException(
 					"Cannot find class for  " + ExtractParameters.Extract.DIMENSION_EXTRACT_CLASS.toString(),
 					ex);
@@ -257,7 +260,7 @@ public class OrthodromicDistancePartitioner<T> extends
 
 	@Override
 	public void fillOptions(
-			Set<Option> options ) {
+			final Set<Option> options ) {
 		super.fillOptions(options);
 		PropertyManagement.fillOptions(
 				options,
@@ -277,14 +280,16 @@ public class OrthodromicDistancePartitioner<T> extends
 				runTimeProperties,
 				scope,
 				configuration);
-		RunnerUtils.setParameter(
-				configuration,
-				scope,
-				runTimeProperties,
-				new ParameterEnum[] {
-					GlobalParameters.Global.CRS_ID,
-					ExtractParameters.Extract.DIMENSION_EXTRACT_CLASS,
-					ClusteringParameters.Clustering.GEOMETRIC_DISTANCE_UNIT
-				});
+		final ParameterEnum[] params = new ParameterEnum[] {
+			GlobalParameters.Global.CRS_ID,
+			ExtractParameters.Extract.DIMENSION_EXTRACT_CLASS,
+			ClusteringParameters.Clustering.GEOMETRIC_DISTANCE_UNIT
+		};
+		for (final ParameterEnum p : params) {
+			p.setParameter(
+					configuration,
+					scope,
+					runTimeProperties);
+		}
 	}
 }
