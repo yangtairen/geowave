@@ -14,18 +14,6 @@ public class RunnerUtils
 {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(RunnerUtils.class);
 
-	public static final void setParameter(
-			final Configuration config,
-			final Class<?> clazz,
-			final Object[] values,
-			final ParameterEnum[] enums ) {
-		int i = 0;
-		for (final ParameterEnum configItem : enums) {
-			final Object val = values[i++];		
-			setParameter(config, clazz, val, configItem);		
-		}
-	}
-
 	public static final void setParameters(
 			final Configuration config,
 			final Class<?> clazz,

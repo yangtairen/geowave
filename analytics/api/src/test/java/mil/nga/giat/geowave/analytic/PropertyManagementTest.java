@@ -15,7 +15,7 @@ import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.extract.EmptyDimensionExtractor;
-import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
@@ -159,14 +159,14 @@ public class PropertyManagementTest
 		PropertyManagement.fillOptions(
 				options,
 				new ParameterEnum[] {
-					DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+					StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
 				});
 		assertEquals(
 				1,
 				options.size());
 		PropertyManagement.removeOption(
 				options,
-				DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE);
+				StoreParameters.DataStoreParam.ACCUMULO_INSTANCE);
 		assertEquals(
 				0,
 				options.size());

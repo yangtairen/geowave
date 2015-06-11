@@ -10,10 +10,17 @@ import java.util.UUID;
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.distance.DistanceFn;
 import mil.nga.giat.geowave.analytic.distance.FeatureCentroidDistanceFn;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.index.Index;
 
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.Parser;
 import org.apache.commons.lang3.tuple.Pair;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -458,21 +465,29 @@ public class GeometryDataSetGenerator
 
 	public static void main(
 			final String args[] )
-			throws IOException {
+			throws IOException,
+			ParseException {
+		final Options allOptions = new Options();
+		DataStoreCommandLineOptions.applyOptions(allOptions);
+		final Option typeNameOption = new Option(
+				"typename",
+				true,
+				"a name for the feature type (required)");
+		typeNameOption.setRequired(true);
+		allOptions.addOption(typeNameOption);
+		final Parser parser = new BasicParser();
+		final CommandLine commandLine = parser.parse(
+				allOptions,
+				args);
+
+		final DataStoreCommandLineOptions dataStoreOption = DataStoreCommandLineOptions.parseOptions(commandLine);
+		final DataStore dataStore = dataStoreOption.createStore();
+		final String typeName = commandLine.getOptionValue("typename");
 		final GeometryDataSetGenerator dataGenerator = new GeometryDataSetGenerator(
 				new FeatureCentroidDistanceFn(),
-				getBuilder(args[5]));
-		final String zookeeper = args[0].trim();
-		final String instance = args[1].trim();
-		final String user = args[2];
-		final String password = args[3];
-		final String namespace = args[4].trim();
+				getBuilder(typeName));
 		dataGenerator.writeToGeoWave(
-				zookeeper,
-				instance,
-				user,
-				password,
-				namespace,
+				dataStore,
 				dataGenerator.generatePointSet(
 						0.2,
 						0.2,
@@ -487,11 +502,7 @@ public class GeometryDataSetGenerator
 							-35
 						}));
 		dataGenerator.writeToGeoWave(
-				zookeeper,
-				instance,
-				user,
-				password,
-				namespace,
+				dataStore,
 				dataGenerator.generatePointSet(
 						0.2,
 						0.2,
@@ -506,11 +517,7 @@ public class GeometryDataSetGenerator
 							10
 						}));
 		dataGenerator.writeToGeoWave(
-				zookeeper,
-				instance,
-				user,
-				password,
-				namespace,
+				dataStore,
 				dataGenerator.addRandomNoisePoints(
 						dataGenerator.generatePointSet(
 								0.2,

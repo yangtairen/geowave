@@ -1,12 +1,7 @@
 package mil.nga.giat.geowave.analytic.param;
 
-import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.RunnerUtils;
 import mil.nga.giat.geowave.analytic.sample.SampleProbabilityFn;
 import mil.nga.giat.geowave.analytic.sample.function.SamplingRankFunction;
-
-import org.apache.commons.cli.Option;
-import org.apache.hadoop.conf.Configuration;
 
 public class SampleParameters
 {
@@ -54,27 +49,19 @@ public class SampleParameters
 				"The rank function used when sampling the first N highest rank items.",
 				true);
 
-		private final Class<?> baseClass;
-		private final Option[] options;
+		private final ParameterHelper<?> helper;
 
-		Sample(
-				final Class<?> baseClass,
+		private Sample(
+				final Class baseClass,
 				final String name,
 				final String description,
 				final boolean hasArg ) {
-			this.baseClass = baseClass;
-			options = new Option[] {
-				PropertyManagement.newOption(
-						this,
-						name,
-						description,
-						hasArg)
-			};
-		}
-
-		@Override
-		public Class<?> getBaseClass() {
-			return baseClass;
+			helper = new BasicParameterHelper(
+					this,
+					baseClass,
+					name,
+					description,
+					hasArg);
 		}
 
 		@Override
@@ -83,20 +70,8 @@ public class SampleParameters
 		}
 
 		@Override
-		public Option[] getOptions() {
-			return options;
-		}
-
-		@Override
-		public void setParameter(
-				final Configuration jobConfig,
-				final Class<?> jobScope,
-				final PropertyManagement propertyValues ) {
-			RunnerUtils.setParameter(
-					jobConfig,
-					jobScope,
-					propertyValues,
-					this);
+		public ParameterHelper<?> getHelper() {
+			return helper;
 		}
 	}
 

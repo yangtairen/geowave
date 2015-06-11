@@ -3,7 +3,7 @@ package mil.nga.giat.geowave.analytic.mapreduce;
 import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
@@ -30,19 +30,19 @@ public class GeoWaveOutputFormatConfiguration implements
 		GeoWaveOutputFormat.setAccumuloOperationsInfo(
 				configuration,
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ZOOKEEKER,
+						StoreParameters.DataStoreParam.ZOOKEEKER,
 						"localhost:2181"),
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+						StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
 						"miniInstance"),
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ACCUMULO_USER,
+						StoreParameters.DataStoreParam.ACCUMULO_USER,
 						"root"),
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+						StoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
 						"password"),
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
+						StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
 						"undefined"));
 
 	}
@@ -69,11 +69,11 @@ public class GeoWaveOutputFormatConfiguration implements
 		PropertyManagement.fillOptions(
 				options,
 				new ParameterEnum[] {
-					DataStoreParameters.DataStoreParam.ZOOKEEKER,
-					DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-					DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
-					DataStoreParameters.DataStoreParam.ACCUMULO_USER,
-					DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE
+					StoreParameters.DataStoreParam.ZOOKEEKER,
+					StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+					StoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+					StoreParameters.DataStoreParam.ACCUMULO_USER,
+					StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE
 				});
 	}
 }

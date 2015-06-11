@@ -19,12 +19,9 @@ import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner.PartitionData;
 import mil.nga.giat.geowave.mapreduce.HadoopWritableSerializationTool;
-import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -38,7 +35,7 @@ import com.google.common.primitives.SignedBytes;
 
 /**
  * Find the nearest neighbors to a each item.
- * 
+ *
  * The solution represented here partitions the data using a partitioner. The
  * nearest neighbors are inspected within those partitions. Each partition is
  * processed in memory. If the partitioner is agnostic to density, then the
@@ -46,32 +43,32 @@ import com.google.common.primitives.SignedBytes;
  * Selecting the appropriate partitioning is critical. It may be best to work
  * bottom up, partitioning at a finer grain and iterating through larger
  * partitions.
- * 
+ *
  * The reducer has four extension points:
- * 
+ *
  * @Formatter:off
- * 
+ *
  *                (1) createSetForNeighbors() create a set for primary and
  *                secondary neighbor lists. The set implementation can control
  *                the amount of memory used. The algorithm loads the primary and
  *                secondary sets before performing the neighbor analysis. An
  *                implementer can constrain the set size, removing items not
  *                considered relevant.
- * 
+ *
  *                (2) createSummary() permits extensions to create an summary
  *                object for the entire partition
- * 
+ *
  *                (3) processNeighbors() permits extensions to process the
  *                neighbor list for each primary item and update the summary
  *                object
- * 
+ *
  *                (4) processSummary() permits the reducer to produce an output
  *                from the summary object
- * 
+ *
  * @Formatter:on
- * 
+ *
  *               * Properties:
- * 
+ *
  * @formatter:off "NNMapReduce.Partition.PartitionerClass" ->
  *                {@link mil.nga.giat.geowave.analytic.partitioner.Partitioner}
  *                <p/>
@@ -88,8 +85,8 @@ import com.google.common.primitives.SignedBytes;
  *                <p/>
  *                "NNMapReduce.Partition.PartitionDistance" -> Maximum distance
  *                between item and its neighbors. (double)
- * 
- * 
+ *
+ *
  * @Formatter:on
  */
 public class NNMapReduce
@@ -98,7 +95,7 @@ public class NNMapReduce
 
 	/**
 	 * Nearest neighbors...take one
-	 * 
+	 *
 	 */
 	public static class NNMapper<T> extends
 			Mapper<GeoWaveInputKey, T, PartitionDataWritable, AdapterWithObjectWritable>
@@ -143,17 +140,8 @@ public class NNMapReduce
 					context,
 					NNMapReduce.class,
 					LOGGER);
-			try {
 				serializationTool = new HadoopWritableSerializationTool(
-						new JobContextAdapterStore(
-								context,
-								GeoWaveInputFormat.getAccumuloOperations(context)));
-			}
-			catch (AccumuloException | AccumuloSecurityException e) {
-				LOGGER.warn(
-						"Unable to get GeoWave adapter store from job context",
-						e);
-			}
+								GeoWaveInputFormat.getJobContextAdapterStore(context));
 			try {
 				partitioner = config.getInstance(
 						PartitionParameters.Partition.PARTITIONER_CLASS,
@@ -251,7 +239,7 @@ public class NNMapReduce
 		}
 
 		/**
-		 * 
+		 *
 		 * @Return an object that represents a summary of the neighbors
 		 *         processed
 		 */
@@ -259,7 +247,7 @@ public class NNMapReduce
 
 		/**
 		 * Allow extended classes to do some final processing for the partition.
-		 * 
+		 *
 		 * @param summary
 		 * @param context
 		 */
@@ -268,7 +256,7 @@ public class NNMapReduce
 				Reducer<PartitionDataWritable, AdapterWithObjectWritable, KEYOUT, VALUEOUT>.Context context );
 
 		/**
-		 * 
+		 *
 		 * allow the extending classes to return sets with constraints and
 		 * management algorithms
 		 */
@@ -297,17 +285,7 @@ public class NNMapReduce
 					NNMapReduce.class,
 					NNMapReduce.LOGGER);
 
-			try {
-				serializationTool = new HadoopWritableSerializationTool(
-						new JobContextAdapterStore(
-								context,
-								GeoWaveInputFormat.getAccumuloOperations(context)));
-			}
-			catch (AccumuloException | AccumuloSecurityException e) {
-				LOGGER.warn(
-						"Unable to get GeoWave adapter store from job context",
-						e);
-			}
+				serializationTool = new HadoopWritableSerializationTool(GeoWaveInputFormat.getJobContextAdapterStore(context));
 
 			try {
 				distanceFn = config.getInstance(

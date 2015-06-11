@@ -3,10 +3,8 @@ package mil.nga.giat.geowave.analytic.param;
 import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.RunnerUtils;
 
 import org.apache.commons.cli.Option;
-import org.apache.hadoop.conf.Configuration;
 
 public class MapReduceParameters
 {
@@ -40,27 +38,19 @@ public class MapReduceParameters
 				"Hadoop job tracker hostname and port in the format hostname:port",
 				true);
 
-		private final Class<?> baseClass;
-		private final Option[] options;
+		private final ParameterHelper<?> helper;
 
-		MRConfig(
-				final Class<?> baseClass,
+		private MRConfig(
+				final Class baseClass,
 				final String name,
 				final String description,
 				final boolean hasArg ) {
-			this.baseClass = baseClass;
-			options = new Option[] {
-				PropertyManagement.newOption(
-						this,
-						name,
-						description,
-						hasArg)
-			};
-		}
-
-		@Override
-		public Class<?> getBaseClass() {
-			return baseClass;
+			helper = new BasicParameterHelper(
+					this,
+					baseClass,
+					name,
+					description,
+					hasArg);
 		}
 
 		@Override
@@ -69,20 +59,8 @@ public class MapReduceParameters
 		}
 
 		@Override
-		public Option[] getOptions() {
-			return options;
-		}
-
-		@Override
-		public void setParameter(
-				final Configuration jobConfig,
-				final Class<?> jobScope,
-				final PropertyManagement propertyValues ) {
-			RunnerUtils.setParameter(
-					jobConfig,
-					jobScope,
-					propertyValues,
-					this);
+		public ParameterHelper<?> getHelper() {
+			return helper;
 		}
 	}
 

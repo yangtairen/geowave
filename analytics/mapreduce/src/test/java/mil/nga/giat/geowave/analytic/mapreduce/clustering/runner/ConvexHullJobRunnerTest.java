@@ -23,7 +23,7 @@ import mil.nga.giat.geowave.analytic.mapreduce.clustering.ConvexHullMapReduce;
 import mil.nga.giat.geowave.analytic.mapreduce.clustering.runner.ConvexHullJobRunner;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
-import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.HullParameters;
 import mil.nga.giat.geowave.analytic.param.InputParameters;
@@ -167,19 +167,19 @@ public class ConvexHullJobRunnerTest
 				new Path(
 						"file://foo/bin"));
 		runTimeProperties.store(
-				DataStoreParameters.DataStoreParam.ZOOKEEKER,
+				StoreParameters.DataStoreParam.ZOOKEEKER,
 				"localhost:3000");
 		runTimeProperties.store(
-				DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+				StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
 				"accumulo");
 		runTimeProperties.store(
-				DataStoreParameters.DataStoreParam.ACCUMULO_USER,
+				StoreParameters.DataStoreParam.ACCUMULO_USER,
 				"root");
 		runTimeProperties.store(
-				DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+				StoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
 				"pwd");
 		runTimeProperties.store(
-				DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
+				StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
 				"test");
 		runTimeProperties.store(
 				GlobalParameters.Global.BATCH_ID,
@@ -263,22 +263,22 @@ public class ConvexHullJobRunnerTest
 
 		assertTrue(PropertyManagement.hasOption(
 				options,
-				DataStoreParameters.DataStoreParam.ZOOKEEKER));
+				StoreParameters.DataStoreParam.ZOOKEEKER));
 		assertTrue(PropertyManagement.hasOption(
 				options,
-				DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE));
+				StoreParameters.DataStoreParam.ACCUMULO_INSTANCE));
 		assertTrue(PropertyManagement.hasOption(
 				options,
-				DataStoreParameters.DataStoreParam.ACCUMULO_USER));
+				StoreParameters.DataStoreParam.ACCUMULO_USER));
 		assertTrue(PropertyManagement.hasOption(
 				options,
-				DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD));
+				StoreParameters.DataStoreParam.ACCUMULO_PASSWORD));
 		assertTrue(PropertyManagement.hasOption(
 				options,
 				GlobalParameters.Global.BATCH_ID));
 		assertTrue(PropertyManagement.hasOption(
 				options,
-				DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE));
+				StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE));
 	}
 
 	@Test

@@ -15,7 +15,7 @@ import mil.nga.giat.geowave.analytic.mapreduce.JobContextConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.mapreduce.MapReduceIntegration;
 import mil.nga.giat.geowave.analytic.mapreduce.SequenceFileInputFormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
-import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters.MRConfig;
 import mil.nga.giat.geowave.analytic.param.PartitionParameters.Partition;
 import mil.nga.giat.geowave.analytic.partitioner.FeatureDataAdapterStoreFactory;
@@ -146,20 +146,20 @@ public class NNJobRunnerTest
 				"/");
 
 		runTimeProperties.store(
-				DataStoreParameters.DataStoreParam.ZOOKEEKER,
+				StoreParameters.DataStoreParam.ZOOKEEKER,
 				"localhost:3000");
 
 		runTimeProperties.store(
-				DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+				StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
 				"accumulo");
 		runTimeProperties.store(
-				DataStoreParameters.DataStoreParam.ACCUMULO_USER,
+				StoreParameters.DataStoreParam.ACCUMULO_USER,
 				"root");
 		runTimeProperties.store(
-				DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+				StoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
 				"pwd");
 		runTimeProperties.store(
-				DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
+				StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
 				"test");
 
 		runTimeProperties.store(

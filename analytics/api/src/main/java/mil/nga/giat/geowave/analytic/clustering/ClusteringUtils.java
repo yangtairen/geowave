@@ -14,7 +14,7 @@ import mil.nga.giat.geowave.analytic.db.DirectBasicAccumuloOperationsFactory;
 import mil.nga.giat.geowave.analytic.extract.DimensionExtractor;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
-import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
@@ -149,10 +149,10 @@ public class ClusteringUtils
 			final PropertyManagement propertyManagement ) {
 		BasicAccumuloOperations ops;
 		final String zookeeper = propertyManagement.getPropertyAsString(
-				DataStoreParameters.DataStoreParam.ZOOKEEKER,
+				StoreParameters.DataStoreParam.ZOOKEEKER,
 				"localhost:2181");
 		final String accumuloInstance = propertyManagement.getPropertyAsString(
-				DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+				StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
 				"miniInstance");
 
 		try {
@@ -214,11 +214,11 @@ public class ClusteringUtils
 			throws Exception {
 		return ClusteringUtils.createIndex(
 				propertyManagement.getPropertyAsString(CentroidParameters.Centroid.INDEX_ID),
-				propertyManagement.getPropertyAsString(DataStoreParameters.DataStoreParam.ZOOKEEKER),
-				propertyManagement.getPropertyAsString(DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE),
-				propertyManagement.getPropertyAsString(DataStoreParameters.DataStoreParam.ACCUMULO_USER),
-				propertyManagement.getPropertyAsString(DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD),
-				propertyManagement.getPropertyAsString(DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE));
+				propertyManagement.getPropertyAsString(StoreParameters.DataStoreParam.ZOOKEEKER),
+				propertyManagement.getPropertyAsString(StoreParameters.DataStoreParam.ACCUMULO_INSTANCE),
+				propertyManagement.getPropertyAsString(StoreParameters.DataStoreParam.ACCUMULO_USER),
+				propertyManagement.getPropertyAsString(StoreParameters.DataStoreParam.ACCUMULO_PASSWORD),
+				propertyManagement.getPropertyAsString(StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE));
 
 	}
 

@@ -6,11 +6,11 @@ import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
-import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
 import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
-import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+import mil.nga.giat.geowave.analytic.param.GlobalParameters.Global;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
@@ -41,7 +41,7 @@ public class GeoWaveInputFormatConfiguration implements
 			throws Exception {
 		DataStoreCommandLineOptions dataStoreOptions = (DataStoreCommandLineOptions) runTimeProperties.get(Global.DATA_STORE);
 		GeoWaveInputFormat.setDataStoreName(
-				conf,
+				configuration,
 				dataStoreFactory.getName());
 		GeoWaveInputFormat.setStoreConfigOptions(
 				conf,
@@ -54,19 +54,19 @@ public class GeoWaveInputFormatConfiguration implements
 		GeoWaveInputFormat.setDataStoreName(
 				configuration,
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ZOOKEEKER,
+						GlobalParameters.Global.DATA_STORE,
 						"localhost:2181"),
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+						GlobalParameters.Global.ACCUMULO_INSTANCE,
 						"miniInstance"),
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ACCUMULO_USER,
+						GlobalParameters.Global.ACCUMULO_USER,
 						"root"),
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+						GlobalParameters.Global.ACCUMULO_PASSWORD,
 						"password"),
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
+						GlobalParameters.Global.ACCUMULO_NAMESPACE,
 						"undefined"));
 
 		final String indexId = runTimeProperties.getPropertyAsString(ExtractParameters.Extract.INDEX_ID);
@@ -167,14 +167,15 @@ public class GeoWaveInputFormatConfiguration implements
 	@Override
 	public void fillOptions(
 			final Set<Option> options ) {
-		PropertyManagement.fillOptions(
+		GlobalParameters.fillOptions(
 				options,
-				new ParameterEnum[] {
-					DataStoreParameters.DataStoreParam.ZOOKEEKER,
-					DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-					DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
-					DataStoreParameters.DataStoreParam.ACCUMULO_USER,
-					DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
+				new GlobalParameters.Global[] {
+					GlobalParameters.Global.DATA_STORE
+				});
+
+		ExtractParameters.fillOptions(
+				options,
+				new ExtractParameters.Extract[] {
 					ExtractParameters.Extract.INDEX_ID,
 					ExtractParameters.Extract.ADAPTER_ID,
 					ExtractParameters.Extract.QUERY,

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.GroupParameterEnum;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters.Global;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
@@ -99,8 +99,7 @@ public class PropertyManagement implements
 				'-').toLowerCase();
 	}
 
-	public PropertyManagement() {
-	}
+	public PropertyManagement() {}
 
 	public PropertyManagement(
 			final PropertyConverter<?>[] converters,
@@ -149,7 +148,7 @@ public class PropertyManagement implements
 							"Cannot store %s with value %s. Expected type = %s; Error message = %s",
 							toPropertyName(property),
 							value.toString(),
-							property.getBaseClass().toString(),
+							property.getHelper().getBaseClass().toString(),
 							e.getLocalizedMessage()),
 					e);
 		}
@@ -239,9 +238,9 @@ public class PropertyManagement implements
 
 		try {
 			final Class<?> clazz = o == null ? defaultClass : (o instanceof Class) ? (Class<?>) o : Class.forName(o.toString());
-			if (!property.getBaseClass().isAssignableFrom(
+			if (!property.getHelper().getBaseClass().isAssignableFrom(
 					clazz)) {
-				LOGGER.error("Class for property " + toPropertyName(property) + " does not implement " + property.getBaseClass().toString());
+				LOGGER.error("Class for property " + toPropertyName(property) + " does not implement " + property.getHelper().getBaseClass().toString());
 			}
 			return (T) clazz.newInstance();
 		}
@@ -293,9 +292,9 @@ public class PropertyManagement implements
 			final ParameterEnum property )
 			throws Exception {
 		final Serializable value = properties.get(toPropertyName(property));
-		if (!Serializable.class.isAssignableFrom(property.getBaseClass())) {
+		if (!Serializable.class.isAssignableFrom(property.getHelper().getBaseClass())) {
 			for (final PropertyConverter converter : converters) {
-				if (property.getBaseClass().isAssignableFrom(
+				if (property.getHelper().getBaseClass().isAssignableFrom(
 						converter.baseClass())) {
 					return this.validate(
 							property,
@@ -432,12 +431,12 @@ public class PropertyManagement implements
 			if (val instanceof Class) {
 				return validate(
 						(Class<?>) val,
-						property.getBaseClass());
+						property.getHelper().getBaseClass());
 			}
 			try {
 				return validate(
 						(Class<?>) Class.forName(val.toString()),
-						property.getBaseClass());
+						property.getHelper().getBaseClass());
 			}
 			catch (final ClassNotFoundException e) {
 				LOGGER.error("Class not found for property " + property);
@@ -462,12 +461,12 @@ public class PropertyManagement implements
 			if (val instanceof Class) {
 				return validate(
 						(Class<T>) val,
-						property.getBaseClass());
+						property.getHelper().getBaseClass());
 			}
 			try {
 				return validate(
 						(Class<T>) Class.forName(val.toString()),
-						property.getBaseClass());
+						property.getHelper().getBaseClass());
 			}
 			catch (final ClassNotFoundException e) {
 				LOGGER.error("Class not found for property " + toPropertyName(property));
@@ -497,12 +496,12 @@ public class PropertyManagement implements
 			if (val instanceof Class) {
 				return validate(
 						(Class<T>) val,
-						property.getBaseClass());
+						property.getHelper().getBaseClass());
 			}
 			try {
 				return validate(
 						(Class<T>) Class.forName(val.toString()),
-						property.getBaseClass());
+						property.getHelper().getBaseClass());
 			}
 			catch (final ClassNotFoundException e) {
 				LOGGER.error("Class not found for property " + property);
@@ -591,14 +590,12 @@ public class PropertyManagement implements
 	 * {@link AbstractGeoWaveJobRunner}
 	 */
 	public static final ParameterEnum[] GeoWaveRunnerArguments = new ParameterEnum[] {
-		DataStoreParameters.DataStoreParam.ZOOKEEKER,
-		DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-		DataStoreParameters.DataStoreParam.ACCUMULO_USER,
-		DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
-		DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE
+		StoreParameters.StoreParam.DATA_STORE,
 	};
 
 	public String[] toGeoWaveRunnerArguments() {
+		// TODO: is this trying to establish default arguments? in that case, it
+		// needs to change
 		return toArguments(GeoWaveRunnerArguments);
 	}
 
@@ -763,7 +760,7 @@ public class PropertyManagement implements
 			final Object value ) {
 		if (value != null) {
 			if (value instanceof Class) {
-				if (propertyName.getBaseClass().isAssignableFrom(
+				if (propertyName.getHelper().getBaseClass().isAssignableFrom(
 						(Class<?>) value)) {
 					throw new IllegalArgumentException(
 							String.format(
@@ -772,7 +769,7 @@ public class PropertyManagement implements
 									((Class<?>) value).getName()));
 				}
 			}
-			else if (!propertyName.getBaseClass().isInstance(
+			else if (!propertyName.getHelper().getBaseClass().isInstance(
 					value)) {
 				throw new IllegalArgumentException(
 						String.format(
@@ -793,7 +790,7 @@ public class PropertyManagement implements
 		if (!(value instanceof Serializable)) {
 			for (@SuppressWarnings("rawtypes")
 			final PropertyConverter converter : converters) {
-				if (property.getBaseClass().isAssignableFrom(
+				if (property.getHelper().getBaseClass().isAssignableFrom(
 						converter.baseClass())) {
 					return converter.convert(
 							value,
@@ -801,11 +798,11 @@ public class PropertyManagement implements
 				}
 			}
 		}
-		if (!property.getBaseClass().isInstance(
+		if (!property.getHelper().getBaseClass().isInstance(
 				value) && (value instanceof String)) {
 			for (@SuppressWarnings("rawtypes")
 			final PropertyConverter converter : converters) {
-				if (property.getBaseClass().isAssignableFrom(
+				if (property.getHelper().getBaseClass().isAssignableFrom(
 						converter.baseClass())) {
 					return converter.convert(
 							converter.convert(
@@ -976,7 +973,7 @@ public class PropertyManagement implements
 			final Set<Option> options,
 			final ParameterEnum[] params ) {
 		for (ParameterEnum param : params) {
-			options.addAll(Arrays.asList(param.getOptions()));
+			options.addAll(Arrays.asList(param.getHelper().getOptions()));
 		}
 	}
 }

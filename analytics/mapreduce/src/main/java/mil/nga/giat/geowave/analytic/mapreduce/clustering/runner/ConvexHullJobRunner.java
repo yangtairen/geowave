@@ -14,7 +14,7 @@ import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveAnalyticJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveOutputFormatConfiguration;
 import mil.nga.giat.geowave.analytic.mapreduce.clustering.ConvexHullMapReduce;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
-import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.HullParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
@@ -183,11 +183,7 @@ public class ConvexHullJobRunner extends
 		PropertyManagement.fillOptions(
 				options,
 				new ParameterEnum[] {
-					DataStoreParameters.DataStoreParam.ZOOKEEKER,
-					DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-					DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
-					DataStoreParameters.DataStoreParam.ACCUMULO_USER,
-					DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
+					StoreParameters.StoreParam.DATA_STORE,
 					GlobalParameters.Global.BATCH_ID
 				});
 

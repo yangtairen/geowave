@@ -1,10 +1,5 @@
 package mil.nga.giat.geowave.analytic.param;
 
-import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.RunnerUtils;
-
-import org.apache.commons.cli.Option;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
 public class InputParameters
@@ -23,27 +18,19 @@ public class InputParameters
 				"Input HDFS File Path",
 				true);
 
-		private final Class<?> baseClass;
-		private final Option[] options;
+		private final ParameterHelper<?> helper;
 
-		Input(
-				final Class<?> baseClass,
+		private Input(
+				final Class baseClass,
 				final String name,
 				final String description,
 				final boolean hasArg ) {
-			this.baseClass = baseClass;
-			options = new Option[] {
-				PropertyManagement.newOption(
-						this,
-						name,
-						description,
-						hasArg)
-			};
-		}
-
-		@Override
-		public Class<?> getBaseClass() {
-			return baseClass;
+			helper = new BasicParameterHelper(
+					this,
+					baseClass,
+					name,
+					description,
+					hasArg);
 		}
 
 		@Override
@@ -52,20 +39,8 @@ public class InputParameters
 		}
 
 		@Override
-		public Option[] getOptions() {
-			return options;
-		}
-
-		@Override
-		public void setParameter(
-				final Configuration jobConfig,
-				final Class<?> jobScope,
-				final PropertyManagement propertyValues ) {
-			RunnerUtils.setParameter(
-					jobConfig,
-					jobScope,
-					propertyValues,
-					this);
+		public ParameterHelper<?> getHelper() {
+			return helper;
 		}
 	}
 }

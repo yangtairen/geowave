@@ -51,11 +51,6 @@ public abstract class GeoWaveAnalyticJobRunner extends
 	private int reducerCount = 1;
 	private MapReduceIntegration mapReduceIntegrater = new ToolRunnerMapReduceIntegration();
 
-	/**
-	 * Data Store Parameters
-	 */
-	protected String zookeeper, instanceName, userName, password, namespace;
-
 	public FormatConfiguration getInputFormatConfiguration() {
 		return inputFormat;
 	}

@@ -10,6 +10,7 @@ import mil.nga.giat.geowave.adapter.vector.plugin.visibility.JsonDefinitionColum
 import mil.nga.giat.geowave.adapter.vector.stats.StatsManager;
 import mil.nga.giat.geowave.adapter.vector.util.FeatureDataUtils;
 import mil.nga.giat.geowave.adapter.vector.utils.TimeDescriptors;
+import mil.nga.giat.geowave.core.geotime.store.dimension.Time;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.adapter.AbstractDataAdapter;

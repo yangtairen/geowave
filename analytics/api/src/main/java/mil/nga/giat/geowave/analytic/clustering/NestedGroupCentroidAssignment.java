@@ -87,15 +87,10 @@ public class NestedGroupCentroidAssignment<T>
 			final Configuration config,
 			final Class<?> scope,
 			final int zoomLevel ) {
-		RunnerUtils.setParameter(
-				config,
-				scope,
-				new Object[] {
-					zoomLevel
-				},
-				new ParameterEnum[] {
-					CentroidParameters.Centroid.ZOOM_LEVEL
-				});
+		CentroidParameters.Centroid.ZOOM_LEVEL.getHelper().setParameter(
+				jobConfig,
+				jobScope,
+				propertyValues);
 	}
 
 	/**
@@ -109,15 +104,10 @@ public class NestedGroupCentroidAssignment<T>
 			final Configuration config,
 			final Class<?> scope,
 			final String parentID ) {
-		RunnerUtils.setParameter(
-				config,
-				scope,
-				new Object[] {
-					parentID
-				},
-				new ParameterEnum[] {
-					GlobalParameters.Global.PARENT_BATCH_ID
-				});
+		GlobalParameters.Global.PARENT_BATCH_ID.getHelper().setParameter(
+				jobConfig,
+				jobScope,
+				propertyValues);
 	}
 
 	public static void fillOptions(
@@ -138,7 +128,7 @@ public class NestedGroupCentroidAssignment<T>
 			final ConfigurationWrapper wrapper )
 			throws InstantiationException,
 			IllegalAccessException,
-			IOException{
+			IOException {
 		endZoomLevel = wrapper.getInt(
 				CentroidParameters.Centroid.ZOOM_LEVEL,
 				1);

@@ -9,7 +9,7 @@ import mil.nga.giat.geowave.analytic.clustering.NestedGroupCentroidAssignment;
 import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveAnalyticJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.clustering.GroupAssignmentMapReduce;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
-import mil.nga.giat.geowave.analytic.param.DataStoreParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
@@ -70,19 +70,19 @@ public class GroupAssigmentJobRunner extends
 		GeoWaveInputFormat.setAccumuloOperationsInfo(
 				config,
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ZOOKEEKER,
+						StoreParameters.DataStoreParam.ZOOKEEKER,
 						"localhost:2181"),
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+						StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
 						"miniInstance"),
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ACCUMULO_USER,
+						StoreParameters.DataStoreParam.ACCUMULO_USER,
 						"root"),
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+						StoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
 						"password"),
 				runTimeProperties.getPropertyAsString(
-						DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
+						StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
 						"undefined"));
 
 		RunnerUtils.setParameter(
@@ -120,11 +120,11 @@ public class GroupAssigmentJobRunner extends
 		PropertyManagement.fillOptions(
 				options,
 				new ParameterEnum[] {
-					DataStoreParameters.DataStoreParam.ZOOKEEKER,
-					DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-					DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
-					DataStoreParameters.DataStoreParam.ACCUMULO_USER,
-					DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
+					StoreParameters.DataStoreParam.ZOOKEEKER,
+					StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
+					StoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
+					StoreParameters.DataStoreParam.ACCUMULO_USER,
+					StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
 					GlobalParameters.Global.BATCH_ID
 				});
 
