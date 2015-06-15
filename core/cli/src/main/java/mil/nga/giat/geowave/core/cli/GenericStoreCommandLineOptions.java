@@ -18,8 +18,7 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract public class GenericStoreCommandLineOptions<T> implements
-		Serializable
+abstract public class GenericStoreCommandLineOptions<T>
 {
 	private final static Logger LOGGER = LoggerFactory.getLogger(GenericStoreCommandLineOptions.class);
 

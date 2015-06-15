@@ -5,7 +5,7 @@ public class GlobalParameters
 {
 	public enum Global
 			implements
-			ParameterEnum {
+			ParameterEnum<Object> {
 		PARENT_BATCH_ID(
 				String.class,
 				"pb",
@@ -21,7 +21,7 @@ public class GlobalParameters
 				"b",
 				"Batch ID",
 				true);
-		private final ParameterHelper<?> helper;
+		private final ParameterHelper<Object> helper;
 
 		private Global(
 				final Class baseClass,
@@ -42,7 +42,7 @@ public class GlobalParameters
 		}
 
 		@Override
-		public ParameterHelper<?> getHelper() {
+		public ParameterHelper<Object> getHelper() {
 			return helper;
 		}
 	}

@@ -3,12 +3,12 @@ package mil.nga.giat.geowave.analytic.sample.function;
 import java.io.IOException;
 import java.util.Random;
 
-import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
+import org.apache.hadoop.mapreduce.JobContext;
 
 /**
  * Pick any object at random by assigning a random weight over a uniform
  * distribution.
- * 
+ *
  * @param <T>
  */
 public class RandomSamplingRankFunction<T> implements
@@ -18,8 +18,9 @@ public class RandomSamplingRankFunction<T> implements
 
 	@Override
 	public void initialize(
-			final ConfigurationWrapper wrapper )
-			throws IOException {}
+			final JobContext context,
+			final Class<?> scope )
+					throws IOException {}
 
 	@Override
 	public double rank(

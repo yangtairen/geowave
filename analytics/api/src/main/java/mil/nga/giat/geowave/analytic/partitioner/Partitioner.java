@@ -7,18 +7,18 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
-import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
-import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.core.index.ByteArrayId;
-
 import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapreduce.JobContext;
+
+import mil.nga.giat.geowave.analytic.PropertyManagement;
+import mil.nga.giat.geowave.core.index.ByteArrayId;
 
 /**
  * Provide a partition for a data item.
- * 
- * 
+ *
+ *
  * Multiple partitions are permitted. Only one partition is consider primary. A
  * primary partition is the partition for an item in which the item is processed
  * on behalf of itself. All other partitions are those partitions that require
@@ -27,15 +27,16 @@ import org.apache.hadoop.io.Writable;
  * discover neighbors in its partition. However, the item can be discovered as a
  * nearest neighbor in those partitions in which the item participates as a none
  * primary.
- * 
+ *
  * @param <T>
  */
 public interface Partitioner<T>
 {
 
 	public void initialize(
-			final ConfigurationWrapper context )
-			throws IOException;
+			final JobContext context,
+			final Class<?> scope )
+					throws IOException;
 
 	public List<PartitionData> getCubeIdentifiers(
 			final T entry );
@@ -53,7 +54,7 @@ public interface Partitioner<T>
 			Writable
 	{
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 1L;
 
@@ -71,8 +72,8 @@ public interface Partitioner<T>
 		public PartitionData() {}
 
 		public PartitionData(
-				ByteArrayId id,
-				boolean primary ) {
+				final ByteArrayId id,
+				final boolean primary ) {
 			super();
 			this.id = id;
 			this.isPrimary = primary;
@@ -82,31 +83,43 @@ public interface Partitioner<T>
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((id == null) ? 0 : id.hashCode());
+			result = (prime * result) + ((id == null) ? 0 : id.hashCode());
 			return result;
 		}
 
 		@Override
 		public boolean equals(
-				Object obj ) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			PartitionData other = (PartitionData) obj;
-			if (id == null) {
-				if (other.id != null) return false;
+				final Object obj ) {
+			if (this == obj) {
+				return true;
 			}
-			else if (!id.equals(other.id)) return false;
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			final PartitionData other = (PartitionData) obj;
+			if (id == null) {
+				if (other.id != null) {
+					return false;
+				}
+			}
+			else if (!id.equals(
+					other.id)) {
+				return false;
+			}
 			return true;
 		}
 
 		@Override
 		public void readFields(
-				DataInput dInput )
-				throws IOException {
-			int idSize = dInput.readInt();
+				final DataInput dInput )
+						throws IOException {
+			final int idSize = dInput.readInt();
 			final byte[] idBytes = new byte[idSize];
-			dInput.readFully(idBytes);
+			dInput.readFully(
+					idBytes);
 			isPrimary = dInput.readBoolean();
 			id = new ByteArrayId(
 					idBytes);
@@ -114,12 +127,15 @@ public interface Partitioner<T>
 
 		@Override
 		public void write(
-				DataOutput dOutput )
-				throws IOException {
-			byte[] outputId = id.getBytes();
-			dOutput.writeInt(outputId.length);
-			dOutput.write(outputId);
-			dOutput.writeBoolean(isPrimary);
+				final DataOutput dOutput )
+						throws IOException {
+			final byte[] outputId = id.getBytes();
+			dOutput.writeInt(
+					outputId.length);
+			dOutput.write(
+					outputId);
+			dOutput.writeBoolean(
+					isPrimary);
 
 		}
 	}

@@ -7,8 +7,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
+import org.apache.commons.cli.Option;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.JobContext;
+
 import mil.nga.giat.geowave.analytic.PropertyManagement;
+import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.model.IndexModelBuilder;
 import mil.nga.giat.geowave.analytic.model.SpatialIndexModelBuilder;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
@@ -22,9 +26,6 @@ import mil.nga.giat.geowave.core.index.sfc.tiered.TieredSFCIndexStrategy;
 import mil.nga.giat.geowave.core.store.dimension.DimensionField;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.Index;
-
-import org.apache.commons.cli.Option;
-import org.apache.hadoop.conf.Configuration;
 
 /**
  * Basic support class for Partitioners (e.g {@link Paritioner}
@@ -72,7 +73,8 @@ public abstract class AbstractPartitioner<T> implements
 			final T entry ) {
 		final Set<PartitionData> partitionIdSet = new HashSet<PartitionData>();
 
-		final NumericDataHolder numericData = getNumericData(entry);
+		final NumericDataHolder numericData = getNumericData(
+				entry);
 		if (numericData == null) {
 			return Collections.emptyList();
 		}
@@ -113,32 +115,38 @@ public abstract class AbstractPartitioner<T> implements
 			final List<ByteArrayId> addList,
 			final boolean isPrimary ) {
 		for (final ByteArrayId addId : addList) {
-			masterList.add(new PartitionData(
-					addId,
-					isPrimary));
+			masterList.add(
+					new PartitionData(
+							addId,
+							isPrimary));
 		}
 	}
 
 	@Override
 	public void initialize(
-			final ConfigurationWrapper context )
-			throws IOException {
-
-		final String distances = context.getString(
+			final JobContext context,
+			final Class<?> scope )
+					throws IOException {
+		final ScopedJobConfiguration config = new ScopedJobConfiguration(
+				context,
+				scope);
+		final String distances = config.getString(
 				ClusteringParameters.Clustering.DISTANCE_THRESHOLDS,
 				"0.000001");
 
-		final String distancesArray[] = distances.split(",");
+		final String distancesArray[] = distances.split(
+				",");
 		distancePerDimension = new double[distancesArray.length];
 		{
 			int i = 0;
 			for (final String eachDistance : distancesArray) {
-				distancePerDimension[i++] = Double.valueOf(eachDistance);
+				distancePerDimension[i++] = Double.valueOf(
+						eachDistance);
 			}
 		}
 
 		try {
-			final IndexModelBuilder builder = context.getInstance(
+			final IndexModelBuilder builder = config.getInstance(
 					CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS,
 					IndexModelBuilder.class,
 					SpatialIndexModelBuilder.class);
@@ -172,12 +180,10 @@ public abstract class AbstractPartitioner<T> implements
 			CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS,
 			ClusteringParameters.Clustering.DISTANCE_THRESHOLDS
 		};
-		for (final ParameterEnum p : params) {
-			p.setParameter(
-					configuration,
-					scope,
-					runTimeProperties);
-		}
+		runTimeProperties.setConfig(
+				params,
+				configuration,
+				scope);
 	}
 
 	protected void initIndex(
@@ -192,7 +198,11 @@ public abstract class AbstractPartitioner<T> implements
 		for (int i = 0; i < dimensionPrecision.length; i++) {
 			final double distance = distancePerDimensionForIndex[i] * 2.0; // total
 																			// width...(radius)
-			dimensionPrecision[i] = Math.abs((int) (Math.log(dimensions[i].getRange() / distance) / Math.log(2)));
+			dimensionPrecision[i] = Math.abs(
+					(int) (Math.log(
+							dimensions[i].getRange() / distance)
+							/ Math.log(
+									2)));
 			totalRequestedPrecision += dimensionPrecision[i];
 		}
 		if (totalRequestedPrecision > 63) {
@@ -207,9 +217,10 @@ public abstract class AbstractPartitioner<T> implements
 				dimensionPrecision,
 				SFCType.HILBERT);
 
-		indexStrategy.setMaxEstimatedDuplicateIds((int) Math.pow(
-				dimensions.length,
-				2));
+		indexStrategy.setMaxEstimatedDuplicateIds(
+				(int) Math.pow(
+						dimensions.length,
+						2));
 
 		index = new Index(
 				indexStrategy,
@@ -225,7 +236,7 @@ public abstract class AbstractPartitioner<T> implements
 				new ParameterEnum[] {
 					CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS,
 					ClusteringParameters.Clustering.DISTANCE_THRESHOLDS
-				});
+		});
 
 	}
 

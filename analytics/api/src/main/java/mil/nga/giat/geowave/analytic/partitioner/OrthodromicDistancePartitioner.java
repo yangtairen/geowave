@@ -8,9 +8,22 @@ import javax.measure.quantity.Length;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 
-import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
+import org.apache.commons.cli.Option;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.JobContext;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+
 import mil.nga.giat.geowave.analytic.GeometryCalculations;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
+import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.extract.DimensionExtractor;
 import mil.nga.giat.geowave.analytic.extract.SimpleFeatureGeometryExtractor;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
@@ -27,18 +40,6 @@ import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import mil.nga.giat.geowave.core.store.dimension.DimensionField;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 
-import org.apache.commons.cli.Option;
-import org.apache.hadoop.conf.Configuration;
-import org.geotools.referencing.CRS;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-
 /*
  * Calculates distance use orthodromic distance to calculate the bounding box around each
  * point.
@@ -51,10 +52,11 @@ import com.vividsolutions.jts.geom.Geometry;
  * extractor.
  */
 public class OrthodromicDistancePartitioner<T> extends
-		AbstractPartitioner<T> implements
+		AbstractPartitioner<T>implements
 		Partitioner<T>
 {
-	final static Logger LOGGER = LoggerFactory.getLogger(OrthodromicDistancePartitioner.class);
+	final static Logger LOGGER = LoggerFactory.getLogger(
+			OrthodromicDistancePartitioner.class);
 
 	private Unit<Length> geometricDistanceUnit = SI.METER;
 	private CoordinateReferenceSystem crs = null;
@@ -87,8 +89,10 @@ public class OrthodromicDistancePartitioner<T> extends
 			final T entry ) {
 		final NumericDataHolder numericDataHolder = new NumericDataHolder();
 
-		final Geometry entryGeometry = dimensionExtractor.getGeometry(entry);
-		final double otherDimensionData[] = dimensionExtractor.getDimensions(entry);
+		final Geometry entryGeometry = dimensionExtractor.getGeometry(
+				entry);
+		final double otherDimensionData[] = dimensionExtractor.getDimensions(
+				entry);
 		numericDataHolder.primary = getNumericData(
 				entryGeometry.getEnvelope(),
 				otherDimensionData);
@@ -147,7 +151,8 @@ public class OrthodromicDistancePartitioner<T> extends
 			final Class<? extends NumericDimensionDefinition> clazz ) {
 
 		for (int i = 0; i < fields.length; i++) {
-			if (clazz.isInstance(fields[i].getBaseDefinition())) {
+			if (clazz.isInstance(
+					fields[i].getBaseDefinition())) {
 				return i;
 			}
 		}
@@ -161,7 +166,7 @@ public class OrthodromicDistancePartitioner<T> extends
 				new double[] {
 					distancePerDimension[longDimensionPosition],
 					distancePerDimension[latDimensionPosition]
-				},
+		},
 				geometricDistanceUnit == null ? SI.METER : geometricDistanceUnit,
 				coordinate);
 	}
@@ -192,8 +197,10 @@ public class OrthodromicDistancePartitioner<T> extends
 			final CommonIndexModel indexModel,
 			final double[] distancePerDimension ) {
 
-		longDimensionPosition = findLongitude(indexModel);
-		latDimensionPosition = findLatitude(indexModel);
+		longDimensionPosition = findLongitude(
+				indexModel);
+		latDimensionPosition = findLatitude(
+				indexModel);
 
 		final List<Geometry> geos = getGeometries(
 				new Coordinate(
@@ -218,10 +225,14 @@ public class OrthodromicDistancePartitioner<T> extends
 	@SuppressWarnings("unchecked")
 	@Override
 	public void initialize(
-			final ConfigurationWrapper context )
-			throws IOException {
+			final JobContext context,
+			final Class<?> scope )
+					throws IOException {
 
-		final String crsName = context.getString(
+		final ScopedJobConfiguration config = new ScopedJobConfiguration(
+				context,
+				scope);
+		final String crsName = config.getString(
 				GlobalParameters.Global.CRS_ID,
 				"EPSG:4326");
 		try {
@@ -236,7 +247,7 @@ public class OrthodromicDistancePartitioner<T> extends
 		}
 
 		try {
-			dimensionExtractor = context.getInstance(
+			dimensionExtractor = config.getInstance(
 					ExtractParameters.Extract.DIMENSION_EXTRACT_CLASS,
 					DimensionExtractor.class,
 					SimpleFeatureGeometryExtractor.class);
@@ -247,27 +258,31 @@ public class OrthodromicDistancePartitioner<T> extends
 					ex);
 		}
 
-		final String distanceUnit = context.getString(
+		final String distanceUnit = config.getString(
 				ClusteringParameters.Clustering.GEOMETRIC_DISTANCE_UNIT,
 				"m");
 
-		this.geometricDistanceUnit = (Unit<Length>) Unit.valueOf(distanceUnit);
+		this.geometricDistanceUnit = (Unit<Length>) Unit.valueOf(
+				distanceUnit);
 
 		initCalculator();
 
-		super.initialize(context);
+		super.initialize(
+				context,
+				scope);
 	}
 
 	@Override
 	public void fillOptions(
 			final Set<Option> options ) {
-		super.fillOptions(options);
+		super.fillOptions(
+				options);
 		PropertyManagement.fillOptions(
 				options,
 				new ParameterEnum[] {
 					ClusteringParameters.Clustering.GEOMETRIC_DISTANCE_UNIT,
 					ExtractParameters.Extract.DIMENSION_EXTRACT_CLASS
-				});
+		});
 
 	}
 
@@ -285,11 +300,9 @@ public class OrthodromicDistancePartitioner<T> extends
 			ExtractParameters.Extract.DIMENSION_EXTRACT_CLASS,
 			ClusteringParameters.Clustering.GEOMETRIC_DISTANCE_UNIT
 		};
-		for (final ParameterEnum p : params) {
-			p.setParameter(
-					configuration,
-					scope,
-					runTimeProperties);
-		}
+		runTimeProperties.setConfig(
+				params,
+				configuration,
+				scope);
 	}
 }

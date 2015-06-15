@@ -33,12 +33,12 @@ public class GeoWaveConfiguratorBase
 {
 	protected static final Logger LOGGER = Logger.getLogger(GeoWaveConfiguratorBase.class);
 
-	protected static enum GeoWaveMetaStore {
+	public static enum GeoWaveMetaStore {
 		INDEX,
 		DATA_ADAPTER,
 	}
 
-	protected static enum GeneralConfig {
+	public static enum GeneralConfig {
 		DATA_STORE_NAME,
 		ADAPTER_STORE_NAME,
 		INDEX_STORE_NAME,

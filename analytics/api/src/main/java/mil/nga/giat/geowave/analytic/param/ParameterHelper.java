@@ -1,10 +1,9 @@
 package mil.nga.giat.geowave.analytic.param;
 
-import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
-import mil.nga.giat.geowave.analytic.PropertyManagement;
-
+import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.JobContext;
 
 public interface ParameterHelper<T>
 {
@@ -12,12 +11,16 @@ public interface ParameterHelper<T>
 
 	public Option[] getOptions();
 
-	public void setParameter(
-			final Configuration jobConfig,
-			final Class<?> jobScope,
-			final PropertyManagement propertyValues );
+	public T getValue(
+			CommandLine commandline );
+
+	public void setValue(
+			Configuration config,
+			Class<?> scope,
+			T value );
 
 	public T getValue(
-			ConfigurationWrapper config,
+			JobContext context,
+			Class<?> scope,
 			T defaultValue );
 }

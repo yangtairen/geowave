@@ -9,6 +9,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
+import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 
 import org.apache.accumulo.core.client.Scanner;
@@ -46,7 +50,9 @@ public class DistortionGroupManagement
 	 * @return
 	 */
 	public static <T> int retainBestGroups(
-			final BasicAccumuloOperations ops,
+			DataStore dataStore, 
+			IndexStore indexStore,
+			AdapterStore adapterStore,
 			final AnalyticItemWrapperFactory<T> itemWrapperFactory,
 			final String dataTypeId,
 			final String indexId,
@@ -55,33 +61,30 @@ public class DistortionGroupManagement
 			final int level ) {
 
 		try {
-			final Scanner scanner = ops.createScanner(distortationTableName);
 			final Map<String, DistortionGroup> groupDistortions = new HashMap<String, DistortionGroup>();
 
 			// row id is group id
 			// colQual is cluster count
+			try(CloseableIterator<?> it = dataStore.query(null)){
+				while (it.hasNext()){
+					it.next();
+					final String groupID = entry.getKey().getRow().toString();
+					final Integer clusterCount = Integer.parseInt(entry.getKey().getColumnQualifier().toString());
+					final Double distortion = Double.parseDouble(entry.getValue().toString());
 
-			for (final Entry<Key, Value> entry : scanner) {
-				final String groupID = entry.getKey().getRow().toString();
-				final Integer clusterCount = Integer.parseInt(entry.getKey().getColumnQualifier().toString());
-				final Double distortion = Double.parseDouble(entry.getValue().toString());
-
-				DistortionGroup grp = groupDistortions.get(groupID);
-				if (grp == null) {
-					grp = new DistortionGroup(
-							groupID);
-					groupDistortions.put(
-							groupID,
-							grp);
+					DistortionGroup grp = groupDistortions.get(groupID);
+					if (grp == null) {
+						grp = new DistortionGroup(
+								groupID);
+						groupDistortions.put(
+								groupID,
+								grp);
+					}
+					grp.addPair(
+							clusterCount,
+							distortion);
 				}
-				grp.addPair(
-						clusterCount,
-						distortion);
-
 			}
-
-			scanner.clearScanIterators();
-			scanner.close();
 
 			final CentroidManagerGeoWave<T> centroidManager = new CentroidManagerGeoWave<T>(
 					ops,

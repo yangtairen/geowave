@@ -1,6 +1,5 @@
 package mil.nga.giat.geowave.analytic.param;
 
-import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.store.DataStore;
@@ -9,16 +8,18 @@ import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase.GeneralConfig;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 
+import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.JobContext;
 
 public class DataStoreParameterHelper implements
-		ParameterHelper<DataStore>
+		ParameterHelper<DataStoreCommandLineOptions>
 {
 	@Override
-	public Class<DataStore> getBaseClass() {
-		return DataStore.class;
+	public Class<DataStoreCommandLineOptions> getBaseClass() {
+		return DataStoreCommandLineOptions.class;
 	}
 
 	@Override
@@ -45,18 +46,36 @@ public class DataStoreParameterHelper implements
 	@Override
 	public Option[] getOptions() {
 		final Options allOptions = new Options();
-		DataStoreCommandLineOptions.applyOptions(allOptions);
+		DataStoreCommandLineOptions.applyOptions(
+				allOptions);
 		return (Option[]) allOptions.getOptions().toArray(
 				new Option[] {});
 	}
 
 	@Override
-	public DataStore getValue(
-			final ConfigurationWrapper config,
-			final DataStore defaultValue ) {
-		
-		config.get
+	public DataStoreCommandLineOptions getValue(
+			CommandLine commandline ) {
+		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public void setValue(
+			Configuration config,
+			Class<?> scope,
+			DataStoreCommandLineOptions value ) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public DataStoreCommandLineOptions getValue(
+			JobContext context,
+			Class<?> scope,
+			DataStoreCommandLineOptions defaultValue ) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 
 }
