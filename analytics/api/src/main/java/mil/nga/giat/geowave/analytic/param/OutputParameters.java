@@ -6,7 +6,7 @@ public class OutputParameters
 {
 	public enum Output
 			implements
-			ParameterEnum {
+			ParameterEnum<Object> {
 		REDUCER_COUNT(
 				Integer.class,
 				"orc",
@@ -22,7 +22,7 @@ public class OutputParameters
 				"oop",
 				"Output HDFS File Path",
 				true);
-		private final ParameterHelper<?> helper;
+		private final ParameterHelper<Object> helper;
 
 		private Output(
 				final Class baseClass,
@@ -43,7 +43,7 @@ public class OutputParameters
 		}
 
 		@Override
-		public ParameterHelper<?> getHelper() {
+		public ParameterHelper<Object> getHelper() {
 			return helper;
 		}
 	}

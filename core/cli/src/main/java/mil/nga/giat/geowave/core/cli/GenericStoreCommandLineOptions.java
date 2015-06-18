@@ -1,11 +1,12 @@
 package mil.nga.giat.geowave.core.cli;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.core.store.GenericStoreFactory;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.config.AbstractConfigOption;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.filter.GenericTypeResolver;

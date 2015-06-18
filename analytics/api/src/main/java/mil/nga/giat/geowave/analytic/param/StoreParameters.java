@@ -6,11 +6,7 @@ public class StoreParameters
 {
 	public enum StoreParam implements
 		ParameterEnum {
-			DATA_STORE(
-					DataStore.class,
-					"ds",
-					"The table namespace (optional; default is no namespace)",
-					true);
+			DATA_STORE(new DataStoreParameterHelper());
 		private final ParameterHelper<?> helper;
 
 		private StoreParam(

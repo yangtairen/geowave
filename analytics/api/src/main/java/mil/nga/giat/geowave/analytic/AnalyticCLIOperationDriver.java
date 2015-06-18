@@ -56,10 +56,8 @@ public class AnalyticCLIOperationDriver implements
 			return;
 		}
 		else {
-			final PropertyManagement pm = new PropertyManagement();
-			pm.buildFromOptions(commandLine);
 			try {
-				jobRunner.run(pm);
+				jobRunner.run(commandLine);
 			}
 			catch (final Exception e) {
 				LOGGER.error(

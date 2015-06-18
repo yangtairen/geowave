@@ -2,6 +2,7 @@ package mil.nga.giat.geowave.analytic.param;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.JobContext;
 
@@ -12,7 +13,8 @@ public interface ParameterHelper<T>
 	public Option[] getOptions();
 
 	public T getValue(
-			CommandLine commandline );
+			CommandLine commandline )
+			throws ParseException;
 
 	public void setValue(
 			Configuration config,

@@ -156,7 +156,7 @@ public class GeoWaveInputFormat<T> extends
 				context);
 	}
 
-	protected static String getGeoWaveNamespace(
+	public static String getGeoWaveNamespace(
 			final JobContext context ) {
 		return GeoWaveConfiguratorBase.getGeoWaveNamespace(
 				CLASS,
@@ -290,6 +290,13 @@ public class GeoWaveInputFormat<T> extends
 	public static Map<String, String> getStoreConfigOptions(
 			final JobContext context ) {
 		return GeoWaveConfiguratorBase.getStoreConfigOptions(
+				CLASS,
+				context);
+	}
+
+	public static String getDataStoreName(
+			final JobContext context ) {
+		return GeoWaveConfiguratorBase.getDataStoreName(
 				CLASS,
 				context);
 	}
