@@ -1,14 +1,7 @@
 package mil.nga.giat.geowave.core.geotime.store.query;
 
 import java.nio.ByteBuffer;
-
-import mil.nga.giat.geowave.core.geotime.GeometryUtils;
-import mil.nga.giat.geowave.core.geotime.store.filter.SpatialQueryFilter;
-import mil.nga.giat.geowave.core.geotime.store.filter.SpatialQueryFilter.CompareOperation;
-import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
-import mil.nga.giat.geowave.core.store.dimension.DimensionField;
-import mil.nga.giat.geowave.core.store.filter.QueryFilter;
-import mil.nga.giat.geowave.core.store.query.BasicQuery;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -16,6 +9,16 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKBWriter;
+
+import mil.nga.giat.geowave.core.geotime.GeometryUtils;
+import mil.nga.giat.geowave.core.geotime.store.filter.SpatialQueryFilter;
+import mil.nga.giat.geowave.core.geotime.store.filter.SpatialQueryFilter.CompareOperation;
+import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
+import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
+import mil.nga.giat.geowave.core.store.filter.QueryFilter;
+import mil.nga.giat.geowave.core.store.index.FilterableConstraints;
+import mil.nga.giat.geowave.core.store.query.BasicQuery;
 
 /**
  * The Spatial Query class represents a query in two dimensions. The constraint
@@ -49,6 +52,14 @@ public class SpatialQuery extends
 		super(
 				constraints);
 		this.queryGeometry = queryGeometry;
+	}
+
+	public SpatialQuery(
+			final Geometry queryGeometry,
+			Map<ByteArrayId, FilterableConstraints> additionalConstraints ) {
+		super(
+				GeometryUtils.basicConstraintsFromGeometry(queryGeometry),
+				additionalConstraints);
 	}
 
 	/**
@@ -103,7 +114,7 @@ public class SpatialQuery extends
 	@Override
 	protected QueryFilter createQueryFilter(
 			final MultiDimensionalNumericData constraints,
-			final DimensionField<?>[] dimensionFields ) {
+			final NumericDimensionField<?>[] dimensionFields ) {
 		return new SpatialQueryFilter(
 				constraints,
 				dimensionFields,
