@@ -10,6 +10,7 @@ import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.InputParameters;
 import mil.nga.giat.geowave.analytic.param.OutputParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
@@ -40,8 +41,7 @@ public abstract class GeoWaveAnalyticJobRunner extends
 		IndependentJobRunner
 {
 
-	protected static final Logger LOGGER = LoggerFactory.getLogger(
-			GeoWaveAnalyticJobRunner.class);
+	protected static final Logger LOGGER = LoggerFactory.getLogger(GeoWaveAnalyticJobRunner.class);
 
 	private FormatConfiguration inputFormat = null;
 	private FormatConfiguration outputFormat = null;
@@ -98,10 +98,9 @@ public abstract class GeoWaveAnalyticJobRunner extends
 	public int run(
 			final Configuration configuration,
 			final PropertyManagement runTimeProperties )
-					throws Exception {
+			throws Exception {
 
-		if (inputFormat == null && runTimeProperties.hasProperty(
-				InputParameters.Input.INPUT_FORMAT)) {
+		if ((inputFormat == null) && runTimeProperties.hasProperty(InputParameters.Input.INPUT_FORMAT)) {
 			inputFormat = runTimeProperties.getClassInstance(
 					InputParameters.Input.INPUT_FORMAT,
 					FormatConfiguration.class,
@@ -116,8 +115,7 @@ public abstract class GeoWaveAnalyticJobRunner extends
 					runTimeProperties,
 					configuration);
 		}
-		if (outputFormat == null && runTimeProperties.hasProperty(
-				OutputParameters.Output.OUTPUT_FORMAT)) {
+		if ((outputFormat == null) && runTimeProperties.hasProperty(OutputParameters.Output.OUTPUT_FORMAT)) {
 			outputFormat = runTimeProperties.getClassInstance(
 					OutputParameters.Output.OUTPUT_FORMAT,
 					FormatConfiguration.class,
@@ -136,18 +134,19 @@ public abstract class GeoWaveAnalyticJobRunner extends
 
 		runTimeProperties.setConfig(
 				new ParameterEnum[] {
-					CommonParameters.Common.ADAPTER_STORE_FACTORY,
-					CommonParameters.Common.INDEX_STORE_FACTORY
-		},
+					StoreParam.ADAPTER_STORE,
+					StoreParam.INDEX_STORE
+				},
 				configuration,
 				getScope());
 
 		OutputParameters.Output.REDUCER_COUNT.getHelper().setValue(
 				configuration,
 				getScope(),
-				new Integer(runTimeProperties.getPropertyAsInt(
-						OutputParameters.Output.REDUCER_COUNT,
-						reducerCount)));
+				new Integer(
+						runTimeProperties.getPropertyAsInt(
+								OutputParameters.Output.REDUCER_COUNT,
+								reducerCount)));
 		return mapReduceIntegrater.submit(
 				configuration,
 				runTimeProperties,
@@ -170,33 +169,13 @@ public abstract class GeoWaveAnalyticJobRunner extends
 				index);
 	}
 
-	public AdapterStore getAdapterStore(
-			final PropertyManagement runTimeProperties )
-					throws Exception {
-		return runTimeProperties.getClassInstance(
-				CommonParameters.Common.ADAPTER_STORE_FACTORY,
-				AdapterStoreFactory.class,
-				AccumuloAdapterStoreFactory.class).getAdapterStore(
-						runTimeProperties);
-	}
-
-	public IndexStore getIndexStore(
-			final PropertyManagement runTimeProperties )
-					throws Exception {
-		return runTimeProperties.getClassInstance(
-				CommonParameters.Common.INDEX_STORE_FACTORY,
-				IndexStoreFactory.class,
-				AccumuloIndexStoreFactory.class).getIndexStore(
-						runTimeProperties);
-	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public int run(
 			final String[] args )
-					throws Exception {
-		final Job job = mapReduceIntegrater.getJob(
-				this);
+			throws Exception {
+		final Job job = mapReduceIntegrater.getJob(this);
 
 		zookeeper = args[0];
 		instanceName = args[1];
@@ -204,8 +183,7 @@ public abstract class GeoWaveAnalyticJobRunner extends
 		password = args[3];
 		namespace = args[4];
 
-		configure(
-				job);
+		configure(job);
 
 		final ScopedJobConfiguration configWrapper = new ScopedJobConfiguration(
 				job,
@@ -217,8 +195,7 @@ public abstract class GeoWaveAnalyticJobRunner extends
 				null);
 
 		if (inputFormat != null) {
-			job.setInputFormatClass(
-					(Class<? extends InputFormat>) inputFormat.getFormatClass());
+			job.setInputFormatClass((Class<? extends InputFormat>) inputFormat.getFormatClass());
 		}
 
 		final FormatConfiguration outputFormat = configWrapper.getInstance(
@@ -227,56 +204,48 @@ public abstract class GeoWaveAnalyticJobRunner extends
 				null);
 
 		if (outputFormat != null) {
-			job.setOutputFormatClass(
-					(Class<? extends OutputFormat>) outputFormat.getFormatClass());
+			job.setOutputFormatClass((Class<? extends OutputFormat>) outputFormat.getFormatClass());
 		}
 
-		job.setJobName(
-				"GeoWave Convex Hull (" + namespace + ")");
+		job.setJobName("GeoWave Convex Hull (" + namespace + ")");
 
-		job.setNumReduceTasks(
-				configWrapper.getInt(
-						OutputParameters.Output.REDUCER_COUNT,
-						1));
+		job.setNumReduceTasks(configWrapper.getInt(
+				OutputParameters.Output.REDUCER_COUNT,
+				1));
 
-		job.setJarByClass(
-				this.getClass());
+		job.setJarByClass(this.getClass());
 
-		return (mapReduceIntegrater.waitForCompletion(
-				job)) ? 0 : 1;
+		return (mapReduceIntegrater.waitForCompletion(job)) ? 0 : 1;
 	}
 
 	public abstract void configure(
 			final Job job )
-					throws Exception;
+			throws Exception;
 
 	@Override
 	public void fillOptions(
 			final Set<Option> options ) {
 		if (inputFormat != null) {
-			inputFormat.fillOptions(
-					options);
+			inputFormat.fillOptions(options);
 		}
 		if (outputFormat != null) {
-			outputFormat.fillOptions(
-					options);
+			outputFormat.fillOptions(options);
 		}
 
 		PropertyManagement.fillOptions(
 				options,
 				new ParameterEnum[] {
-					CommonParameters.Common.ADAPTER_STORE_FACTORY,
-					CommonParameters.Common.INDEX_STORE_FACTORY
-		});
+					StoreParam.ADAPTER_STORE,
+					StoreParam.INDEX_STORE
+				});
 	}
 
 	@Override
 	public int run(
 			final PropertyManagement runTimeProperties )
-					throws Exception {
+			throws Exception {
 		return this.run(
-				MapReduceJobController.getConfiguration(
-						runTimeProperties),
+				MapReduceJobController.getConfiguration(runTimeProperties),
 				runTimeProperties);
 	}
 }

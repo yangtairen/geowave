@@ -6,18 +6,13 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 
-import org.apache.accumulo.core.client.Scanner;
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Value;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,15 +20,15 @@ import org.slf4j.LoggerFactory;
 /**
  * Find the max change in distortion between some k and k-1, picking the value k
  * associated with that change.
- * 
+ *
  * In a multi-group setting, each group may have a different optimal k. Thus,
  * the optimal batch may be different for each group. Each batch is associated
  * with a different value k.
- * 
+ *
  * Choose the appropriate batch for each group. Then change the batch identifier
  * for group centroids to a final provided single batch identifier ( parent
  * batch ).
- * 
+ *
  */
 public class DistortionGroupManagement
 {
@@ -41,7 +36,7 @@ public class DistortionGroupManagement
 	final static Logger LOGGER = LoggerFactory.getLogger(DistortionGroupManagement.class);
 
 	/**
-	 * 
+	 *
 	 * @param ops
 	 * @param distortationTableName
 	 *            the name of the table holding the distortions
@@ -50,9 +45,9 @@ public class DistortionGroupManagement
 	 * @return
 	 */
 	public static <T> int retainBestGroups(
-			DataStore dataStore, 
-			IndexStore indexStore,
-			AdapterStore adapterStore,
+			final DataStore dataStore,
+			final IndexStore indexStore,
+			final AdapterStore adapterStore,
 			final AnalyticItemWrapperFactory<T> itemWrapperFactory,
 			final String dataTypeId,
 			final String indexId,
@@ -65,9 +60,9 @@ public class DistortionGroupManagement
 
 			// row id is group id
 			// colQual is cluster count
-			try(CloseableIterator<?> it = dataStore.query(null)){
-				while (it.hasNext()){
-					it.next();
+			try (CloseableIterator<?> it = dataStore.query(null)) {
+				while (it.hasNext()) {
+					entry = it.next();
 					final String groupID = entry.getKey().getRow().toString();
 					final Integer clusterCount = Integer.parseInt(entry.getKey().getColumnQualifier().toString());
 					final Double distortion = Double.parseDouble(entry.getValue().toString());
@@ -121,13 +116,13 @@ public class DistortionGroupManagement
 		final List<Pair<Integer, Double>> clusterCountToDistortion = new ArrayList<Pair<Integer, Double>>();
 
 		public DistortionGroup(
-				String groupID ) {
+				final String groupID ) {
 			this.groupID = groupID;
 		}
 
 		public void addPair(
-				Integer count,
-				Double distortation ) {
+				final Integer count,
+				final Double distortation ) {
 			clusterCountToDistortion.add(Pair.of(
 					count,
 					distortation));
@@ -144,8 +139,8 @@ public class DistortionGroupManagement
 
 						@Override
 						public int compare(
-								Pair<Integer, Double> arg0,
-								Pair<Integer, Double> arg1 ) {
+								final Pair<Integer, Double> arg0,
+								final Pair<Integer, Double> arg1 ) {
 							return arg0.getKey().compareTo(
 									arg1.getKey());
 						}

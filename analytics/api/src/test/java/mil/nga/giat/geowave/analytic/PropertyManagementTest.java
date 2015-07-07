@@ -13,13 +13,12 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.extract.EmptyDimensionExtractor;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
+import mil.nga.giat.geowave.analytic.param.BasicParameterHelper;
 import mil.nga.giat.geowave.analytic.param.ExtractParameters;
-import mil.nga.giat.geowave.analytic.param.GlobalParameters;
-import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.InputParameters.Input;
+import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+import mil.nga.giat.geowave.analytic.param.ParameterHelper;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 
@@ -29,7 +28,9 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.JobContext;
 import org.junit.Test;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -153,25 +154,6 @@ public class PropertyManagementTest
 				pm.getPropertyAsPath(Input.HDFS_INPUT_PATH));
 	}
 
-	@Test
-	public void testOption() {
-		final Set<Option> options = new HashSet<Option>();
-		PropertyManagement.fillOptions(
-				options,
-				new ParameterEnum[] {
-					StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-				});
-		assertEquals(
-				1,
-				options.size());
-		PropertyManagement.removeOption(
-				options,
-				StoreParameters.DataStoreParam.ACCUMULO_INSTANCE);
-		assertEquals(
-				0,
-				options.size());
-	}
-
 	public static class NonSerializableExample
 	{
 		int v = 1;
@@ -184,19 +166,45 @@ public class PropertyManagementTest
 		ARG1;
 
 		@Override
-		public Class<?> getBaseClass() {
-			return NonSerializableExample.class;
-		}
-
-		@Override
 		public Enum<?> self() {
 			return this;
 		}
 
 		@Override
-		public Option getOption() {
-			// TODO Auto-generated method stub
-			return null;
+		public ParameterHelper getHelper() {
+			return new ParameterHelper<NonSerializableExample>() {
+
+				@Override
+				public Class<NonSerializableExample> getBaseClass() {
+					return NonSerializableExample.class;
+				}
+
+				@Override
+				public Option[] getOptions() {
+					return null;
+				}
+
+				@Override
+				public NonSerializableExample getValue(
+						final CommandLine commandline )
+						throws ParseException {
+					return null;
+				}
+
+				@Override
+				public void setValue(
+						final Configuration config,
+						final Class<?> scope,
+						final NonSerializableExample value ) {}
+
+				@Override
+				public NonSerializableExample getValue(
+						final JobContext context,
+						final Class<?> scope,
+						final NonSerializableExample defaultValue ) {
+					return null;
+				}
+			};
 		}
 	}
 
@@ -206,7 +214,7 @@ public class PropertyManagementTest
 		final PropertyManagement.PropertyConverter<NonSerializableExample> converter = new PropertyManagement.PropertyConverter<NonSerializableExample>() {
 
 			/**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 
@@ -221,7 +229,7 @@ public class PropertyManagementTest
 			@Override
 			public NonSerializableExample convert(
 					final Serializable ob,
-					PropertyManagement pm )
+					final PropertyManagement pm )
 					throws Exception {
 				assertTrue(ob instanceof Integer);
 				return new NonSerializableExample();
@@ -298,25 +306,19 @@ public class PropertyManagementTest
 				"rd",
 				"test id",
 				false);
-		private final Option option;
-		private final Class<?> baseClass;
+		private final ParameterHelper<Object> helper;
 
 		MyLocalBoolEnum(
-				final Class<?> baseClass,
+				final Class baseClass,
 				final String name,
 				final String description,
-				boolean hasArg ) {
-			this.baseClass = baseClass;
-			this.option = PropertyManagement.newOption(
+				final boolean hasArg ) {
+			helper = new BasicParameterHelper(
 					this,
+					baseClass,
 					name,
 					description,
 					hasArg);
-		}
-
-		@Override
-		public Class<?> getBaseClass() {
-			return baseClass;
 		}
 
 		@Override
@@ -325,8 +327,8 @@ public class PropertyManagementTest
 		}
 
 		@Override
-		public Option getOption() {
-			return option;
+		public ParameterHelper getHelper() {
+			return helper;
 		}
 	}
 
@@ -334,19 +336,24 @@ public class PropertyManagementTest
 	public void testCommandLine()
 			throws ParseException {
 		final PropertyManagement pm = new PropertyManagement();
+		final Set<Option> optionSet = new HashSet<Option>();
+		PropertyManagement.fillOptions(
+				optionSet,
+				new ParameterEnum[] {
+					ExtractParameters.Extract.ADAPTER_ID,
+					MyLocalBoolEnum.BOOLEAN_ARG1,
+					MyLocalBoolEnum.BOOLEAN_ARG2
+				});
+
 		final Options options = new Options();
-		options.addOption(PropertyManagement.newOption(
-				ExtractParameters.Extract.ADAPTER_ID,
-				"id",
-				"test id",
-				true));
-		options.addOption(MyLocalBoolEnum.BOOLEAN_ARG1.getOption());
-		options.addOption(MyLocalBoolEnum.BOOLEAN_ARG2.getOption());
+		for (final Option opt : optionSet) {
+			options.addOption(opt);
+		}
 		final BasicParser parser = new BasicParser();
 		final CommandLine commandLine = parser.parse(
 				options,
 				new String[] {
-					"-id",
+					"-eit",
 					"y",
 					"-rd"
 				});

@@ -1,13 +1,13 @@
 package mil.nga.giat.geowave.analytic.param;
 
+import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
+import mil.nga.giat.geowave.core.index.ByteArrayUtils;
+import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.JobContext;
-
-import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
-import mil.nga.giat.geowave.core.index.ByteArrayUtils;
-import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 
 public class BasicParameterHelper implements
 		ParameterHelper<Object>
@@ -102,8 +102,7 @@ public class BasicParameterHelper implements
 						GeoWaveConfiguratorBase.enumToConfKey(
 								clazz,
 								configItem.self()),
-						ByteArrayUtils.byteArrayToString(
-								(byte[]) val));
+						ByteArrayUtils.byteArrayToString((byte[]) val));
 			}
 			else {
 				config.set(
@@ -118,13 +117,12 @@ public class BasicParameterHelper implements
 
 	private static final Option newOption(
 			final ParameterEnum e,
-			final String shortCut,
+			final String name,
 			final String description,
 			final boolean hasArg ) {
 		return new Option(
-				shortCut,
-				toPropertyName(
-						e),
+				name,
+				toPropertyName(e),
 				hasArg,
 				description);
 	}
@@ -144,33 +142,24 @@ public class BasicParameterHelper implements
 		final ScopedJobConfiguration scopedConfig = new ScopedJobConfiguration(
 				context,
 				scope);
-		if (baseClass.isAssignableFrom(
-				Integer.class)) {
+		if (baseClass.isAssignableFrom(Integer.class)) {
 			return new Integer(
 					scopedConfig.getInt(
 							parent.self(),
 							((Integer) defaultValue).intValue()));
 		}
-		else if (baseClass.isAssignableFrom(
-				String.class)) {
+		else if (baseClass.isAssignableFrom(String.class)) {
 			return scopedConfig.getString(
 					parent.self(),
 					defaultValue.toString());
-		}else if (baseClass.isAssignableFrom(
-				Double.class)) {
+		}
+		else if (baseClass.isAssignableFrom(Double.class)) {
 			return scopedConfig.getDouble(
 					parent.self(),
-					(Double)defaultValue);
+					(Double) defaultValue);
 		}
-		else if (baseClass.isAssignableFrom(byte[].class)){
-			return scopedConfig.getBytes(
-					parent.self());
-		}
-		else if (baseClass.isAssignableFrom(
-				Class.class)) {
-			return scopedConfig.getInstance(parent.self(), iface, defaultValue)
-					,
-					(Double)defaultValue);
+		else if (baseClass.isAssignableFrom(byte[].class)) {
+			return scopedConfig.getBytes(parent.self());
 		}
 		return null;
 	}
@@ -178,6 +167,22 @@ public class BasicParameterHelper implements
 	@Override
 	public Object getValue(
 			final CommandLine commandline ) {
+		final String optionValueStr = commandline.getOptionValue(options[0].getArgName());
+		if (optionValueStr == null) {
+			return null;
+		}
+		if (baseClass.isAssignableFrom(Integer.class)) {
+			return Integer.parseInt(optionValueStr);
+		}
+		else if (baseClass.isAssignableFrom(String.class)) {
+			return optionValueStr;
+		}
+		else if (baseClass.isAssignableFrom(Double.class)) {
+			return Double.parseDouble(optionValueStr);
+		}
+		else if (baseClass.isAssignableFrom(byte[].class)) {
+			return ByteArrayUtils.byteArrayFromString(optionValueStr);
+		}
 		return null;
 	}
 }

@@ -107,10 +107,9 @@ public class ClusteringUtils
 	public static DataAdapter[] getAdapters(
 			final PropertyManagement propertyManagement )
 					throws IOException {
-		final BasicAccumuloOperations ops;
 		try {
-
-			final AdapterStore adapterStore = propertyManagement.getClassInstance(
+			StoreParameters.StoreParam.ADAPTER_STORE.getHelper().getValue(context, scope, null);
+			final AdapterStore adapterStore = propertyManagement.ggetClassInstance(
 					CommonParameters.Common.ADAPTER_STORE_FACTORY,
 					AdapterStoreFactory.class,
 					AccumuloAdapterStoreFactory.class).getAdapterStore(

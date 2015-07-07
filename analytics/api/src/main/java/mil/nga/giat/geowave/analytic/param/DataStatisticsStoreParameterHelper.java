@@ -2,9 +2,9 @@ package mil.nga.giat.geowave.analytic.param;
 
 import java.util.Map;
 
-import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
-import mil.nga.giat.geowave.core.store.DataStoreFactorySpi;
+import mil.nga.giat.geowave.core.cli.DataStatisticsStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 
@@ -15,35 +15,35 @@ import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.JobContext;
 
-public class DataStoreParameterHelper implements
-		ParameterHelper<DataStoreCommandLineOptions>
+public class DataStatisticsStoreParameterHelper implements
+		ParameterHelper<DataStatisticsStoreCommandLineOptions>
 {
 	@Override
-	public Class<DataStoreCommandLineOptions> getBaseClass() {
-		return DataStoreCommandLineOptions.class;
+	public Class<DataStatisticsStoreCommandLineOptions> getBaseClass() {
+		return DataStatisticsStoreCommandLineOptions.class;
 	}
 
 	@Override
 	public Option[] getOptions() {
 		final Options allOptions = new Options();
-		DataStoreCommandLineOptions.applyOptions(allOptions);
+		DataStatisticsStoreCommandLineOptions.applyOptions(allOptions);
 		return (Option[]) allOptions.getOptions().toArray(
 				new Option[] {});
 	}
 
 	@Override
-	public DataStoreCommandLineOptions getValue(
+	public DataStatisticsStoreCommandLineOptions getValue(
 			final CommandLine commandLine )
 			throws ParseException {
-		return DataStoreCommandLineOptions.parseOptions(commandLine);
+		return DataStatisticsStoreCommandLineOptions.parseOptions(commandLine);
 	}
 
 	@Override
 	public void setValue(
 			final Configuration config,
 			final Class<?> scope,
-			final DataStoreCommandLineOptions value ) {
-		GeoWaveInputFormat.setDataStoreName(
+			final DataStatisticsStoreCommandLineOptions value ) {
+		GeoWaveInputFormat.setDataStatisticsStoreName(
 				config,
 				value.getFactory().getName());
 		GeoWaveInputFormat.setStoreConfigOptions(
@@ -57,17 +57,17 @@ public class DataStoreParameterHelper implements
 	}
 
 	@Override
-	public DataStoreCommandLineOptions getValue(
+	public DataStatisticsStoreCommandLineOptions getValue(
 			final JobContext context,
 			final Class<?> scope,
-			final DataStoreCommandLineOptions defaultValue ) {
+			final DataStatisticsStoreCommandLineOptions defaultValue ) {
 		final Map<String, String> configOptions = GeoWaveInputFormat.getStoreConfigOptions(context);
-		final String dataStoreName = GeoWaveInputFormat.getDataStoreName(context);
+		final String dataStatisticsStoreName = GeoWaveInputFormat.getDataStatisticsStoreName(context);
 		final String geowaveNamespace = GeoWaveInputFormat.getGeoWaveNamespace(context);
-		if ((dataStoreName != null) && (!dataStoreName.isEmpty())) {
-			final DataStoreFactorySpi factory = GeoWaveStoreFinder.getRegisteredDataStoreFactories().get(
-					dataStoreName);
-			return new DataStoreCommandLineOptions(
+		if ((dataStatisticsStoreName != null) && (!dataStatisticsStoreName.isEmpty())) {
+			final DataStatisticsStoreFactorySpi factory = GeoWaveStoreFinder.getRegisteredDataStatisticsStoreFactories().get(
+					dataStatisticsStoreName);
+			return new DataStatisticsStoreCommandLineOptions(
 					factory,
 					ConfigUtils.valuesFromStrings(
 							configOptions,
@@ -77,7 +77,5 @@ public class DataStoreParameterHelper implements
 		else {
 			return null;
 		}
-
 	}
-
 }

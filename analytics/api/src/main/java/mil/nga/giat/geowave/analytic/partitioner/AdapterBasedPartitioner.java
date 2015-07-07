@@ -6,16 +6,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.JobContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.SerializableAdapterStore;
-import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.partitioner.AdapterBasedPartitioner.AdapterDataEntry;
+import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.index.dimension.LongitudeDefinition;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.dimension.NumericDimensionDefinition;
@@ -28,12 +24,17 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.JobContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class uses the {@link DataAdapter} to decode the dimension fields to be
- * indexed. Although seemingly more flexible than the {@link
- * OrthodromicDistancePartitioner}, handling different types of data entries,
- * the assumption is that each object decode by the adapter provides the fields
- * required according to the supplied model.
+ * indexed. Although seemingly more flexible than the
+ * {@link OrthodromicDistancePartitioner}, handling different types of data
+ * entries, the assumption is that each object decode by the adapter provides
+ * the fields required according to the supplied model.
  *
  * The user provides the distances per dimension. It us up to the user to
  * convert geographic distance into distance in degrees per longitude and
@@ -41,18 +42,18 @@ import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
  *
  * This class depends on an AdapterStore. Since an AdapterStore is not
  * Serializable, the dependency is transient requiring initialization after
- * serialization {@link AdapterBasedPartitioner#initialize(ConfigurationWrapper)
+ * serialization
+ * {@link AdapterBasedPartitioner#initialize(ConfigurationWrapper)
  *
  *
  */
 public class AdapterBasedPartitioner extends
-		AbstractPartitioner<AdapterDataEntry>implements
+		AbstractPartitioner<AdapterDataEntry> implements
 		Partitioner<AdapterDataEntry>,
 		Serializable
 {
 
-	final static Logger LOGGER = LoggerFactory.getLogger(
-			AdapterBasedPartitioner.class);
+	final static Logger LOGGER = LoggerFactory.getLogger(AdapterBasedPartitioner.class);
 
 	private static final long serialVersionUID = 5951564193108204266L;
 
@@ -96,8 +97,7 @@ public class AdapterBasedPartitioner extends
 		final NumericDataHolder numericDataHolder = new NumericDataHolder();
 
 		@SuppressWarnings("unchecked")
-		final DataAdapter<Object> adapter = (DataAdapter<Object>) adapterStore.getAdapter(
-				entry.adapterId);
+		final DataAdapter<Object> adapter = (DataAdapter<Object>) adapterStore.getAdapter(entry.adapterId);
 		if (adapter == null) {
 			LOGGER.error(
 					"Unable to find an adapter for id {}",
@@ -108,8 +108,7 @@ public class AdapterBasedPartitioner extends
 				entry.data,
 				getIndex().getIndexModel());
 		final double[] thetas = getDistancePerDimension();
-		final MultiDimensionalNumericData primaryData = encoding.getNumericData(
-				getIndex().getIndexModel().getDimensions());
+		final MultiDimensionalNumericData primaryData = encoding.getNumericData(getIndex().getIndexModel().getDimensions());
 		numericDataHolder.primary = primaryData;
 		numericDataHolder.expansion = querySet(
 				primaryData,
@@ -132,23 +131,16 @@ public class AdapterBasedPartitioner extends
 	public void initialize(
 			final JobContext context,
 			final Class<?> scope )
-					throws IOException {
+			throws IOException {
 		super.initialize(
 				context,
 				scope);
-		try {
-			adapterStore = new SerializableAdapterStore(
-					context.getInstance(
-							CommonParameters.Common.ADAPTER_STORE_FACTORY,
-							AdapterStoreFactory.class,
-							AccumuloAdapterStoreFactory.class).getAdapterStore(
-									context));
-		}
-		catch (InstantiationException | IllegalAccessException e) {
-			throw new IOException(
-					"Cannot instantiate and connect to the adapter data store",
-					e);
-		}
+		adapterStore = new SerializableAdapterStore(
+				((AdapterStoreCommandLineOptions) StoreParameters.StoreParam.ADAPTER_STORE.getHelper().getValue(
+						context,
+						scope,
+						null)).createStore());
+
 		init();
 	}
 
@@ -161,13 +153,13 @@ public class AdapterBasedPartitioner extends
 				runTimeProperties,
 				scope,
 				configuration);
-		RunnerUtils.setParameter(
+		final ParameterEnum[] params = new ParameterEnum[] {
+			StoreParameters.StoreParam.ADAPTER_STORE
+		};
+		runTimeProperties.setConfig(
+				params,
 				configuration,
-				scope,
-				runTimeProperties,
-				new ParameterEnum[] {
-					CommonParameters.Common.ADAPTER_STORE_FACTORY
-		});
+				scope);
 	}
 
 	protected MultiDimensionalNumericData[] querySet(
@@ -198,10 +190,9 @@ public class AdapterBasedPartitioner extends
 			final MultiDimensionalNumericData dimensionsData,
 			final int d ) {
 		if (d == currentData.length) {
-			resultList.add(
-					Arrays.copyOf(
-							currentData,
-							currentData.length));
+			resultList.add(Arrays.copyOf(
+					currentData,
+					currentData.length));
 			return;
 		}
 

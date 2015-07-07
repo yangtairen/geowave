@@ -10,6 +10,7 @@ import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters.Global;
+import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
@@ -39,10 +40,10 @@ public class GeoWaveInputFormatConfiguration implements
 			final PropertyManagement runTimeProperties,
 			final Configuration configuration )
 			throws Exception {
-		DataStoreCommandLineOptions dataStoreOptions = (DataStoreCommandLineOptions) runTimeProperties.get(Global.DATA_STORE);
+		DataStoreCommandLineOptions dataStoreOptions = (DataStoreCommandLineOptions) runTimeProperties.getProperty(StoreParam.DATA_STORE);
 		GeoWaveInputFormat.setDataStoreName(
 				configuration,
-				dataStoreFactory.getName());
+				dataStoreOptions.getName());
 		GeoWaveInputFormat.setStoreConfigOptions(
 				conf,
 				ConfigUtils.valuesToStrings(
