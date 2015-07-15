@@ -8,10 +8,24 @@ import java.util.List;
 import java.util.Map;
 
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
+import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
+import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
+import mil.nga.giat.geowave.core.store.data.PersistentDataset;
+import mil.nga.giat.geowave.core.store.data.field.FieldReader;
+import mil.nga.giat.geowave.core.store.data.field.FieldUtils;
+import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
+import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
+import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
+import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
+import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.index.NullIndex;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -34,6 +48,8 @@ public class DistortionGroupManagement
 {
 
 	final static Logger LOGGER = LoggerFactory.getLogger(DistortionGroupManagement.class);
+	public final static Index DISTORTION_GROUP_INDEX = new NullIndex(
+			"DISTORTION_GROUPS");
 
 	/**
 	 *
@@ -60,12 +76,15 @@ public class DistortionGroupManagement
 
 			// row id is group id
 			// colQual is cluster count
-			try (CloseableIterator<?> it = dataStore.query(null)) {
+			try (CloseableIterator<DistortionEntry> it = dataStore.query(
+					new DistortionDataAdapter(),
+					DISTORTION_GROUP_INDEX,
+					null)) {
 				while (it.hasNext()) {
-					entry = it.next();
-					final String groupID = entry.getKey().getRow().toString();
-					final Integer clusterCount = Integer.parseInt(entry.getKey().getColumnQualifier().toString());
-					final Double distortion = Double.parseDouble(entry.getValue().toString());
+					final DistortionEntry entry = it.next();
+					final String groupID = entry.getGroupId();
+					final Integer clusterCount = entry.getClusterCount();
+					final Double distortion = entry.getDistortionValue();
 
 					DistortionGroup grp = groupDistortions.get(groupID);
 					if (grp == null) {
@@ -82,7 +101,9 @@ public class DistortionGroupManagement
 			}
 
 			final CentroidManagerGeoWave<T> centroidManager = new CentroidManagerGeoWave<T>(
-					ops,
+					dataStore,
+					indexStore,
+					adapterStore,
 					itemWrapperFactory,
 					dataTypeId,
 					indexId,
@@ -110,6 +131,49 @@ public class DistortionGroupManagement
 		return 0;
 	}
 
+	public static class DistortionEntry
+	{
+		private final String groupId;
+		private final Integer clusterCount;
+		private final Double distortionValue;
+
+		public DistortionEntry(
+				final String groupId,
+				final Integer clusterCount,
+				final Double distortionValue ) {
+			this.groupId = groupId;
+			this.clusterCount = clusterCount;
+			this.distortionValue = distortionValue;
+		}
+
+		private DistortionEntry(
+				final ByteArrayId dataId,
+				final Double distortionValue ) {
+			final String dataIdStr = StringUtils.stringFromBinary(dataId.getBytes());
+			final String[] split = dataIdStr.split("/");
+			groupId = split[0];
+			clusterCount = Integer.parseInt(split[1]);
+			this.distortionValue = distortionValue;
+		}
+
+		public String getGroupId() {
+			return groupId;
+		}
+
+		public Integer getClusterCount() {
+			return clusterCount;
+		}
+
+		public Double getDistortionValue() {
+			return distortionValue;
+		}
+
+		private ByteArrayId getDataId() {
+			return new ByteArrayId(
+					groupId + "/" + clusterCount);
+		}
+	}
+
 	private static class DistortionGroup
 	{
 		final String groupID;
@@ -122,10 +186,10 @@ public class DistortionGroupManagement
 
 		public void addPair(
 				final Integer count,
-				final Double distortation ) {
+				final Double distortion ) {
 			clusterCountToDistortion.add(Pair.of(
 					count,
-					distortation));
+					distortion));
 		}
 
 		public String getGroupID() {
@@ -159,4 +223,103 @@ public class DistortionGroupManagement
 			return jumpIdx;
 		}
 	}
+
+	public static class DistortionDataAdapter implements
+			WritableDataAdapter<DistortionEntry>
+	{
+		public final static ByteArrayId ADAPTER_ID = new ByteArrayId(
+				"distortion");
+		private final static ByteArrayId DISTORTION_FIELD_ID = new ByteArrayId(
+				"distortion");
+		private final FieldVisibilityHandler<DistortionEntry, Object> distortionVisibilityHandler;
+
+		public DistortionDataAdapter() {
+			this(
+					null);
+		}
+
+		public DistortionDataAdapter(
+				final FieldVisibilityHandler<DistortionEntry, Object> distortionVisibilityHandler ) {
+			this.distortionVisibilityHandler = distortionVisibilityHandler;
+		}
+
+		@Override
+		public ByteArrayId getAdapterId() {
+			return ADAPTER_ID;
+		}
+
+		@Override
+		public boolean isSupported(
+				final DistortionEntry entry ) {
+			return true;
+		}
+
+		@Override
+		public ByteArrayId getDataId(
+				final DistortionEntry entry ) {
+			return getDataId(entry);
+		}
+
+		@Override
+		public DistortionEntry decode(
+				final IndexedAdapterPersistenceEncoding data,
+				final Index index ) {
+			return new DistortionEntry(
+					data.getDataId(),
+					(Double) data.getAdapterExtendedData().getValue(
+							DISTORTION_FIELD_ID));
+		}
+
+		@Override
+		public AdapterPersistenceEncoding encode(
+				final DistortionEntry entry,
+				final CommonIndexModel indexModel ) {
+			final Map<ByteArrayId, Object> fieldIdToValueMap = new HashMap<ByteArrayId, Object>();
+			fieldIdToValueMap.put(
+					DISTORTION_FIELD_ID,
+					entry.getDistortionValue());
+			return new AdapterPersistenceEncoding(
+					getAdapterId(),
+					entry.getDataId(),
+					new PersistentDataset<CommonIndexValue>(),
+					new PersistentDataset<Object>(
+							fieldIdToValueMap));
+		}
+
+		@Override
+		public FieldReader<Object> getReader(
+				final ByteArrayId fieldId ) {
+			if (DISTORTION_FIELD_ID.equals(fieldId)) {
+				return (FieldReader) FieldUtils.getDefaultReaderForClass(Double.class);
+			}
+			return null;
+		}
+
+		@Override
+		public byte[] toBinary() {
+			return new byte[] {};
+		}
+
+		@Override
+		public void fromBinary(
+				final byte[] bytes ) {}
+
+		@Override
+		public FieldWriter<DistortionEntry, Object> getWriter(
+				final ByteArrayId fieldId ) {
+			if (DISTORTION_FIELD_ID.equals(fieldId)) {
+				if (distortionVisibilityHandler != null) {
+					return (FieldWriter) FieldUtils.getDefaultWriterForClass(
+							Double.class,
+							distortionVisibilityHandler);
+				}
+				else {
+					return (FieldWriter) FieldUtils.getDefaultWriterForClass(Double.class);
+				}
+			}
+			return null;
+		}
+
+	}
+
 }

@@ -6,11 +6,10 @@ import java.util.UUID;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
-import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
+import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.extract.DimensionExtractor;
 import mil.nga.giat.geowave.analytic.extract.EmptyDimensionExtractor;
-import mil.nga.giat.geowave.analytic.mapreduce.JobContextConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.core.index.StringUtils;
@@ -33,29 +32,29 @@ import com.vividsolutions.jts.geom.Geometry;
  * geometry projected onto CRS EPSG:4326. The output feature contains the ID of
  * the originating object. The intent is to create a light weight uniform object
  * that reuses GeoWave data formats to feed analytic processes.
- * 
+ *
  * If the input object does not require adjustment after de-duplication, use
  * {@link mil.nga.giat.geowave.accumulo.mapreduce.dedupe.GeoWaveDedupReducer}
- * 
+ *
  * OutputFeature Attributes, see
  * {@link mil.nga.giat.geowave.analytic.AnalyticFeature.ClusterFeatureAttribute}
- * 
+ *
  * Context configuration parameters include:
- * 
+ *
  * @formatter:off
- * 
- * 
+ *
+ *
  *                "SimpleFeatureOutputReducer.Extract.DimensionExtractClass" ->
  *                {@link DimensionExtractor} to extract non-geometric dimensions
- * 
+ *
  *                "SimpleFeatureOutputReducer.Extract.OutputDataTypeId" -> the
  *                name of the output SimpleFeature data type
- * 
+ *
  *                "SimpleFeatureOutputReducer.Global.BatchId" ->the id of the
  *                batch; defaults to current time in millis (for range
  *                comparisons)
- * 
- * 
+ *
+ *
  * @formatter:on
  */
 
@@ -120,7 +119,7 @@ public class SimpleFeatureOutputReducer extends
 			throws IOException,
 			InterruptedException {
 		super.setup(context);
-		final ConfigurationWrapper config = new JobContextConfigurationWrapper(
+		final ScopedJobConfiguration config = new ScopedJobConfiguration(
 				context,
 				SimpleFeatureOutputReducer.class);
 

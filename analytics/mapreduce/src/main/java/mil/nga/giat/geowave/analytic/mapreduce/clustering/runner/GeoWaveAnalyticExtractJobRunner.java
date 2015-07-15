@@ -1,5 +1,8 @@
 package mil.nga.giat.geowave.analytic.mapreduce.clustering.runner;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -7,19 +10,19 @@ import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
 import mil.nga.giat.geowave.analytic.IndependentJobRunner;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.RunnerUtils;
+import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.extract.DimensionExtractor;
 import mil.nga.giat.geowave.analytic.extract.SimpleFeatureGeometryExtractor;
-import mil.nga.giat.geowave.analytic.mapreduce.JobContextConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.mapreduce.MapReduceJobController;
 import mil.nga.giat.geowave.analytic.mapreduce.MapReduceJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.clustering.SimpleFeatureOutputReducer;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
@@ -29,7 +32,6 @@ import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.dedupe.GeoWaveDedupeJobRunner;
 import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputFormat;
 
-import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
@@ -37,11 +39,11 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
- * 
+ *
  * Run a map reduce job to extract a population of data from GeoWave (Accumulo),
  * remove duplicates, and output a SimpleFeature with the ID and the extracted
  * geometry from each of the GeoWave data item.
- * 
+ *
  */
 public class GeoWaveAnalyticExtractJobRunner extends
 		GeoWaveDedupeJobRunner implements
@@ -68,7 +70,7 @@ public class GeoWaveAnalyticExtractJobRunner extends
 			final Job job )
 			throws Exception {
 
-		JobContextConfigurationWrapper configWrapper = new JobContextConfigurationWrapper(
+		final ScopedJobConfiguration configWrapper = new ScopedJobConfiguration(
 				job,
 				SimpleFeatureOutputReducer.class);
 
@@ -244,30 +246,24 @@ public class GeoWaveAnalyticExtractJobRunner extends
 	}
 
 	@Override
-	public void fillOptions(
-			final Set<Option> options ) {
-		PropertyManagement.fillOptions(
-				options,
-				new ParameterEnum[] {
-					ExtractParameters.Extract.REDUCER_COUNT,
-					ExtractParameters.Extract.OUTPUT_DATA_TYPE_ID,
-					ExtractParameters.Extract.DATA_NAMESPACE_URI,
-					ExtractParameters.Extract.DIMENSION_EXTRACT_CLASS,
-					ExtractParameters.Extract.INDEX_ID,
-					ExtractParameters.Extract.ADAPTER_ID,
-					ExtractParameters.Extract.MIN_INPUT_SPLIT,
-					ExtractParameters.Extract.MAX_INPUT_SPLIT,
-					ExtractParameters.Extract.QUERY,
-					StoreParameters.DataStoreParam.ZOOKEEKER,
-					StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-					StoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
-					StoreParameters.DataStoreParam.ACCUMULO_USER,
-					StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
-					GlobalParameters.Global.BATCH_ID
-				});
+	public Collection<ParameterEnum<?>> getParameters() {
+		final Set<ParameterEnum<?>> params = new HashSet<ParameterEnum<?>>();
+		params.addAll(Arrays.asList(new ParameterEnum<?>[] {
+			ExtractParameters.Extract.REDUCER_COUNT,
+			ExtractParameters.Extract.OUTPUT_DATA_TYPE_ID,
+			ExtractParameters.Extract.DATA_NAMESPACE_URI,
+			ExtractParameters.Extract.DIMENSION_EXTRACT_CLASS,
+			ExtractParameters.Extract.INDEX_ID,
+			ExtractParameters.Extract.ADAPTER_ID,
+			ExtractParameters.Extract.MIN_INPUT_SPLIT,
+			ExtractParameters.Extract.MAX_INPUT_SPLIT,
+			ExtractParameters.Extract.QUERY,
+			StoreParam.DATA_STORE,
+			GlobalParameters.Global.BATCH_ID
+		}));
 
-		MapReduceParameters.fillOptions(options);
-
+		params.addAll(MapReduceParameters.getParameters());
+		return params;
 	}
 
 	@Override

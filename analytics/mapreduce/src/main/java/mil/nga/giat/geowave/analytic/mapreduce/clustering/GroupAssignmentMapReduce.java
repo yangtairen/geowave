@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
-import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
+import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
 import mil.nga.giat.geowave.analytic.clustering.CentroidPairing;
@@ -16,7 +16,6 @@ import mil.nga.giat.geowave.analytic.extract.CentroidExtractor;
 import mil.nga.giat.geowave.analytic.extract.SimpleFeatureCentroidExtractor;
 import mil.nga.giat.geowave.analytic.kmeans.AssociationNotification;
 import mil.nga.giat.geowave.analytic.mapreduce.GroupIDText;
-import mil.nga.giat.geowave.analytic.mapreduce.JobContextConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.mapreduce.GeoWaveWritableInputMapper;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
@@ -30,30 +29,30 @@ import org.slf4j.LoggerFactory;
  * Adjust input items so that so that the assigned centroid becomes the group
  * ID. If the item has an assigned group ID, the resulting item's group ID is
  * replaced in the output.
- * 
+ *
  * From a multi-level clustering algorithm, an item has a different grouping in
  * each level. Items are clustered within their respective groups.
- * 
+ *
  * @formatter:off
- * 
+ *
  *                Context configuration parameters include:
- * 
+ *
  *                "GroupAssignmentMapReduce.Common.DistanceFunctionClass" ->
  *                Used to determine distance to centroid
- * 
+ *
  *                "GroupAssignmentMapReduce.Centroid.ExtractorClass" ->
  *                {@link mil.nga.giat.geowave.analytic.extract.CentroidExtractor}
- * 
+ *
  *                "GroupAssignmentMapReduce.Centroid.WrapperFactoryClass" ->
  *                {@link AnalyticItemWrapperFactory} to extract wrap spatial
  *                objects with Centroid management functions
- * 
+ *
  *                "GroupAssignmentMapReduce.Centroid.ZoomLevel" -> The current
  *                zoom level
- * 
+ *
  * @see CentroidManagerGeoWave
  * @formatter:on
- * 
+ *
  */
 public class GroupAssignmentMapReduce
 {
@@ -69,7 +68,7 @@ public class GroupAssignmentMapReduce
 		protected ObjectWritable outputValWritable = new ObjectWritable();
 		protected CentroidExtractor<Object> centroidExtractor;
 		protected AnalyticItemWrapperFactory<Object> itemWrapperFactory;
-		private Map<String, AtomicInteger> logCounts = new HashMap<String, AtomicInteger>();
+		private final Map<String, AtomicInteger> logCounts = new HashMap<String, AtomicInteger>();
 
 		@Override
 		protected void mapNativeValue(
@@ -125,7 +124,7 @@ public class GroupAssignmentMapReduce
 				throws IOException,
 				InterruptedException {
 
-			for (Entry<String, AtomicInteger> e : logCounts.entrySet()) {
+			for (final Entry<String, AtomicInteger> e : logCounts.entrySet()) {
 				GroupAssignmentMapReduce.LOGGER.info(e.getKey() + " = " + e.getValue());
 			}
 			super.cleanup(context);
@@ -138,14 +137,16 @@ public class GroupAssignmentMapReduce
 				InterruptedException {
 			super.setup(context);
 
-			final ConfigurationWrapper config = new JobContextConfigurationWrapper(
+			final ScopedJobConfiguration config = new ScopedJobConfiguration(
 					context,
 					GroupAssignmentMapReduce.class,
 					GroupAssignmentMapReduce.LOGGER);
 
 			try {
 				nestedGroupCentroidAssigner = new NestedGroupCentroidAssignment<Object>(
-						config);
+						context,
+						GroupAssignmentMapReduce.class,
+						GroupAssignmentMapReduce.LOGGER);
 			}
 			catch (final Exception e1) {
 				throw new IOException(
@@ -169,7 +170,10 @@ public class GroupAssignmentMapReduce
 						AnalyticItemWrapperFactory.class,
 						SimpleFeatureItemWrapperFactory.class);
 
-				itemWrapperFactory.initialize(config);
+				itemWrapperFactory.initialize(
+						context,
+						GroupAssignmentMapReduce.class,
+						GroupAssignmentMapReduce.LOGGER);
 			}
 			catch (final Exception e1) {
 				throw new IOException(

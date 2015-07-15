@@ -1,5 +1,8 @@
 package mil.nga.giat.geowave.analytic.mapreduce.kmeans.runner;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
@@ -14,29 +17,29 @@ import mil.nga.giat.geowave.analytic.mapreduce.MapReduceJobRunner;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.SampleParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
 
-import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * Loop and sample multiple sets of K centers.
- * 
+ *
  * Fulfills steps 3 through 5 in the Kmeans Parellel initialize Algorithm 2,as documented in section 3.3 in
- * 
+ *
  * Bahmani, Kumar, Moseley, Vassilvitskii and Vattani. Scalable K-means++. VLDB
  * Endowment Vol. 5, No. 7. 2012.
- * 
+ *
  * The number of iterations is assumed to be log(psi), according the paper.
- * 
+ *
  * As an added bonus, remove those centers that did not have sufficient number of matches, leaving the top sampleSize/iterations.
- * 
+ *
  */
 public class SampleMultipleSetsJobRunner<T> extends
 		MapReduceJobController implements
@@ -178,30 +181,29 @@ public class SampleMultipleSetsJobRunner<T> extends
 	}
 
 	@Override
-	public void fillOptions(
-			final Set<Option> options ) {
-		PropertyManagement.fillOptions(
-				options,
-				new ParameterEnum[] {
-					SampleParameters.Sample.MAX_SAMPLE_SIZE,
-					SampleParameters.Sample.SAMPLE_ITERATIONS,
-					SampleParameters.Sample.MIN_SAMPLE_SIZE,
-					CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
-					CentroidParameters.Centroid.INDEX_ID,
-					CentroidParameters.Centroid.DATA_TYPE_ID,
-					CentroidParameters.Centroid.DATA_NAMESPACE_URI,
-					CentroidParameters.Centroid.EXTRACTOR_CLASS,
-					CommonParameters.Common.DISTANCE_FUNCTION_CLASS,
-					CommonParameters.Common.DIMENSION_EXTRACT_CLASS,
-					StoreParameters.StoreParam.DATA_STORE,
-					GlobalParameters.Global.BATCH_ID
-				});
+	public Collection<ParameterEnum<?>> getParameters() {
+		final Set<ParameterEnum<?>> params = new HashSet<ParameterEnum<?>>();
+		params.addAll(Arrays.asList(new ParameterEnum<?>[] {
+			SampleParameters.Sample.MAX_SAMPLE_SIZE,
+			SampleParameters.Sample.SAMPLE_ITERATIONS,
+			SampleParameters.Sample.MIN_SAMPLE_SIZE,
+			CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
+			CentroidParameters.Centroid.INDEX_ID,
+			CentroidParameters.Centroid.DATA_TYPE_ID,
+			CentroidParameters.Centroid.DATA_NAMESPACE_URI,
+			CentroidParameters.Centroid.EXTRACTOR_CLASS,
+			CommonParameters.Common.DISTANCE_FUNCTION_CLASS,
+			CommonParameters.Common.DIMENSION_EXTRACT_CLASS,
+			StoreParameters.StoreParam.DATA_STORE,
+			GlobalParameters.Global.BATCH_ID
+		}));
 
-		MapReduceParameters.fillOptions(options);
+		params.addAll(MapReduceParameters.getParameters());
 
-		NestedGroupCentroidAssignment.fillOptions(options);
-		CentroidManagerGeoWave.fillOptions(options);
-		initialSampleRunner.fillOptions(options);
+		params.addAll(NestedGroupCentroidAssignment.getParameters());
+		params.addAll(CentroidManagerGeoWave.getParameters());
+		params.addAll(initialSampleRunner.getParameters());
+		return params;
 	}
 
 	public void setInputFormatConfiguration(

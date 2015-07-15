@@ -9,15 +9,14 @@ import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapper;
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
-import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.Projection;
+import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.SimpleFeatureProjection;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManager;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
 import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.clustering.NestedGroupCentroidAssignment;
-import mil.nga.giat.geowave.analytic.mapreduce.JobContextConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.param.HullParameters;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -43,27 +42,27 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 /**
  * Compute the convex hull over all points associated with each centroid. Each
  * hull is sent to output as a simple features.
- * 
+ *
  * Properties:
- * 
+ *
  * @formatter:off
- * 
+ *
  *                "ConvexHullMapReduce.Hull.DataTypeId" - Id of the data type to
  *                store the the polygons as simple features - defaults to
  *                "convex_hull"
- * 
+ *
  *                "ConvexHullMapReduce.Hull.ProjectionClass" - instance of
  *                {@link mil.nga.giat.geowave.analytic.Projection}
- * 
+ *
  *                "ConvexHullMapReduce.Hull.IndexId" - The Index ID used for
  *                output simple features.
- * 
+ *
  *                "ConvexHullMapReduce.Hull.WrapperFactoryClass" ->
  *                {@link AnalyticItemWrapperFactory} to group and level
  *                associated with each entry
- * 
+ *
  * @see mil.nga.giat.geowave.analytic.clustering.NestedGroupCentroidAssignment
- * 
+ *
  * @formatter:on
  */
 public class ConvexHullMapReduce
@@ -125,7 +124,7 @@ public class ConvexHullMapReduce
 				InterruptedException {
 			super.setup(context);
 
-			final ConfigurationWrapper config = new JobContextConfigurationWrapper(
+			final ScopedJobConfiguration config = new ScopedJobConfiguration(
 					context,
 					ConvexHullMapReduce.class,
 					ConvexHullMapReduce.LOGGER);
@@ -135,7 +134,10 @@ public class ConvexHullMapReduce
 						AnalyticItemWrapperFactory.class,
 						SimpleFeatureItemWrapperFactory.class);
 
-				itemWrapperFactory.initialize(config);
+				itemWrapperFactory.initialize(
+						context,
+						ConvexHullMapReduce.class,
+						ConvexHullMapReduce.LOGGER);
 			}
 			catch (final Exception e1) {
 
@@ -145,7 +147,9 @@ public class ConvexHullMapReduce
 
 			try {
 				nestedGroupCentroidAssigner = new NestedGroupCentroidAssignment<T>(
-						config);
+						context,
+						ConvexHullMapReduce.class,
+						ConvexHullMapReduce.LOGGER);
 			}
 			catch (final Exception e1) {
 				throw new IOException(
@@ -263,13 +267,16 @@ public class ConvexHullMapReduce
 				throws IOException,
 				InterruptedException {
 
-			final ConfigurationWrapper config = new JobContextConfigurationWrapper(
+			final ScopedJobConfiguration config = new ScopedJobConfiguration(
 					context,
-					ConvexHullMapReduce.class);
+					ConvexHullMapReduce.class,
+					ConvexHullMapReduce.LOGGER);
 			super.setup(context);
 			try {
 				centroidManager = new CentroidManagerGeoWave<T>(
-						config);
+						context,
+						ConvexHullMapReduce.class,
+						ConvexHullMapReduce.LOGGER);
 			}
 			catch (final Exception e) {
 				ConvexHullMapReduce.LOGGER.warn(
@@ -285,7 +292,9 @@ public class ConvexHullMapReduce
 						Projection.class,
 						SimpleFeatureProjection.class);
 
-				projectionFunction.initialize(config);
+				projectionFunction.initialize(
+						context,
+						ConvexHullMapReduce.class);
 			}
 			catch (final Exception e1) {
 				throw new IOException(

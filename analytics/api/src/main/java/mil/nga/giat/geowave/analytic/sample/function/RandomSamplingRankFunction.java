@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Random;
 
 import org.apache.hadoop.mapreduce.JobContext;
+import org.slf4j.Logger;
 
 /**
  * Pick any object at random by assigning a random weight over a uniform
@@ -19,8 +20,9 @@ public class RandomSamplingRankFunction<T> implements
 	@Override
 	public void initialize(
 			final JobContext context,
-			final Class<?> scope )
-					throws IOException {}
+			final Class<?> scope,
+			final Logger logger )
+			throws IOException {}
 
 	@Override
 	public double rank(

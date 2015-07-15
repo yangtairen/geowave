@@ -982,14 +982,4 @@ public class PropertyManagement implements
 			return Persistable.class;
 		}
 	}
-
-	public static final void fillOptions(
-			final Set<Option> options,
-			final ParameterEnum[] params ) {
-		for (final ParameterEnum param : params) {
-			options.addAll(
-					Arrays.asList(
-							param.getHelper().getOptions()));
-		}
-	}
 }

@@ -1,5 +1,7 @@
 package mil.nga.giat.geowave.analytic.mapreduce.kmeans.runner;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -16,29 +18,29 @@ import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
+import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.SampleParameters;
 
-import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 import org.opengis.feature.simple.SimpleFeature;
 
 /**
  * The KMeans Parallel algorithm,labeled Algorithm 2 within in section 3.3 of
- * 
+ *
  * Bahmani, Kumar, Moseley, Vassilvitskii and Vattani. Scalable K-means++. VLDB
  * Endowment Vol. 5, No. 7. 2012.
- * 
+ *
  * @formatter:off Couple things to note:
- * 
+ *
  *                (1) Updating the cost of each sampled point occurs as the
  *                first step within sampling loop; the initial sample is
  *                performed outside the loop.
- * 
+ *
  *                (2) A final update cost occurs outside the sampling loop just
  *                prior to stripping off the top 'K' centers.
- * 
+ *
  * @formatter:on
- * 
+ *
  */
 public class KMeansParallelJobRunner extends
 		MapReduceJobController implements
@@ -144,14 +146,13 @@ public class KMeansParallelJobRunner extends
 	}
 
 	@Override
-	public void fillOptions(
-			Set<Option> options ) {
-		kmeansJobRunner.fillOptions(options);
-		sampleSetsRunner.fillOptions(options);
+	public Collection<ParameterEnum<?>> getParameters() {
+		final Set<ParameterEnum<?>> params = new HashSet<ParameterEnum<?>>();
+		params.addAll(kmeansJobRunner.getParameters());
+		params.addAll(sampleSetsRunner.getParameters());
 		// while override
-		PropertyManagement.removeOption(
-				options,
-				CentroidParameters.Centroid.ZOOM_LEVEL);
+		params.remove(CentroidParameters.Centroid.ZOOM_LEVEL);
+		return params;
 	}
 
 }

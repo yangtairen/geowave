@@ -1,10 +1,12 @@
 package mil.nga.giat.geowave.analytic.mapreduce.clustering.runner;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.RunnerUtils;
 import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.SimpleFeatureProjection;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
@@ -14,11 +16,11 @@ import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveAnalyticJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveOutputFormatConfiguration;
 import mil.nga.giat.geowave.analytic.mapreduce.clustering.ConvexHullMapReduce;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.HullParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
@@ -29,14 +31,13 @@ import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputKey;
 
-import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.geotools.feature.type.BasicFeatureTypes;
 
 /**
- * 
+ *
 
  */
 public class ConvexHullJobRunner extends
@@ -50,7 +51,7 @@ public class ConvexHullJobRunner extends
 	}
 
 	public void setZoomLevel(
-			int zoomLevel ) {
+			final int zoomLevel ) {
 		this.zoomLevel = zoomLevel;
 	}
 
@@ -118,6 +119,7 @@ public class ConvexHullJobRunner extends
 		}
 	}
 
+	@Override
 	public Class<?> getScope() {
 		return ConvexHullMapReduce.class;
 	}
@@ -138,7 +140,7 @@ public class ConvexHullJobRunner extends
 				config,
 				getScope(),
 				runTimeProperties,
-				new ParameterEnum[] {
+				new ParameterEnum<?>[] {
 					HullParameters.Hull.WRAPPER_FACTORY_CLASS,
 					HullParameters.Hull.PROJECTION_CLASS,
 					HullParameters.Hull.DATA_TYPE_ID,
@@ -156,7 +158,7 @@ public class ConvexHullJobRunner extends
 				getScope(),
 				runTimeProperties);
 
-		int localZoomLevel = runTimeProperties.getPropertyAsInt(
+		final int localZoomLevel = runTimeProperties.getPropertyAsInt(
 				CentroidParameters.Centroid.ZOOM_LEVEL,
 				zoomLevel);
 		// getting group from next level, now that the prior level is complete
@@ -176,30 +178,27 @@ public class ConvexHullJobRunner extends
 	}
 
 	@Override
-	public void fillOptions(
-			Set<Option> options ) {
-		super.fillOptions(options);
+	public Collection<ParameterEnum<?>> getParameters() {
+		final Set<ParameterEnum<?>> params = new HashSet<ParameterEnum<?>>();
+		params.addAll(super.getParameters());
 
-		PropertyManagement.fillOptions(
-				options,
-				new ParameterEnum[] {
-					StoreParameters.StoreParam.DATA_STORE,
-					GlobalParameters.Global.BATCH_ID
-				});
+		params.addAll(Arrays.asList(new ParameterEnum<?>[] {
+			StoreParameters.StoreParam.DATA_STORE,
+			GlobalParameters.Global.BATCH_ID
+		}));
 
-		MapReduceParameters.fillOptions(options);
-		NestedGroupCentroidAssignment.fillOptions(options);
+		params.addAll(MapReduceParameters.getParameters());
+		params.addAll(NestedGroupCentroidAssignment.getParameters());
 
-		PropertyManagement.fillOptions(
-				options,
-				new ParameterEnum[] {
-					HullParameters.Hull.WRAPPER_FACTORY_CLASS,
-					HullParameters.Hull.PROJECTION_CLASS,
-					HullParameters.Hull.REDUCER_COUNT,
-					HullParameters.Hull.DATA_TYPE_ID,
-					HullParameters.Hull.DATA_NAMESPACE_URI,
-					HullParameters.Hull.INDEX_ID
-				});
+		params.addAll(Arrays.asList(new ParameterEnum<?>[] {
+			HullParameters.Hull.WRAPPER_FACTORY_CLASS,
+			HullParameters.Hull.PROJECTION_CLASS,
+			HullParameters.Hull.REDUCER_COUNT,
+			HullParameters.Hull.DATA_TYPE_ID,
+			HullParameters.Hull.DATA_NAMESPACE_URI,
+			HullParameters.Hull.INDEX_ID
+		}));
+		return params;
 	}
 
 }

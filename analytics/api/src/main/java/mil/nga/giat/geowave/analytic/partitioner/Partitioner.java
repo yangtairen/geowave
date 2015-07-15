@@ -4,16 +4,16 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
-import org.apache.commons.cli.Option;
+import mil.nga.giat.geowave.analytic.PropertyManagement;
+import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+import mil.nga.giat.geowave.core.index.ByteArrayId;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.JobContext;
-
-import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.core.index.ByteArrayId;
 
 /**
  * Provide a partition for a data item.
@@ -36,13 +36,12 @@ public interface Partitioner<T>
 	public void initialize(
 			final JobContext context,
 			final Class<?> scope )
-					throws IOException;
+			throws IOException;
 
 	public List<PartitionData> getCubeIdentifiers(
 			final T entry );
 
-	public void fillOptions(
-			Set<Option> options );
+	public Collection<ParameterEnum<?>> getParameters();
 
 	public void setup(
 			PropertyManagement runTimeProperties,
@@ -105,8 +104,7 @@ public interface Partitioner<T>
 					return false;
 				}
 			}
-			else if (!id.equals(
-					other.id)) {
+			else if (!id.equals(other.id)) {
 				return false;
 			}
 			return true;
@@ -115,11 +113,10 @@ public interface Partitioner<T>
 		@Override
 		public void readFields(
 				final DataInput dInput )
-						throws IOException {
+				throws IOException {
 			final int idSize = dInput.readInt();
 			final byte[] idBytes = new byte[idSize];
-			dInput.readFully(
-					idBytes);
+			dInput.readFully(idBytes);
 			isPrimary = dInput.readBoolean();
 			id = new ByteArrayId(
 					idBytes);
@@ -128,14 +125,11 @@ public interface Partitioner<T>
 		@Override
 		public void write(
 				final DataOutput dOutput )
-						throws IOException {
+				throws IOException {
 			final byte[] outputId = id.getBytes();
-			dOutput.writeInt(
-					outputId.length);
-			dOutput.write(
-					outputId);
-			dOutput.writeBoolean(
-					isPrimary);
+			dOutput.writeInt(outputId.length);
+			dOutput.write(outputId);
+			dOutput.writeBoolean(isPrimary);
 
 		}
 	}

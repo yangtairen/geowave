@@ -204,6 +204,19 @@ public class PropertyManagementTest
 						final NonSerializableExample defaultValue ) {
 					return null;
 				}
+
+				@Override
+				public NonSerializableExample getValue(
+						PropertyManagement propertyManagement ) {
+					return null;
+				}
+
+				@Override
+				public void setValue(
+						PropertyManagement propertyManagement,
+						NonSerializableExample value ) {
+					
+				}
 			};
 		}
 	}

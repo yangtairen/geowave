@@ -2,9 +2,10 @@ package mil.nga.giat.geowave.analytic.clustering;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.VectorDataStore;
@@ -34,7 +35,6 @@ import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 
-import org.apache.commons.cli.Option;
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -94,7 +94,7 @@ public class CentroidManagerGeoWave<T> implements
 		CentroidManager<T>
 {
 	final static Logger LOGGER = LoggerFactory.getLogger(CentroidManagerGeoWave.class);
-	private static final ParameterEnum[] MY_PARAMS = new ParameterEnum[] {
+	private static final ParameterEnum<?>[] MY_PARAMS = new ParameterEnum[] {
 		StoreParameters.StoreParam.DATA_STORE,
 		GlobalParameters.Global.BATCH_ID,
 		CentroidParameters.Centroid.DATA_TYPE_ID,
@@ -143,9 +143,22 @@ public class CentroidManagerGeoWave<T> implements
 			final JobContext context,
 			final Class<?> scope )
 			throws IOException {
+		this(
+				context,
+				scope,
+				LOGGER);
+	}
+
+	@SuppressWarnings("unchecked")
+	public CentroidManagerGeoWave(
+			final JobContext context,
+			final Class<?> scope,
+			final Logger logger )
+			throws IOException {
 		final ScopedJobConfiguration scopedJob = new ScopedJobConfiguration(
 				context,
-				scope);
+				scope,
+				logger);
 		try {
 			centroidFactory = (AnalyticItemWrapperFactory<T>) CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS.getHelper().getValue(
 					context,
@@ -153,7 +166,8 @@ public class CentroidManagerGeoWave<T> implements
 					CentroidItemWrapperFactory.class);
 			centroidFactory.initialize(
 					context,
-					scope);
+					scope,
+					logger);
 
 		}
 		catch (final Exception e1) {
@@ -466,11 +480,8 @@ public class CentroidManagerGeoWave<T> implements
 		return status;
 	}
 
-	public static void fillOptions(
-			final Set<Option> options ) {
-		PropertyManagement.fillOptions(
-				options,
-				MY_PARAMS);
+	public static Collection<ParameterEnum<?>> getParameters() {
+		return Arrays.asList(MY_PARAMS);
 	}
 
 	public static void setParameters(

@@ -1,15 +1,16 @@
 package mil.nga.giat.geowave.analytic.mapreduce;
 
-import java.util.Set;
+import java.util.Arrays;
+import java.util.Collection;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
-import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputFormat;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
-import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.store.config.ConfigUtils;
+import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputFormat;
 
-import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 
 public class GeoWaveOutputFormatConfiguration implements
@@ -18,32 +19,27 @@ public class GeoWaveOutputFormatConfiguration implements
 	/**
 	 * Captures the state, but the output format is flexible enough to deal with
 	 * both.
-	 * 
+	 *
 	 */
 	protected boolean isDataWritable = false;
 
 	@Override
 	public void setup(
-			PropertyManagement runTimeProperties,
-			Configuration configuration )
+			final PropertyManagement runTimeProperties,
+			final Configuration configuration )
 			throws Exception {
-		GeoWaveOutputFormat.setAccumuloOperationsInfo(
+		final DataStoreCommandLineOptions dataStoreOptions = (DataStoreCommandLineOptions) runTimeProperties.getProperty(StoreParam.DATA_STORE);
+		GeoWaveOutputFormat.setDataStoreName(
 				configuration,
-				runTimeProperties.getPropertyAsString(
-						StoreParameters.DataStoreParam.ZOOKEEKER,
-						"localhost:2181"),
-				runTimeProperties.getPropertyAsString(
-						StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-						"miniInstance"),
-				runTimeProperties.getPropertyAsString(
-						StoreParameters.DataStoreParam.ACCUMULO_USER,
-						"root"),
-				runTimeProperties.getPropertyAsString(
-						StoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
-						"password"),
-				runTimeProperties.getPropertyAsString(
-						StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
-						"undefined"));
+				dataStoreOptions.getFactory().getName());
+		GeoWaveOutputFormat.setStoreConfigOptions(
+				configuration,
+				ConfigUtils.valuesToStrings(
+						dataStoreOptions.getConfigOptions(),
+						dataStoreOptions.getFactory().getOptions()));
+		GeoWaveOutputFormat.setGeoWaveNamespace(
+				configuration,
+				dataStoreOptions.getNamespace());
 
 	}
 
@@ -59,21 +55,14 @@ public class GeoWaveOutputFormatConfiguration implements
 
 	@Override
 	public void setDataIsWritable(
-			boolean isWritable ) {
+			final boolean isWritable ) {
 		isDataWritable = isWritable;
 	}
 
 	@Override
-	public void fillOptions(
-			Set<Option> options ) {
-		PropertyManagement.fillOptions(
-				options,
-				new ParameterEnum[] {
-					StoreParameters.DataStoreParam.ZOOKEEKER,
-					StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-					StoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
-					StoreParameters.DataStoreParam.ACCUMULO_USER,
-					StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE
-				});
+	public Collection<ParameterEnum<?>> getParameters() {
+		return Arrays.asList(new ParameterEnum<?>[] {
+			StoreParam.DATA_STORE
+		});
 	}
 }

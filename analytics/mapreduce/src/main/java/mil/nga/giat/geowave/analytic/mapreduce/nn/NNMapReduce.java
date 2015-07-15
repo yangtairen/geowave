@@ -9,10 +9,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import mil.nga.giat.geowave.analytic.AdapterWithObjectWritable;
-import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
+import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.distance.DistanceFn;
 import mil.nga.giat.geowave.analytic.distance.FeatureCentroidOrthodromicDistanceFn;
-import mil.nga.giat.geowave.analytic.mapreduce.JobContextConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.PartitionParameters;
 import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
@@ -136,7 +135,7 @@ public class NNMapReduce
 				throws IOException,
 				InterruptedException {
 			super.setup(context);
-			final ConfigurationWrapper config = new JobContextConfigurationWrapper(
+			final ScopedJobConfiguration config = new ScopedJobConfiguration(
 					context,
 					NNMapReduce.class,
 					LOGGER);
@@ -148,7 +147,9 @@ public class NNMapReduce
 						Partitioner.class,
 						OrthodromicDistancePartitioner.class);
 
-				partitioner.initialize(config);
+				partitioner.initialize(
+						context,
+						NNMapReduce.class);
 			}
 			catch (final Exception e1) {
 				throw new IOException(
@@ -280,7 +281,7 @@ public class NNMapReduce
 				throws IOException,
 				InterruptedException {
 
-			final ConfigurationWrapper config = new JobContextConfigurationWrapper(
+			final ScopedJobConfiguration config = new ScopedJobConfiguration(
 					context,
 					NNMapReduce.class,
 					NNMapReduce.LOGGER);

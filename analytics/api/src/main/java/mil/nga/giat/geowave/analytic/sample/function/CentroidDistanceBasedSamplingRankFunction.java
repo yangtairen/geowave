@@ -6,11 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.JobContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapper;
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
@@ -26,6 +21,11 @@ import mil.nga.giat.geowave.analytic.param.SampleParameters;
 import mil.nga.giat.geowave.analytic.sample.RandomProbabilitySampleFn;
 import mil.nga.giat.geowave.analytic.sample.SampleProbabilityFn;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.JobContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Rank objects using their distance to the closest centroid of a set of
@@ -71,8 +71,7 @@ public class CentroidDistanceBasedSamplingRankFunction<T> implements
 		SamplingRankFunction<T>
 {
 
-	protected static final Logger LOGGER = LoggerFactory.getLogger(
-			CentroidDistanceBasedSamplingRankFunction.class);
+	protected static final Logger LOGGER = LoggerFactory.getLogger(CentroidDistanceBasedSamplingRankFunction.class);
 
 	private SampleProbabilityFn sampleProbabilityFn;
 	private NestedGroupCentroidAssignment<T> nestedGroupCentroidAssigner;
@@ -91,7 +90,7 @@ public class CentroidDistanceBasedSamplingRankFunction<T> implements
 				new ParameterEnum[] {
 					SampleParameters.Sample.PROBABILITY_FUNCTION,
 					CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
-		},
+				},
 				config,
 				scope);
 	}
@@ -100,8 +99,9 @@ public class CentroidDistanceBasedSamplingRankFunction<T> implements
 	@Override
 	public void initialize(
 			final JobContext context,
-			final Class<?> scope )
-					throws IOException {
+			final Class<?> scope,
+			final Logger logger )
+			throws IOException {
 		final ScopedJobConfiguration config = new ScopedJobConfiguration(
 				context,
 				scope);
@@ -124,7 +124,8 @@ public class CentroidDistanceBasedSamplingRankFunction<T> implements
 
 			itemWrapperFactory.initialize(
 					context,
-					scope);
+					scope,
+					logger);
 		}
 		catch (final Exception e1) {
 
@@ -135,7 +136,8 @@ public class CentroidDistanceBasedSamplingRankFunction<T> implements
 		try {
 			nestedGroupCentroidAssigner = new NestedGroupCentroidAssignment<T>(
 					context,
-					scope);
+					scope,
+					logger);
 		}
 		catch (final Exception e1) {
 			throw new IOException(
@@ -151,8 +153,7 @@ public class CentroidDistanceBasedSamplingRankFunction<T> implements
 	public double rank(
 			final int sampleSize,
 			final T value ) {
-		final AnalyticItemWrapper<T> item = itemWrapperFactory.create(
-				value);
+		final AnalyticItemWrapper<T> item = itemWrapperFactory.create(value);
 		final List<AnalyticItemWrapper<T>> centroids = new ArrayList<AnalyticItemWrapper<T>>();
 		double weight;
 		try {
@@ -163,9 +164,7 @@ public class CentroidDistanceBasedSamplingRankFunction<T> implements
 						public void notify(
 								final CentroidPairing<T> pairing ) {
 							try {
-								centroids.addAll(
-										nestedGroupCentroidAssigner.getCentroidsForGroup(
-												pairing.getCentroid().getGroupID()));
+								centroids.addAll(nestedGroupCentroidAssigner.getCentroidsForGroup(pairing.getCentroid().getGroupID()));
 							}
 							catch (final IOException e) {
 								throw new RuntimeException(
@@ -191,8 +190,7 @@ public class CentroidDistanceBasedSamplingRankFunction<T> implements
 			final String groupID,
 			final List<AnalyticItemWrapper<T>> centroids ) {
 
-		if (!groupToConstant.containsKey(
-				groupID)) {
+		if (!groupToConstant.containsKey(groupID)) {
 			double constant = 0.0;
 			for (final AnalyticItemWrapper<T> centroid : centroids) {
 				constant += centroid.getCost();

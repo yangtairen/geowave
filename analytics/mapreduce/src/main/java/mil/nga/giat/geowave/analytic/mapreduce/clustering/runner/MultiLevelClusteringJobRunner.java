@@ -1,5 +1,8 @@
 package mil.nga.giat.geowave.analytic.mapreduce.clustering.runner;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
@@ -10,21 +13,16 @@ import mil.nga.giat.geowave.analytic.mapreduce.MapReduceJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.SequenceFileInputFormatConfiguration;
 import mil.nga.giat.geowave.analytic.mapreduce.SequenceFileOutputFormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
-import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
-import mil.nga.giat.geowave.analytic.param.CommonParameters;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
-import mil.nga.giat.geowave.analytic.param.ExtractParameters;
-import mil.nga.giat.geowave.analytic.param.GlobalParameters;
-import mil.nga.giat.geowave.analytic.param.HullParameters;
-import mil.nga.giat.geowave.analytic.param.InputParameters;
-import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
-import mil.nga.giat.geowave.analytic.param.OutputParameters;
-import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters.Clustering;
+import mil.nga.giat.geowave.analytic.param.CommonParameters;
+import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters.Global;
+import mil.nga.giat.geowave.analytic.param.HullParameters;
+import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
+import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 
-import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -33,22 +31,22 @@ import org.geotools.feature.type.BasicFeatureTypes;
 /**
  * Runs a clustering at multiple levels. Lower levels cluster within each
  * cluster of the higher level.
- * 
+ *
  * Steps:
- * 
+ *
  * @formatter: off
- * 
+ *
  *             (1) Extract and deduplicate items from geowave.
- * 
+ *
  *             (2) Cluster item within their assigned groups. Initially, items
  *             are all part of the same group.
- * 
+ *
  *             (3) Assign to each point the cluster (group id).
- * 
+ *
  *             (4) Repeat steps 2 to 3 for each lower level.
- * 
+ *
  * @formatter: on
- * 
+ *
  */
 public abstract class MultiLevelClusteringJobRunner extends
 		MapReduceJobController implements
@@ -68,29 +66,21 @@ public abstract class MultiLevelClusteringJobRunner extends
 	protected abstract ClusteringRunner getClusteringRunner();
 
 	@Override
-	public void fillOptions(
-			final Set<Option> options ) {
-
-		jobExtractRunner.fillOptions(options);
-		hullRunner.fillOptions(options);
-		getClusteringRunner().fillOptions(
-				options);
-		PropertyManagement.fillOptions(
-				options,
-				new ParameterEnum[] {
-					Clustering.ZOOM_LEVELS,
-					Global.BATCH_ID,
-					StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE
-				});
-		MapReduceParameters.fillOptions(options);
+	public Collection<ParameterEnum<?>> getParameters() {
+		final Set<ParameterEnum<?>> params = new HashSet<ParameterEnum<?>>();
+		params.addAll(jobExtractRunner.getParameters());
+		params.addAll(hullRunner.getParameters());
+		params.addAll(getClusteringRunner().getParameters());
+		params.addAll(Arrays.asList(new ParameterEnum<?>[] {
+			Clustering.ZOOM_LEVELS,
+			Global.BATCH_ID,
+			StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE
+		}));
+		params.addAll(MapReduceParameters.getParameters());
 		// the output data type is used for centroid management
-		PropertyManagement.removeOption(
-				options,
-				CentroidParameters.Centroid.DATA_TYPE_ID);
+		params.remove(CentroidParameters.Centroid.DATA_TYPE_ID);
 
-		PropertyManagement.removeOption(
-				options,
-				CentroidParameters.Centroid.DATA_NAMESPACE_URI);
+		params.remove(CentroidParameters.Centroid.DATA_NAMESPACE_URI);
 	}
 
 	@Override

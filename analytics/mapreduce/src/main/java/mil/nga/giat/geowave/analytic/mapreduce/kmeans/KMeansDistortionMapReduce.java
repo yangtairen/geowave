@@ -5,7 +5,7 @@ import java.util.List;
 
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapper;
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
-import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
+import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
 import mil.nga.giat.geowave.analytic.clustering.CentroidPairing;
@@ -14,21 +14,20 @@ import mil.nga.giat.geowave.analytic.extract.CentroidExtractor;
 import mil.nga.giat.geowave.analytic.extract.SimpleFeatureCentroidExtractor;
 import mil.nga.giat.geowave.analytic.kmeans.AssociationNotification;
 import mil.nga.giat.geowave.analytic.mapreduce.CountofDoubleWritable;
-import mil.nga.giat.geowave.analytic.mapreduce.JobContextConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.JumpParameters;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.mapreduce.GeoWaveWritableInputMapper;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 
-import org.apache.accumulo.core.data.Mutation;
-import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import scala.Enumeration.Value;
 
 import com.vividsolutions.jts.geom.Point;
 
@@ -38,7 +37,7 @@ import com.vividsolutions.jts.geom.Point;
  * See Catherine A. Sugar and Gareth M. James (2003).
  * "Finding the number of clusters in a data set: An information theoretic approach"
  * Journal of the American Statistical Association 98 (January): 750–763
- * 
+ *
  * @formatter:off Context configuration parameters include:
  *                <p/>
  *                "KMeansDistortionMapReduce.Common.DistanceFunctionClass" ->
@@ -129,14 +128,18 @@ public class KMeansDistortionMapReduce
 				throws IOException,
 				InterruptedException {
 			super.setup(context);
-			final ConfigurationWrapper config = new JobContextConfigurationWrapper(
+			final ScopedJobConfiguration config = new ScopedJobConfiguration(
 					context,
 					KMeansDistortionMapReduce.class,
 					KMeansDistortionMapReduce.LOGGER);
 
 			try {
 				nestedGroupCentroidAssigner = new NestedGroupCentroidAssignment<Object>(
-						config);
+
+						context,
+						KMeansDistortionMapReduce.class,
+						KMeansDistortionMapReduce.LOGGER
+						);
 			}
 			catch (final Exception e1) {
 				throw new IOException(
@@ -261,7 +264,7 @@ public class KMeansDistortionMapReduce
 				throws IOException,
 				InterruptedException {
 			super.setup(context);
-			final ConfigurationWrapper config = new JobContextConfigurationWrapper(
+			final ScopedJobConfiguration config = new ScopedJobConfiguration(
 					context,
 					KMeansDistortionMapReduce.class,
 					KMeansDistortionMapReduce.LOGGER);
@@ -275,7 +278,9 @@ public class KMeansDistortionMapReduce
 
 			try {
 				centroidManager = new CentroidManagerGeoWave<Object>(
-						config);
+						context,
+						KMeansDistortionMapReduce.class,
+						KMeansDistortionMapReduce.LOGGER);
 			}
 			catch (final Exception e) {
 				KMeansDistortionMapReduce.LOGGER.warn(

@@ -2,16 +2,16 @@ package mil.nga.giat.geowave.analytic.clustering;
 
 import java.io.IOException;
 
+import mil.nga.giat.geowave.analytic.AnalyticItemWrapper;
+import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
+import mil.nga.giat.geowave.analytic.kmeans.AssociationNotification;
+
 import org.apache.hadoop.mapreduce.JobContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
-import mil.nga.giat.geowave.analytic.AnalyticItemWrapper;
-import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
-import mil.nga.giat.geowave.analytic.kmeans.AssociationNotification;
 
 /**
  * Determine the group ID for an item dynamically.
@@ -24,8 +24,7 @@ public class CentroidItemWrapperFactory<T> implements
 		AnalyticItemWrapperFactory<T>
 {
 
-	final static Logger LOGGER = LoggerFactory.getLogger(
-			CentroidItemWrapperFactory.class);
+	final static Logger LOGGER = LoggerFactory.getLogger(CentroidItemWrapperFactory.class);
 	private AnalyticItemWrapperFactory<T> itemFactory;
 	private NestedGroupCentroidAssignment<T> nestedGroupCentroidAssignment;
 
@@ -39,12 +38,14 @@ public class CentroidItemWrapperFactory<T> implements
 	@Override
 	public void initialize(
 			final JobContext context,
-			final Class<?> scope )
-					throws IOException {
+			final Class<?> scope,
+			final Logger logger )
+			throws IOException {
 		try {
 			nestedGroupCentroidAssignment = new NestedGroupCentroidAssignment<T>(
 					context,
-					scope);
+					scope,
+					logger);
 		}
 		catch (InstantiationException | IllegalAccessException e) {
 			throw new IOException(
@@ -54,7 +55,8 @@ public class CentroidItemWrapperFactory<T> implements
 
 		itemFactory.initialize(
 				context,
-				scope);
+				scope,
+				logger);
 	}
 
 	public AnalyticItemWrapperFactory<T> getItemFactory() {
@@ -74,8 +76,7 @@ public class CentroidItemWrapperFactory<T> implements
 
 		public CentroidItemWrapper(
 				final T item ) {
-			wrappedItem = itemFactory.create(
-					item);
+			wrappedItem = itemFactory.create(item);
 			try {
 				nestedGroupCentroidAssignment.findCentroidForLevel(
 						wrappedItem,
@@ -88,8 +89,7 @@ public class CentroidItemWrapperFactory<T> implements
 						});
 			}
 			catch (final IOException e) {
-				LOGGER.error(
-						"Cannot resolve paired centroid for " + wrappedItem.getID());
+				LOGGER.error("Cannot resolve paired centroid for " + wrappedItem.getID());
 				centroidItem = wrappedItem;
 			}
 		}

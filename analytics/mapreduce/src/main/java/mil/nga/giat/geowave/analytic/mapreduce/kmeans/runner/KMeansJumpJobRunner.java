@@ -1,5 +1,8 @@
 package mil.nga.giat.geowave.analytic.mapreduce.kmeans.runner;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,16 +20,15 @@ import mil.nga.giat.geowave.analytic.mapreduce.clustering.runner.ClusteringRunne
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.JumpParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.SampleParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 
-import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 import org.opengis.feature.simple.SimpleFeature;
 import org.slf4j.Logger;
@@ -34,16 +36,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The KMeans Jump algorithm
- * 
+ *
  * Catherine A. Sugar and Gareth M. James (2003).
  * "Finding the number of clusters in a data set: An information theoretic approach"
  * Journal of the American Statistical Association 98 (January): 750–763
- * 
+ *
  * @formatter:off Couple things to note:
- * 
- * 
+ *
+ *
  * @formatter:on
- * 
+ *
  */
 public class KMeansJumpJobRunner extends
 		MapReduceJobController implements
@@ -219,37 +221,30 @@ public class KMeansJumpJobRunner extends
 	}
 
 	@Override
-	public void fillOptions(
-			final Set<Option> options ) {
-		kmeansRunner.singleSamplekmeansJobRunner.fillOptions(options);
-		kmeansRunner.parallelJobRunner.fillOptions(options);
-		PropertyManagement.fillOptions(
-				options,
-				new ParameterEnum[] {
-					JumpParameters.Jump.RANGE_OF_CENTROIDS,
-					JumpParameters.Jump.KPLUSPLUS_MIN,
-					ClusteringParameters.Clustering.MAX_REDUCER_COUNT,
-					CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
-					CentroidParameters.Centroid.INDEX_ID,
-					CentroidParameters.Centroid.DATA_TYPE_ID,
-					CentroidParameters.Centroid.DATA_NAMESPACE_URI,
-					CentroidParameters.Centroid.EXTRACTOR_CLASS,
-					CommonParameters.Common.DISTANCE_FUNCTION_CLASS,
-					CommonParameters.Common.DIMENSION_EXTRACT_CLASS,
-					StoreParameters.StoreParam.DATA_STORE,
-					GlobalParameters.Global.BATCH_ID
-				});
-		MapReduceParameters.fillOptions(options);
+	public Collection<ParameterEnum<?>> getParameters() {
+		final Set<ParameterEnum<?>> params = new HashSet<ParameterEnum<?>>();
+		params.addAll(kmeansRunner.singleSamplekmeansJobRunner.getParameters());
+		params.addAll(kmeansRunner.parallelJobRunner.getParameters());
+		params.addAll(Arrays.asList(new ParameterEnum<?>[] {
+			JumpParameters.Jump.RANGE_OF_CENTROIDS,
+			JumpParameters.Jump.KPLUSPLUS_MIN,
+			ClusteringParameters.Clustering.MAX_REDUCER_COUNT,
+			CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
+			CentroidParameters.Centroid.INDEX_ID,
+			CentroidParameters.Centroid.DATA_TYPE_ID,
+			CentroidParameters.Centroid.DATA_NAMESPACE_URI,
+			CentroidParameters.Centroid.EXTRACTOR_CLASS,
+			CommonParameters.Common.DISTANCE_FUNCTION_CLASS,
+			CommonParameters.Common.DIMENSION_EXTRACT_CLASS,
+			StoreParameters.StoreParam.DATA_STORE,
+			GlobalParameters.Global.BATCH_ID
+		}));
+		params.addAll(MapReduceParameters.getParameters());
 
-		PropertyManagement.removeOption(
-				options,
-				CentroidParameters.Centroid.ZOOM_LEVEL);
-		PropertyManagement.removeOption(
-				options,
-				SampleParameters.Sample.DATA_TYPE_ID);
-		PropertyManagement.removeOption(
-				options,
-				SampleParameters.Sample.INDEX_ID);
+		params.remove(CentroidParameters.Centroid.ZOOM_LEVEL);
+		params.remove(SampleParameters.Sample.DATA_TYPE_ID);
+		params.remove(SampleParameters.Sample.INDEX_ID);
+		return params;
 	}
 
 	private static class KMeansParallelJobRunnerDelegate implements

@@ -2,14 +2,12 @@ package mil.nga.giat.geowave.analytic.partitioner;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.commons.cli.Option;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.JobContext;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
@@ -26,6 +24,9 @@ import mil.nga.giat.geowave.core.index.sfc.tiered.TieredSFCIndexStrategy;
 import mil.nga.giat.geowave.core.store.dimension.DimensionField;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.Index;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.JobContext;
 
 /**
  * Basic support class for Partitioners (e.g {@link Paritioner}
@@ -73,8 +74,7 @@ public abstract class AbstractPartitioner<T> implements
 			final T entry ) {
 		final Set<PartitionData> partitionIdSet = new HashSet<PartitionData>();
 
-		final NumericDataHolder numericData = getNumericData(
-				entry);
+		final NumericDataHolder numericData = getNumericData(entry);
 		if (numericData == null) {
 			return Collections.emptyList();
 		}
@@ -115,10 +115,9 @@ public abstract class AbstractPartitioner<T> implements
 			final List<ByteArrayId> addList,
 			final boolean isPrimary ) {
 		for (final ByteArrayId addId : addList) {
-			masterList.add(
-					new PartitionData(
-							addId,
-							isPrimary));
+			masterList.add(new PartitionData(
+					addId,
+					isPrimary));
 		}
 	}
 
@@ -126,7 +125,7 @@ public abstract class AbstractPartitioner<T> implements
 	public void initialize(
 			final JobContext context,
 			final Class<?> scope )
-					throws IOException {
+			throws IOException {
 		final ScopedJobConfiguration config = new ScopedJobConfiguration(
 				context,
 				scope);
@@ -134,14 +133,12 @@ public abstract class AbstractPartitioner<T> implements
 				ClusteringParameters.Clustering.DISTANCE_THRESHOLDS,
 				"0.000001");
 
-		final String distancesArray[] = distances.split(
-				",");
+		final String distancesArray[] = distances.split(",");
 		distancePerDimension = new double[distancesArray.length];
 		{
 			int i = 0;
 			for (final String eachDistance : distancesArray) {
-				distancePerDimension[i++] = Double.valueOf(
-						eachDistance);
+				distancePerDimension[i++] = Double.valueOf(eachDistance);
 			}
 		}
 
@@ -198,11 +195,7 @@ public abstract class AbstractPartitioner<T> implements
 		for (int i = 0; i < dimensionPrecision.length; i++) {
 			final double distance = distancePerDimensionForIndex[i] * 2.0; // total
 																			// width...(radius)
-			dimensionPrecision[i] = Math.abs(
-					(int) (Math.log(
-							dimensions[i].getRange() / distance)
-							/ Math.log(
-									2)));
+			dimensionPrecision[i] = Math.abs((int) (Math.log(dimensions[i].getRange() / distance) / Math.log(2)));
 			totalRequestedPrecision += dimensionPrecision[i];
 		}
 		if (totalRequestedPrecision > 63) {
@@ -217,10 +210,9 @@ public abstract class AbstractPartitioner<T> implements
 				dimensionPrecision,
 				SFCType.HILBERT);
 
-		indexStrategy.setMaxEstimatedDuplicateIds(
-				(int) Math.pow(
-						dimensions.length,
-						2));
+		indexStrategy.setMaxEstimatedDuplicateIds((int) Math.pow(
+				dimensions.length,
+				2));
 
 		index = new Index(
 				indexStrategy,
@@ -229,13 +221,10 @@ public abstract class AbstractPartitioner<T> implements
 	}
 
 	@Override
-	public void fillOptions(
-			final Set<Option> options ) {
-		PropertyManagement.fillOptions(
-				options,
-				new ParameterEnum[] {
-					CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS,
-					ClusteringParameters.Clustering.DISTANCE_THRESHOLDS
+	public Collection<ParameterEnum<?>> getParameters() {
+		return Arrays.asList(new ParameterEnum<?>[] {
+			CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS,
+			ClusteringParameters.Clustering.DISTANCE_THRESHOLDS
 		});
 
 	}

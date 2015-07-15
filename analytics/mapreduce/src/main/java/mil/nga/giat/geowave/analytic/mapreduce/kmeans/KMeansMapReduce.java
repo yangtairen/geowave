@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapper;
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
-import mil.nga.giat.geowave.analytic.ConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.GeoObjectDimensionValues;
+import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManager;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
@@ -16,7 +16,6 @@ import mil.nga.giat.geowave.analytic.extract.CentroidExtractor;
 import mil.nga.giat.geowave.analytic.extract.SimpleFeatureCentroidExtractor;
 import mil.nga.giat.geowave.analytic.kmeans.AssociationNotification;
 import mil.nga.giat.geowave.analytic.mapreduce.GroupIDText;
-import mil.nga.giat.geowave.analytic.mapreduce.JobContextConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.mapreduce.GeoWaveWritableInputMapper;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
@@ -42,7 +41,7 @@ import com.vividsolutions.jts.geom.Point;
  * dimensions updated towards their respective mean for the assigned items.
  * <p/>
  * Properties:
- * 
+ *
  * @formatter:off "KMeansMapReduce.Common.DistanceFunctionClass" - Used to
  *                determine distance to centroid
  *                <p/>
@@ -118,14 +117,16 @@ public class KMeansMapReduce
 				throws IOException,
 				InterruptedException {
 			super.setup(context);
-			final ConfigurationWrapper config = new JobContextConfigurationWrapper(
+			final ScopedJobConfiguration config = new ScopedJobConfiguration(
 					context,
 					KMeansMapReduce.class,
 					KMeansMapReduce.LOGGER);
 
 			try {
 				nestedGroupCentroidAssigner = new NestedGroupCentroidAssignment<Object>(
-						config);
+						context,
+						KMeansMapReduce.class,
+						KMeansMapReduce.LOGGER);
 			}
 			catch (final Exception e1) {
 				throw new IOException(
@@ -149,7 +150,10 @@ public class KMeansMapReduce
 						AnalyticItemWrapperFactory.class,
 						SimpleFeatureItemWrapperFactory.class);
 
-				itemWrapperFactory.initialize(config);
+				itemWrapperFactory.initialize(
+						context,
+						KMeansMapReduce.class,
+						KMeansMapReduce.LOGGER);
 			}
 			catch (final Exception e1) {
 				throw new IOException(
@@ -220,7 +224,7 @@ public class KMeansMapReduce
 						centroidID,
 						groupID);
 			}
-			catch (MatchingCentroidNotFoundException e) {
+			catch (final MatchingCentroidNotFoundException e) {
 				LOGGER.error("Unable to get centroid " + centroidID + " for group " + groupID);
 				return;
 			}
@@ -246,7 +250,7 @@ public class KMeansMapReduce
 				KMeansMapReduce.LOGGER.trace(groupID + " contains " + centroidID);
 			}
 
-			AnalyticItemWrapper<Object> nextCentroid = centroidManager.createNextCentroid(
+			final AnalyticItemWrapper<Object> nextCentroid = centroidManager.createNextCentroid(
 					centroid.getWrappedItem(),
 					groupID,
 					new Coordinate(
@@ -283,10 +287,9 @@ public class KMeansMapReduce
 			super.setup(context);
 			try {
 				centroidManager = new CentroidManagerGeoWave<Object>(
-						new JobContextConfigurationWrapper(
-								context,
-								KMeansMapReduce.class,
-								KMeansMapReduce.LOGGER));
+						context,
+						KMeansMapReduce.class,
+						KMeansMapReduce.LOGGER);
 			}
 			catch (final Exception e) {
 				throw new IOException(

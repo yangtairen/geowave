@@ -1,8 +1,8 @@
 package mil.nga.giat.geowave.analytic;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
 
+import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
 
 import org.apache.commons.cli.BasicParser;
@@ -41,10 +41,13 @@ public class AnalyticCLIOperationDriver implements
 				"Display help"));
 		options.addOptionGroup(baseOptionGroup);
 
-		final Set<Option> optionSet = new HashSet<Option>();
-		jobRunner.fillOptions(optionSet);
-		for (final Option option : optionSet) {
-			options.addOption(option);
+		final Collection<ParameterEnum<?>> params = jobRunner.getParameters();
+
+		for (final ParameterEnum<?> param : params) {
+			final Option[] paramOptions = param.getHelper().getOptions();
+			for (final Option o : paramOptions) {
+				options.addOption(o);
+			}
 		}
 
 		final BasicParser parser = new BasicParser();
@@ -57,7 +60,15 @@ public class AnalyticCLIOperationDriver implements
 		}
 		else {
 			try {
-				jobRunner.run(commandLine);
+				final PropertyManagement properties = new PropertyManagement();
+				for (final ParameterEnum<?> param : params) {
+					final Object value = param.getHelper().getValue(
+							commandLine);
+					((ParameterEnum<Object>) param).getHelper().setValue(
+							properties,
+							value);
+				}
+				jobRunner.run(properties);
 			}
 			catch (final Exception e) {
 				LOGGER.error(

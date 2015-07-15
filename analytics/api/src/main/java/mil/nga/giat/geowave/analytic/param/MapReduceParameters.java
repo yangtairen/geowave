@@ -1,10 +1,7 @@
 package mil.nga.giat.geowave.analytic.param;
 
-import java.util.Set;
-
-import mil.nga.giat.geowave.analytic.PropertyManagement;
-
-import org.apache.commons.cli.Option;
+import java.util.Arrays;
+import java.util.Collection;
 
 public class MapReduceParameters
 {
@@ -64,16 +61,13 @@ public class MapReduceParameters
 		}
 	}
 
-	public static final void fillOptions(
-			final Set<Option> options ) {
-		PropertyManagement.fillOptions(
-				options,
-				new ParameterEnum[] {
-					MRConfig.CONFIG_FILE,
-					MRConfig.HDFS_BASE_DIR,
-					MRConfig.HDFS_HOST_PORT,
-					MRConfig.JOBTRACKER_HOST_PORT,
-					MRConfig.YARN_RESOURCE_MANAGER
-				});
+	public static final Collection<ParameterEnum<?>> getParameters() {
+		return Arrays.asList(new ParameterEnum<?>[] {
+			MRConfig.CONFIG_FILE,
+			MRConfig.HDFS_BASE_DIR,
+			MRConfig.HDFS_HOST_PORT,
+			MRConfig.JOBTRACKER_HOST_PORT,
+			MRConfig.YARN_RESOURCE_MANAGER
+		});
 	}
 }

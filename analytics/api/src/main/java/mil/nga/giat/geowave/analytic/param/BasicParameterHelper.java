@@ -1,5 +1,6 @@
 package mil.nga.giat.geowave.analytic.param;
 
+import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
@@ -8,10 +9,13 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.JobContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BasicParameterHelper implements
 		ParameterHelper<Object>
 {
+	final static Logger LOGGER = LoggerFactory.getLogger(BasicParameterHelper.class);
 	private final ParameterEnum parent;
 	private final Class<Object> baseClass;
 	private final Option[] options;
@@ -184,5 +188,28 @@ public class BasicParameterHelper implements
 			return ByteArrayUtils.byteArrayFromString(optionValueStr);
 		}
 		return null;
+	}
+
+	@Override
+	public Object getValue(
+			final PropertyManagement propertyManagement ) {
+		try {
+			return propertyManagement.getProperty(parent);
+		}
+		catch (final Exception e) {
+			LOGGER.error(
+					"Unable to deserialize property '" + parent.toString() + "'",
+					e);
+			return null;
+		}
+	}
+
+	@Override
+	public void setValue(
+			final PropertyManagement propertyManagement,
+			final Object value ) {
+		propertyManagement.store(
+				parent,
+				value);
 	}
 }

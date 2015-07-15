@@ -1,24 +1,23 @@
 package mil.nga.giat.geowave.analytic.mapreduce;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import mil.nga.giat.geowave.analytic.IndependentJobRunner;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
-import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.InputParameters;
 import mil.nga.giat.geowave.analytic.param.OutputParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
-import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.JobContextIndexStore;
 
-import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -110,7 +109,7 @@ public abstract class GeoWaveAnalyticJobRunner extends
 			InputParameters.Input.INPUT_FORMAT.getHelper().setValue(
 					configuration,
 					getScope(),
-					inputFormat.getClass());
+					inputFormat);
 			inputFormat.setup(
 					runTimeProperties,
 					configuration);
@@ -169,19 +168,12 @@ public abstract class GeoWaveAnalyticJobRunner extends
 				index);
 	}
 
-
 	@SuppressWarnings("rawtypes")
 	@Override
 	public int run(
 			final String[] args )
 			throws Exception {
 		final Job job = mapReduceIntegrater.getJob(this);
-
-		zookeeper = args[0];
-		instanceName = args[1];
-		userName = args[2];
-		password = args[3];
-		namespace = args[4];
 
 		configure(job);
 
@@ -207,7 +199,7 @@ public abstract class GeoWaveAnalyticJobRunner extends
 			job.setOutputFormatClass((Class<? extends OutputFormat>) outputFormat.getFormatClass());
 		}
 
-		job.setJobName("GeoWave Convex Hull (" + namespace + ")");
+		job.setJobName("GeoWave Convex Hull");
 
 		job.setNumReduceTasks(configWrapper.getInt(
 				OutputParameters.Output.REDUCER_COUNT,
@@ -223,21 +215,20 @@ public abstract class GeoWaveAnalyticJobRunner extends
 			throws Exception;
 
 	@Override
-	public void fillOptions(
-			final Set<Option> options ) {
+	public Collection<ParameterEnum<?>> getParameters() {
+		final List<ParameterEnum<?>> params = new ArrayList<ParameterEnum<?>>();
 		if (inputFormat != null) {
-			inputFormat.fillOptions(options);
+			params.addAll(inputFormat.getParameters());
 		}
 		if (outputFormat != null) {
-			outputFormat.fillOptions(options);
+			params.addAll(inputFormat.getParameters());
 		}
 
-		PropertyManagement.fillOptions(
-				options,
-				new ParameterEnum[] {
-					StoreParam.ADAPTER_STORE,
-					StoreParam.INDEX_STORE
-				});
+		params.addAll(Arrays.asList(new ParameterEnum<?>[] {
+			StoreParam.ADAPTER_STORE,
+			StoreParam.INDEX_STORE
+		}));
+		return params;
 	}
 
 	@Override

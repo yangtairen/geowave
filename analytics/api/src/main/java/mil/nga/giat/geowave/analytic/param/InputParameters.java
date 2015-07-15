@@ -6,7 +6,7 @@ public class InputParameters
 {
 	public enum Input
 			implements
-			ParameterEnum {
+			ParameterEnum<Object> {
 		INPUT_FORMAT(
 				FormatConfiguration.class,
 				"ifc",
@@ -18,7 +18,7 @@ public class InputParameters
 				"Input HDFS File Path",
 				true);
 
-		private final ParameterHelper<?> helper;
+		private final ParameterHelper<Object> helper;
 
 		private Input(
 				final Class baseClass,
@@ -39,7 +39,7 @@ public class InputParameters
 		}
 
 		@Override
-		public ParameterHelper<?> getHelper() {
+		public ParameterHelper<Object> getHelper() {
 			return helper;
 		}
 	}

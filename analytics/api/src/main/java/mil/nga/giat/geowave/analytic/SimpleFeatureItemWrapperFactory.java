@@ -3,13 +3,14 @@ package mil.nga.giat.geowave.analytic;
 import java.io.IOException;
 import java.util.UUID;
 
+import mil.nga.giat.geowave.analytic.AnalyticFeature.ClusterFeatureAttribute;
+
 import org.apache.hadoop.mapreduce.JobContext;
 import org.opengis.feature.simple.SimpleFeature;
+import org.slf4j.Logger;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
-import mil.nga.giat.geowave.analytic.AnalyticFeature.ClusterFeatureAttribute;
 
 public class SimpleFeatureItemWrapperFactory implements
 		AnalyticItemWrapperFactory<SimpleFeature>
@@ -25,8 +26,9 @@ public class SimpleFeatureItemWrapperFactory implements
 	@Override
 	public void initialize(
 			final JobContext context,
-			final Class<?> scope )
-					throws IOException {}
+			final Class<?> scope,
+			final Logger logger )
+			throws IOException {}
 
 	public static class SimpleFeatureAnalyticItemWrapper implements
 			AnalyticItemWrapper<SimpleFeature>
@@ -51,15 +53,13 @@ public class SimpleFeatureItemWrapperFactory implements
 
 		@Override
 		public long getAssociationCount() {
-			final Long countO = (Long) item.getAttribute(
-					ClusterFeatureAttribute.COUNT.attrName());
+			final Long countO = (Long) item.getAttribute(ClusterFeatureAttribute.COUNT.attrName());
 			return (countO != null) ? countO.longValue() : 0;
 		}
 
 		@Override
 		public int getIterationID() {
-			return ((Integer) item.getAttribute(
-					ClusterFeatureAttribute.ITERATION.attrName())).intValue();
+			return ((Integer) item.getAttribute(ClusterFeatureAttribute.ITERATION.attrName())).intValue();
 		}
 
 		@Override
@@ -99,8 +99,7 @@ public class SimpleFeatureItemWrapperFactory implements
 
 		@Override
 		public double getCost() {
-			final Double costO = (Double) item.getAttribute(
-					ClusterFeatureAttribute.WEIGHT.attrName());
+			final Double costO = (Double) item.getAttribute(ClusterFeatureAttribute.WEIGHT.attrName());
 			return (costO != null) ? costO.doubleValue() : 0.0;
 		}
 
@@ -131,8 +130,7 @@ public class SimpleFeatureItemWrapperFactory implements
 
 		@Override
 		public Geometry getGeometry() {
-			return (Geometry) item.getAttribute(
-					ClusterFeatureAttribute.GEOMETRY.attrName());
+			return (Geometry) item.getAttribute(ClusterFeatureAttribute.GEOMETRY.attrName());
 		}
 
 		@Override
@@ -140,8 +138,7 @@ public class SimpleFeatureItemWrapperFactory implements
 				final int level ) {
 			item.setAttribute(
 					ClusterFeatureAttribute.ZOOM_LEVEL.attrName(),
-					Integer.valueOf(
-							level));
+					Integer.valueOf(level));
 
 		}
 
@@ -172,8 +169,7 @@ public class SimpleFeatureItemWrapperFactory implements
 	private static String getAttribute(
 			final SimpleFeature feature,
 			final String name ) {
-		final Object att = feature.getAttribute(
-				name);
+		final Object att = feature.getAttribute(name);
 		return att == null ? null : att.toString();
 	}
 
@@ -181,10 +177,8 @@ public class SimpleFeatureItemWrapperFactory implements
 			final SimpleFeature feature,
 			final String name,
 			final int defaultValue ) {
-		final Object att = feature.getAttribute(
-				name);
-		return att == null ? defaultValue : (att instanceof Number ? ((Number) att).intValue() : Integer.parseInt(
-				att.toString()));
+		final Object att = feature.getAttribute(name);
+		return att == null ? defaultValue : (att instanceof Number ? ((Number) att).intValue() : Integer.parseInt(att.toString()));
 	}
 
 	/*
@@ -201,8 +195,7 @@ public class SimpleFeatureItemWrapperFactory implements
 			final Coordinate coordinate,
 			final String[] extraNames,
 			final double[] extraValues ) {
-		final Geometry geometry = (Geometry) feature.getAttribute(
-				ClusterFeatureAttribute.GEOMETRY.attrName());
+		final Geometry geometry = (Geometry) feature.getAttribute(ClusterFeatureAttribute.GEOMETRY.attrName());
 
 		return new SimpleFeatureAnalyticItemWrapper(
 				AnalyticFeature.createGeometryFeature(
@@ -214,18 +207,14 @@ public class SimpleFeatureItemWrapperFactory implements
 								feature,
 								ClusterFeatureAttribute.NAME.attrName()),
 						groupID,
-						((Double) feature.getAttribute(
-								ClusterFeatureAttribute.WEIGHT.attrName())).doubleValue(),
+						((Double) feature.getAttribute(ClusterFeatureAttribute.WEIGHT.attrName())).doubleValue(),
 						geometry.getFactory().createPoint(
 								coordinate),
 						extraNames,
 						extraValues,
-						((Integer) feature.getAttribute(
-								ClusterFeatureAttribute.ZOOM_LEVEL.attrName())).intValue(),
-						((Integer) feature.getAttribute(
-								ClusterFeatureAttribute.ITERATION.attrName())).intValue() + 1,
-						((Long) feature.getAttribute(
-								ClusterFeatureAttribute.COUNT.attrName())).longValue()));
+						((Integer) feature.getAttribute(ClusterFeatureAttribute.ZOOM_LEVEL.attrName())).intValue(),
+						((Integer) feature.getAttribute(ClusterFeatureAttribute.ITERATION.attrName())).intValue() + 1,
+						((Long) feature.getAttribute(ClusterFeatureAttribute.COUNT.attrName())).longValue()));
 
 	}
 

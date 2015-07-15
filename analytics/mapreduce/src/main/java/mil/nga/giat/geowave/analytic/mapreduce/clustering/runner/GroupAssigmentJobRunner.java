@@ -1,32 +1,36 @@
 package mil.nga.giat.geowave.analytic.mapreduce.clustering.runner;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.RunnerUtils;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
 import mil.nga.giat.geowave.analytic.clustering.NestedGroupCentroidAssignment;
 import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveAnalyticJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.clustering.GroupAssignmentMapReduce;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+import mil.nga.giat.geowave.analytic.param.StoreParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 
-import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Reducer;
 
 /**
- * 
+ *
  * Assign group IDs to input items based on centroids.
- * 
- * 
+ *
+ *
  */
 public class GroupAssigmentJobRunner extends
 		GeoWaveAnalyticJobRunner
@@ -44,7 +48,7 @@ public class GroupAssigmentJobRunner extends
 
 	@Override
 	public void configure(
-			Job job )
+			final Job job )
 			throws Exception {
 		job.setMapperClass(GroupAssignmentMapReduce.GroupAssignmentMapper.class);
 		job.setMapOutputKeyClass(GeoWaveInputKey.class);
@@ -67,23 +71,18 @@ public class GroupAssigmentJobRunner extends
 
 		// Required since the Mapper uses the input format parameters to lookup
 		// the adapter
-		GeoWaveInputFormat.setAccumuloOperationsInfo(
+		final DataStoreCommandLineOptions dataStoreOptions = (DataStoreCommandLineOptions) runTimeProperties.getProperty(StoreParam.DATA_STORE);
+		GeoWaveInputFormat.setDataStoreName(
 				config,
-				runTimeProperties.getPropertyAsString(
-						StoreParameters.DataStoreParam.ZOOKEEKER,
-						"localhost:2181"),
-				runTimeProperties.getPropertyAsString(
-						StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-						"miniInstance"),
-				runTimeProperties.getPropertyAsString(
-						StoreParameters.DataStoreParam.ACCUMULO_USER,
-						"root"),
-				runTimeProperties.getPropertyAsString(
-						StoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
-						"password"),
-				runTimeProperties.getPropertyAsString(
-						StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
-						"undefined"));
+				dataStoreOptions.getFactory().getName());
+		GeoWaveInputFormat.setStoreConfigOptions(
+				config,
+				ConfigUtils.valuesToStrings(
+						dataStoreOptions.getConfigOptions(),
+						dataStoreOptions.getFactory().getOptions()));
+		GeoWaveInputFormat.setGeoWaveNamespace(
+				config,
+				dataStoreOptions.getNamespace());
 
 		RunnerUtils.setParameter(
 				config,
@@ -113,25 +112,19 @@ public class GroupAssigmentJobRunner extends
 	}
 
 	@Override
-	public void fillOptions(
-			Set<Option> options ) {
-		super.fillOptions(options);
+	public Collection<ParameterEnum<?>> getParameters() {
+		final Set<ParameterEnum<?>> params = new HashSet<ParameterEnum<?>>();
+		params.addAll(super.getParameters());
 
-		PropertyManagement.fillOptions(
-				options,
-				new ParameterEnum[] {
-					StoreParameters.DataStoreParam.ZOOKEEKER,
-					StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-					StoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
-					StoreParameters.DataStoreParam.ACCUMULO_USER,
-					StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
-					GlobalParameters.Global.BATCH_ID
-				});
+		params.addAll(Arrays.asList(new ParameterEnum<?>[] {
+			StoreParameters.StoreParam.DATA_STORE,
+			GlobalParameters.Global.BATCH_ID
+		}));
 
-		CentroidManagerGeoWave.fillOptions(options);
-		MapReduceParameters.fillOptions(options);
-		NestedGroupCentroidAssignment.fillOptions(options);
-
+		params.addAll(CentroidManagerGeoWave.getParameters());
+		params.addAll(MapReduceParameters.getParameters());
+		params.addAll(NestedGroupCentroidAssignment.getParameters());
+		return params;
 	}
 
 }

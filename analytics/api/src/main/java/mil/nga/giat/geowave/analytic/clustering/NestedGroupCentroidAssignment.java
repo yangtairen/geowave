@@ -1,12 +1,11 @@
 package mil.nga.giat.geowave.analytic.clustering;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.commons.cli.Option;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.JobContext;
 
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapper;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
@@ -19,6 +18,10 @@ import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.JobContext;
+import org.slf4j.Logger;
 
 /**
  *
@@ -73,19 +76,20 @@ public class NestedGroupCentroidAssignment<T>
 		this.centroidManager = centroidManager;
 		this.endZoomLevel = endZoomLevel;
 		this.parentBatchID = parentBatchID;
-		this.associationdFunction.setDistanceFunction(
-				distanceFunction);
+		this.associationdFunction.setDistanceFunction(distanceFunction);
 	}
 
 	public NestedGroupCentroidAssignment(
 			final JobContext context,
-			final Class<?> scope )
-					throws InstantiationException,
-					IllegalAccessException,
-					IOException {
+			final Class<?> scope,
+			final Logger logger )
+			throws InstantiationException,
+			IllegalAccessException,
+			IOException {
 		final ScopedJobConfiguration config = new ScopedJobConfiguration(
 				context,
-				scope);
+				scope,
+				logger);
 		endZoomLevel = config.getInt(
 				CentroidParameters.Centroid.ZOOM_LEVEL,
 				1);
@@ -99,8 +103,7 @@ public class NestedGroupCentroidAssignment<T>
 				CommonParameters.Common.DISTANCE_FUNCTION_CLASS,
 				DistanceFn.class,
 				FeatureCentroidDistanceFn.class);
-		this.associationdFunction.setDistanceFunction(
-				distanceFunction);
+		this.associationdFunction.setDistanceFunction(distanceFunction);
 		centroidManager = new CentroidManagerGeoWave<T>(
 				context,
 				scope);
@@ -141,26 +144,22 @@ public class NestedGroupCentroidAssignment<T>
 				parentID);
 	}
 
-	public static void fillOptions(
-			final Set<Option> options ) {
-		CentroidManagerGeoWave.fillOptions(
-				options);
+	public static Collection<ParameterEnum<?>> getParameters() {
+		final Set<ParameterEnum<?>> params = new HashSet<ParameterEnum<?>>();
+		params.addAll(CentroidManagerGeoWave.getParameters());
 
-		PropertyManagement.fillOptions(
-				options,
-				new ParameterEnum[] {
-					CentroidParameters.Centroid.ZOOM_LEVEL,
-					GlobalParameters.Global.PARENT_BATCH_ID,
-					CommonParameters.Common.DISTANCE_FUNCTION_CLASS
-		});
-
+		params.addAll(Arrays.asList(new ParameterEnum<?>[] {
+			CentroidParameters.Centroid.ZOOM_LEVEL,
+			GlobalParameters.Global.PARENT_BATCH_ID,
+			CommonParameters.Common.DISTANCE_FUNCTION_CLASS
+		}));
+		return params;
 	}
 
 	public List<AnalyticItemWrapper<T>> getCentroidsForGroup(
 			final String groupID )
-					throws IOException {
-		return centroidManager.getCentroidsForGroup(
-				groupID);
+			throws IOException {
+		return centroidManager.getCentroidsForGroup(groupID);
 	}
 
 	/**
@@ -169,10 +168,9 @@ public class NestedGroupCentroidAssignment<T>
 	 */
 	public String getGroupForLevel(
 			final AnalyticItemWrapper<T> item )
-					throws IOException {
+			throws IOException {
 		final GroupHolder group = new GroupHolder();
-		group.setGroupID(
-				item.getGroupID());
+		group.setGroupID(item.getGroupID());
 		int currentLevel = item.getZoomLevel();
 		while (endZoomLevel != currentLevel) {
 			final List<AnalyticItemWrapper<T>> centroids = centroidManager.getCentroidsForGroup(
@@ -189,8 +187,7 @@ public class NestedGroupCentroidAssignment<T>
 						@Override
 						public void notify(
 								final CentroidPairing<T> pairing ) {
-							group.setGroupID(
-									pairing.getCentroid().getID());
+							group.setGroupID(pairing.getCentroid().getID());
 						}
 					});
 			currentLevel = centroids.get(
@@ -202,10 +199,9 @@ public class NestedGroupCentroidAssignment<T>
 	public double findCentroidForLevel(
 			final AnalyticItemWrapper<T> item,
 			final AssociationNotification<T> associationNotification )
-					throws IOException {
+			throws IOException {
 		final GroupHolder group = new GroupHolder();
-		group.setGroupID(
-				item.getGroupID());
+		group.setGroupID(item.getGroupID());
 		double currentDistance = Double.NaN;
 		int currentLevel = item.getZoomLevel();
 		boolean atEndLevel = false;
@@ -217,11 +213,9 @@ public class NestedGroupCentroidAssignment<T>
 
 			// only use the parent batch ID for upper levels, otherwise use the
 			// current batch ID.
-			final List<AnalyticItemWrapper<T>> centroids = (currentLevel == endZoomLevel) ? centroidManager.getCentroidsForGroup(
-					group.getGroupID())
-					: centroidManager.getCentroidsForGroup(
-							parentBatchID,
-							group.getGroupID());
+			final List<AnalyticItemWrapper<T>> centroids = (currentLevel == endZoomLevel) ? centroidManager.getCentroidsForGroup(group.getGroupID()) : centroidManager.getCentroidsForGroup(
+					parentBatchID,
+					group.getGroupID());
 			if (centroids.size() == 0) {
 				throw new IOException(
 						"Cannot find group " + group.getGroupID());
@@ -234,11 +228,9 @@ public class NestedGroupCentroidAssignment<T>
 						@Override
 						public void notify(
 								final CentroidPairing<T> pairing ) {
-							group.setGroupID(
-									pairing.getCentroid().getID());
+							group.setGroupID(pairing.getCentroid().getID());
 							if (reachedEndLevel) {
-								associationNotification.notify(
-										pairing);
+								associationNotification.notify(pairing);
 							}
 						}
 					});
@@ -265,7 +257,7 @@ public class NestedGroupCentroidAssignment<T>
 					CentroidParameters.Centroid.ZOOM_LEVEL,
 					GlobalParameters.Global.BATCH_ID,
 					GlobalParameters.Global.PARENT_BATCH_ID
-		},
+				},
 				config,
 				scope);
 	}
