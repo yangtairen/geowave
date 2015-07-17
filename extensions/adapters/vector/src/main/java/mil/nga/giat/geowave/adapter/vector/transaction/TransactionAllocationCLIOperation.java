@@ -90,7 +90,7 @@ public class TransactionAllocationCLIOperation implements
 	}
 
 	@Override
-	public void run(
+	public void runOperation(
 			final String[] args )
 			throws ParseException {
 		try {

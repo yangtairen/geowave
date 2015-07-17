@@ -21,7 +21,6 @@ import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
@@ -128,16 +127,6 @@ public class GeoWaveAnalyticExtractJobRunner extends
 				ClusteringUtils.CLUSTERING_CRS);
 	}
 
-	public static Path getHdfsOutputPath(
-			final PropertyManagement runTimeProperties ) {
-		return new Path(
-				runTimeProperties.getPropertyAsString(
-						MapReduceParameters.MRConfig.HDFS_BASE_DIR,
-						"/tmp") + "/" + runTimeProperties.getPropertyAsString(
-						StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
-						"x") + "_dedupe");
-	}
-
 	@Override
 	public Path getHdfsOutputPath() {
 		return new Path(
@@ -159,17 +148,15 @@ public class GeoWaveAnalyticExtractJobRunner extends
 		runTimeProperties.storeIfEmpty(
 				ExtractParameters.Extract.OUTPUT_DATA_TYPE_ID,
 				"centroid");
-
-		RunnerUtils.setParameter(
-				config,
-				SimpleFeatureOutputReducer.class,
-				runTimeProperties,
+		runTimeProperties.setConfig(
 				new ParameterEnum[] {
 					MapReduceParameters.MRConfig.HDFS_BASE_DIR,
 					ExtractParameters.Extract.REDUCER_COUNT,
 					ExtractParameters.Extract.DATA_NAMESPACE_URI,
 					ExtractParameters.Extract.OUTPUT_DATA_TYPE_ID
-				});
+				},
+				config,
+				SimpleFeatureOutputReducer.class);
 
 		config.set(
 				GeoWaveConfiguratorBase.enumToConfKey(

@@ -83,15 +83,13 @@ public class GroupAssigmentJobRunner extends
 		GeoWaveInputFormat.setGeoWaveNamespace(
 				config,
 				dataStoreOptions.getNamespace());
-
-		RunnerUtils.setParameter(
-				config,
-				GroupAssignmentMapReduce.class,
-				runTimeProperties,
+		runTimeProperties.setConfig(
 				new ParameterEnum[] {
 					CentroidParameters.Centroid.EXTRACTOR_CLASS,
 					CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
-				});
+				},
+				config,
+				GroupAssignmentMapReduce.class);
 		NestedGroupCentroidAssignment.setParameters(
 				config,
 				getScope(),

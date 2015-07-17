@@ -55,14 +55,8 @@ public class KMeansIterationsJobRunner<T> implements
 			final Configuration config,
 			final PropertyManagement runTimeProperties )
 			throws IOException {
-		try {
 			return new CentroidManagerGeoWave<T>(
 					runTimeProperties);
-		}
-		catch (AccumuloException | AccumuloSecurityException e) {
-			throw new IOException(
-					e);
-		}
 	}
 
 	public void setInputFormatConfiguration(

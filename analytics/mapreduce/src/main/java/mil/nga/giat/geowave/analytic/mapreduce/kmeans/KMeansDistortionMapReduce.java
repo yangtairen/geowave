@@ -9,6 +9,9 @@ import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
 import mil.nga.giat.geowave.analytic.clustering.CentroidPairing;
+import mil.nga.giat.geowave.analytic.clustering.DistortionGroupManagement;
+import mil.nga.giat.geowave.analytic.clustering.DistortionGroupManagement.DistortionDataAdapter;
+import mil.nga.giat.geowave.analytic.clustering.DistortionGroupManagement.DistortionEntry;
 import mil.nga.giat.geowave.analytic.clustering.NestedGroupCentroidAssignment;
 import mil.nga.giat.geowave.analytic.extract.CentroidExtractor;
 import mil.nga.giat.geowave.analytic.extract.SimpleFeatureCentroidExtractor;
@@ -16,9 +19,9 @@ import mil.nga.giat.geowave.analytic.kmeans.AssociationNotification;
 import mil.nga.giat.geowave.analytic.mapreduce.CountofDoubleWritable;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.JumpParameters;
-import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.mapreduce.GeoWaveWritableInputMapper;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
+import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputKey;
 
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
@@ -26,8 +29,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import scala.Enumeration.Value;
 
 import com.vividsolutions.jts.geom.Point;
 
@@ -138,8 +139,7 @@ public class KMeansDistortionMapReduce
 
 						context,
 						KMeansDistortionMapReduce.class,
-						KMeansDistortionMapReduce.LOGGER
-						);
+						KMeansDistortionMapReduce.LOGGER);
 			}
 			catch (final Exception e1) {
 				throw new IOException(
@@ -199,9 +199,9 @@ public class KMeansDistortionMapReduce
 	}
 
 	public static class KMeansDistortionReduce extends
-			Reducer<Text, CountofDoubleWritable, Text, Mutation>
+			Reducer<Text, CountofDoubleWritable, GeoWaveOutputKey, DistortionEntry>
 	{
-		private String expectedK = null;
+		private Integer expectedK = null;
 		final protected Text output = new Text(
 				"");
 		private CentroidManagerGeoWave<Object> centroidManager;
@@ -210,14 +210,14 @@ public class KMeansDistortionMapReduce
 		public void reduce(
 				final Text key,
 				final Iterable<CountofDoubleWritable> values,
-				final Reducer<Text, CountofDoubleWritable, Text, Mutation>.Context context )
+				final Reducer<Text, CountofDoubleWritable, GeoWaveOutputKey, DistortionEntry>.Context context )
 				throws IOException,
 				InterruptedException {
 			double expectation = 0.0;
 			final List<AnalyticItemWrapper<Object>> centroids = centroidManager.getCentroidsForGroup(key.toString());
 			// it is possible that the number of items in a group are smaller
 			// than the cluster
-			final String kCount = expectedK == null ? Integer.toString(centroids.size()) : expectedK;
+			final Integer kCount = expectedK == null ? centroids.size() : expectedK;
 			if (centroids.size() == 0) {
 				return;
 			}
@@ -237,30 +237,22 @@ public class KMeansDistortionMapReduce
 						expectation / numDimesions,
 						-(numDimesions / 2));
 
-				// key: group ID | "DISTORTION" | K
-				// value: distortion value
-				final Mutation m = new Mutation(
-						key.toString());
-				m.put(
-						new Text(
-								"dt"),
-						new Text(
-								kCount),
-						new Value(
-								distortion.toString().getBytes(
-										StringUtils.UTF8_CHAR_SET)));
+				final DistortionEntry entry = new DistortionEntry(
+						key.toString(),
+						kCount,
+						distortion);
 
-				// write distortion to accumulo, defaults to table given to
-				// AccumuloOutputFormat, in driver
 				context.write(
-						output, // default table
-						m);
+						new GeoWaveOutputKey(
+								DistortionDataAdapter.ADAPTER_ID,
+								DistortionGroupManagement.DISTORTIONS_INDEX.getId()),
+						entry);
 			}
 		}
 
 		@Override
 		protected void setup(
-				final Reducer<Text, CountofDoubleWritable, Text, Mutation>.Context context )
+				final Reducer<Text, CountofDoubleWritable, GeoWaveOutputKey, DistortionEntry>.Context context )
 				throws IOException,
 				InterruptedException {
 			super.setup(context);
@@ -273,7 +265,7 @@ public class KMeansDistortionMapReduce
 					JumpParameters.Jump.COUNT_OF_CENTROIDS,
 					-1);
 			if (k > 0) {
-				expectedK = Integer.toString(k);
+				expectedK = k;
 			}
 
 			try {

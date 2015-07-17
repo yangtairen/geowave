@@ -1,7 +1,6 @@
 package mil.nga.giat.geowave.analytic.mapreduce.kmeans.runner;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.RunnerUtils;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
 import mil.nga.giat.geowave.analytic.clustering.NestedGroupCentroidAssignment;
 import mil.nga.giat.geowave.analytic.mapreduce.CountofDoubleWritable;
@@ -21,8 +20,8 @@ import org.opengis.feature.simple.SimpleFeature;
 /**
  * Update the centroid with its cost, measured by the average distance of
  * assigned points.
- * 
- * 
+ *
+ *
  */
 public class UpdateCentroidCostJobRunner extends
 		GeoWaveAnalyticJobRunner implements
@@ -53,14 +52,12 @@ public class UpdateCentroidCostJobRunner extends
 				config,
 				getScope(),
 				runTimeProperties);
-
-		RunnerUtils.setParameter(
-				config,
-				getScope(),
-				runTimeProperties,
+		runTimeProperties.setConfig(
 				new ParameterEnum[] {
 					CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS
-				});
+				},
+				config,
+				getScope());
 
 		return super.run(
 				config,

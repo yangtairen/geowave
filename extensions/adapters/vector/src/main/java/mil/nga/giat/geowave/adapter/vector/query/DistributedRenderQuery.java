@@ -14,12 +14,13 @@ import mil.nga.giat.geowave.adapter.vector.wms.DistributableRenderer;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy;
+import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy.SubStrategy;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
-import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy.SubStrategy;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.filter.DistributableFilterList;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
@@ -27,7 +28,6 @@ import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.query.AccumuloConstraintsQuery;
-import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.IteratorSetting;
@@ -44,7 +44,7 @@ import org.opengis.filter.Filter;
  * distributed rendering within tablet servers. It is able to serialize a
  * distributed renderer and return a set of features that contain the rendered
  * images ready for composition. It also supports CQL filters.
- * 
+ *
  */
 public class DistributedRenderQuery extends
 		AccumuloConstraintsQuery
@@ -192,7 +192,7 @@ public class DistributedRenderQuery extends
 		try {
 			scanner = accumuloOperations.createBatchScanner(
 					tableName,
-					this.getAdditionalAuthorizations());
+					getAdditionalAuthorizations());
 			if ((prefix != null) && (prefix.length > 0)) {
 				final Range r = Range.prefix(new Text(
 						prefix));

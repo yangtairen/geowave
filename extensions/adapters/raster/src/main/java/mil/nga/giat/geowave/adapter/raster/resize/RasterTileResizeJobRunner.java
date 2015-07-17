@@ -1,5 +1,9 @@
 package mil.nga.giat.geowave.adapter.raster.resize;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter;
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.nodata.NoDataMergeStrategy;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -9,6 +13,7 @@ import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStoreFactory;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
@@ -29,8 +34,6 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 import org.opengis.coverage.grid.GridCoverage;
-
-import java.io.IOException;
 
 public class RasterTileResizeJobRunner extends
 		Configured implements
@@ -103,6 +106,18 @@ public class RasterTileResizeJobRunner extends
 		GeoWaveInputFormat.setMaximumSplitCount(
 				job.getConfiguration(),
 				maxSplits);
+		GeoWaveInputFormat.setDataStoreName(
+				job.getConfiguration(),
+				new AccumuloDataStoreFactory().getName());
+		GeoWaveInputFormat.setGeoWaveNamespace(
+				job.getConfiguration(),
+				oldNamespace);
+		Map<String, String> configOptions = new HashMap<String, String>();
+		BasicAccumuloOperations.getOptions()
+		configOptions.put(arg0, arg1);
+		GeoWaveInputFormat.setStoreConfigOptions(
+				job.getConfiguration(),
+				oldNamespace);
 		GeoWaveInputFormat.setAccumuloOperationsInfo(
 				job,
 				zookeeper,
@@ -176,7 +191,7 @@ public class RasterTileResizeJobRunner extends
 		try {
 			retVal = job.waitForCompletion(true);
 		}
-		catch (IOException ex) {
+		catch (final IOException ex) {
 			LOGGER.error(
 					"Error waiting for map reduce tile resize job: ",
 					ex);

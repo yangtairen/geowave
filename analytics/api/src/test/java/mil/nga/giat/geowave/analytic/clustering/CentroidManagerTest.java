@@ -16,14 +16,6 @@ import mil.nga.giat.geowave.analytic.clustering.CentroidManager.CentroidProcessi
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
-
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.mock.MockInstance;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.junit.Test;
 import org.opengis.feature.simple.SimpleFeature;

@@ -168,7 +168,7 @@ public class NNMapReduceTest
 				30.0000001));
 
 		final GeoWaveInputKey inputKey = new GeoWaveInputKey();
-		inputKey.setAccumuloKey(accumuloKey);
+		inputKey.setInsertionId(accumuloKey);
 		inputKey.setAdapterId(new ByteArrayId(
 				ftype.getTypeName()));
 		inputKey.setDataId(new ByteArrayId(

@@ -18,7 +18,7 @@ public class GeoWaveInputKey extends
 		GeoWaveKey
 {
 	private ByteArrayId dataId;
-	private ByteArrayId accumuloKey;
+	private ByteArrayId insertionId;
 
 	public GeoWaveInputKey() {
 		super();
@@ -33,16 +33,16 @@ public class GeoWaveInputKey extends
 	}
 
 	public ByteArrayId getInsertionId() {
-		return accumuloKey;
+		return insertionId;
 	}
 
-	public void setAccumuloKey(
-			final ByteArrayId accumuloKey ) {
-		this.accumuloKey = accumuloKey;
+	public void setInsertionId(
+			final ByteArrayId insertionId ) {
+		this.insertionId = insertionId;
 	}
 
 	public void setDataId(
-			ByteArrayId dataId ) {
+			final ByteArrayId dataId ) {
 		this.dataId = dataId;
 	}
 

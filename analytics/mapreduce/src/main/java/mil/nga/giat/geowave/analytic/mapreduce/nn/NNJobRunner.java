@@ -14,7 +14,6 @@ import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.PartitionParameters.Partition;
 import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner;
-import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
@@ -35,15 +34,6 @@ public class NNJobRunner extends
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 		job.setSpeculativeExecution(false);
-
-		GeoWaveInputFormat.setAccumuloOperationsInfo(
-				job,
-				zookeeper,
-				instanceName,
-				userName,
-				password,
-				namespace);
-
 	}
 
 	@Override
@@ -66,17 +56,15 @@ public class NNJobRunner extends
 				runTimeProperties,
 				getScope(),
 				config);
-
-		RunnerUtils.setParameter(
-				config,
-				getScope(),
-				runTimeProperties,
+		runTimeProperties.setConfig(
 				new ParameterEnum[] {
 					Partition.PARTITIONER_CLASS,
 					Partition.PARTITION_DISTANCE,
 					Partition.MAX_MEMBER_SELECTION,
 					CommonParameters.Common.DISTANCE_FUNCTION_CLASS
-				});
+				},
+				config,
+				getScope());
 
 		return super.run(
 				config,

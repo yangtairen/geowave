@@ -7,8 +7,11 @@ import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
-import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.analytic.store.PersistableDataStore;
+import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
+import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputFormat;
 
 import org.apache.hadoop.conf.Configuration;
@@ -28,16 +31,16 @@ public class GeoWaveOutputFormatConfiguration implements
 			final PropertyManagement runTimeProperties,
 			final Configuration configuration )
 			throws Exception {
-		final DataStoreCommandLineOptions dataStoreOptions = (DataStoreCommandLineOptions) runTimeProperties.getProperty(StoreParam.DATA_STORE);
-		GeoWaveOutputFormat.setDataStoreName(
+		final GenericStoreCommandLineOptions<DataStore> dataStoreOptions = ((PersistableDataStore) runTimeProperties.getProperty(StoreParam.DATA_STORE)).getCliOptions();
+		GeoWaveInputFormat.setDataStoreName(
 				configuration,
 				dataStoreOptions.getFactory().getName());
-		GeoWaveOutputFormat.setStoreConfigOptions(
+		GeoWaveInputFormat.setStoreConfigOptions(
 				configuration,
 				ConfigUtils.valuesToStrings(
 						dataStoreOptions.getConfigOptions(),
 						dataStoreOptions.getFactory().getOptions()));
-		GeoWaveOutputFormat.setGeoWaveNamespace(
+		GeoWaveInputFormat.setGeoWaveNamespace(
 				configuration,
 				dataStoreOptions.getNamespace());
 

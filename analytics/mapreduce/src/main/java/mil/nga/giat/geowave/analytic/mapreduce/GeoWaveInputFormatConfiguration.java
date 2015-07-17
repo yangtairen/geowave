@@ -3,7 +3,6 @@ package mil.nga.giat.geowave.analytic.mapreduce;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
@@ -11,16 +10,17 @@ import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
-import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.analytic.store.PersistableDataStore;
+import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 
-import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 
 public class GeoWaveInputFormatConfiguration implements
@@ -40,7 +40,7 @@ public class GeoWaveInputFormatConfiguration implements
 			final PropertyManagement runTimeProperties,
 			final Configuration configuration )
 			throws Exception {
-		final DataStoreCommandLineOptions dataStoreOptions = (DataStoreCommandLineOptions) runTimeProperties.getProperty(StoreParam.DATA_STORE);
+		final GenericStoreCommandLineOptions<DataStore> dataStoreOptions = ((PersistableDataStore) runTimeProperties.getProperty(StoreParam.DATA_STORE)).getCliOptions();
 		GeoWaveInputFormat.setDataStoreName(
 				configuration,
 				dataStoreOptions.getFactory().getName());

@@ -1,7 +1,6 @@
 package mil.nga.giat.geowave.analytic.mapreduce.kmeans.runner;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.RunnerUtils;
 import mil.nga.giat.geowave.analytic.clustering.NestedGroupCentroidAssignment;
 import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveAnalyticJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveOutputFormatConfiguration;
@@ -19,10 +18,10 @@ import org.apache.hadoop.mapreduce.Job;
 import org.opengis.feature.simple.SimpleFeature;
 
 /**
- * 
+ *
  * Run 'K' means one time to move the centroids towards the mean.
- * 
- * 
+ *
+ *
  */
 public class KMeansJobRunner extends
 		GeoWaveAnalyticJobRunner implements
@@ -74,15 +73,13 @@ public class KMeansJobRunner extends
 				Math.max(
 						2,
 						super.getReducerCount())));
-
-		RunnerUtils.setParameter(
-				configuration,
-				getScope(),
-				runTimeProperties,
+		runTimeProperties.setConfig(
 				new ParameterEnum[] {
 					CentroidParameters.Centroid.EXTRACTOR_CLASS,
 					CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS
-				});
+				},
+				configuration,
+				getScope());
 
 		return super.run(
 				configuration,

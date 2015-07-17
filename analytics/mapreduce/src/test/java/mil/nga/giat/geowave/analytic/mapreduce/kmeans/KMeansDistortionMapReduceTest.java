@@ -210,7 +210,7 @@ public class KMeansDistortionMapReduceTest
 			AccumuloSecurityException {
 
 		final GeoWaveInputKey inputKey = new GeoWaveInputKey();
-		inputKey.setAccumuloKey(accumuloKey);
+		inputKey.setInsertionId(accumuloKey);
 		inputKey.setAdapterId(testObjectAapter.getAdapterId());
 		inputKey.setDataId(new ByteArrayId(
 				"abc".getBytes()));

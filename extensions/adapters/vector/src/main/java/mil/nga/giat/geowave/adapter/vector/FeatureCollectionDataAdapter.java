@@ -15,12 +15,17 @@ import mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveGTDataStore;
 import mil.nga.giat.geowave.adapter.vector.util.FeatureDataUtils;
 import mil.nga.giat.geowave.adapter.vector.util.FitToIndexDefaultFeatureCollection;
 import mil.nga.giat.geowave.adapter.vector.util.SimpleFeatureWrapper;
+import mil.nga.giat.geowave.core.geotime.TimeUtils;
+import mil.nga.giat.geowave.core.geotime.store.dimension.SpatialArrayField;
+import mil.nga.giat.geowave.core.geotime.store.dimension.SpatialField;
+import mil.nga.giat.geowave.core.geotime.store.dimension.TimeArrayField;
+import mil.nga.giat.geowave.core.geotime.store.dimension.TimeField;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy;
+import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy.SubStrategy;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
-import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy.SubStrategy;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.tiered.SingleTierSubStrategy;
 import mil.nga.giat.geowave.core.store.adapter.AbstractDataAdapter;
@@ -30,8 +35,8 @@ import mil.nga.giat.geowave.core.store.adapter.IndexDependentDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexFieldHandler;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler;
-import mil.nga.giat.geowave.core.store.adapter.PersistentIndexFieldHandler;
 import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler.RowBuilder;
+import mil.nga.giat.geowave.core.store.adapter.PersistentIndexFieldHandler;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
@@ -43,6 +48,16 @@ import mil.nga.giat.geowave.core.store.index.BasicIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
+import mil.nga.giat.geowave.datastore.accumulo.ModelConvertingDataAdapter;
+import mil.nga.giat.geowave.datastore.accumulo.query.ArrayToElementsIterator;
+import mil.nga.giat.geowave.datastore.accumulo.query.ElementsToArrayIterator;
+
+import org.apache.accumulo.core.client.IteratorSetting;
+import org.apache.accumulo.core.client.IteratorSetting.Column;
+import org.apache.accumulo.core.iterators.Combiner;
+import org.apache.accumulo.core.iterators.IteratorUtil.IteratorScope;
+import org.apache.accumulo.core.iterators.user.TransformingIterator;
 import org.apache.log4j.Logger;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -68,7 +83,7 @@ import org.opengis.referencing.operation.MathTransform;
  * the term 'start' and the other contains either the term 'stop' or 'end' it
  * will interpret the combination of these attributes as a time range to index
  * on.
- * 
+ *
  */
 public class FeatureCollectionDataAdapter extends
 		AbstractDataAdapter<DefaultFeatureCollection> implements

@@ -16,12 +16,12 @@ public class BasicParameterHelper implements
 		ParameterHelper<Object>
 {
 	final static Logger LOGGER = LoggerFactory.getLogger(BasicParameterHelper.class);
-	private final ParameterEnum parent;
+	private final ParameterEnum<?> parent;
 	private final Class<Object> baseClass;
 	private final Option[] options;
 
 	public BasicParameterHelper(
-			final ParameterEnum parent,
+			final ParameterEnum<?> parent,
 			final Class<Object> baseClass,
 			final String name,
 			final String description,

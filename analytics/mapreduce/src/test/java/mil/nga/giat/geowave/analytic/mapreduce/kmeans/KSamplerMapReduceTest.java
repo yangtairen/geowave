@@ -241,7 +241,7 @@ public class KSamplerMapReduceTest
 				SamplingRankFunction.class);
 
 		final GeoWaveInputKey inputKey = new GeoWaveInputKey();
-		inputKey.setAccumuloKey(accumuloKey);
+		inputKey.setInsertionId(accumuloKey);
 		inputKey.setAdapterId(testObjectAapter.getAdapterId());
 		inputKey.setDataId(new ByteArrayId(
 				"abc".getBytes()));
@@ -255,7 +255,7 @@ public class KSamplerMapReduceTest
 						"abc")));
 
 		final GeoWaveInputKey outputKey = new GeoWaveInputKey();
-		outputKey.setAccumuloKey(accumuloKey);
+		outputKey.setInsertionId(accumuloKey);
 		outputKey.setAdapterId(testObjectAapter.getAdapterId());
 
 		final ByteBuffer keyBuf = ByteBuffer.allocate(64);
@@ -305,7 +305,7 @@ public class KSamplerMapReduceTest
 				SamplingRankFunction.class);
 
 		final GeoWaveInputKey inputKey = new GeoWaveInputKey();
-		inputKey.setAccumuloKey(accumuloKey);
+		inputKey.setInsertionId(accumuloKey);
 		inputKey.setAdapterId(testObjectAapter.getAdapterId());
 		inputKey.setDataId(new ByteArrayId(
 				"abc".getBytes()));
@@ -319,7 +319,7 @@ public class KSamplerMapReduceTest
 						"abc")));
 
 		final GeoWaveInputKey outputKey = new GeoWaveInputKey();
-		outputKey.setAccumuloKey(accumuloKey);
+		outputKey.setInsertionId(accumuloKey);
 		outputKey.setAdapterId(testObjectAapter.getAdapterId());
 
 		final ByteBuffer keyBuf = ByteBuffer.allocate(64);
@@ -378,7 +378,7 @@ public class KSamplerMapReduceTest
 						"ghi")));
 
 		final GeoWaveInputKey inputKey1 = new GeoWaveInputKey();
-		inputKey1.setAccumuloKey(accumuloKey);
+		inputKey1.setInsertionId(accumuloKey);
 		inputKey1.setAdapterId(testObjectAapter.getAdapterId());
 
 		ByteBuffer keyBuf = ByteBuffer.allocate(64);
@@ -390,7 +390,7 @@ public class KSamplerMapReduceTest
 
 		keyBuf = ByteBuffer.allocate(64);
 		final GeoWaveInputKey inputKey2 = new GeoWaveInputKey();
-		inputKey2.setAccumuloKey(accumuloKey);
+		inputKey2.setInsertionId(accumuloKey);
 		inputKey2.setAdapterId(testObjectAapter.getAdapterId());
 		keyBuf.putDouble(0.6);
 		keyBuf.putInt(3);
@@ -400,7 +400,7 @@ public class KSamplerMapReduceTest
 
 		keyBuf = ByteBuffer.allocate(64);
 		final GeoWaveInputKey inputKey3 = new GeoWaveInputKey();
-		inputKey3.setAccumuloKey(accumuloKey);
+		inputKey3.setInsertionId(accumuloKey);
 		inputKey3.setAdapterId(testObjectAapter.getAdapterId());
 		keyBuf.putDouble(0.7);
 		keyBuf.putInt(3);

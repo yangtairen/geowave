@@ -38,6 +38,7 @@ import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.geotools.filter.FilterFactoryImpl;
 import org.opengis.filter.Filter;
@@ -103,18 +104,18 @@ public class CentroidManagerGeoWave<T> implements
 		CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
 		CentroidParameters.Centroid.ZOOM_LEVEL
 	};
-	private final String centroidDataTypeId;
-	private final String batchId;
+	private String centroidDataTypeId;
+	private String batchId;
 	private int level = 0;
 
-	private final AnalyticItemWrapperFactory<T> centroidFactory;
+	private AnalyticItemWrapperFactory<T> centroidFactory;
 	@SuppressWarnings("rawtypes")
-	private final DataAdapter adapter;
+	private DataAdapter adapter;
 
-	private final DataStore dataStore;
-	private final IndexStore indexStore;
-	private final AdapterStore adapterStore;
-	private final Index index;
+	private DataStore dataStore;
+	private IndexStore indexStore;
+	private AdapterStore adapterStore;
+	private Index index;
 
 	public CentroidManagerGeoWave(
 			final DataStore dataStore,
@@ -140,6 +141,21 @@ public class CentroidManagerGeoWave<T> implements
 
 	@SuppressWarnings("unchecked")
 	public CentroidManagerGeoWave(
+			final PropertyManagement properties )
+			throws IOException {
+		final Class<?> scope = CentroidManagerGeoWave.class;
+		final Configuration configuration = new Configuration();
+		properties.setJobConfiguration(
+				configuration,
+				scope);
+		init(
+				Job.getInstance(configuration),
+				scope,
+				LOGGER);
+	}
+
+	@SuppressWarnings("unchecked")
+	public CentroidManagerGeoWave(
 			final JobContext context,
 			final Class<?> scope )
 			throws IOException {
@@ -151,6 +167,17 @@ public class CentroidManagerGeoWave<T> implements
 
 	@SuppressWarnings("unchecked")
 	public CentroidManagerGeoWave(
+			final JobContext context,
+			final Class<?> scope,
+			final Logger logger )
+			throws IOException {
+		init(
+				context,
+				scope,
+				logger);
+	}
+
+	private void init(
 			final JobContext context,
 			final Class<?> scope,
 			final Logger logger )

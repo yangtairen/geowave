@@ -3,14 +3,12 @@ package mil.nga.giat.geowave.analytic.mapreduce.kmeans.runner;
 import java.util.UUID;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.RunnerUtils;
 import mil.nga.giat.geowave.analytic.clustering.NestedGroupCentroidAssignment;
 import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveAnalyticJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveOutputFormatConfiguration;
 import mil.nga.giat.geowave.analytic.mapreduce.MapReduceJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.kmeans.KSamplerMapReduce;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
-import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.SampleParameters;
@@ -30,15 +28,15 @@ import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mapreduce.Job;
 
 /**
- * 
+ *
  * Samples 'K' number of data items by evaluating a {@link SamplingRankFunction}
- * 
+ *
  * For KMeans Parallel, the initial step requires seeding the centroids with a
  * single point. In this case, K=1 and the rank function is random. This means
  * the top selected geometry is random. In addition, each subsequent iteration
  * samples based on probability function and K is some provided sample size.
- * 
- * 
+ *
+ *
  */
 public class KSamplerJobRunner extends
 		GeoWaveAnalyticJobRunner implements
@@ -123,10 +121,7 @@ public class KSamplerJobRunner extends
 		runTimeProperties.storeIfEmpty(
 				SampleParameters.Sample.INDEX_ID,
 				IndexType.SPATIAL_TEMPORAL_VECTOR.getDefaultId());
-		RunnerUtils.setParameter(
-				config,
-				getScope(),
-				runTimeProperties,
+		runTimeProperties.setConfig(
 				new ParameterEnum[] {
 					GlobalParameters.Global.BATCH_ID,
 					SampleParameters.Sample.INDEX_ID,
@@ -135,17 +130,14 @@ public class KSamplerJobRunner extends
 					CentroidParameters.Centroid.EXTRACTOR_CLASS,
 					CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
 					CentroidParameters.Centroid.ZOOM_LEVEL
-				});
+				},
+				config,
+				getScope());
 
-		RunnerUtils.setParameter(
+		((ParameterEnum<Class<?>>) SampleParameters.Sample.SAMPLE_RANK_FUNCTION).getHelper().setValue(
 				config,
 				getScope(),
-				new Object[] {
-					samplingRankFunctionClass
-				},
-				new ParameterEnum[] {
-					SampleParameters.Sample.SAMPLE_RANK_FUNCTION,
-				});
+				samplingRankFunctionClass);
 
 		NestedGroupCentroidAssignment.setParameters(
 				config,

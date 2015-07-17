@@ -48,8 +48,8 @@ public class DistortionGroupManagement
 {
 
 	final static Logger LOGGER = LoggerFactory.getLogger(DistortionGroupManagement.class);
-	public final static Index DISTORTION_GROUP_INDEX = new NullIndex(
-			"DISTORTION_GROUPS");
+	public final static Index DISTORTIONS_INDEX = new NullIndex(
+			"DISTORTIONS");
 
 	/**
 	 *
@@ -67,7 +67,6 @@ public class DistortionGroupManagement
 			final AnalyticItemWrapperFactory<T> itemWrapperFactory,
 			final String dataTypeId,
 			final String indexId,
-			final String distortationTableName,
 			final String parentBatchId,
 			final int level ) {
 
@@ -78,7 +77,7 @@ public class DistortionGroupManagement
 			// colQual is cluster count
 			try (CloseableIterator<DistortionEntry> it = dataStore.query(
 					new DistortionDataAdapter(),
-					DISTORTION_GROUP_INDEX,
+					DISTORTIONS_INDEX,
 					null)) {
 				while (it.hasNext()) {
 					final DistortionEntry entry = it.next();

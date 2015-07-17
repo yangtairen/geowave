@@ -136,16 +136,15 @@ public class ConvexHullJobRunner extends
 		runTimeProperties.storeIfEmpty(
 				HullParameters.Hull.PROJECTION_CLASS,
 				SimpleFeatureProjection.class);
-		RunnerUtils.setParameter(
-				config,
-				getScope(),
-				runTimeProperties,
+		runTimeProperties.setConfig(
 				new ParameterEnum<?>[] {
 					HullParameters.Hull.WRAPPER_FACTORY_CLASS,
 					HullParameters.Hull.PROJECTION_CLASS,
 					HullParameters.Hull.DATA_TYPE_ID,
 					HullParameters.Hull.INDEX_ID
-				});
+				},
+				config,
+				getScope());
 		setReducerCount(runTimeProperties.getPropertyAsInt(
 				HullParameters.Hull.REDUCER_COUNT,
 				4));

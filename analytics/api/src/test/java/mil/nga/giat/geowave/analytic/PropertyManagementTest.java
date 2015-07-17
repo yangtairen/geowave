@@ -9,9 +9,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
 
 import mil.nga.giat.geowave.analytic.extract.EmptyDimensionExtractor;
 import mil.nga.giat.geowave.analytic.param.BasicParameterHelper;
@@ -207,15 +204,15 @@ public class PropertyManagementTest
 
 				@Override
 				public NonSerializableExample getValue(
-						PropertyManagement propertyManagement ) {
+						final PropertyManagement propertyManagement ) {
 					return null;
 				}
 
 				@Override
 				public void setValue(
-						PropertyManagement propertyManagement,
-						NonSerializableExample value ) {
-					
+						final PropertyManagement propertyManagement,
+						final NonSerializableExample value ) {
+
 				}
 			};
 		}
@@ -349,18 +346,20 @@ public class PropertyManagementTest
 	public void testCommandLine()
 			throws ParseException {
 		final PropertyManagement pm = new PropertyManagement();
-		final Set<Option> optionSet = new HashSet<Option>();
-		PropertyManagement.fillOptions(
-				optionSet,
-				new ParameterEnum[] {
-					ExtractParameters.Extract.ADAPTER_ID,
-					MyLocalBoolEnum.BOOLEAN_ARG1,
-					MyLocalBoolEnum.BOOLEAN_ARG2
-				});
+		// PropertyManagement.fillOptions(
+		// optionSet,
+		final ParameterEnum<?>[] params = new ParameterEnum<?>[] {
+			ExtractParameters.Extract.ADAPTER_ID,
+			MyLocalBoolEnum.BOOLEAN_ARG1,
+			MyLocalBoolEnum.BOOLEAN_ARG2
+		};
 
 		final Options options = new Options();
-		for (final Option opt : optionSet) {
-			options.addOption(opt);
+		for (final ParameterEnum<?> param : params) {
+			final Option[] opts = param.getHelper().getOptions();
+			for (final Option opt : opts) {
+				options.addOption(opt);
+			}
 		}
 		final BasicParser parser = new BasicParser();
 		final CommandLine commandLine = parser.parse(
@@ -370,7 +369,13 @@ public class PropertyManagementTest
 					"y",
 					"-rd"
 				});
-		pm.buildFromOptions(commandLine);
+
+		for (final ParameterEnum<?> param : params) {
+			((ParameterEnum<Object>) param).getHelper().setValue(
+					pm,
+					param.getHelper().getValue(
+							commandLine));
+		}
 
 		assertTrue(pm.getPropertyAsBoolean(
 				MyLocalBoolEnum.BOOLEAN_ARG2,
@@ -412,11 +417,9 @@ public class PropertyManagementTest
 		final Path path1 = new Path(
 				"http://java.sun.com/j2se/1.3/foo");
 
-		final Properties props = new Properties();
-		props.put(
-				"input-hdfs-input-path",
-				path1.toUri().toString());
-		pm.fromProperties(props);
+		pm.store(
+				Input.HDFS_INPUT_PATH,
+				path1);
 		final Path path2 = pm.getPropertyAsPath(Input.HDFS_INPUT_PATH);
 		assertEquals(
 				path1,

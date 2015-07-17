@@ -13,8 +13,12 @@ import mil.nga.giat.geowave.analytic.param.InputParameters;
 import mil.nga.giat.geowave.analytic.param.OutputParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
+import mil.nga.giat.geowave.analytic.store.PersistableAdapterStore;
+import mil.nga.giat.geowave.analytic.store.PersistableIndexStore;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.JobContextIndexStore;
 
@@ -91,6 +95,20 @@ public abstract class GeoWaveAnalyticJobRunner extends
 
 	public Class<?> getScope() {
 		return this.getClass();
+	}
+
+	public AdapterStore getAdapterStore(
+			final PropertyManagement runTimeProperties )
+			throws Exception {
+		return ((PersistableAdapterStore) StoreParam.ADAPTER_STORE.getHelper().getValue(
+				runTimeProperties)).getCliOptions().createStore();
+	}
+
+	public IndexStore getIndexStore(
+			final PropertyManagement runTimeProperties )
+			throws Exception {
+		return ((PersistableIndexStore) StoreParam.INDEX_STORE.getHelper().getValue(
+				runTimeProperties)).getCliOptions().createStore();
 	}
 
 	@Override

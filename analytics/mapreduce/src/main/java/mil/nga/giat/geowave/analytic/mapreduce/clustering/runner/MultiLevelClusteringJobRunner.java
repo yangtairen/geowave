@@ -20,7 +20,6 @@ import mil.nga.giat.geowave.analytic.param.GlobalParameters.Global;
 import mil.nga.giat.geowave.analytic.param.HullParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 
 import org.apache.hadoop.conf.Configuration;
@@ -73,14 +72,14 @@ public abstract class MultiLevelClusteringJobRunner extends
 		params.addAll(getClusteringRunner().getParameters());
 		params.addAll(Arrays.asList(new ParameterEnum<?>[] {
 			Clustering.ZOOM_LEVELS,
-			Global.BATCH_ID,
-			StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE
+			Global.BATCH_ID
 		}));
 		params.addAll(MapReduceParameters.getParameters());
 		// the output data type is used for centroid management
 		params.remove(CentroidParameters.Centroid.DATA_TYPE_ID);
 
 		params.remove(CentroidParameters.Centroid.DATA_NAMESPACE_URI);
+		return params;
 	}
 
 	@Override
@@ -148,7 +147,7 @@ public abstract class MultiLevelClusteringJobRunner extends
 
 		final FileSystem fs = FileSystem.get(config);
 
-		final Path extractPath = GeoWaveAnalyticExtractJobRunner.getHdfsOutputPath(propertyManagement);
+		final Path extractPath = jobExtractRunner.getHdfsOutputPath();
 
 		if (fs.exists(extractPath)) {
 			fs.delete(
@@ -189,7 +188,7 @@ public abstract class MultiLevelClusteringJobRunner extends
 					propertyManagement);
 			if (status == 0) {
 				final Path nextPath = new Path(
-						outputBaseDir + "/" + propertyManagement.getPropertyAsString(StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE) + "_level_" + zoomLevel);
+						outputBaseDir + "/" + "level_" + zoomLevel);
 				if (fs.exists(nextPath)) {
 					fs.delete(
 							nextPath,

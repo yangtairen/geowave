@@ -13,8 +13,8 @@ import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestFromHdfsPlugin;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithMapper;
 import mil.nga.giat.geowave.core.ingest.local.LocalFileIngestPlugin;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 
 import org.opengis.feature.simple.SimpleFeature;
 

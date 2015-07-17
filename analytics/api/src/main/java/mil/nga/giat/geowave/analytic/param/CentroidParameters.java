@@ -28,11 +28,6 @@ public class CentroidParameters
 				"cct",
 				"The alpha parameter measure the minimum covergence to reach before ",
 				true),
-		DISTORTION_TABLE_NAME(
-				String.class,
-				"cdt",
-				"The name of the Accumulo holding the information distortion for each batch of K-Means",
-				true),
 		EXTRACTOR_CLASS(
 				CentroidExtractor.class,
 				"cce",

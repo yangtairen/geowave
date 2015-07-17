@@ -30,6 +30,7 @@ import mil.nga.giat.geowave.core.store.data.visibility.VisibilityManagement;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.mapreduce.HadoopDataAdapter;
+import mil.nga.giat.geowave.mapreduce.HadoopWritableSerializer;
 
 import org.apache.log4j.Logger;
 import org.geotools.data.DataUtilities;

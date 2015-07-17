@@ -26,11 +26,11 @@ import mil.nga.giat.geowave.core.geotime.store.query.TemporalConstraintsSet;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.BasicQuery;
 import mil.nga.giat.geowave.core.store.query.BasicQuery.Constraints;
-import mil.nga.giat.geowave.datastore.accumulo.util.CloseableIteratorWrapper;
 
 import org.apache.log4j.Logger;
 import org.geotools.data.FeatureReader;
@@ -49,7 +49,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * This class wraps a geotools data store as well as one for statistics (for
  * example to display Heatmaps) into a GeoTools FeatureReader for simple feature
  * data. It acts as a helper for GeoWave's GeoTools data store.
- * 
+ *
  */
 public class GeoWaveFeatureReader implements
 		FeatureReader<SimpleFeatureType, SimpleFeature>

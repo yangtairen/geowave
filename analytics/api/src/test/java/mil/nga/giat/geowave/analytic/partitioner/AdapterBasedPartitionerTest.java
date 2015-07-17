@@ -6,19 +6,19 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.List;
 
-import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.model.SpatialIndexModelBuilder;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
-import mil.nga.giat.geowave.analytic.partitioner.AdapterBasedPartitioner;
 import mil.nga.giat.geowave.analytic.partitioner.AdapterBasedPartitioner.AdapterDataEntry;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner.PartitionData;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.Job;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.geotools.referencing.CRS;
 import org.junit.Test;
@@ -76,8 +76,8 @@ public class AdapterBasedPartitionerTest
 				1,
 				0);
 
-		PropertyManagement propertyManagement = new PropertyManagement();
-		AdapterBasedPartitioner partitioner = new AdapterBasedPartitioner();
+		final PropertyManagement propertyManagement = new PropertyManagement();
+		final AdapterBasedPartitioner partitioner = new AdapterBasedPartitioner();
 
 		propertyManagement.store(
 				ClusteringParameters.Clustering.DISTANCE_THRESHOLDS,
@@ -85,16 +85,15 @@ public class AdapterBasedPartitionerTest
 		propertyManagement.store(
 				CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS,
 				SpatialIndexModelBuilder.class);
-		propertyManagement.store(
-				CommonParameters.Common.ADAPTER_STORE_FACTORY,
-				FeatureDataAdapterStoreFactory.class);
+		final Configuration configuration = new Configuration();
+		final Class<?> scope = OrthodromicDistancePartitionerTest.class;
+		propertyManagement.setJobConfiguration(
+				configuration,
+				scope);
 
-		FeatureDataAdapterStoreFactory.saveState(
-				new FeatureDataAdapter(
-						ftype),
-				propertyManagement);
-
-		partitioner.initialize(propertyManagement);
+		partitioner.initialize(
+				Job.getInstance(configuration),
+				scope);
 
 		List<PartitionData> partitions = partitioner.getCubeIdentifiers(new AdapterDataEntry(
 				new ByteArrayId(
@@ -105,7 +104,7 @@ public class AdapterBasedPartitionerTest
 				partitions.size());
 		assertTrue(hasOnePrimary(partitions));
 
-		for (PartitionData partition : partitions) {
+		for (final PartitionData partition : partitions) {
 			final MultiDimensionalNumericData ranges = partitioner.getRangesForPartition(partition);
 			assertTrue(ranges.getDataPerDimension()[0].getMin() < 0.0000000001);
 			assertTrue(ranges.getDataPerDimension()[0].getMax() > -0.0000000001);
@@ -203,7 +202,7 @@ public class AdapterBasedPartitionerTest
 		double minX = 0;
 		double maxY = 0;
 		double minY = 0;
-		for (PartitionData partition : partitions) {
+		for (final PartitionData partition : partitions) {
 			final MultiDimensionalNumericData ranges = partitioner.getRangesForPartition(partition);
 			// System.out.println(ranges.getDataPerDimension()[0] + "; "
 			// +ranges.getDataPerDimension()[1] + " = " + partition.isPrimary);
@@ -228,9 +227,9 @@ public class AdapterBasedPartitionerTest
 	}
 
 	private boolean hasOnePrimary(
-			List<PartitionData> data ) {
+			final List<PartitionData> data ) {
 		int count = 0;
-		for (PartitionData dataitem : data) {
+		for (final PartitionData dataitem : data) {
 			count += (dataitem.isPrimary() ? 1 : 0);
 		}
 		return count == 1;
