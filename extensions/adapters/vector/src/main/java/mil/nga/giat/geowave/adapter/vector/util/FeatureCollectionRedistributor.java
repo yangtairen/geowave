@@ -36,25 +36,6 @@ import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.CustomIdIndex;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloIndexWriter;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloRowId;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
-import mil.nga.giat.geowave.datastore.accumulo.query.AccumuloConstraintsQuery;
-import mil.nga.giat.geowave.datastore.accumulo.query.ArrayToElementsIterator;
-import mil.nga.giat.geowave.datastore.accumulo.query.ElementsToArrayIterator;
-import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
-
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.Instance;
-import org.apache.accumulo.core.client.IteratorSetting;
-import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.client.ZooKeeperInstance;
-import org.apache.accumulo.core.iterators.IteratorUtil.IteratorScope;
-import org.apache.accumulo.core.iterators.user.TransformingIterator;
 import org.apache.log4j.Logger;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -77,10 +58,7 @@ public class FeatureCollectionRedistributor
 	}
 
 	public void redistribute()
-			throws IOException,
-			AccumuloSecurityException,
-			AccumuloException,
-			TableNotFoundException {
+			throws IOException {
 
 		final Index index = config.getIndexType().createDefaultIndex();
 

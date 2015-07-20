@@ -27,6 +27,15 @@ public class DataStoreCommandLineOptions extends
 	public static void applyOptions(
 			final Options allOptions ) {
 		applyOptions(
+				null,
+				allOptions);
+	}
+
+	public static void applyOptions(
+			final String prefix,
+			final Options allOptions ) {
+		applyOptions(
+				prefix,
 				allOptions,
 				new DataStoreCommandLineHelper());
 	}
@@ -34,7 +43,17 @@ public class DataStoreCommandLineOptions extends
 	public static DataStoreCommandLineOptions parseOptions(
 			final CommandLine commandLine )
 			throws ParseException {
+		return parseOptions(
+				null,
+				commandLine);
+	}
+
+	public static DataStoreCommandLineOptions parseOptions(
+			final String prefix,
+			final CommandLine commandLine )
+			throws ParseException {
 		return (DataStoreCommandLineOptions) parseOptions(
+				prefix,
 				commandLine,
 				new DataStoreCommandLineHelper());
 	}

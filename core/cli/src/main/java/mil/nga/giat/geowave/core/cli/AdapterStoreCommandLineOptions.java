@@ -27,6 +27,15 @@ public class AdapterStoreCommandLineOptions extends
 	public static void applyOptions(
 			final Options allOptions ) {
 		applyOptions(
+				null,
+				allOptions);
+	}
+
+	public static void applyOptions(
+			final String prefix,
+			final Options allOptions ) {
+		applyOptions(
+				prefix,
 				allOptions,
 				new AdapterStoreCommandLineHelper());
 	}
@@ -34,7 +43,17 @@ public class AdapterStoreCommandLineOptions extends
 	public static AdapterStoreCommandLineOptions parseOptions(
 			final CommandLine commandLine )
 			throws ParseException {
+		return parseOptions(
+				null,
+				commandLine);
+	}
+
+	public static AdapterStoreCommandLineOptions parseOptions(
+			final String prefix,
+			final CommandLine commandLine )
+			throws ParseException {
 		return (AdapterStoreCommandLineOptions) parseOptions(
+				prefix,
 				commandLine,
 				new AdapterStoreCommandLineHelper());
 	}

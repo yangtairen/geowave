@@ -27,6 +27,15 @@ public class IndexStoreCommandLineOptions extends
 	public static void applyOptions(
 			final Options allOptions ) {
 		applyOptions(
+				null,
+				allOptions);
+	}
+
+	public static void applyOptions(
+			final String prefix,
+			final Options allOptions ) {
+		applyOptions(
+				prefix,
 				allOptions,
 				new IndexStoreCommandLineHelper());
 	}
@@ -34,7 +43,17 @@ public class IndexStoreCommandLineOptions extends
 	public static IndexStoreCommandLineOptions parseOptions(
 			final CommandLine commandLine )
 			throws ParseException {
+		return parseOptions(
+				null,
+				commandLine);
+	}
+
+	public static IndexStoreCommandLineOptions parseOptions(
+			final String prefix,
+			final CommandLine commandLine )
+			throws ParseException {
 		return (IndexStoreCommandLineOptions) parseOptions(
+				prefix,
 				commandLine,
 				new IndexStoreCommandLineHelper());
 	}

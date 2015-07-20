@@ -27,6 +27,15 @@ public class DataStatisticsStoreCommandLineOptions extends
 	public static void applyOptions(
 			final Options allOptions ) {
 		applyOptions(
+				null,
+				allOptions);
+	}
+
+	public static void applyOptions(
+			final String prefix,
+			final Options allOptions ) {
+		applyOptions(
+				prefix,
 				allOptions,
 				new DataStatisticsStoreCommandLineHelper());
 	}
@@ -34,7 +43,17 @@ public class DataStatisticsStoreCommandLineOptions extends
 	public static DataStatisticsStoreCommandLineOptions parseOptions(
 			final CommandLine commandLine )
 			throws ParseException {
+		return parseOptions(
+				null,
+				commandLine);
+	}
+
+	public static DataStatisticsStoreCommandLineOptions parseOptions(
+			final String prefix,
+			final CommandLine commandLine )
+			throws ParseException {
 		return (DataStatisticsStoreCommandLineOptions) parseOptions(
+				prefix,
 				commandLine,
 				new DataStatisticsStoreCommandLineHelper());
 	}

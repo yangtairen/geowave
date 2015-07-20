@@ -1,5 +1,6 @@
 package mil.nga.giat.geowave.core.store.adapter.statistics;
 
+import mil.nga.giat.geowave.adapter.vector.VisibilityTransformer;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 
@@ -87,5 +88,16 @@ public interface DataStatisticsStore
 	 */
 	public void removeAllStatistics(
 			ByteArrayId adapterId,
+			String... authorizations );
+
+	/**
+	 * Transform visibility for the data statistics
+	 *
+	 * @param adapterId
+	 */
+	public void transformVisibility(
+			final ByteArrayId adapterId,
+			final String transformingRegex,
+			final String replacement,
 			String... authorizations );
 }

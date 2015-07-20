@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.core.store.GenericStoreFactory;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.config.AbstractConfigOption;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.filter.GenericTypeResolver;
@@ -109,18 +107,19 @@ abstract public class GenericStoreCommandLineOptions<T>
 	}
 
 	public static <T, F extends GenericStoreFactory<T>> void applyOptions(
+			final String prefix,
 			final Options allOptions,
 			final CommandLineHelper<T, F> helper ) {
 		final String optionName = helper.getOptionName();
 		allOptions.addOption(new Option(
-				optionName,
+				prefix != null ? prefix + optionName : optionName,
 				true,
 				"Explicitly set the " + optionName + " by name, if not set, an " + optionName + " will be used if all of its required options are provided. " + ConfigUtils.getOptions(
 						helper.getRegisteredFactories().keySet(),
 						"Available " + optionName + "s: ")));
 		final Option namespace = new Option(
-				"n",
-				"namespace",
+				prefix != null ? prefix + "n" : "n",
+				prefix != null ? prefix + "namespace" : "namespace",
 				true,
 				"The geowave namespace (optional; default is no namespace)");
 		namespace.setRequired(false);
@@ -128,12 +127,13 @@ abstract public class GenericStoreCommandLineOptions<T>
 	}
 
 	public static <T, F extends GenericStoreFactory<T>> GenericStoreCommandLineOptions<T> parseOptions(
+			final String prefix,
 			final CommandLine commandLine,
 			final CommandLineHelper<T, F> helper )
 			throws ParseException {
-		final String optionName = helper.getOptionName();
+		final String optionName = prefix != null ? prefix + helper.getOptionName() : helper.getOptionName();
 		final String namespace = commandLine.getOptionValue(
-				"n",
+				prefix != null ? prefix + "n" : "n",
 				"");
 		if (commandLine.hasOption(optionName)) {
 			// if data store is given, make sure the commandline options
@@ -147,10 +147,29 @@ abstract public class GenericStoreCommandLineOptions<T>
 				throw new ParseException(
 						errorMsg);
 			}
+
 			Map<String, Object> configOptions;
 			try {
+				final String[] args = commandLine.getArgs();
+				final String[] newArgs;
+				if ((prefix != null) && !prefix.isEmpty()) {
+					newArgs = new String[args.length];
+					int i = 0;
+					for (final String a : args) {
+						if (a.startsWith(prefix)) {
+							newArgs[i] = a.substring(prefix.length());
+						}
+						else {
+							newArgs[i] = a;
+						}
+						i++;
+					}
+				}
+				else {
+					newArgs = args;
+				}
 				configOptions = getConfigOptionsForStoreFactory(
-						commandLine.getArgs(),
+						newArgs,
 						selectedStoreFactory);
 				return helper.createCommandLineOptions(
 						selectedStoreFactory,
