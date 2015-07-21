@@ -8,6 +8,7 @@ import java.util.Map;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.utils.DataStoreUtils;
 
 /**
  * This is responsible for persisting data statistics (either in memory or to
@@ -85,7 +86,8 @@ public class MemoryDataStatisticsStore implements
 					adapterId)) statSet.add(stat);
 
 		}
-		return new CloseableIterator.Wrapper<DataStatistics<?>>(statSet.iterator());
+		return new CloseableIterator.Wrapper<DataStatistics<?>>(
+				statSet.iterator());
 	}
 
 	/**
@@ -95,7 +97,8 @@ public class MemoryDataStatisticsStore implements
 	 */
 	public CloseableIterator<DataStatistics<?>> getAllDataStatistics(
 			String... authorizations ) {
-		return new CloseableIterator.Wrapper<DataStatistics<?>>(statsMap.values().iterator());
+		return new CloseableIterator.Wrapper<DataStatistics<?>>(
+				statsMap.values().iterator());
 	}
 
 	/**
@@ -112,11 +115,18 @@ public class MemoryDataStatisticsStore implements
 			ByteArrayId adapterId,
 			ByteArrayId statisticsId,
 			String... authorizations ) {
-		final Key key = new Key(
-				adapterId,
-				statisticsId,
-				statistics.getVisibility());
-		DataStatistics<?> existingStats = statsMap.get(key);
+
+		List<DataStatistics<?>> statSet = new ArrayList<DataStatistics<?>>();
+		for (DataStatistics<?> stat : statsMap.values()) {
+			if (stat.getDataAdapterId().equals(
+					adapterId) && stat.getStatisticsId().equals(
+					statisticsId) && DataStoreUtils.isAuthorized(
+					stat.getVisibility(),
+					authorizations)) statSet.add(stat);
+
+		}
+
+		return (statSet.size()) > 0 ? statSet.get(0) : null;
 	}
 
 	/**
@@ -131,7 +141,25 @@ public class MemoryDataStatisticsStore implements
 			ByteArrayId adapterId,
 			ByteArrayId statisticsId,
 			String... authorizations ) {
-		
+		List<DataStatistics<?>> statSet = new ArrayList<DataStatistics<?>>();
+		for (DataStatistics<?> stat : statsMap.values()) {
+			if (stat.getDataAdapterId().equals(
+					adapterId) && stat.getStatisticsId().equals(
+					statisticsId) && DataStoreUtils.isAuthorized(
+					stat.getVisibility(),
+					authorizations)) statSet.add(stat);
+
+		}
+		if (statSet.size() > 0) {
+			DataStatistics<?> statistics = statSet.get(0);
+			statsMap.remove(new Key(
+					statistics.getDataAdapterId(),
+					statistics.getStatisticsId(),
+					statistics.getVisibility()));
+			return true;
+		}
+		return false;
+
 	}
 
 	private static class Key

@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.core.store.components;
+package mil.nga.giat.geowave.core.store.utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,9 +34,9 @@ import mil.nga.giat.geowave.core.store.query.QueryOptions;
 public class MemoryDataStore implements
 		DataStore
 {
-	private Map<ByteArrayId, TreeSet<EntryRow>> storeData = new HashMap<ByteArrayId, TreeSet<EntryRow>>();
-	private AdapterStore adapterStore;
-	private IndexStore indexStore;
+	private final Map<ByteArrayId, TreeSet<EntryRow>> storeData = new HashMap<ByteArrayId, TreeSet<EntryRow>>();
+	private final AdapterStore adapterStore;
+	private final IndexStore indexStore;
 
 	public MemoryDataStore() {
 		super();
@@ -45,8 +45,8 @@ public class MemoryDataStore implements
 	}
 
 	public MemoryDataStore(
-			AdapterStore adapterStore,
-			IndexStore indexStore ) {
+			final AdapterStore adapterStore,
+			final IndexStore indexStore ) {
 		super();
 		this.adapterStore = adapterStore;
 		this.indexStore = indexStore;
@@ -62,8 +62,8 @@ public class MemoryDataStore implements
 
 					@Override
 					public void entryIngested(
-							DataStoreEntryInfo entryInfo,
-							T entry ) {
+							final DataStoreEntryInfo entryInfo,
+							final T entry ) {
 
 					}
 				},
@@ -72,17 +72,17 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> List<ByteArrayId> ingest(
-			WritableDataAdapter<T> writableAdapter,
-			Index index,
-			T entry ) {
+			final WritableDataAdapter<T> writableAdapter,
+			final Index index,
+			final T entry ) {
 		return createWriter(
 				index,
 				new IngestCallback<T>() {
 
 					@Override
 					public void entryIngested(
-							DataStoreEntryInfo entryInfo,
-							T entry ) {
+							final DataStoreEntryInfo entryInfo,
+							final T entry ) {
 
 					}
 				},
@@ -93,23 +93,23 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> void ingest(
-			WritableDataAdapter<T> writableAdapter,
-			Index index,
-			Iterator<T> entryIterator ) {
-		IndexWriter writer = createWriter(
+			final WritableDataAdapter<T> writableAdapter,
+			final Index index,
+			final Iterator<T> entryIterator ) {
+		final IndexWriter writer = createWriter(
 				index,
 				new IngestCallback<T>() {
 
 					@Override
 					public void entryIngested(
-							DataStoreEntryInfo entryInfo,
-							T entry ) {
+							final DataStoreEntryInfo entryInfo,
+							final T entry ) {
 
 					}
 				},
 				DataStoreUtils.DEFAULT_VISIBILITY);
 		while (entryIterator.hasNext()) {
-			T nextEntry = entryIterator.next();
+			final T nextEntry = entryIterator.next();
 			writer.write(
 					writableAdapter,
 					nextEntry);
@@ -119,18 +119,18 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> List<ByteArrayId> ingest(
-			WritableDataAdapter<T> writableAdapter,
-			Index index,
-			T entry,
-			VisibilityWriter<T> customFieldVisibilityWriter ) {
+			final WritableDataAdapter<T> writableAdapter,
+			final Index index,
+			final T entry,
+			final VisibilityWriter<T> customFieldVisibilityWriter ) {
 		return createWriter(
 				index,
 				new IngestCallback<T>() {
 
 					@Override
 					public void entryIngested(
-							DataStoreEntryInfo entryInfo,
-							T entry ) {
+							final DataStoreEntryInfo entryInfo,
+							final T entry ) {
 
 					}
 				},
@@ -141,16 +141,16 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> void ingest(
-			WritableDataAdapter<T> writableAdapter,
-			Index index,
-			Iterator<T> entryIterator,
-			IngestCallback<T> ingestCallback ) {
-		IndexWriter writer = createWriter(
+			final WritableDataAdapter<T> writableAdapter,
+			final Index index,
+			final Iterator<T> entryIterator,
+			final IngestCallback<T> ingestCallback ) {
+		final IndexWriter writer = createWriter(
 				index,
 				ingestCallback,
 				DataStoreUtils.DEFAULT_VISIBILITY);
 		while (entryIterator.hasNext()) {
-			T nextEntry = entryIterator.next();
+			final T nextEntry = entryIterator.next();
 			writer.write(
 					writableAdapter,
 					nextEntry);
@@ -159,17 +159,17 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> void ingest(
-			WritableDataAdapter<T> writableAdapter,
-			Index index,
-			Iterator<T> entryIterator,
-			IngestCallback<T> ingestCallback,
-			VisibilityWriter<T> customFieldVisibilityWriter ) {
-		IndexWriter writer = createWriter(
+			final WritableDataAdapter<T> writableAdapter,
+			final Index index,
+			final Iterator<T> entryIterator,
+			final IngestCallback<T> ingestCallback,
+			final VisibilityWriter<T> customFieldVisibilityWriter ) {
+		final IndexWriter writer = createWriter(
 				index,
 				ingestCallback,
 				customFieldVisibilityWriter);
 		while (entryIterator.hasNext()) {
-			T nextEntry = entryIterator.next();
+			final T nextEntry = entryIterator.next();
 			writer.write(
 					writableAdapter,
 					nextEntry);
@@ -194,9 +194,9 @@ public class MemoryDataStore implements
 		final VisibilityWriter<S> customFieldVisibilityWriter;
 
 		public MyIndexWriter(
-				Index index,
-				IngestCallback<S> ingestCallback,
-				VisibilityWriter<S> customFieldVisibilityWriter ) {
+				final Index index,
+				final IngestCallback<S> ingestCallback,
+				final VisibilityWriter<S> customFieldVisibilityWriter ) {
 			super();
 			this.index = index;
 			this.ingestCallback = ingestCallback;
@@ -209,8 +209,8 @@ public class MemoryDataStore implements
 
 		@Override
 		public <T> List<ByteArrayId> write(
-				WritableDataAdapter<T> writableAdapter,
-				T entry ) {
+				final WritableDataAdapter<T> writableAdapter,
+				final T entry ) {
 			final ByteArrayId dataId = writableAdapter.getDataId(entry);
 			final List<EntryRow> rows = DataStoreUtils.entryToRows(
 					writableAdapter,
@@ -218,7 +218,7 @@ public class MemoryDataStore implements
 					entry,
 					(IngestCallback<T>) ingestCallback,
 					(VisibilityWriter<T>) customFieldVisibilityWriter);
-			for (EntryRow row : rows) {
+			for (final EntryRow row : rows) {
 				storeData.get(
 						index.getId()).add(
 						row);
@@ -228,7 +228,7 @@ public class MemoryDataStore implements
 
 		@Override
 		public <T> void setupAdapter(
-				WritableDataAdapter<T> writableAdapter ) {}
+				final WritableDataAdapter<T> writableAdapter ) {}
 
 		@Override
 		public Index getIndex() {
@@ -241,7 +241,7 @@ public class MemoryDataStore implements
 
 	@Override
 	public CloseableIterator<?> query(
-			Query query ) {
+			final Query query ) {
 		return query(
 				query,
 				-1);
@@ -249,57 +249,63 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> T getEntry(
-			Index index,
-			ByteArrayId rowId ) {
+			final Index index,
+			final ByteArrayId rowId ) {
 		final Iterator<EntryRow> rowIt = storeData.get(
 				index.getId()).iterator();
 		while (rowIt.hasNext()) {
-			EntryRow row = rowIt.next();
+			final EntryRow row = rowIt.next();
 			if (Arrays.equals(
 					row.getTableRowId().getRowId(),
-					rowId.getBytes())) return (T) row.getEntry();
+					rowId.getBytes())) {
+				return (T) row.getEntry();
+			}
 		}
 		return null;
 	}
 
 	@Override
 	public <T> T getEntry(
-			Index index,
-			ByteArrayId dataId,
-			ByteArrayId adapterId,
-			String... additionalAuthorizations ) {
+			final Index index,
+			final ByteArrayId dataId,
+			final ByteArrayId adapterId,
+			final String... additionalAuthorizations ) {
 		final Iterator<EntryRow> rowIt = storeData.get(
 				index.getId()).iterator();
 		while (rowIt.hasNext()) {
-			EntryRow row = rowIt.next();
+			final EntryRow row = rowIt.next();
 			if (Arrays.equals(
 					row.getTableRowId().getDataId(),
 					dataId.getBytes()) && Arrays.equals(
 					row.getTableRowId().getAdapterId(),
 					adapterId.getBytes()) && isAuthorized(
 					row,
-					additionalAuthorizations)) return (T) row.getEntry();
+					additionalAuthorizations)) {
+				return (T) row.getEntry();
+			}
 		}
 		return null;
 	}
 
 	@Override
 	public boolean deleteEntry(
-			Index index,
-			ByteArrayId dataId,
-			ByteArrayId adapterId,
-			String... authorizations ) {
+			final Index index,
+			final ByteArrayId dataId,
+			final ByteArrayId adapterId,
+			final String... authorizations ) {
 		final Iterator<EntryRow> rowIt = storeData.get(
 				index.getId()).iterator();
 		while (rowIt.hasNext()) {
-			EntryRow row = rowIt.next();
+			final EntryRow row = rowIt.next();
 			if (Arrays.equals(
 					row.getTableRowId().getDataId(),
 					dataId.getBytes()) && Arrays.equals(
 					row.getTableRowId().getAdapterId(),
 					adapterId.getBytes()) && isAuthorized(
 					row,
-					authorizations)) rowIt.remove();
+					authorizations)) {
+				rowIt.remove();
+			}
 		}
 		return false;
 	}
@@ -318,13 +324,15 @@ public class MemoryDataStore implements
 			EntryRow nextRow = null;
 
 			private boolean getNext() {
-				while (nextRow == null && rowIt.hasNext()) {
+				while ((nextRow == null) && rowIt.hasNext()) {
 					final EntryRow row = rowIt.next();
 					if (!Arrays.equals(
 							rowPrefix.getBytes(),
 							Arrays.copyOf(
 									row.rowId.getRowId(),
-									rowPrefix.getBytes().length))) continue;
+									rowPrefix.getBytes().length))) {
+						continue;
+					}
 					nextRow = row;
 					break;
 				}
@@ -356,8 +364,8 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> CloseableIterator<T> query(
-			DataAdapter<T> adapter,
-			Query query ) {
+			final DataAdapter<T> adapter,
+			final Query query ) {
 		return (CloseableIterator<T>) query(
 				Arrays.asList(adapter.getAdapterId()),
 				query,
@@ -366,8 +374,8 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> CloseableIterator<T> query(
-			Index index,
-			Query query ) {
+			final Index index,
+			final Query query ) {
 		return query(
 				index,
 				query,
@@ -376,9 +384,9 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> CloseableIterator<T> query(
-			Index index,
-			Query query,
-			QueryOptions queryOptions ) {
+			final Index index,
+			final Query query,
+			final QueryOptions queryOptions ) {
 		return query(
 				index,
 				query,
@@ -387,9 +395,9 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> CloseableIterator<T> query(
-			DataAdapter<T> adapter,
-			Index index,
-			Query query ) {
+			final DataAdapter<T> adapter,
+			final Index index,
+			final Query query ) {
 		return query(
 				adapter,
 				index,
@@ -399,8 +407,8 @@ public class MemoryDataStore implements
 
 					@Override
 					public void entryScanned(
-							DataStoreEntryInfo entryInfo,
-							T entry ) {
+							final DataStoreEntryInfo entryInfo,
+							final T entry ) {
 
 					}
 				},
@@ -409,8 +417,8 @@ public class MemoryDataStore implements
 
 	@Override
 	public CloseableIterator<?> query(
-			List<ByteArrayId> adapterIds,
-			Query query ) {
+			final List<ByteArrayId> adapterIds,
+			final Query query ) {
 		return query(
 				adapterIds,
 				query,
@@ -419,15 +427,15 @@ public class MemoryDataStore implements
 
 	@Override
 	public CloseableIterator<?> query(
-			Query query,
-			int limit ) {
+			final Query query,
+			final int limit ) {
 		final List<ByteArrayId> adapterIds = new ArrayList<ByteArrayId>();
 		try (CloseableIterator<DataAdapter<?>> adapterIt = adapterStore.getAdapters()) {
 			while (adapterIt.hasNext()) {
 				adapterIds.add(adapterIt.next().getAdapterId());
 			}
 		}
-		catch (IOException e) {
+		catch (final IOException e) {
 			e.printStackTrace();
 		}
 		return query(
@@ -438,9 +446,9 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> CloseableIterator<T> query(
-			DataAdapter<T> adapter,
-			Query query,
-			int limit ) {
+			final DataAdapter<T> adapter,
+			final Query query,
+			final int limit ) {
 		return (CloseableIterator<T>) query(
 				Arrays.asList(adapter.getAdapterId()),
 				query,
@@ -449,9 +457,9 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> CloseableIterator<T> query(
-			Index index,
-			Query query,
-			int limit ) {
+			final Index index,
+			final Query query,
+			final int limit ) {
 		return query(
 				null,
 				index,
@@ -461,8 +469,8 @@ public class MemoryDataStore implements
 
 					@Override
 					public void entryScanned(
-							DataStoreEntryInfo entryInfo,
-							T entry ) {
+							final DataStoreEntryInfo entryInfo,
+							final T entry ) {
 
 					}
 				},
@@ -471,10 +479,10 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> CloseableIterator<T> query(
-			DataAdapter<T> adapter,
-			Index index,
-			Query query,
-			int limit ) {
+			final DataAdapter<T> adapter,
+			final Index index,
+			final Query query,
+			final int limit ) {
 		return query(
 				adapter,
 				index,
@@ -484,8 +492,8 @@ public class MemoryDataStore implements
 
 					@Override
 					public void entryScanned(
-							DataStoreEntryInfo entryInfo,
-							T entry ) {
+							final DataStoreEntryInfo entryInfo,
+							final T entry ) {
 
 					}
 				},
@@ -505,7 +513,7 @@ public class MemoryDataStore implements
 			CloseableIterator<Object> dataIt = null;
 
 			private boolean getNext() {
-				while (dataIt == null || !dataIt.hasNext()) {
+				while ((dataIt == null) || !dataIt.hasNext()) {
 					if (index == null) {
 						if (indexIt.hasNext()) {
 							index = indexIt.next();
@@ -514,7 +522,7 @@ public class MemoryDataStore implements
 							return false;
 						}
 					}
-					if (adapterIt != null && adapterIt.hasNext()) {
+					if ((adapterIt != null) && adapterIt.hasNext()) {
 						dataIt = (CloseableIterator<Object>) query(
 								adapterStore.getAdapter(adapterIt.next()),
 								index,
@@ -524,8 +532,8 @@ public class MemoryDataStore implements
 
 									@Override
 									public void entryScanned(
-											DataStoreEntryInfo entryInfo,
-											Object entry ) {
+											final DataStoreEntryInfo entryInfo,
+											final Object entry ) {
 
 									}
 								},
@@ -542,7 +550,7 @@ public class MemoryDataStore implements
 
 			@Override
 			public boolean hasNext() {
-				return (limit <= 0 || count < limit) && getNext();
+				return ((limit <= 0) || (count < limit)) && getNext();
 			}
 
 			@Override
@@ -568,11 +576,11 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> CloseableIterator<T> query(
-			DataAdapter<T> adapter,
-			Index index,
-			Query query,
-			int limit,
-			String... authorizations ) {
+			final DataAdapter<T> adapter,
+			final Index index,
+			final Query query,
+			final int limit,
+			final String... authorizations ) {
 		return query(
 				adapter,
 				index,
@@ -582,8 +590,8 @@ public class MemoryDataStore implements
 
 					@Override
 					public void entryScanned(
-							DataStoreEntryInfo entryInfo,
-							T entry ) {
+							final DataStoreEntryInfo entryInfo,
+							final T entry ) {
 
 					}
 				},
@@ -607,7 +615,7 @@ public class MemoryDataStore implements
 			EntryRow nextRow = null;
 
 			private boolean getNext() {
-				while (nextRow == null && rowIt.hasNext()) {
+				while ((nextRow == null) && rowIt.hasNext()) {
 					final EntryRow row = rowIt.next();
 					final DataAdapter<T> innerAdapter = (DataAdapter<T>) (adapter == null ? adapterStore.getAdapter(new ByteArrayId(
 							row.getTableRowId().getAdapterId())) : adapter);
@@ -615,14 +623,16 @@ public class MemoryDataStore implements
 							index.getIndexModel(),
 							innerAdapter,
 							row);
-					for (QueryFilter filter : filters) {
-						if (!filter.accept(encoding)) continue;
+					for (final QueryFilter filter : filters) {
+						if (!filter.accept(encoding)) {
+							continue;
+						}
 					}
 					count++;
 					nextRow = row;
 					break;
 				}
-				return nextRow != null && (limit == null || limit <= 0 || count < limit);
+				return (nextRow != null) && ((limit == null) || (limit <= 0) || (count < limit));
 			}
 
 			@Override
@@ -652,10 +662,14 @@ public class MemoryDataStore implements
 	}
 
 	private boolean isAuthorized(
-			EntryRow row,
-			String... authorizations ) {
-		for (FieldInfo info : row.info.getFieldInfo()) {
-			info.getVisibility())
+			final EntryRow row,
+			final String... authorizations ) {
+		for (final FieldInfo info : row.info.getFieldInfo()) {
+			if (!DataStoreUtils.isAuthorized(
+					info.getVisibility(),
+					authorizations)) {
+				return false;
+			}
 		}
 		return true;
 	}

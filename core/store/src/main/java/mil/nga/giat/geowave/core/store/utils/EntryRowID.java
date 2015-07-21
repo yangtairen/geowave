@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.core.store.components;
+package mil.nga.giat.geowave.core.store.utils;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;

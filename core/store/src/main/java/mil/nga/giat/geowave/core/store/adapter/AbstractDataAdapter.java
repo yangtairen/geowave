@@ -145,14 +145,16 @@ abstract public class AbstractDataAdapter<T> implements
 		}
 		final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
 		// now for the other data
-		for (final NativeFieldHandler<T, Object> fieldHandler : nativeFieldHandlers) {
-			final ByteArrayId fieldId = fieldHandler.getFieldId();
-			if (nativeFieldsInIndex.contains(fieldId)) {
-				continue;
+		if (nativeFieldHandlers != null) {
+			for (final NativeFieldHandler<T, Object> fieldHandler : nativeFieldHandlers) {
+				final ByteArrayId fieldId = fieldHandler.getFieldId();
+				if (nativeFieldsInIndex.contains(fieldId)) {
+					continue;
+				}
+				extendedData.addValue(new PersistentValue<Object>(
+						fieldId,
+						fieldHandler.getFieldValue(entry)));
 			}
-			extendedData.addValue(new PersistentValue<Object>(
-					fieldId,
-					fieldHandler.getFieldValue(entry)));
 		}
 		return new AdapterPersistenceEncoding(
 				getAdapterId(),
