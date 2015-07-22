@@ -40,7 +40,7 @@ public class StatsCompositionTool<T> implements
 			final DataAdapter<T> dataAdapter,
 			final DataStatisticsStore statisticsStore ) {
 		this.statisticsStore = statisticsStore;
-		persistStats = (dataAdapter instanceof StatisticalDataAdapter) && (statisticsStore != null);
+		persistStats = (dataAdapter != null && dataAdapter instanceof StatisticalDataAdapter) && (statisticsStore != null);
 		if (persistStats) {
 			final ByteArrayId[] statisticsIds = ((StatisticalDataAdapter<T>) dataAdapter).getSupportedStatisticsIds();
 			statisticsBuilders = new ArrayList<DataStatisticsBuilder<T>>(

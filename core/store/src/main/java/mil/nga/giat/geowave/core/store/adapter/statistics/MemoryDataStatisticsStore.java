@@ -1,9 +1,16 @@
 package mil.nga.giat.geowave.core.store.adapter.statistics;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
@@ -17,7 +24,8 @@ import mil.nga.giat.geowave.core.store.utils.DataStoreUtils;
 public class MemoryDataStatisticsStore implements
 		DataStatisticsStore
 {
-	Map<Key, DataStatistics<?>> statsMap;
+	private final static Logger LOGGER = Logger.getLogger(MemoryDataStatisticsStore.class);
+	private Map<Key, DataStatistics<?>> statsMap = new HashMap<Key, DataStatistics<?>>();
 
 	/**
 	 * This will write the statistics to the underlying store. Note that this
@@ -29,8 +37,9 @@ public class MemoryDataStatisticsStore implements
 	 *            The statistics to write
 	 * 
 	 */
+	@Override
 	public void setStatistics(
-			DataStatistics<?> statistics ) {
+			final DataStatistics<?> statistics ) {
 		statsMap.put(
 				new Key(
 						statistics.getDataAdapterId(),
@@ -46,8 +55,9 @@ public class MemoryDataStatisticsStore implements
 	 * @param statistics
 	 *            the data statistics
 	 */
+	@Override
 	public void incorporateStatistics(
-			DataStatistics<?> statistics ) {
+			final DataStatistics<?> statistics ) {
 		final Key key = new Key(
 				statistics.getDataAdapterId(),
 				statistics.getStatisticsId(),
@@ -65,7 +75,7 @@ public class MemoryDataStatisticsStore implements
 			existingStats.merge(statistics);
 			statsMap.put(
 					key,
-					statistics);
+					existingStats);
 		}
 	}
 
@@ -77,13 +87,16 @@ public class MemoryDataStatisticsStore implements
 	 * @return the list of statistics for the given adapter, empty if it doesn't
 	 *         exist
 	 */
+	@Override
 	public CloseableIterator<DataStatistics<?>> getDataStatistics(
-			ByteArrayId adapterId,
-			String... authorizations ) {
-		List<DataStatistics<?>> statSet = new ArrayList<DataStatistics<?>>();
-		for (DataStatistics<?> stat : statsMap.values()) {
+			final ByteArrayId adapterId,
+			final String... authorizations ) {
+		final List<DataStatistics<?>> statSet = new ArrayList<DataStatistics<?>>();
+		for (final DataStatistics<?> stat : statsMap.values()) {
 			if (stat.getDataAdapterId().equals(
-					adapterId)) statSet.add(stat);
+					adapterId)) {
+				statSet.add(stat);
+			}
 
 		}
 		return new CloseableIterator.Wrapper<DataStatistics<?>>(
@@ -95,8 +108,9 @@ public class MemoryDataStatisticsStore implements
 	 * 
 	 * @return the list of all statistics
 	 */
+	@Override
 	public CloseableIterator<DataStatistics<?>> getAllDataStatistics(
-			String... authorizations ) {
+			final String... authorizations ) {
 		return new CloseableIterator.Wrapper<DataStatistics<?>>(
 				statsMap.values().iterator());
 	}
@@ -111,18 +125,21 @@ public class MemoryDataStatisticsStore implements
 	 *            the statistics ID for the requested statistics
 	 * @return the persisted statistics value
 	 */
+	@Override
 	public DataStatistics<?> getDataStatistics(
-			ByteArrayId adapterId,
-			ByteArrayId statisticsId,
-			String... authorizations ) {
+			final ByteArrayId adapterId,
+			final ByteArrayId statisticsId,
+			final String... authorizations ) {
 
-		List<DataStatistics<?>> statSet = new ArrayList<DataStatistics<?>>();
-		for (DataStatistics<?> stat : statsMap.values()) {
+		final List<DataStatistics<?>> statSet = new ArrayList<DataStatistics<?>>();
+		for (final DataStatistics<?> stat : statsMap.values()) {
 			if (stat.getDataAdapterId().equals(
 					adapterId) && stat.getStatisticsId().equals(
 					statisticsId) && DataStoreUtils.isAuthorized(
 					stat.getVisibility(),
-					authorizations)) statSet.add(stat);
+					authorizations)) {
+				statSet.add(stat);
+			}
 
 		}
 
@@ -137,21 +154,24 @@ public class MemoryDataStatisticsStore implements
 	 * @return a flag indicating whether a statistic had existed with the given
 	 *         IDs and was successfully deleted.
 	 */
+	@Override
 	public boolean removeStatistics(
-			ByteArrayId adapterId,
-			ByteArrayId statisticsId,
-			String... authorizations ) {
-		List<DataStatistics<?>> statSet = new ArrayList<DataStatistics<?>>();
-		for (DataStatistics<?> stat : statsMap.values()) {
+			final ByteArrayId adapterId,
+			final ByteArrayId statisticsId,
+			final String... authorizations ) {
+		final List<DataStatistics<?>> statSet = new ArrayList<DataStatistics<?>>();
+		for (final DataStatistics<?> stat : statsMap.values()) {
 			if (stat.getDataAdapterId().equals(
 					adapterId) && stat.getStatisticsId().equals(
 					statisticsId) && DataStoreUtils.isAuthorized(
 					stat.getVisibility(),
-					authorizations)) statSet.add(stat);
+					authorizations)) {
+				statSet.add(stat);
+			}
 
 		}
 		if (statSet.size() > 0) {
-			DataStatistics<?> statistics = statSet.get(0);
+			final DataStatistics<?> statistics = statSet.get(0);
 			statsMap.remove(new Key(
 					statistics.getDataAdapterId(),
 					statistics.getStatisticsId(),
@@ -169,9 +189,9 @@ public class MemoryDataStatisticsStore implements
 		byte[] authorizations;
 
 		public Key(
-				ByteArrayId adapterId,
-				ByteArrayId statisticsId,
-				byte[] authorizations ) {
+				final ByteArrayId adapterId,
+				final ByteArrayId statisticsId,
+				final byte[] authorizations ) {
 			super();
 			this.adapterId = adapterId;
 			this.statisticsId = statisticsId;
@@ -183,7 +203,7 @@ public class MemoryDataStatisticsStore implements
 		}
 
 		public void setAdapterId(
-				ByteArrayId adapterId ) {
+				final ByteArrayId adapterId ) {
 			this.adapterId = adapterId;
 		}
 
@@ -192,7 +212,7 @@ public class MemoryDataStatisticsStore implements
 		}
 
 		public void setStatisticsId(
-				ByteArrayId statisticsId ) {
+				final ByteArrayId statisticsId ) {
 			this.statisticsId = statisticsId;
 		}
 
@@ -201,7 +221,7 @@ public class MemoryDataStatisticsStore implements
 		}
 
 		public void setAuthorizations(
-				byte[] authorizations ) {
+				final byte[] authorizations ) {
 			this.authorizations = authorizations;
 		}
 
@@ -209,32 +229,120 @@ public class MemoryDataStatisticsStore implements
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((adapterId == null) ? 0 : adapterId.hashCode());
-			result = prime * result + Arrays.hashCode(authorizations);
-			result = prime * result + ((statisticsId == null) ? 0 : statisticsId.hashCode());
+			result = (prime * result) + ((adapterId == null) ? 0 : adapterId.hashCode());
+			result = (prime * result) + Arrays.hashCode(authorizations);
+			result = (prime * result) + ((statisticsId == null) ? 0 : statisticsId.hashCode());
 			return result;
 		}
 
 		@Override
 		public boolean equals(
-				Object obj ) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			Key other = (Key) obj;
-			if (adapterId == null) {
-				if (other.adapterId != null) return false;
+				final Object obj ) {
+			if (this == obj) {
+				return true;
 			}
-			else if (!adapterId.equals(other.adapterId)) return false;
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			final Key other = (Key) obj;
+			if (adapterId == null) {
+				if (other.adapterId != null) {
+					return false;
+				}
+			}
+			else if (!adapterId.equals(other.adapterId)) {
+				return false;
+			}
 			if (!Arrays.equals(
 					authorizations,
-					other.authorizations)) return false;
-			if (statisticsId == null) {
-				if (other.statisticsId != null) return false;
+					other.authorizations)) {
+				return false;
 			}
-			else if (!statisticsId.equals(other.statisticsId)) return false;
+			if (statisticsId == null) {
+				if (other.statisticsId != null) {
+					return false;
+				}
+			}
+			else if (!statisticsId.equals(other.statisticsId)) {
+				return false;
+			}
 			return true;
 		}
 
+	}
+
+	@Override
+	public void removeAllStatistics(
+			final ByteArrayId adapterId,
+			final String... authorizations ) {
+		final Iterator<Entry<Key, DataStatistics<?>>> it = statsMap.entrySet().iterator();
+		while (it.hasNext()) {
+			final Entry<Key, DataStatistics<?>> entry = it.next();
+			if (entry.getKey().adapterId.equals(adapterId) && DataStoreUtils.isAuthorized(
+					entry.getKey().authorizations,
+					authorizations)) {
+				it.remove();
+			}
+		}
+	}
+
+	@Override
+	public void transformVisibility(
+			final ByteArrayId adapterId,
+			final String transformingRegex,
+			final String replacement,
+			final String... authorizations ) {
+		final Pattern pattern = Pattern.compile(transformingRegex);
+		final Iterator<Entry<Key, DataStatistics<?>>> it = statsMap.entrySet().iterator();
+		final List<DataStatistics<?>> newStats = new ArrayList<DataStatistics<?>>();
+		while (it.hasNext()) {
+			final Entry<Key, DataStatistics<?>> entry = it.next();
+			String visibility = null;
+			try {
+				visibility = new String(
+						entry.getValue().getVisibility(),
+						"UTF-8");
+			}
+			catch (UnsupportedEncodingException e) {
+				LOGGER.error(
+						"Invalid visibility " + Arrays.toString(entry.getValue().getVisibility()),
+						e);
+				continue;
+			}
+			if (entry.getKey().adapterId.equals(adapterId) && DataStoreUtils.isAuthorized(
+					entry.getKey().authorizations,
+					authorizations) && pattern.matcher(
+					visibility).find()) {
+				String newVisibility = visibility.replaceFirst(
+						transformingRegex,
+						replacement);
+				if (newVisibility.length() > 0) {
+					final char one = newVisibility.charAt(0);
+					// strip off any ending options
+					if ((one == '&') || (one == '|')) {
+						newVisibility = newVisibility.substring(1);
+					}
+				}
+
+				try {
+					entry.getValue().setVisibility(
+							newVisibility.getBytes("UTF-8"));
+				}
+				catch (UnsupportedEncodingException e) {
+					LOGGER.error(
+							"Invalid visibility " + newVisibility,
+							e);
+					continue;
+				}
+				newStats.add(entry.getValue());
+				it.remove();
+			}
+		}
+		for (final DataStatistics<?> entry : newStats) {
+			incorporateStatistics(entry);
+		}
 	}
 }

@@ -68,7 +68,6 @@ public class EntryRowID implements
 		return buf.array();
 	}
 
-
 	public byte[] getInsertionId() {
 		return insertionId;
 	}
@@ -112,12 +111,42 @@ public class EntryRowID implements
 			final byte[] a,
 			final byte[] b ) {
 		int j = 0;
-		for (byte ab : a) {
-			if (b.length >= j) break;
-			int val = ab - b[j];
+		for (byte aByte : a) {
+			if (b.length <= j) break;
+			int val = aByte - b[j];
 			if (val != 0) return val;
+			j++;
 		}
-		return a.length - a.length;
+		return a.length - b.length;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(adapterId);
+		result = prime * result + Arrays.hashCode(dataId);
+		result = prime * result + Arrays.hashCode(insertionId);
+		return result;
+	}
+
+	@Override
+	public boolean equals(
+			Object obj ) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		EntryRowID other = (EntryRowID) obj;
+		if (!Arrays.equals(
+				adapterId,
+				other.adapterId)) return false;
+		if (!Arrays.equals(
+				dataId,
+				other.dataId)) return false;
+		if (!Arrays.equals(
+				insertionId,
+				other.insertionId)) return false;
+		return true;
 	}
 
 }

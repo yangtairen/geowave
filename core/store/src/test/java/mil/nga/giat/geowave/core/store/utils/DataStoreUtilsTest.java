@@ -54,58 +54,74 @@ public class DataStoreUtilsTest
 								"aaa&bbb");
 					}
 				});
-		assertTrue(entryRows.size() == 3);
-		assertTrue(count.get()==1);
+		assertTrue(entryRows.size() == 1);
+		assertTrue(count.get() == 1);
 	}
 
 	@Test
 	public void testVisibility() {
 		assertTrue(DataStoreUtils.isAuthorized(
 				"aaa&ccc".getBytes(),
-				"aaa",
-				"bbb",
-				"ccc"));
+				new String[] {
+					"aaa",
+					"bbb",
+					"ccc"
+				}));
 
 		assertFalse(DataStoreUtils.isAuthorized(
 				"aaa&ccc".getBytes(),
-				"aaa",
-				"bbb"));
+				new String[] {
+					"aaa",
+					"bbb"
+				}));
 
 		assertTrue(DataStoreUtils.isAuthorized(
 				"aaa&(ccc|eee)".getBytes(),
-				"aaa",
-				"eee",
-				"xxx"));
+				new String[] {
+					"aaa",
+					"eee",
+					"xxx"
+				}));
 
 		assertTrue(DataStoreUtils.isAuthorized(
 				"aaa|(ccc&eee)".getBytes(),
-				"bbb",
-				"eee",
-				"ccc"));
+				new String[] {
+					"bbb",
+					"eee",
+					"ccc"
+				}));
 
 		assertFalse(DataStoreUtils.isAuthorized(
 				"aaa|(ccc&eee)".getBytes(),
-				"bbb",
-				"dddd",
-				"ccc"));
+				new String[] {
+					"bbb",
+					"dddd",
+					"ccc"
+				}));
 
 		assertTrue(DataStoreUtils.isAuthorized(
 				"aaa|(ccc&eee)".getBytes(),
-				"aaa",
-				"dddd",
-				"ccc"));
+				new String[] {
+					"aaa",
+					"dddd",
+					"ccc"
+				}));
 
 		assertTrue(DataStoreUtils.isAuthorized(
 				"aaa".getBytes(),
-				"aaa",
-				"dddd",
-				"ccc"));
+				new String[] {
+					"aaa",
+					"dddd",
+					"ccc"
+				}));
 
 		assertFalse(DataStoreUtils.isAuthorized(
 				"xxx".getBytes(),
-				"aaa",
-				"dddd",
-				"ccc"));
+				new String[] {
+					"aaa",
+					"dddd",
+					"ccc"
+				}));
 
 	}
 

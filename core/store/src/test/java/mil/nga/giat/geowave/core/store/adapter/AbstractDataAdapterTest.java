@@ -20,7 +20,6 @@ public class AbstractDataAdapterTest
 		new AbstractDataAdapterTest().testAbstractDataAdapterPersistance();
 	}
 
-	
 	@Test
 	// *************************************************************************
 	//

@@ -26,10 +26,10 @@ public class MemoryAdapterStore implements
 	private static final long serialVersionUID = 1L;
 	private Map<ByteArrayId, DataAdapter<?>> adapterMap;
 
-	public MemoryAdapterStore() {	
+	public MemoryAdapterStore() {
 		adapterMap = new HashMap<ByteArrayId, DataAdapter<?>>();
 	}
-	
+
 	public MemoryAdapterStore(
 			final DataAdapter<?>[] adapters ) {
 		adapterMap = new HashMap<ByteArrayId, DataAdapter<?>>();

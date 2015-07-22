@@ -1,5 +1,7 @@
 package mil.nga.giat.geowave.core.store.utils;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,10 +76,21 @@ public class DataStoreUtils
 	}
 
 	public static boolean isAuthorized(
-			byte[] visibility,
-			String... authorizations ) {
-		if (visibility.length == 0) return true;
-		final VisibilityExpression expr = new VisibilityExpressionParser().parse(visibility);
+			final byte[] visibility,
+			final String[] authorizations ) {
+		if (visibility == null || visibility.length == 0) {
+			return true;
+		}
+		VisibilityExpression expr;
+		try {
+			expr = new VisibilityExpressionParser().parse(visibility);
+		}
+		catch (IOException e) {
+			LOGGER.error(
+					"inavalid visibility " + Arrays.toString(visibility),
+					e);
+			return false;
+		}
 		return expr.ok(authorizations);
 	}
 
@@ -139,7 +152,6 @@ public class DataStoreUtils
 			final T entry,
 			final DataStoreEntryInfo ingestInfo ) {
 		final List<EntryRow> rows = new ArrayList<EntryRow>();
-		final List<FieldInfo> fieldInfoList = ingestInfo.getFieldInfo();
 		for (final ByteArrayId rowId : ingestInfo.getRowIds()) {
 			rows.add(new EntryRow(
 					rowId,
@@ -305,20 +317,6 @@ public class DataStoreUtils
 		return null;
 	}
 
-	@SuppressWarnings({
-		"rawtypes",
-		"unchecked"
-	})
-	private static <T> FieldInfo<T> getFieldInfo(
-			final PersistentValue<T> fieldValue,
-			final byte[] value,
-			final byte[] visibility ) {
-		return new FieldInfo<T>(
-				fieldValue,
-				value,
-				visibility);
-	}
-
 	private static final byte[] BEG_AND_BYTE = "&".getBytes(StringUtils.UTF8_CHAR_SET);
 	private static final byte[] END_AND_BYTE = ")".getBytes(StringUtils.UTF8_CHAR_SET);
 
@@ -349,13 +347,13 @@ public class DataStoreUtils
 				String[] auths );
 
 		public VisibilityExpression and() {
-			AndExpression exp = new AndExpression();
+			final AndExpression exp = new AndExpression();
 			exp.add(this);
 			return exp;
 		}
 
 		public VisibilityExpression or() {
-			OrExpression exp = new OrExpression();
+			final OrExpression exp = new OrExpression();
 			exp.add(this);
 			return exp;
 		}
@@ -381,21 +379,20 @@ public class DataStoreUtils
 		public VisibilityExpressionParser() {}
 
 		VisibilityExpression parse(
-				byte[] expression ) {
+				final byte[] expression )
+				throws IOException {
 			if (expression.length > 0) {
-				VisibilityExpression expr = parse_(expression);
+				final VisibilityExpression expr = parse_(expression);
 				if (expr == null) {
 					badArgumentException(
 							"operator or missing parens",
-							new String(
-									expression),
+							expression,
 							index - 1);
 				}
 				if (parens != 0) {
 					badArgumentException(
 							"parenthesis mis-match",
-							new String(
-									expression),
+							expression,
 							index - 1);
 				}
 				return expr;
@@ -404,35 +401,41 @@ public class DataStoreUtils
 		}
 
 		VisibilityExpression processTerm(
-				int start,
-				int end,
-				VisibilityExpression expr,
-				byte[] expression ) {
+				final int start,
+				final int end,
+				final VisibilityExpression expr,
+				final byte[] expression )
+				throws UnsupportedEncodingException {
 			if (start != end) {
-				if (expr != null) badArgumentException(
-						"expression needs | or &",
-						new String(
-								expression),
-						start);
+				if (expr != null) {
+					badArgumentException(
+							"expression needs | or &",
+							expression,
+							start);
+				}
 				return new ChildExpression(
-						new String(Arrays.copyOfRange(
+						new String(
+								Arrays.copyOfRange(
+										expression,
+										start,
+										end),
+								"UTF-8"));
+			}
+			if (expr == null) {
+				badArgumentException(
+						"empty term",
+						Arrays.copyOfRange(
 								expression,
 								start,
-								end)));
+								end),
+						start);
 			}
-			if (expr == null) badArgumentException(
-					"empty term",
-					new String(
-							Arrays.copyOfRange(
-									expression,
-									start,
-									end)),
-					start);
 			return expr;
 		}
 
 		VisibilityExpression parse_(
-				byte[] expression ) {
+				final byte[] expression )
+				throws IOException {
 			VisibilityExpression result = null;
 			VisibilityExpression expr = null;
 			int termStart = index;
@@ -445,11 +448,12 @@ public class DataStoreUtils
 								expr,
 								expression);
 						if (result != null) {
-							if (!(result instanceof AndExpression)) badArgumentException(
-									"cannot mix & and |",
-									new String(
-											expression),
-									index - 1);
+							if (!(result instanceof AndExpression)) {
+								badArgumentException(
+										"cannot mix & and |",
+										expression,
+										index - 1);
+							}
 						}
 						else {
 							result = new AndExpression();
@@ -466,11 +470,12 @@ public class DataStoreUtils
 								expr,
 								expression);
 						if (result != null) {
-							if (!(result instanceof OrExpression)) badArgumentException(
-									"cannot mix | and &",
-									new String(
-											expression),
-									index - 1);
+							if (!(result instanceof OrExpression)) {
+								badArgumentException(
+										"cannot mix | and &",
+										expression,
+										index - 1);
+							}
 						}
 						else {
 							result = new OrExpression();
@@ -482,28 +487,32 @@ public class DataStoreUtils
 					}
 					case '(': {
 						parens++;
-						if (termStart != index - 1 || expr != null) badArgumentException(
-								"expression needs & or |",
-								new String(
-										expression),
-								index - 1);
+						if ((termStart != (index - 1)) || (expr != null)) {
+							badArgumentException(
+									"expression needs & or |",
+									expression,
+									index - 1);
+						}
 						expr = parse_(expression);
 						termStart = index;
 						break;
 					}
 					case ')': {
 						parens--;
-						VisibilityExpression child = processTerm(
+						final VisibilityExpression child = processTerm(
 								termStart,
 								index - 1,
 								expr,
 								expression);
-						if (child == null && result == null) badArgumentException(
-								"empty expression not allowed",
-								new String(
-										expression),
-								index);
-						if (result == null) return child;
+						if ((child == null) && (result == null)) {
+							badArgumentException(
+									"empty expression not allowed",
+									expression,
+									index);
+						}
+						if (result == null) {
+							return child;
+						}
 						result.add(child);
 						return result;
 					}
@@ -514,15 +523,20 @@ public class DataStoreUtils
 					index,
 					expr,
 					expression);
-			if (result != null)
+			if (result != null) {
 				result.add(child);
-			else
+			}
+			else {
 				result = child;
-			if (!(result instanceof ChildExpression)) if (result.children().size() < 2) badArgumentException(
-					"missing term",
-					new String(
-							expression),
-					index);
+			}
+			if (!(result instanceof ChildExpression)) {
+				if (result.children().size() < 2) {
+					badArgumentException(
+							"missing term",
+							expression,
+							index);
+				}
+			}
 			return result;
 		}
 	}
@@ -532,15 +546,18 @@ public class DataStoreUtils
 	{
 		protected final List<VisibilityExpression> expressions = new ArrayList<VisibilityExpression>();
 
+		@Override
 		public VisibilityExpression add(
-				VisibilityExpression expression ) {
+				final VisibilityExpression expression ) {
 			if (expression.getClass().equals(
 					this.getClass())) {
-				for (VisibilityExpression child : expression.children())
-					this.add(child);
+				for (final VisibilityExpression child : expression.children()) {
+					add(child);
+				}
 			}
-			else
+			else {
 				expressions.add(expression);
+			}
 			return this;
 		}
 	}
@@ -551,25 +568,32 @@ public class DataStoreUtils
 		private final String value;
 
 		public ChildExpression(
-				String value ) {
+				final String value ) {
 			super();
 			this.value = value;
 		}
 
+		@Override
 		public boolean ok(
-				String[] auths ) {
-			for (String auth : auths)
-				if (value.equals(auth)) return true;
+				final String[] auths ) {
+			if (auths != null) {
+				for (final String auth : auths) {
+					if (value.equals(auth)) {
+						return true;
+					}
+				}
+			}
 			return false;
 		}
 
+		@Override
 		public List<VisibilityExpression> children() {
 			return Collections.emptyList();
 		}
 
 		@Override
 		public VisibilityExpression add(
-				VisibilityExpression expression ) {
+				final VisibilityExpression expression ) {
 			return this;
 		}
 	}
@@ -578,20 +602,24 @@ public class DataStoreUtils
 			CompositeExpression
 	{
 
+		@Override
 		public List<VisibilityExpression> children() {
 			return expressions;
 		}
 
+		@Override
 		public boolean ok(
-				String[] auth ) {
-			for (VisibilityExpression expression : expressions) {
-				if (!expression.ok(auth)) return false;
+				final String[] auth ) {
+			for (final VisibilityExpression expression : expressions) {
+				if (!expression.ok(auth)) {
+					return false;
+				}
 			}
 			return true;
 		}
 
 		public VisibilityExpression and(
-				VisibilityExpression expression ) {
+				final VisibilityExpression expression ) {
 			return this;
 		}
 	}
@@ -600,30 +628,34 @@ public class DataStoreUtils
 			CompositeExpression
 	{
 
+		@Override
 		public boolean ok(
-				String[] auths ) {
-			for (VisibilityExpression expression : expressions) {
-				if (expression.ok(auths)) return true;
+				final String[] auths ) {
+			for (final VisibilityExpression expression : expressions) {
+				if (expression.ok(auths)) {
+					return true;
+				}
 			}
 			return false;
 		}
 
+		@Override
 		public List<VisibilityExpression> children() {
 			return expressions;
 		}
 
 		public VisibilityExpression or(
-				VisibilityExpression expression ) {
+				final VisibilityExpression expression ) {
 			return this;
 		}
 
 	}
 
 	private static final void badArgumentException(
-			String msg,
-			String expression,
-			int place ) {
+			final String msg,
+			final byte[] expression,
+			final int place ) {
 		throw new IllegalArgumentException(
-				msg + " for " + expression + " at " + place);
+				msg + " for " + Arrays.toString(expression) + " at " + place);
 	}
 }
