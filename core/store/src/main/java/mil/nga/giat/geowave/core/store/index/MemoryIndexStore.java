@@ -17,6 +17,8 @@ public class MemoryIndexStore implements
 {
 	private final Map<ByteArrayId, Index> indexMap = new HashMap<ByteArrayId, Index>();
 
+	public MemoryIndexStore() {}
+
 	public MemoryIndexStore(
 			final Index[] initialIndices ) {
 		for (final Index index : initialIndices) {
