@@ -135,7 +135,12 @@ public class GPXConsumer implements
 		try {
 			eventReader = inputFactory.createXMLEventReader(fileStream);
 			init();
-			nextFeature = getNext();
+			if (!currentElementStack.isEmpty()) {
+				nextFeature = getNext();
+			}
+			else {
+				nextFeature = null;
+			}
 		}
 		catch (IOException | XMLStreamException e) {
 			LOGGER.error(
@@ -232,6 +237,9 @@ public class GPXConsumer implements
 				if ((newFeature == null) && !currentElementStack.isEmpty()) {
 					currentElement = currentElementStack.peek();
 					// currentElement.removeChild(child);
+				}
+				else if (currentElementStack.size() == 1) {
+					top.children.remove(child);
 				}
 			}
 		}
@@ -469,6 +477,7 @@ public class GPXConsumer implements
 		List<GPXDataElement> children = null;
 		GPXDataElement parent;
 		long id = 0;
+		int childIdCounter = 0;
 
 		public GPXDataElement(
 				final String myElType ) {
@@ -504,7 +513,7 @@ public class GPXConsumer implements
 			}
 			children.add(child);
 			child.parent = this;
-			child.id = children.size();
+			child.id = ++childIdCounter;
 		}
 
 		public String composeID(

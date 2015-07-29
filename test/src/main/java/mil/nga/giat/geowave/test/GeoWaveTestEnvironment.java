@@ -91,6 +91,23 @@ abstract public class GeoWaveTestEnvironment
 				"-localingest -f geotools-vector -b " + ingestFilePath + " -z " + zookeeper + " -i " + accumuloInstance + " -u " + accumuloUser + " -p " + accumuloPassword + " -n " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
 				' ');
 		GeoWaveMain.main(args);
+		verifyStats();
+	}
+
+	private void verifyStats() {
+		GeoWaveMain.main(new String[] {
+			"-statsdump",
+			"-z",
+			zookeeper,
+			"-n",
+			TEST_NAMESPACE,
+			"-u",
+			accumuloUser,
+			"-p",
+			accumuloPassword,
+			"-i",
+			accumuloInstance
+		});
 	}
 
 	@BeforeClass
@@ -243,11 +260,12 @@ abstract public class GeoWaveTestEnvironment
 				if (TEMP_DIR != null) {
 					try {
 						// sleep because mini accumulo processes still have a
-						// hold
-						// on the log files and there is no hook to get notified
-						// when it is completely stopped
-						Thread.sleep(1000);
+						// hold on the log files and there is no hook to get
+						// notified when it is completely stopped
+
+						Thread.sleep(2000);
 						FileUtils.deleteDirectory(TEMP_DIR);
+
 						TEMP_DIR = null;
 					}
 					catch (final IOException | InterruptedException e) {
@@ -288,7 +306,7 @@ abstract public class GeoWaveTestEnvironment
 		@SuppressFBWarnings({
 			"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"
 		})
-		protected ExpectedResults(
+		public ExpectedResults(
 				final Set<Long> hashedCentroids,
 				final int count ) {
 			this.hashedCentroids = hashedCentroids;
@@ -455,7 +473,7 @@ abstract public class GeoWaveTestEnvironment
 	/**
 	 * Unzips the contents of a zip file to a target output directory, deleting
 	 * anything that existed beforehand
-	 * 
+	 *
 	 * @param zipInput
 	 *            input zip file
 	 * @param outputFolder

@@ -2,8 +2,8 @@ package mil.nga.giat.geowave.core.ingest.local;
 
 import java.io.File;
 
+import mil.nga.giat.geowave.core.ingest.IndexProvider;
 import mil.nga.giat.geowave.core.ingest.IngestPluginBase;
-import mil.nga.giat.geowave.core.store.index.Index;
 
 /**
  * This is the primary plugin for directly ingesting data to GeoWave from local
@@ -15,16 +15,7 @@ import mil.nga.giat.geowave.core.store.index.Index;
  */
 public interface LocalFileIngestPlugin<O> extends
 		LocalPluginBase,
-		IngestPluginBase<File, O>
+		IngestPluginBase<File, O>,
+		IndexProvider
 {
-	/**
-	 * Get an array of indices that are supported by this ingestion
-	 * implementation. This should be the full set of possible indices to use
-	 * for this ingest type (for example both spatial and spatial-temporal, or
-	 * perhaps just one).
-	 * 
-	 * @return the array of indices that are supported by this ingestion
-	 *         implementation
-	 */
-	public Index[] getSupportedIndices();
 }

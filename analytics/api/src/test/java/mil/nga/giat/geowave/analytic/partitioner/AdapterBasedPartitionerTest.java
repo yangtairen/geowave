@@ -45,7 +45,7 @@ public class AdapterBasedPartitionerTest
 	}
 
 	@Test
-	public void test()
+	public void testPartion()
 			throws IOException {
 
 		final SimpleFeatureType ftype = AnalyticFeature.createGeometryFeatureAdapter(

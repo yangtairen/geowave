@@ -1,4 +1,4 @@
-# GeoWave 0.8.7
+# GeoWave
 ## About  
 
 | Continuous Integration | Code Coverage | Static Analysis | Chat |            

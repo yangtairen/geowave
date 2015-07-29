@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>mil.nga.giat</groupId>
 	<artifactId>geowave-parent</artifactId>
-	<version>0.8.7-SNAPSHOT</version>
+	<version>0.8.9-SNAPSHOT</version>
 	<name>GeoWave Parent POM</name>
 	<packaging>pom</packaging>
 	<description>Geowave adds spatio-temporal indexing to accumulo through geotools and geoserver</description>
@@ -32,9 +32,9 @@
 		<connection>scm:git:git@github.com:ngageoint/geowave.git</connection>
 	</scm>
 	<properties>
-		<geotools.version>13.0</geotools.version>
+		<geotools.version>13.1</geotools.version>
 		<hadoop.env.classifier>hadoop2</hadoop.env.classifier>
-		<geoserver.version>2.7.0</geoserver.version>
+		<geoserver.version>2.7.1</geoserver.version>
 		<accumulo.version>1.6.2</accumulo.version>
 		<hadoop.version>2.6.0</hadoop.version>
 		<avro.version>1.7.6</avro.version>
@@ -45,8 +45,7 @@
 		<zookeeper.version>3.4.6</zookeeper.version>
 		<jersey.version>2.14</jersey.version>
 		<kafka.artifact>kafka_2.10</kafka.artifact>
-		<kafka.version>0.8.2.1</kafka.version>		
-		<curator.version>2.7.1</curator.version>	
+		<kafka.version>0.8.2.1</kafka.version>				
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<sonar.language>java</sonar.language>
@@ -528,6 +527,9 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.9.1</version>
+				<configuration>
+					<notimestamp>true</notimestamp>
+				</configuration>
 				<executions>
 					<execution>
 						<id>aggregate</id>

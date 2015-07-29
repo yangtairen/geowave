@@ -230,16 +230,14 @@ public class PropertyManagementTest
 
 			@Override
 			public Serializable convert(
-					final NonSerializableExample ob,
-					final PropertyManagement pm )
+					final NonSerializableExample ob )
 					throws Exception {
 				return Integer.valueOf(1);
 			}
 
 			@Override
 			public NonSerializableExample convert(
-					final Serializable ob,
-					final PropertyManagement pm )
+					final Serializable ob )
 					throws Exception {
 				assertTrue(ob instanceof Integer);
 				return new NonSerializableExample();
@@ -424,5 +422,46 @@ public class PropertyManagementTest
 		assertEquals(
 				path1,
 				path2);
+	}
+
+	@Test
+	public void testStoreWithEmbedded()
+			throws Exception {
+		final PropertyManagement pm1 = new PropertyManagement();
+		pm1.store(
+				ExtractParameters.Extract.ADAPTER_ID,
+				"bar");
+		assertEquals(
+				"bar",
+				pm1.getPropertyAsString(ExtractParameters.Extract.ADAPTER_ID));
+
+		final PropertyManagement pm2 = new PropertyManagement(
+				pm1);
+
+		assertTrue(pm2.hasProperty(ExtractParameters.Extract.ADAPTER_ID));
+
+		final Path path1 = new Path(
+				"http://java.sun.com/j2se/1.3/foo");
+		pm2.store(
+				Input.HDFS_INPUT_PATH,
+				path1);
+
+		final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		try (ObjectOutputStream os = new ObjectOutputStream(
+				bos)) {
+			os.writeObject(pm2);
+		}
+		final ByteArrayInputStream bis = new ByteArrayInputStream(
+				bos.toByteArray());
+		try (ObjectInputStream is = new ObjectInputStream(
+				bis)) {
+			final PropertyManagement pm3 = (PropertyManagement) is.readObject();
+			assertEquals(
+					"bar",
+					pm3.getPropertyAsString(ExtractParameters.Extract.ADAPTER_ID));
+			assertEquals(
+					path1,
+					pm3.getPropertyAsPath(Input.HDFS_INPUT_PATH));
+		}
 	}
 }

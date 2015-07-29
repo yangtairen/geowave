@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -49,7 +50,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * This class wraps a geotools data store as well as one for statistics (for
  * example to display Heatmaps) into a GeoTools FeatureReader for simple feature
  * data. It acts as a helper for GeoWave's GeoTools data store.
- *
+ * 
  */
 public class GeoWaveFeatureReader implements
 		FeatureReader<SimpleFeatureType, SimpleFeature>
@@ -63,9 +64,15 @@ public class GeoWaveFeatureReader implements
 	public GeoWaveFeatureReader(
 			final Query query,
 			final GeoWaveTransaction transaction,
-			final GeoWaveDataStoreComponents components ) {
+			final GeoWaveDataStoreComponents components )
+			throws IOException {
 		this.components = components;
 		this.transaction = transaction;
+		// make sure the the buffer cache is flushed to the underlying datastore
+		// the case where pending additions have not been committed is not
+		// supported under the WFS-T spec, but the geotools API
+		// does not prevent it.
+		transaction.flush();
 		featureCollection = new GeoWaveFeatureCollection(
 				this,
 				query);
@@ -438,16 +445,17 @@ public class GeoWaveFeatureReader implements
 
 	}
 
-	protected DataStatistics<SimpleFeature> getStatsFor(
+	protected List<DataStatistics<SimpleFeature>> getStatsFor(
 			final String name ) {
-		final Map<ByteArrayId, DataStatistics<SimpleFeature>> stats = components.getDataStatistics(transaction);
-		for (final Map.Entry<ByteArrayId, DataStatistics<SimpleFeature>> stat : stats.entrySet()) {
+		final List<DataStatistics<SimpleFeature>> stats = new LinkedList<DataStatistics<SimpleFeature>>();
+		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = components.getDataStatistics(transaction);
+		for (final Map.Entry<ByteArrayId, DataStatistics<SimpleFeature>> stat : statsMap.entrySet()) {
 			if ((stat.getValue() instanceof FeatureStatistic) && ((FeatureStatistic) stat.getValue()).getFieldName().endsWith(
 					name)) {
-				return stat.getValue();
+				stats.add(stat.getValue());
 			}
 		}
-		return null;
+		return stats;
 	}
 
 	protected TemporalConstraintsSet clipIndexedTemporalConstraints(

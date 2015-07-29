@@ -14,8 +14,12 @@ Puppet runs to do the initial install.
 
 === Options
 
+geowave_version::
+The desired version of GeoWave to install, ex: '0.8.7' we support concurrent installs but only one will be active at a time
+
 hadoop_vendor_version::
-The Hadoop framework vendor and version against which GeoWave was built. Currently only cdh5 is supported
+The Hadoop framework vendor and version against which GeoWave was built. Examples would be cdh5 or hdp2, check the
+http://ngageoint.github.io/geowave/packages.html[available packages^] site for currently supported hadoop distributions.
 
 install_accumulo::
 Install the GeoWave Accumulo Iterator on this node and upload it into HDFS. This node must have a working HDFS client.
@@ -56,6 +60,7 @@ class { 'geowave::repo':
   repo_refresh_md => 0,
 } ->
 class { 'geowave':
+  geowave_version       => '0.8.7',
   hadoop_vendor_version => 'cdh5',
   install_accumulo      => true,
   install_app           => true,
@@ -75,6 +80,7 @@ node 'c1-master' {
     repo_enabled    => 1,
   } ->
   class { 'geowave':
+    geowave_version       => '0.8.7',
     hadoop_vendor_version => 'cdh5',
     install_accumulo      => true,
     install_app           => true,
@@ -88,6 +94,7 @@ node 'c1-app-01' {
     repo_enabled    => 1,
   } ->
   class { 'geowave':
+    geowave_version       => '0.8.7',
     hadoop_vendor_version => 'cdh5',
     install_app_server    => true,
     http_port             => '8888',
@@ -114,5 +121,5 @@ rest of the cluster using Puppet.
 [source, bash]
 ----
 rpm -Uvh http://s3.amazonaws.com/geowave-rpms/release/noarch/geowave-repo-1.0-3.noarch.rpm
-yum install geowave-cdh5-puppet
+yum --enablerepo=geowave install geowave-puppet
 ----

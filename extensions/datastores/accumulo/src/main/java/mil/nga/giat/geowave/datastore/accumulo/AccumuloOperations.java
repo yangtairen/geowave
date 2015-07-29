@@ -16,6 +16,8 @@ import org.apache.accumulo.core.client.TableNotFoundException;
 /**
  * This interface is used as a basis for establishing connections for queries
  * and ingest processes used by the index classes.
+ * 
+ * Operations are configured to a specific 'table' name space.
  */
 public interface AccumuloOperations
 {
@@ -37,6 +39,11 @@ public interface AccumuloOperations
 			final String tableName,
 			final String... additionalAuthorizations )
 			throws TableNotFoundException;
+
+	/**
+	 * @return Table Name Space, Empty string if not applicable.
+	 */
+	public String getTableNameSpace();
 
 	/**
 	 * Creates a new batch scanner that can be used by an index

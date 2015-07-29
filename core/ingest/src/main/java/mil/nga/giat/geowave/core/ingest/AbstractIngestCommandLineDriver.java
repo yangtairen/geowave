@@ -32,7 +32,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * of ingest format plugins and using them to drive an ingestion process. The
  * class is sub-classed to perform the specific ingestion required based on the
  * operation set by the user.
- *
+ * 
  */
 abstract public class AbstractIngestCommandLineDriver implements
 		CLIOperationDriver
@@ -99,7 +99,8 @@ abstract public class AbstractIngestCommandLineDriver implements
 		try {
 			CommandLine commandLine = parser.parse(
 					options,
-					args);
+					args,
+					true);
 			if (commandLine.hasOption("h")) {
 				printHelp(
 						options,
@@ -144,9 +145,7 @@ abstract public class AbstractIngestCommandLineDriver implements
 			}
 			else if (commandLine.hasOption("f")) {
 				try {
-					selectedPluginProviders = getPluginProviders(
-							commandLine,
-							options);
+					selectedPluginProviders = getPluginProviders(commandLine);
 				}
 				catch (final Exception e) {
 					LOGGER.fatal(
@@ -160,6 +159,12 @@ abstract public class AbstractIngestCommandLineDriver implements
 				if (selectedPluginProviders.isEmpty()) {
 					LOGGER.fatal("There were no ingest format plugin providers found");
 					System.exit(-3);
+				}
+			}
+			for (final IngestFormatPluginProviderSpi<?, ?> plugin : selectedPluginProviders) {
+				final IngestFormatOptionProvider optionProvider = plugin.getIngestFormatOptionProvider();
+				if (optionProvider != null) {
+					optionProvider.applyOptions(options);
 				}
 			}
 			if (options.getOptions().size() > optionCount) {
@@ -190,8 +195,7 @@ abstract public class AbstractIngestCommandLineDriver implements
 	}
 
 	private List<IngestFormatPluginProviderSpi<?, ?>> getPluginProviders(
-			final CommandLine commandLine,
-			final Options options ) {
+			final CommandLine commandLine ) {
 		final List<IngestFormatPluginProviderSpi<?, ?>> selectedPluginProviders = new ArrayList<IngestFormatPluginProviderSpi<?, ?>>();
 		final String[] pluginProviderNames = commandLine.getOptionValue(
 				"f").split(
@@ -207,12 +211,6 @@ abstract public class AbstractIngestCommandLineDriver implements
 		if (selectedPluginProviders.isEmpty()) {
 			throw new IllegalArgumentException(
 					"There were no ingest format plugin providers found");
-		}
-		for (final IngestFormatPluginProviderSpi<?, ?> plugin : selectedPluginProviders) {
-			final IngestFormatOptionProvider optionProvider = plugin.getIngestFormatOptionProvider();
-			if (optionProvider != null) {
-				optionProvider.applyOptions(options);
-			}
 		}
 		return selectedPluginProviders;
 	}

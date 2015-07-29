@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.UUID;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
+import mil.nga.giat.geowave.analytic.distance.CoordinateCircleDistanceFn;
 import mil.nga.giat.geowave.analytic.distance.DistanceFn;
 import mil.nga.giat.geowave.analytic.distance.FeatureCentroidDistanceFn;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
@@ -19,16 +20,20 @@ import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.Parser;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
+/**
+ * Generate clusters of geometries.
+ *
+ */
+import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.GeometryType;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.slf4j.Logger;
@@ -37,6 +42,8 @@ import org.slf4j.LoggerFactory;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Point;
 
 /**
  * Generate clusters of geometries.
@@ -199,6 +206,20 @@ public class GeometryDataSetGenerator
 	}
 
 	public List<SimpleFeature> generatePointSet(
+			final LineString line,
+			final double distanceFactor,
+			final int points ) {
+		final List<SimpleFeature> pointSet = new ArrayList<SimpleFeature>();
+		for (final Point point : CurvedDensityDataGeneratorTool.generatePoints(
+				line,
+				distanceFactor,
+				points)) {
+			pointSet.add(createFeatureWithGeometry(point));
+		}
+		return pointSet;
+	}
+
+	public List<SimpleFeature> generatePointSet(
 			final double minCenterDistanceFactor,
 			final double outlierFactor,
 			final int numberOfCenters,
@@ -301,8 +322,7 @@ public class GeometryDataSetGenerator
 	}
 
 	private void init() {
-		final GeometryDescriptor geoDescriptor = builder.getFeatureType().getGeometryDescriptor();
-		coordSystem = geoDescriptor.getType().getCoordinateReferenceSystem().getCoordinateSystem();
+		coordSystem = builder.getFeatureType().getCoordinateReferenceSystem().getCoordinateSystem();
 
 		minAxis = new double[coordSystem.getDimension()];
 		maxAxis = new double[coordSystem.getDimension()];
@@ -418,6 +438,10 @@ public class GeometryDataSetGenerator
 		}
 	}
 
+	public GeometryFactory getFactory() {
+		return geoFactory;
+	}
+
 	/**
 	 * Change the constrain min and max to center around the coordinate to keep
 	 * the polygons tight.
@@ -465,8 +489,7 @@ public class GeometryDataSetGenerator
 
 	public static void main(
 			final String args[] )
-			throws IOException,
-			ParseException {
+			throws Exception {
 		final Options allOptions = new Options();
 		DataStoreCommandLineOptions.applyOptions(allOptions);
 		final Option typeNameOption = new Option(
@@ -544,11 +567,14 @@ public class GeometryDataSetGenerator
 	}
 
 	private static SimpleFeatureBuilder getBuilder(
-			final String name ) {
+			final String name )
+			throws FactoryException {
 		final SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
 		typeBuilder.setName(name);
-		typeBuilder.setCRS(DefaultGeographicCRS.WGS84); // <- Coordinate
-														// reference
+		typeBuilder.setCRS(CRS.decode(
+				"EPSG:4326",
+				true)); // <- Coordinate
+						// reference
 		// add attributes in order
 		typeBuilder.add(
 				"geom",
@@ -564,4 +590,85 @@ public class GeometryDataSetGenerator
 		return new SimpleFeatureBuilder(
 				typeBuilder.buildFeatureType());
 	}
+
+	public static class CurvedDensityDataGeneratorTool
+	{
+
+		private static final CoordinateCircleDistanceFn DISTANCE_FN = new CoordinateCircleDistanceFn();
+
+		public static final List<Point> generatePoints(
+				final LineString line,
+				final double distanceFactor,
+				final int points ) {
+			final List<Point> results = new ArrayList<Point>();
+			Coordinate lastCoor = null;
+			double distanceTotal = 0.0;
+			final double[] distancesBetweenCoords = new double[line.getCoordinates().length - 1];
+			int i = 0;
+			for (final Coordinate coor : line.getCoordinates()) {
+				if (lastCoor != null) {
+					distancesBetweenCoords[i] = Math.abs(DISTANCE_FN.measure(
+							lastCoor,
+							coor));
+					distanceTotal += distancesBetweenCoords[i++];
+				}
+				lastCoor = coor;
+			}
+			lastCoor = null;
+			i = 0;
+			for (final Coordinate coor : line.getCoordinates()) {
+				if (lastCoor != null) {
+					results.addAll(generatePoints(
+							line.getFactory(),
+							toVec(coor),
+							toVec(lastCoor),
+							distanceFactor,
+							(int) ((points) * (distancesBetweenCoords[i++] / distanceTotal))));
+				}
+				lastCoor = coor;
+			}
+
+			return results;
+		}
+
+		private static final List<Point> generatePoints(
+				final GeometryFactory factory,
+				final Vector2D coordinateOne,
+				final Vector2D coordinateTwo,
+				final double distanceFactor,
+				final int points ) {
+			final List<Point> results = new ArrayList<Point>();
+			final Random rand = new Random();
+			final Vector2D originVec = coordinateTwo.subtract(coordinateOne);
+			for (int i = 0; i < points; i++) {
+				final double factor = rand.nextDouble();
+				final Vector2D projectionPoint = originVec.scalarMultiply(factor);
+				final double direction = rand.nextGaussian() * distanceFactor;
+				final Vector2D orthogonal = new Vector2D(
+						originVec.getY(),
+						-originVec.getX());
+
+				results.add(factory.createPoint(toCoordinate(orthogonal.scalarMultiply(
+						direction).add(
+						projectionPoint).add(
+						coordinateOne))));
+			}
+			return results;
+		}
+
+		public static Coordinate toCoordinate(
+				final Vector2D vec ) {
+			return new Coordinate(
+					vec.getX(),
+					vec.getY());
+		}
+
+		public static Vector2D toVec(
+				final Coordinate coor ) {
+			return new Vector2D(
+					coor.x,
+					coor.y);
+		}
+	}
+
 }

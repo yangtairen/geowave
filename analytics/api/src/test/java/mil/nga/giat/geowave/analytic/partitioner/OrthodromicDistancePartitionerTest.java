@@ -12,6 +12,7 @@ import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.extract.SimpleFeatureGeometryExtractor;
 import mil.nga.giat.geowave.analytic.model.SpatialIndexModelBuilder;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
+import mil.nga.giat.geowave.analytic.param.ClusteringParameters.Clustering;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
@@ -80,8 +81,8 @@ public class OrthodromicDistancePartitionerTest
 		final PropertyManagement propertyManagement = new PropertyManagement();
 
 		propertyManagement.store(
-				ClusteringParameters.Clustering.DISTANCE_THRESHOLDS,
-				"111.321");
+				Clustering.DISTANCE_THRESHOLDS,
+				10000);
 		propertyManagement.store(
 				CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS,
 				SpatialIndexModelBuilder.class);
@@ -94,7 +95,7 @@ public class OrthodromicDistancePartitionerTest
 				"EPSG:4326");
 		propertyManagement.store(
 				ClusteringParameters.Clustering.GEOMETRIC_DISTANCE_UNIT,
-				"km");
+				"m");
 
 		final OrthodromicDistancePartitioner<SimpleFeature> partitioner = new OrthodromicDistancePartitioner<SimpleFeature>();
 		final Configuration configuration = new Configuration();
@@ -168,7 +169,7 @@ public class OrthodromicDistancePartitionerTest
 
 		partitions = partitioner.getCubeIdentifiers(feature);
 		assertEquals(
-				4,
+				2,
 				partitions.size());
 		assertTrue(hasOnePrimary(partitions));
 		double maxX = 0;

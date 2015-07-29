@@ -8,9 +8,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import mil.nga.giat.geowave.adapter.vector.util.FeatureDataUtils;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.io.Writable;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.SchemaException;
@@ -29,11 +32,15 @@ import com.vividsolutions.jts.io.WKBWriter;
  * SimpleFeatureType. The attribute types of the feature must be understood
  * before the feature can be deserialized so therefore each SimpleFeature
  * serializes its type.
+ * 
+ * NOTE: This class caches feature type information. If the feature type
+ * changes, then the cache should be emptied using the clearCache() method.
  */
 public class FeatureWritable implements
 		Writable,
 		java.io.Serializable
 {
+	private static final Map<Pair<String, String>, SimpleFeatureType> FeatureTypeCache = new ConcurrentHashMap<Pair<String, String>, SimpleFeatureType>();
 	/**
 	 * 
 	 */
@@ -291,4 +298,17 @@ public class FeatureWritable implements
 		this.readFields(in);
 	}
 
+	public static final void clearCache() {
+		FeatureTypeCache.clear();
+	}
+
+	public static final void cache(
+			SimpleFeatureType featureType ) {
+		final Pair<String, String> id = Pair.of(
+				featureType.getName().getNamespaceURI() == null ? "" : featureType.getName().getNamespaceURI(),
+				featureType.getTypeName());
+		FeatureTypeCache.put(
+				id,
+				featureType);
+	}
 }

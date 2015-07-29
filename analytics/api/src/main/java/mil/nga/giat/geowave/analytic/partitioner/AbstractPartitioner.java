@@ -16,6 +16,7 @@ import mil.nga.giat.geowave.analytic.model.SpatialIndexModelBuilder;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
+import mil.nga.giat.geowave.analytic.param.PartitionParameters.Partition;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.sfc.SFCFactory.SFCType;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
@@ -39,6 +40,7 @@ public abstract class AbstractPartitioner<T> implements
 
 	private transient Index index = null;
 	private transient double[] distancePerDimension = null;
+	private transient double precisionFactor = 1.0;
 
 	public AbstractPartitioner() {
 		distancePerDimension = new double[0];
@@ -95,6 +97,32 @@ public abstract class AbstractPartitioner<T> implements
 				partitionIdSet);
 	}
 
+	@Override
+	public void partition(
+			final T entry,
+			final PartitionDataCallback callback )
+			throws Exception {
+		final NumericDataHolder numericData = getNumericData(entry);
+		if (numericData == null) {
+			return;
+		}
+		for (final ByteArrayId addId : getIndex().getIndexStrategy().getInsertionIds(
+				numericData.primary)) {
+			callback.partitionWith(new PartitionData(
+					addId,
+					true));
+		}
+
+		for (final MultiDimensionalNumericData expansionData : numericData.expansion) {
+			for (final ByteArrayId addId : getIndex().getIndexStrategy().getInsertionIds(
+					expansionData)) {
+				callback.partitionWith(new PartitionData(
+						addId,
+						false));
+			}
+		}
+	}
+
 	protected static class NumericDataHolder
 	{
 		MultiDimensionalNumericData primary;
@@ -121,11 +149,9 @@ public abstract class AbstractPartitioner<T> implements
 		}
 	}
 
-	@Override
-	public void initialize(
+	private static double[] getDistances(
 			final JobContext context,
-			final Class<?> scope )
-			throws IOException {
+			final Class<?> scope ) {
 		final ScopedJobConfiguration config = new ScopedJobConfiguration(
 				context,
 				scope);
@@ -134,12 +160,38 @@ public abstract class AbstractPartitioner<T> implements
 				"0.000001");
 
 		final String distancesArray[] = distances.split(",");
-		distancePerDimension = new double[distancesArray.length];
+		final double[] distancePerDimension = new double[distancesArray.length];
 		{
 			int i = 0;
 			for (final String eachDistance : distancesArray) {
 				distancePerDimension[i++] = Double.valueOf(eachDistance);
 			}
+		}
+		return distancePerDimension;
+	}
+
+	@Override
+	public void initialize(
+			final JobContext context,
+			final Class<?> scope )
+			throws IOException {
+
+		final ScopedJobConfiguration config = new ScopedJobConfiguration(
+				context,
+				scope);
+		distancePerDimension = getDistances(
+				context,
+				this.getClass());
+
+		this.precisionFactor = config.getDouble(
+				Partition.PARTITION_PRECISION,
+				1.0);
+
+		if ((precisionFactor < 0) || (precisionFactor > 1.0)) {
+			throw new IllegalArgumentException(
+					String.format(
+							"Precision value must be between 0 and 1: %.6f",
+							precisionFactor));
 		}
 
 		try {
@@ -194,8 +246,10 @@ public abstract class AbstractPartitioner<T> implements
 		final int[] dimensionPrecision = new int[indexModel.getDimensions().length];
 		for (int i = 0; i < dimensionPrecision.length; i++) {
 			final double distance = distancePerDimensionForIndex[i] * 2.0; // total
-																			// width...(radius)
-			dimensionPrecision[i] = Math.abs((int) (Math.log(dimensions[i].getRange() / distance) / Math.log(2)));
+			// width...(radius)
+			// adjust by precision factory (0 to 1.0)
+			dimensionPrecision[i] = (int) (precisionFactor * Math.abs((int) (Math.log(dimensions[i].getRange() / distance) / Math.log(2))));
+
 			totalRequestedPrecision += dimensionPrecision[i];
 		}
 		if (totalRequestedPrecision > 63) {
@@ -210,6 +264,8 @@ public abstract class AbstractPartitioner<T> implements
 				dimensionPrecision,
 				SFCType.HILBERT);
 
+		// Not relevant since this is a single tier strategy.
+		// For now, just setting to a non-zero reasonable value
 		indexStrategy.setMaxEstimatedDuplicateIds((int) Math.pow(
 				dimensions.length,
 				2));

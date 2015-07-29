@@ -11,6 +11,7 @@ import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -41,12 +42,24 @@ public interface Partitioner<T>
 	public List<PartitionData> getCubeIdentifiers(
 			final T entry );
 
+	public void partition(
+			T entry,
+			PartitionDataCallback callback )
+			throws Exception;
+
 	public Collection<ParameterEnum<?>> getParameters();
 
 	public void setup(
 			PropertyManagement runTimeProperties,
 			Class<?> scope,
 			Configuration configuration );
+
+	public static interface PartitionDataCallback
+	{
+		void partitionWith(
+				PartitionData data )
+				throws Exception;
+	}
 
 	public static class PartitionData implements
 			Serializable,
@@ -58,10 +71,20 @@ public interface Partitioner<T>
 		private static final long serialVersionUID = 1L;
 
 		private ByteArrayId id;
+		private ByteArrayId groupId = null;
 		private boolean isPrimary;
 
 		public ByteArrayId getId() {
 			return id;
+		}
+
+		public ByteArrayId getGroupId() {
+			return groupId;
+		}
+
+		public void setGroupId(
+				final ByteArrayId groupId ) {
+			this.groupId = groupId;
 		}
 
 		public boolean isPrimary() {
@@ -76,6 +99,11 @@ public interface Partitioner<T>
 			super();
 			this.id = id;
 			this.isPrimary = primary;
+		}
+
+		@Override
+		public String toString() {
+			return "PartitionData [id=" + Hex.encodeHexString(id.getBytes()) + ", groupId=" + (groupId == null ? "null" : groupId.getString()) + ", isPrimary=" + isPrimary + "]";
 		}
 
 		@Override
@@ -117,9 +145,18 @@ public interface Partitioner<T>
 			final int idSize = dInput.readInt();
 			final byte[] idBytes = new byte[idSize];
 			dInput.readFully(idBytes);
-			isPrimary = dInput.readBoolean();
 			id = new ByteArrayId(
 					idBytes);
+
+			final int groupIdSize = dInput.readInt();
+			if (groupIdSize > 0) {
+				final byte[] groupIdIdBytes = new byte[groupIdSize];
+				dInput.readFully(groupIdIdBytes);
+				groupId = new ByteArrayId(
+						groupIdIdBytes);
+			}
+
+			isPrimary = dInput.readBoolean();
 		}
 
 		@Override
@@ -129,6 +166,16 @@ public interface Partitioner<T>
 			final byte[] outputId = id.getBytes();
 			dOutput.writeInt(outputId.length);
 			dOutput.write(outputId);
+
+			if (groupId != null) {
+				final byte[] groupOutputId = groupId.getBytes();
+				dOutput.writeInt(groupOutputId.length);
+				dOutput.write(groupOutputId);
+			}
+			else {
+				dOutput.writeInt(0);
+			}
+
 			dOutput.writeBoolean(isPrimary);
 
 		}

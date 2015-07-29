@@ -17,6 +17,21 @@ public class OutputParameters
 				"ofc",
 				"Output Format Class",
 				true),
+		INDEX_ID(
+				String.class,
+				"oid",
+				"Output Index ID for objects that will be written to GeoWave",
+				true),
+		DATA_TYPE_ID(
+				String.class,
+				"odt",
+				"Output Data ID assigned to objects that will be written to GeoWave",
+				true),
+		DATA_NAMESPACE_URI(
+				String.class,
+				"ons",
+				"Output namespace for objects that will be written to GeoWave",
+				true),
 		HDFS_OUTPUT_PATH(
 				Path.class,
 				"oop",

@@ -1,6 +1,5 @@
 package mil.nga.giat.geowave.analytic.param;
 
-
 public class ClusteringParameters
 {
 
@@ -17,6 +16,11 @@ public class ClusteringParameters
 				"ga",
 				"Retain Group assignments during execution",
 				false),
+		MINIMUM_SIZE(
+				Integer.class,
+				"cms",
+				"Minimum Cluster Size",
+				true),
 		MAX_ITERATIONS(
 				Integer.class,
 				"cmi",

@@ -2,6 +2,7 @@ package mil.nga.giat.geowave.analytic.param;
 
 import mil.nga.giat.geowave.analytic.extract.DimensionExtractor;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
+import mil.nga.giat.geowave.core.store.query.QueryOptions;
 
 public class ExtractParameters
 {
@@ -32,6 +33,11 @@ public class ExtractParameters
 				DistributableQuery.class,
 				"eq",
 				"Query",
+				true),
+		QUERY_OPTIONS(
+				QueryOptions.class,
+				"eqf",
+				"Restricted extracted field list (comma-separated list of field ids)",
 				true),
 		MAX_INPUT_SPLIT(
 				Integer.class,

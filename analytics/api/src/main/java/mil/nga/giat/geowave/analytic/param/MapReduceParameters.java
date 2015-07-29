@@ -30,7 +30,7 @@ public class MapReduceParameters
 				"Yarn resource manager hostname and port in the format hostname:port",
 				true),
 		JOBTRACKER_HOST_PORT(
-				Integer.class,
+				String.class,
 				"jobtracker",
 				"Hadoop job tracker hostname and port in the format hostname:port",
 				true);

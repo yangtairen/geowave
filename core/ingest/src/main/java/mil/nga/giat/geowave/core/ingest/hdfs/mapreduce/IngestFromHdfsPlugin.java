@@ -1,7 +1,7 @@
 package mil.nga.giat.geowave.core.ingest.hdfs.mapreduce;
 
-import mil.nga.giat.geowave.core.ingest.avro.AvroPluginBase;
-import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.ingest.IndexProvider;
+import mil.nga.giat.geowave.core.ingest.avro.AvroSchemaProvider;
 
 /**
  * This is the main plugin interface for ingesting intermediate data into
@@ -19,7 +19,8 @@ import mil.nga.giat.geowave.core.store.index.Index;
  *            the type that represents each data entry being ingested
  */
 public interface IngestFromHdfsPlugin<I, O> extends
-		AvroPluginBase
+		IndexProvider,
+		AvroSchemaProvider
 {
 	/**
 	 * Returns a flag indicating to the ingestion framework whether it should
@@ -55,30 +56,4 @@ public interface IngestFromHdfsPlugin<I, O> extends
 	 *         for map-reduce.
 	 */
 	public IngestWithReducer<I, ?, ?, O> ingestWithReducer();
-
-	/**
-	 * Get an array of indices that are supported by this ingestion
-	 * implementation. This should be the full set of possible indices to use
-	 * for this ingest type (for example both spatial and spatial-temporal, or
-	 * perhaps just one).
-	 * 
-	 * @return the array of indices that are supported by this ingestion
-	 *         implementation
-	 */
-	public Index[] getSupportedIndices();
-
-	/**
-	 * Get an array of indices that are required by this ingestion
-	 * implementation. This should be a subset of supported indices. All of
-	 * these indices will automatically be persisted with GeoWave's metadata
-	 * store and in the job configuration, whereas indices that are just
-	 * "supported" will not automatically be persisted (only if they are the
-	 * primary index). This is primarily useful if there is a supplemental index
-	 * required by the ingestion process that is not the primary index.
-	 * 
-	 * @return the array of indices that are supported by this ingestion
-	 *         implementation
-	 */
-	public Index[] getRequiredIndices();
-
 }

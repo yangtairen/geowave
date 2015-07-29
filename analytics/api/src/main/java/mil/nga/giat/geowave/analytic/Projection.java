@@ -2,6 +2,7 @@ package mil.nga.giat.geowave.analytic;
 
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.JobContext;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -20,5 +21,10 @@ public interface Projection<T>
 	public void initialize(
 			JobContext context,
 			Class<?> scope )
-					throws IOException;
+			throws IOException;
+
+	public void setup(
+			PropertyManagement runTimeProperties,
+			Class<?> scope,
+			Configuration configuration );
 }

@@ -12,7 +12,7 @@ abstract public class NumericRangeDataStatistics<T> extends
 {
 
 	private double min = Double.MAX_VALUE;
-	private double max = 0;
+	private double max = -Double.MAX_VALUE;
 
 	protected NumericRangeDataStatistics() {
 		super();
@@ -27,7 +27,7 @@ abstract public class NumericRangeDataStatistics<T> extends
 	}
 
 	public boolean isSet() {
-		if ((min == Double.MAX_VALUE) || (max == 0)) {
+		if ((min == Double.MAX_VALUE) && (max == -Double.MAX_VALUE)) {
 			return false;
 		}
 		return true;
@@ -93,5 +93,25 @@ abstract public class NumericRangeDataStatistics<T> extends
 						stats.getMax());
 			}
 		}
+	}
+
+	public String toString() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(
+				"range[adapter=").append(
+				super.getDataAdapterId().getString());
+		if (isSet()) {
+			buffer.append(
+					", min=").append(
+					getMin());
+			buffer.append(
+					", max=").append(
+					getMax());
+		}
+		else {
+			buffer.append(", No Values");
+		}
+		buffer.append("]");
+		return buffer.toString();
 	}
 }

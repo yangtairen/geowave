@@ -19,6 +19,7 @@ import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
+import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 
 import org.apache.hadoop.conf.Configuration;
@@ -99,6 +100,15 @@ public class GeoWaveInputFormatConfiguration implements
 					configuration,
 					query);
 		}
+
+		final QueryOptions queryoptions = runTimeProperties.getPropertyAsQueryOptions(ExtractParameters.Extract.QUERY_OPTIONS);
+
+		if (queryoptions != null) {
+			GeoWaveInputFormat.setQueryOptions(
+					configuration,
+					queryoptions);
+		}
+
 		final int minInputSplits = runTimeProperties.getPropertyAsInt(
 				ExtractParameters.Extract.MIN_INPUT_SPLIT,
 				-1);

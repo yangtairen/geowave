@@ -171,4 +171,30 @@ abstract public class BoundingBoxDataStatistics<T> extends
 			}
 		}
 	}
+
+	public String toString() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(
+				"bbox[adapter=").append(
+				super.getDataAdapterId().getString());
+		if (isSet()) {
+			buffer.append(
+					", minX=").append(
+					minX);
+			buffer.append(
+					", maxX=").append(
+					maxX);
+			buffer.append(
+					", minY=").append(
+					minY);
+			buffer.append(
+					", maxY=").append(
+					maxY);
+		}
+		else {
+			buffer.append(", No Values");
+		}
+		buffer.append("]");
+		return buffer.toString();
+	}
 }

@@ -12,6 +12,11 @@ public class PartitionParameters
 				"pd",
 				"Partition Distance",
 				true),
+		PARTITION_PRECISION(
+				Double.class,
+				"pp",
+				"Partition Precision",
+				true),
 		MAX_MEMBER_SELECTION(
 				Integer.class,
 				"pms",

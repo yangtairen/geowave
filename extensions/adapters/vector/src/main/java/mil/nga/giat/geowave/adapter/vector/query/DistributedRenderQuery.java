@@ -44,7 +44,7 @@ import org.opengis.filter.Filter;
  * distributed rendering within tablet servers. It is able to serialize a
  * distributed renderer and return a set of features that contain the rendered
  * images ready for composition. It also supports CQL filters.
- *
+ * 
  */
 public class DistributedRenderQuery extends
 		AccumuloConstraintsQuery

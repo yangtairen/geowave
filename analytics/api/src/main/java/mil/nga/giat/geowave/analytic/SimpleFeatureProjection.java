@@ -2,6 +2,7 @@ package mil.nga.giat.geowave.analytic;
 
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -25,6 +26,10 @@ public class SimpleFeatureProjection implements
 	public void initialize(
 			final JobContext context,
 			final Class<?> scope )
-					throws IOException {}
+			throws IOException {}
 
+	public void setup(
+			final PropertyManagement runTimeProperties,
+			final Class<?> scope,
+			final Configuration configuration ) {}
 }

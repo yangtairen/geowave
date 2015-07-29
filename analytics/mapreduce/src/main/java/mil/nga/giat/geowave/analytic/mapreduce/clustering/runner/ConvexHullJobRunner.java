@@ -5,12 +5,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import mil.nga.giat.geowave.analytic.AnalyticFeature;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.SimpleFeatureProjection;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
-import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.clustering.NestedGroupCentroidAssignment;
 import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveAnalyticJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveOutputFormatConfiguration;
@@ -21,20 +18,12 @@ import mil.nga.giat.geowave.analytic.param.HullParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.StoreParameters;
-import mil.nga.giat.geowave.core.geotime.IndexType;
-import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
-import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.index.CustomIdIndex;
-import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputKey;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mapreduce.Job;
-import org.geotools.feature.type.BasicFeatureTypes;
 
 /**
  *
@@ -68,57 +57,6 @@ public class ConvexHullJobRunner extends
 		job.setOutputValueClass(Object.class);
 	}
 
-	private DataAdapter<?> getAdapter(
-			final PropertyManagement runTimeProperties )
-			throws Exception {
-
-		final String projectionDataTypeId = runTimeProperties.storeIfEmpty(
-				HullParameters.Hull.DATA_TYPE_ID,
-				"convex_hull").toString();
-
-		final AdapterStore adapterStore = super.getAdapterStore(runTimeProperties);
-
-		DataAdapter<?> adapter = adapterStore.getAdapter(new ByteArrayId(
-				projectionDataTypeId));
-
-		if (adapter == null) {
-			final String namespaceURI = runTimeProperties.storeIfEmpty(
-					HullParameters.Hull.DATA_NAMESPACE_URI,
-					BasicFeatureTypes.DEFAULT_NAMESPACE).toString();
-			adapter = AnalyticFeature.createGeometryFeatureAdapter(
-					projectionDataTypeId,
-					new String[0],
-					namespaceURI,
-					ClusteringUtils.CLUSTERING_CRS);
-			adapterStore.addAdapter(adapter);
-		}
-		return adapter;
-
-	}
-
-	private void checkIndex(
-			final PropertyManagement runTimeProperties )
-			throws Exception {
-
-		final String indexId = runTimeProperties.getPropertyAsString(
-				HullParameters.Hull.INDEX_ID,
-				runTimeProperties.getPropertyAsString(CentroidParameters.Centroid.INDEX_ID));
-
-		final IndexStore indexStore = super.getIndexStore(runTimeProperties);
-
-		Index index = indexStore.getIndex(new ByteArrayId(
-				indexId));
-		if (index == null) {
-			index = new CustomIdIndex(
-					IndexType.SPATIAL_VECTOR.createDefaultIndexStrategy(),
-					IndexType.SPATIAL_VECTOR.getDefaultIndexModel(),
-					new ByteArrayId(
-							indexId));
-			indexStore.addIndex(index);
-
-		}
-	}
-
 	@Override
 	public Class<?> getScope() {
 		return ConvexHullMapReduce.class;
@@ -131,17 +69,13 @@ public class ConvexHullJobRunner extends
 			throws Exception {
 
 		runTimeProperties.storeIfEmpty(
-				HullParameters.Hull.WRAPPER_FACTORY_CLASS,
-				SimpleFeatureItemWrapperFactory.class);
-		runTimeProperties.storeIfEmpty(
 				HullParameters.Hull.PROJECTION_CLASS,
 				SimpleFeatureProjection.class);
 		runTimeProperties.setConfig(
 				new ParameterEnum<?>[] {
 					HullParameters.Hull.WRAPPER_FACTORY_CLASS,
 					HullParameters.Hull.PROJECTION_CLASS,
-					HullParameters.Hull.DATA_TYPE_ID,
-					HullParameters.Hull.INDEX_ID
+					HullParameters.Hull.DATA_TYPE_ID
 				},
 				config,
 				getScope());
@@ -168,8 +102,10 @@ public class ConvexHullJobRunner extends
 
 		addDataAdapter(
 				config,
-				getAdapter(runTimeProperties));
-		checkIndex(runTimeProperties);
+				getAdapter(
+						runTimeProperties,
+						HullParameters.Hull.DATA_TYPE_ID,
+						HullParameters.Hull.DATA_NAMESPACE_URI));
 
 		return super.run(
 				config,

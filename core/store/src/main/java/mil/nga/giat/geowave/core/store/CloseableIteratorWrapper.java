@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * This is a simple wrapper around an iterator and a closeable to ensure that
  * the caller can close the closeable when it is finished being used by the
  * iterator.
- *
+ * 
  * @param <E>
  *            The type to iterate on
  */

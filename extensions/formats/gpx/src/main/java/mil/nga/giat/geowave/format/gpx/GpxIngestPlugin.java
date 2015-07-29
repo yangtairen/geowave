@@ -16,9 +16,11 @@ import javax.xml.stream.XMLStreamException;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.ingest.AbstractSimpleFeatureIngestPlugin;
+import mil.nga.giat.geowave.adapter.vector.utils.SimpleFeatureUserDataConfigurationSet;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.ingest.GeoWaveData;
+import mil.nga.giat.geowave.core.ingest.IngestPluginBase;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithMapper;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithReducer;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
@@ -139,22 +141,22 @@ public class GpxIngestPlugin extends
 				globalVisibility) : null;
 		return new WritableDataAdapter[] {
 			new FeatureDataAdapter(
-					GPXConsumer.pointType,
+					SimpleFeatureUserDataConfigurationSet.configureType(GPXConsumer.pointType),
 					fieldVisiblityHandler),
 			new FeatureDataAdapter(
-					GPXConsumer.waypointType,
+					SimpleFeatureUserDataConfigurationSet.configureType(GPXConsumer.waypointType),
 					fieldVisiblityHandler),
 			new FeatureDataAdapter(
-					GPXConsumer.trackType,
+					SimpleFeatureUserDataConfigurationSet.configureType(GPXConsumer.trackType),
 					fieldVisiblityHandler),
 			new FeatureDataAdapter(
-					GPXConsumer.routeType,
+					SimpleFeatureUserDataConfigurationSet.configureType(GPXConsumer.routeType),
 					fieldVisiblityHandler)
 		};
 	}
 
 	@Override
-	public Schema getAvroSchemaForHdfsType() {
+	public Schema getAvroSchema() {
 		return GpxTrack.getClassSchema();
 	}
 
@@ -215,13 +217,23 @@ public class GpxIngestPlugin extends
 			final String globalVisibility ) {
 		final InputStream in = new ByteArrayInputStream(
 				gpxTrack.getGpxfile().array());
-		return new GPXConsumer(
-				in,
-				primaryIndexId,
-				gpxTrack.getTrackid() == null ? "" : gpxTrack.getTrackid().toString(),
-				getAdditionalData(gpxTrack),
-				false, // waypoints, even dups, are unique, due to QGis behavior
-				globalVisibility);
+		// LOGGER.debug("Processing track [" + gpxTrack.getTimestamp() + "]");
+		try {
+			return new GPXConsumer(
+					in,
+					primaryIndexId,
+					gpxTrack.getTrackid() == null ? "" : gpxTrack.getTrackid().toString(),
+					getAdditionalData(gpxTrack),
+					false, // waypoints, even dups, are unique, due to QGis
+							// behavior
+					globalVisibility);
+		}
+		catch (final Exception e) {
+			LOGGER.warn(
+					"Unable to convert GpxTrack to GeoWaveData",
+					e);
+			return null;
+		}
 	}
 
 	@Override
@@ -288,6 +300,12 @@ public class GpxIngestPlugin extends
 			super(
 					parentPlugin);
 		}
+	}
+
+	@Override
+	public IngestPluginBase<GpxTrack, SimpleFeature> getIngestWithAvroPlugin() {
+		return new IngestGpxTrackFromHdfs(
+				this);
 	}
 
 }

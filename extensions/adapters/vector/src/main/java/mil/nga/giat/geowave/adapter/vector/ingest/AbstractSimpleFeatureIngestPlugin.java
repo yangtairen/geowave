@@ -8,7 +8,7 @@ import java.util.List;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.ingest.GeoWaveData;
-import mil.nga.giat.geowave.core.ingest.avro.StageToAvroPlugin;
+import mil.nga.giat.geowave.core.ingest.avro.AvroFormatPlugin;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestFromHdfsPlugin;
 import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestWithMapper;
 import mil.nga.giat.geowave.core.ingest.local.LocalFileIngestPlugin;
@@ -24,7 +24,7 @@ import com.google.common.collect.Iterators;
 abstract public class AbstractSimpleFeatureIngestPlugin<I> implements
 		LocalFileIngestPlugin<SimpleFeature>,
 		IngestFromHdfsPlugin<I, SimpleFeature>,
-		StageToAvroPlugin<I>,
+		AvroFormatPlugin<I, SimpleFeature>,
 		Persistable
 {
 	protected CQLFilterOptionProvider filterProvider = new CQLFilterOptionProvider();

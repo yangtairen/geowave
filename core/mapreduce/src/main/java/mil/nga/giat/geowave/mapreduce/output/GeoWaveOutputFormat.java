@@ -182,6 +182,7 @@ public class GeoWaveOutputFormat extends
 				CLASS,
 				context);
 	}
+
 	public static String getDataStoreName(
 			final JobContext context ) {
 		return GeoWaveConfiguratorBase.getDataStoreName(

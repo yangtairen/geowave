@@ -44,6 +44,16 @@ public class HullParameters
 				"hfc",
 				"Class to create analytic item to capture hulls. Implements mil.nga.giat.geowave.analytics.tools.AnalyticItemWrapperFactory",
 				true),
+		ITERATION(
+				Integer.class,
+				"hi",
+				"The iteration of the hull calculation",
+				true),
+		HULL_BUILDER(
+				Projection.class,
+				"hhb",
+				"Hull Builder",
+				true),
 		ZOOM_LEVEL(
 				Integer.class,
 				"hzl",

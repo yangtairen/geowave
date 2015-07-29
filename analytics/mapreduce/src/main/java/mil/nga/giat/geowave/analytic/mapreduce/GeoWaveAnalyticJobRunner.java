@@ -5,18 +5,24 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import mil.nga.giat.geowave.analytic.AnalyticFeature;
 import mil.nga.giat.geowave.analytic.IndependentJobRunner;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
+import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.InputParameters;
 import mil.nga.giat.geowave.analytic.param.OutputParameters;
+import mil.nga.giat.geowave.analytic.param.OutputParameters.Output;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
 import mil.nga.giat.geowave.analytic.store.PersistableAdapterStore;
 import mil.nga.giat.geowave.analytic.store.PersistableIndexStore;
+import mil.nga.giat.geowave.core.geotime.IndexType;
+import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.index.CustomIdIndex;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
@@ -24,10 +30,12 @@ import mil.nga.giat.geowave.mapreduce.JobContextIndexStore;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.util.Tool;
+import org.geotools.feature.type.BasicFeatureTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +58,7 @@ public abstract class GeoWaveAnalyticJobRunner extends
 	private FormatConfiguration outputFormat = null;
 	private int reducerCount = 1;
 	private MapReduceIntegration mapReduceIntegrater = new ToolRunnerMapReduceIntegration();
+	private Counters lastCounterSet = null;
 
 	public FormatConfiguration getInputFormatConfiguration() {
 		return inputFormat;
@@ -224,8 +233,14 @@ public abstract class GeoWaveAnalyticJobRunner extends
 				1));
 
 		job.setJarByClass(this.getClass());
+		final Counters counters = mapReduceIntegrater.waitForCompletion(job);
+		lastCounterSet = counters;
+		return (counters == null) ? 1 : 0;
+	}
 
-		return (mapReduceIntegrater.waitForCompletion(job)) ? 0 : 1;
+	public long getCounterValue(
+			final Enum<?> counterEnum ) {
+		return (lastCounterSet != null) ? (lastCounterSet.findCounter(counterEnum)).getValue() : 0;
 	}
 
 	public abstract void configure(
@@ -241,10 +256,11 @@ public abstract class GeoWaveAnalyticJobRunner extends
 		if (outputFormat != null) {
 			params.addAll(inputFormat.getParameters());
 		}
-
 		params.addAll(Arrays.asList(new ParameterEnum<?>[] {
 			StoreParam.ADAPTER_STORE,
-			StoreParam.INDEX_STORE
+			StoreParam.INDEX_STORE,
+			Output.REDUCER_COUNT,
+			Output.OUTPUT_FORMAT
 		}));
 		return params;
 	}
@@ -257,4 +273,60 @@ public abstract class GeoWaveAnalyticJobRunner extends
 				MapReduceJobController.getConfiguration(runTimeProperties),
 				runTimeProperties);
 	}
+
+	protected DataAdapter<?> getAdapter(
+			final PropertyManagement runTimeProperties,
+			final ParameterEnum dataTypeEnum,
+			final ParameterEnum dataNameSpaceEnum )
+			throws Exception {
+
+		final String projectionDataTypeId = runTimeProperties.storeIfEmpty(
+				dataTypeEnum,
+				"convex_hull").toString();
+
+		final AdapterStore adapterStore = getAdapterStore(runTimeProperties);
+
+		DataAdapter<?> adapter = adapterStore.getAdapter(new ByteArrayId(
+				projectionDataTypeId));
+
+		if (adapter == null) {
+			final String namespaceURI = runTimeProperties.storeIfEmpty(
+					dataNameSpaceEnum,
+					BasicFeatureTypes.DEFAULT_NAMESPACE).toString();
+			adapter = AnalyticFeature.createGeometryFeatureAdapter(
+					projectionDataTypeId,
+					new String[0],
+					namespaceURI,
+					ClusteringUtils.CLUSTERING_CRS);
+
+			adapterStore.addAdapter(adapter);
+		}
+		return adapter;
+	}
+
+	protected String checkIndex(
+			final PropertyManagement runTimeProperties,
+			final ParameterEnum indexIdEnum,
+			final String defaultIdxName )
+			throws Exception {
+
+		final String indexId = runTimeProperties.getPropertyAsString(
+				indexIdEnum,
+				defaultIdxName);
+
+		final IndexStore indexStore = getIndexStore(runTimeProperties);
+
+		Index index = indexStore.getIndex(new ByteArrayId(
+				indexId));
+		if (index == null) {
+			index = new CustomIdIndex(
+					IndexType.SPATIAL_VECTOR.createDefaultIndexStrategy(),
+					IndexType.SPATIAL_VECTOR.getDefaultIndexModel(),
+					new ByteArrayId(
+							indexId));
+			indexStore.addIndex(index);
+		}
+		return indexId;
+	}
+
 }

@@ -52,7 +52,7 @@ public abstract class GeoWaveWritableInputMapper<KEYOUT, VALUEOUT> extends
 	/**
 	 * Helper method to create an object writable from a value managed by the
 	 * adapter.
-	 *
+	 * 
 	 * @param key
 	 * @param value
 	 * @return
@@ -77,7 +77,7 @@ public abstract class GeoWaveWritableInputMapper<KEYOUT, VALUEOUT> extends
 			final Mapper<GeoWaveInputKey, ObjectWritable, KEYOUT, VALUEOUT>.Context context )
 			throws IOException,
 			InterruptedException {
-			serializationTool = new HadoopWritableSerializationTool(
+		serializationTool = new HadoopWritableSerializationTool(
 				GeoWaveInputFormat.getJobContextAdapterStore(context));
 	}
 }

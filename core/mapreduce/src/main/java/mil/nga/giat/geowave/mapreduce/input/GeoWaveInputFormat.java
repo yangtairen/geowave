@@ -14,6 +14,7 @@ import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
+import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.JobContextIndexStore;
@@ -172,6 +173,22 @@ public class GeoWaveInputFormat<T> extends
 	protected static DistributableQuery getQuery(
 			final JobContext context ) {
 		return GeoWaveInputConfigurator.getQuery(
+				CLASS,
+				context);
+	}
+
+	public static void setQueryOptions(
+			final Configuration config,
+			final QueryOptions queryOptions ) {
+		GeoWaveInputConfigurator.setQueryOptions(
+				CLASS,
+				config,
+				queryOptions);
+	}
+
+	protected static QueryOptions getQueryOptions(
+			final JobContext context ) {
+		return GeoWaveInputConfigurator.getQueryOptions(
 				CLASS,
 				context);
 	}

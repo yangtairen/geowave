@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import kafka.javaapi.producer.Producer;
 import kafka.producer.ProducerConfig;
-import mil.nga.giat.geowave.core.ingest.avro.StageToAvroPlugin;
+import mil.nga.giat.geowave.core.ingest.avro.AvroFormatPlugin;
 
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.log4j.Logger;
@@ -20,12 +20,16 @@ public class StageKafkaData<T extends SpecificRecordBase>
 
 	private final static Logger LOGGER = Logger.getLogger(StageKafkaData.class);
 	private final Map<String, Producer<String, T>> cachedProducers = new HashMap<String, Producer<String, T>>();
+	private final Properties properties;
 
-	public StageKafkaData() {}
+	public StageKafkaData(
+			final Properties properties ) {
+		this.properties = properties;
+	}
 
 	public Producer<String, T> getProducer(
 			final String typeName,
-			final StageToAvroPlugin<?> plugin ) {
+			final AvroFormatPlugin<?, ?> plugin ) {
 		return getProducerCreateIfNull(
 				typeName,
 				plugin);
@@ -33,11 +37,10 @@ public class StageKafkaData<T extends SpecificRecordBase>
 
 	private synchronized Producer<String, T> getProducerCreateIfNull(
 			final String typeName,
-			final StageToAvroPlugin<?> plugin ) {
+			final AvroFormatPlugin<?, ?> plugin ) {
 		if (!cachedProducers.containsKey(typeName)) {
-			final Properties props = KafkaCommandLineOptions.getProperties();
 			final ProducerConfig producerConfig = new ProducerConfig(
-					props);
+					properties);
 
 			final Producer<String, T> producer = new Producer<String, T>(
 					producerConfig);
