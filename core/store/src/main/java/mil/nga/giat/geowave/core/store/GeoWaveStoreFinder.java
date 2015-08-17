@@ -157,17 +157,35 @@ public class GeoWaveStoreFinder
 				return null;
 			}
 		}
+		int matchingFactoryOptionCount = -1;
+		T matchingFactory = null;
+		boolean matchingFactoriesHaveSameOptionCount = false;
+		// if the hint is not provided, the factory finder will attempt to find
+		// a factory that does not have any missing options; if multiple
+		// factories will match, the one with the most options will be used with
+		// the assumption that it has the most specificity and closest match of
+		// the arguments; if there are multiple factories that match and have
+		// the same number of options, arbitrarily the last one will be chosen
+		// and a warning message will be logged
 		for (final Entry<String, T> entry : factories.entrySet()) {
 			final T factory = entry.getValue();
 			final List<String> missingOptions = getMissingRequiredOptions(
 					factory,
 					configOptions);
-			if (missingOptions.isEmpty()) {
-				return factory;
+			if (missingOptions.isEmpty() && ((matchingFactory == null) || (factory.getOptions().length >= matchingFactoryOptionCount))) {
+				matchingFactory = factory;
+				matchingFactoriesHaveSameOptionCount = (factory.getOptions().length == matchingFactoryOptionCount);
+				matchingFactoryOptionCount = factory.getOptions().length;
 			}
 		}
-		LOGGER.error("Unable to find any valid " + storeType + " store");
-		return null;
+		if (matchingFactory == null) {
+			LOGGER.error("Unable to find any valid " + storeType + " store");
+		}
+		else if (matchingFactoriesHaveSameOptionCount) {
+			LOGGER.warn("Multiple valid stores found with equal specificity for " + storeType + " store");
+			LOGGER.warn(matchingFactory.getName() + " will be automatically chosen");
+		}
+		return matchingFactory;
 	}
 
 	private static String getStoreNames() {

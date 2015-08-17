@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.core.store.utils;
+package mil.nga.giat.geowave.core.store.memory;
 
 import java.util.List;
 

@@ -12,7 +12,7 @@ import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.MemoryAdapterStore;
+import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStore;
 
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.junit.Test;

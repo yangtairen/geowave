@@ -9,23 +9,18 @@ import java.util.List;
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
 import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
-import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
-import mil.nga.giat.geowave.analytic.clustering.CentroidPairing;
-import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
-import mil.nga.giat.geowave.analytic.clustering.NestedGroupCentroidAssignment;
 import mil.nga.giat.geowave.analytic.distance.FeatureCentroidDistanceFn;
 import mil.nga.giat.geowave.analytic.kmeans.AssociationNotification;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStore;
+import mil.nga.giat.geowave.core.store.memory.MemoryDataStore;
+import mil.nga.giat.geowave.core.store.memory.MemoryIndexStore;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.mock.MockInstance;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.junit.Test;
 import org.opengis.feature.simple.SimpleFeature;
@@ -39,18 +34,7 @@ public class NestedGroupCentroidAssignmentTest
 
 	@Test
 	public void test()
-			throws AccumuloException,
-			AccumuloSecurityException,
-			IOException {
-		final MockInstance mockDataInstance = new MockInstance();
-		final Connector mockDataConnector = mockDataInstance.getConnector(
-				"root",
-				new PasswordToken(
-						new byte[0]));
-
-		final BasicAccumuloOperations dataOps = new BasicAccumuloOperations(
-				mockDataConnector);
-
+			throws IOException {
 		final SimpleFeatureType ftype = AnalyticFeature.createGeometryFeatureAdapter(
 				"centroid",
 				new String[] {
@@ -86,8 +70,9 @@ public class NestedGroupCentroidAssignmentTest
 		final FeatureDataAdapter adapter = new FeatureDataAdapter(
 				ftype);
 
-		final AccumuloDataStore dataStore = new AccumuloDataStore(
-				dataOps);
+		final DataStore dataStore = new MemoryDataStore();
+		final IndexStore indexStore = new MemoryIndexStore();
+		final AdapterStore adapterStore = new MemoryAdapterStore();
 		dataStore.ingest(
 				adapter,
 				index,
@@ -192,7 +177,9 @@ public class NestedGroupCentroidAssignmentTest
 
 		final SimpleFeatureItemWrapperFactory wrapperFactory = new SimpleFeatureItemWrapperFactory();
 		final CentroidManagerGeoWave<SimpleFeature> mananger = new CentroidManagerGeoWave<SimpleFeature>(
-				dataOps,
+				dataStore,
+				indexStore,
+				adapterStore,
 				new SimpleFeatureItemWrapperFactory(),
 				StringUtils.stringFromBinary(adapter.getAdapterId().getBytes()),
 				StringUtils.stringFromBinary(index.getId().getBytes()),
@@ -264,7 +251,9 @@ public class NestedGroupCentroidAssignmentTest
 		// level two with different batch than parent
 
 		final CentroidManagerGeoWave<SimpleFeature> mananger2 = new CentroidManagerGeoWave<SimpleFeature>(
-				dataOps,
+				dataStore,
+				indexStore,
+				adapterStore,
 				new SimpleFeatureItemWrapperFactory(),
 				StringUtils.stringFromBinary(adapter.getAdapterId().getBytes()),
 				StringUtils.stringFromBinary(index.getId().getBytes()),

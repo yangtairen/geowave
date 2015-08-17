@@ -13,14 +13,19 @@ import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
 import mil.nga.giat.geowave.datastore.accumulo.MergingCombiner;
 import mil.nga.giat.geowave.datastore.accumulo.MergingVisibilityCombiner;
+import mil.nga.giat.geowave.datastore.accumulo.util.TransformerWriter;
+import mil.nga.giat.geowave.datastore.accumulo.util.VisibilityTransformer;
 
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.IteratorSetting.Column;
+import org.apache.accumulo.core.client.Scanner;
+import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.Combiner;
 import org.apache.accumulo.core.iterators.IteratorUtil.IteratorScope;
 import org.apache.hadoop.io.Text;
+import org.apache.log4j.Logger;
 
 /**
  * This class will persist Index objects within an Accumulo table for GeoWave
@@ -35,6 +40,7 @@ public class AccumuloDataStatisticsStore extends
 		AbstractAccumuloPersistence<DataStatistics<?>> implements
 		DataStatisticsStore
 {
+	private final static Logger LOGGER = Logger.getLogger(AccumuloDataStatisticsStore.class);
 	// this is fairly arbitrary at the moment because it is the only custom
 	// iterator added
 	private static final int STATS_COMBINER_PRIORITY = 10;
@@ -215,5 +221,63 @@ public class AccumuloDataStatisticsStore extends
 		deleteObjects(
 				adapterId,
 				authorizations);
+	}
+
+	@Override
+	public void transformVisibility(
+			final ByteArrayId adapterId,
+			final String transformingRegex,
+			final String replacement,
+			final String... authorizations ) {
+		Scanner scanner;
+
+		try {
+			scanner = createSortScanner(
+					adapterId,
+					authorizations);
+
+			final TransformerWriter writer = new TransformerWriter(
+					scanner,
+					getAccumuloTablename(),
+					accumuloOperations,
+					new VisibilityTransformer(
+							transformingRegex,
+							replacement));
+			writer.transform();
+			scanner.close();
+		}
+		catch (final TableNotFoundException e) {
+			LOGGER.error(
+					"Table not found during transaction commit: " + getAccumuloTablename(),
+					e);
+		}
+	}
+
+	private Scanner createSortScanner(
+			final ByteArrayId adapterId,
+			final String... authorizations )
+			throws TableNotFoundException {
+		Scanner scanner = null;
+
+		scanner = accumuloOperations.createScanner(
+				getAccumuloTablename(),
+				authorizations);
+
+		final IteratorSetting[] settings = getScanSettings();
+		if ((settings != null) && (settings.length > 0)) {
+			for (final IteratorSetting setting : settings) {
+				scanner.addScanIterator(setting);
+			}
+		}
+		final String columnFamily = getAccumuloColumnFamily();
+		final String columnQualifier = getAccumuloColumnQualifier(adapterId);
+		scanner.fetchColumn(
+				new Text(
+						columnFamily),
+				new Text(
+						columnQualifier));
+
+		// scanner.setRange(Range.);
+		return scanner;
 	}
 }

@@ -21,16 +21,12 @@ import mil.nga.giat.geowave.analytic.mapreduce.nn.NNMapReduce.PartitionDataWrita
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.PartitionParameters;
-import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner.PartitionData;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.data.Key;
 import org.apache.hadoop.io.DataInputByteBuffer;
 import org.apache.hadoop.io.DataOutputByteBuffer;
 import org.apache.hadoop.io.Text;
@@ -53,13 +49,10 @@ public class NNMapReduceTest
 	ReduceDriver<PartitionDataWritable, AdapterWithObjectWritable, Text, Text> reduceDriver;
 	SimpleFeatureType ftype;
 	final GeometryFactory factory = new GeometryFactory();
-	final Key accumuloKey = null;
 
 	@Before
 	public void setUp()
-			throws IOException,
-			AccumuloException,
-			AccumuloSecurityException {
+			throws IOException {
 		final NNMapReduce.NNMapper<SimpleFeature> nnMapper = new NNMapReduce.NNMapper<SimpleFeature>();
 		final NNMapReduce.NNReducer<SimpleFeature, Text, Text, Boolean> nnReducer = new NNMapReduce.NNSimpleFeatureIDOutputReducer();
 
@@ -149,9 +142,7 @@ public class NNMapReduceTest
 
 	@Test
 	public void testMapper()
-			throws IOException,
-			AccumuloException,
-			AccumuloSecurityException {
+			throws IOException {
 
 		final SimpleFeature feature1 = createTestFeature(new Coordinate(
 				30.0,
@@ -166,29 +157,25 @@ public class NNMapReduceTest
 				-179.9999999999,
 				30.0000001));
 
-		final GeoWaveInputKey inputKey = new GeoWaveInputKey();
-		inputKey.setInsertionId(accumuloKey);
-		inputKey.setAdapterId(new ByteArrayId(
+		final GeoWaveInputKey inputKey1 = new GeoWaveInputKey();
+		inputKey1.setAdapterId(new ByteArrayId(
 				ftype.getTypeName()));
 		inputKey1.setDataId(new ByteArrayId(
 				feature1.getID()));
 
 		final GeoWaveInputKey inputKey2 = new GeoWaveInputKey();
-		inputKey2.setAccumuloKey(accumuloKey);
 		inputKey2.setAdapterId(new ByteArrayId(
 				ftype.getTypeName()));
 		inputKey2.setDataId(new ByteArrayId(
 				feature2.getID()));
 
 		final GeoWaveInputKey inputKey3 = new GeoWaveInputKey();
-		inputKey3.setAccumuloKey(accumuloKey);
 		inputKey3.setAdapterId(new ByteArrayId(
 				ftype.getTypeName()));
 		inputKey3.setDataId(new ByteArrayId(
 				feature4.getID()));
 
 		final GeoWaveInputKey inputKey4 = new GeoWaveInputKey();
-		inputKey4.setAccumuloKey(accumuloKey);
 		inputKey4.setAdapterId(new ByteArrayId(
 				ftype.getTypeName()));
 		inputKey4.setDataId(new ByteArrayId(
@@ -367,12 +354,14 @@ public class NNMapReduceTest
 	}
 
 	private boolean intersects(
-			List<PartitionData> setOne,
-			List<PartitionData> setTwo ) {
-		for (PartitionData pdOne : setOne) {
-			for (PartitionData pdTwo : setTwo) {
+			final List<PartitionData> setOne,
+			final List<PartitionData> setTwo ) {
+		for (final PartitionData pdOne : setOne) {
+			for (final PartitionData pdTwo : setTwo) {
 				if (pdOne.getId().equals(
-						pdTwo.getId())) return true;
+						pdTwo.getId())) {
+					return true;
+				}
 			}
 		}
 		return false;

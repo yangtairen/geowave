@@ -26,13 +26,10 @@ import mil.nga.giat.geowave.analytic.param.PartitionParameters;
 import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner.PartitionData;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveConfiguratorBase;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.JobContextAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey;
+import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
+import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
+import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.data.Key;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
@@ -57,13 +54,10 @@ public class DBScanMapReduceTest
 			new PrecisionModel(
 					0.000001),
 			4326);
-	final Key accumuloKey = null;
 
 	@Before
 	public void setUp()
-			throws IOException,
-			AccumuloException,
-			AccumuloSecurityException {
+			throws IOException {
 		final NNMapReduce.NNMapper<ClusterItem> nnMapper = new NNMapReduce.NNMapper<ClusterItem>();
 		final NNMapReduce.NNReducer<ClusterItem, GeoWaveInputKey, ObjectWritable, Map<ByteArrayId, Cluster<ClusterItem>>> nnReducer = new DBScanMapReduce.DBScanMapHullReducer();
 
@@ -161,9 +155,7 @@ public class DBScanMapReduceTest
 
 	@Test
 	public void testReducer()
-			throws IOException,
-			AccumuloException,
-			AccumuloSecurityException {
+			throws IOException {
 
 		final ByteArrayId adapterId = new ByteArrayId(
 				ftype.getTypeName());
@@ -329,13 +321,13 @@ public class DBScanMapReduceTest
 		/*
 		 * assertEquals( feature3.getID(), find( reduceResults,
 		 * feature1.getID()).toString());
-		 * 
+		 *
 		 * assertEquals( feature1.getID(), find( reduceResults,
 		 * feature3.getID()).toString());
-		 * 
+		 *
 		 * assertEquals( feature4.getID(), find( reduceResults,
 		 * feature2.getID()).toString());
-		 * 
+		 *
 		 * assertEquals( feature2.getID(), find( reduceResults,
 		 * feature4.getID()).toString());
 		 */
@@ -384,19 +376,17 @@ public class DBScanMapReduceTest
 	}
 
 	private double round(
-			double value ) {
+			final double value ) {
 		return (double) Math.round(value * 1000000) / 1000000;
 	}
 
 	@Test
 	public void testScale()
-			throws IOException,
-			AccumuloException,
-			AccumuloSecurityException {
+			throws IOException {
 
 		final ByteArrayId adapterId = new ByteArrayId(
 				ftype.getTypeName());
-		Random r = new Random(
+		final Random r = new Random(
 				3434);
 		for (int i = 0; i < 10000; i++) {
 			final SimpleFeature feature = createTestFeature(

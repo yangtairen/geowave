@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.core.store.utils;
+package mil.nga.giat.geowave.core.store.memory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
-
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
@@ -24,18 +22,17 @@ import mil.nga.giat.geowave.core.store.ScanCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
-import mil.nga.giat.geowave.core.store.adapter.MemoryAdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
-import mil.nga.giat.geowave.core.store.adapter.statistics.MemoryDataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
-import mil.nga.giat.geowave.core.store.index.MemoryIndexStore;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
+
+import org.apache.log4j.Logger;
 
 public class MemoryDataStore implements
 		DataStore
@@ -184,8 +181,8 @@ public class MemoryDataStore implements
 			final Iterator<T> entryIterator,
 			final IngestCallback<T> ingestCallback,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-		this.adapterStore.addAdapter(writableAdapter);
-		this.indexStore.addIndex(index);
+		adapterStore.addAdapter(writableAdapter);
+		indexStore.addIndex(index);
 		final List<ByteArrayId> ids = new ArrayList<ByteArrayId>();
 		try (StatsCompositionTool<T> tool = new StatsCompositionTool<T>(
 				writableAdapter,
@@ -197,9 +194,9 @@ public class MemoryDataStore implements
 
 						@Override
 						public void entryIngested(
-								DataStoreEntryInfo entryInfo,
-								T entry ) {
-							((IngestCallback<T>) ingestCallback).entryIngested(
+								final DataStoreEntryInfo entryInfo,
+								final T entry ) {
+							ingestCallback.entryIngested(
 									entryInfo,
 									entry);
 							tool.entryIngested(
@@ -215,7 +212,7 @@ public class MemoryDataStore implements
 						nextEntry));
 			}
 		}
-		catch (Exception e) {
+		catch (final Exception e) {
 			LOGGER.error(
 					"Failed ingest",
 					e);
@@ -285,6 +282,18 @@ public class MemoryDataStore implements
 			return index;
 		}
 
+		@Override
+		public void flush() {
+			try {
+				close();
+			}
+			catch (final IOException e) {
+				LOGGER.error(
+						"Error closing index writer",
+						e);
+			}
+		}
+
 	}
 
 	@Override
@@ -296,7 +305,7 @@ public class MemoryDataStore implements
 	}
 
 	private TreeSet<EntryRow> getRowsForIndex(
-			ByteArrayId id ) {
+			final ByteArrayId id ) {
 		TreeSet<EntryRow> set = storeData.get(id);
 		if (set == null) {
 			set = new TreeSet<EntryRow>();
@@ -353,7 +362,7 @@ public class MemoryDataStore implements
 			final ByteArrayId dataId,
 			final ByteArrayId adapterId,
 			final String... authorizations ) {
-		DataAdapter<?> adapter = adapterStore.getAdapter(adapterId);
+		final DataAdapter<?> adapter = adapterStore.getAdapter(adapterId);
 		try (StatsCompositionTool<Object> tool = new StatsCompositionTool(
 				adapter,
 				statsStore)) {
@@ -375,7 +384,7 @@ public class MemoryDataStore implements
 				}
 			}
 		}
-		catch (Exception e) {
+		catch (final Exception e) {
 			LOGGER.error(
 					"Failed deletetion",
 					e);
@@ -758,14 +767,14 @@ public class MemoryDataStore implements
 
 	@Override
 	public void delete(
-			Query query ) {
+			final Query query ) {
 		try (CloseableIterator<?> it = this.query(query)) {
 			while (it.hasNext()) {
 				it.next();
 				it.remove();
 			}
 		}
-		catch (IOException e) {
+		catch (final IOException e) {
 			LOGGER.error(
 					"Failed deletetion",
 					e);

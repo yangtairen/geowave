@@ -7,13 +7,7 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.query.AccumuloRowIdsQuery;
-import mil.nga.giat.geowave.datastore.accumulo.util.TransformerWriter;
-import mil.nga.giat.geowave.datastore.accumulo.util.VisibilityTransformer;
 
-import org.apache.accumulo.core.client.ScannerBase;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.log4j.Logger;
 
 /**

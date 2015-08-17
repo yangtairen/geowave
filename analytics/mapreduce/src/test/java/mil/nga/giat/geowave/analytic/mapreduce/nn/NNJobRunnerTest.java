@@ -1,28 +1,27 @@
 package mil.nga.giat.geowave.analytic.mapreduce.nn;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
+import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.distance.DistanceFn;
 import mil.nga.giat.geowave.analytic.distance.FeatureCentroidDistanceFn;
 import mil.nga.giat.geowave.analytic.distance.GeometryCentroidDistanceFn;
 import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveAnalyticJobRunner;
-import mil.nga.giat.geowave.analytic.mapreduce.JobContextConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.mapreduce.MapReduceIntegration;
 import mil.nga.giat.geowave.analytic.mapreduce.SequenceFileInputFormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters.MRConfig;
+import mil.nga.giat.geowave.analytic.param.ParameterHelper;
 import mil.nga.giat.geowave.analytic.param.PartitionParameters.Partition;
-import mil.nga.giat.geowave.analytic.partitioner.FeatureDataAdapterStoreFactory;
+import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
 import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner;
+import mil.nga.giat.geowave.analytic.store.PersistableDataStore;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.store.memory.MemoryDataStoreFactory;
 
-import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Counters;
@@ -37,6 +36,7 @@ public class NNJobRunnerTest
 {
 	final NNJobRunner jjJobRunner = new NNJobRunner();
 	final PropertyManagement runTimeProperties = new PropertyManagement();
+	private static final String TEST_NAMESPACE = "test";
 
 	@Before
 	public void init() {
@@ -48,10 +48,11 @@ public class NNJobRunnerTest
 					final GeoWaveAnalyticJobRunner tool )
 					throws Exception {
 				tool.setConf(configuration);
-				FeatureDataAdapterStoreFactory.transferState(
+				((ParameterHelper<Object>) StoreParam.ADAPTER_STORE.getHelper()).setValue(
 						configuration,
 						NNMapReduce.class,
-						runTimeProperties);
+						StoreParam.ADAPTER_STORE.getHelper().getValue(
+								runTimeProperties));
 				return tool.run(runTimeProperties.toGeoWaveRunnerArguments());
 			}
 
@@ -68,7 +69,7 @@ public class NNJobRunnerTest
 				Assert.assertEquals(
 						10,
 						job.getNumReduceTasks());
-				final JobContextConfigurationWrapper configWrapper = new JobContextConfigurationWrapper(
+				final ScopedJobConfiguration configWrapper = new ScopedJobConfiguration(
 						job,
 						NNMapReduce.class);
 				Assert.assertEquals(
@@ -147,21 +148,12 @@ public class NNJobRunnerTest
 				"/");
 
 		runTimeProperties.store(
-				StoreParameters.DataStoreParam.ZOOKEEKER,
-				"localhost:3000");
-
-		runTimeProperties.store(
-				StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-				"accumulo");
-		runTimeProperties.store(
-				StoreParameters.DataStoreParam.ACCUMULO_USER,
-				"root");
-		runTimeProperties.store(
-				StoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
-				"pwd");
-		runTimeProperties.store(
-				StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
-				"test");
+				StoreParam.DATA_STORE,
+				new PersistableDataStore(
+						new DataStoreCommandLineOptions(
+								new MemoryDataStoreFactory(),
+								new HashMap<String, Object>(),
+								TEST_NAMESPACE)));
 
 		runTimeProperties.store(
 				CommonParameters.Common.DISTANCE_FUNCTION_CLASS,
@@ -185,48 +177,5 @@ public class NNJobRunnerTest
 			throws Exception {
 
 		jjJobRunner.run(runTimeProperties);
-	}
-
-	@Test
-	public void testOptions() {
-		final Set<Option> options = new HashSet<Option>();
-		jjJobRunner.fillOptions(options);
-
-		assertTrue(PropertyManagement.hasOption(
-				options,
-				CommonParameters.Common.DISTANCE_FUNCTION_CLASS));
-
-		assertTrue(PropertyManagement.hasOption(
-				options,
-				Partition.MAX_MEMBER_SELECTION));
-
-		assertTrue(PropertyManagement.hasOption(
-				options,
-				Partition.PARTITION_DISTANCE));
-
-		assertTrue(PropertyManagement.hasOption(
-				options,
-				Partition.PARTITIONER_CLASS));
-
-		/*
-		 * 
-		 * Should this be part of the test? When options are requested, the
-		 * runner does not know the selected partition algorithm.
-		 * 
-		 * assertTrue(PropertyManagement.hasOption( options,
-		 * GlobalParameters.Global.CRS_ID));
-		 * 
-		 * assertTrue(PropertyManagement.hasOption( options,
-		 * ExtractParameters.Extract.DIMENSION_EXTRACT_CLASS));
-		 * 
-		 * assertTrue(PropertyManagement.hasOption( options,
-		 * ClusteringParameters.Clustering.GEOMETRIC_DISTANCE_UNIT));
-		 * 
-		 * assertTrue(PropertyManagement.hasOption( options,
-		 * CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS));
-		 * 
-		 * assertTrue(PropertyManagement.hasOption( options,
-		 * ClusteringParameters.Clustering.DISTANCE_THRESHOLDS));
-		 */
 	}
 }

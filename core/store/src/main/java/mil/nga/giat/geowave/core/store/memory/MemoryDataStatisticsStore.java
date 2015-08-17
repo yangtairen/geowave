@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.core.store.adapter.statistics;
+package mil.nga.giat.geowave.core.store.memory;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -15,7 +15,8 @@ import org.apache.log4j.Logger;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
-import mil.nga.giat.geowave.core.store.utils.DataStoreUtils;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 
 /**
  * This is responsible for persisting data statistics (either in memory or to

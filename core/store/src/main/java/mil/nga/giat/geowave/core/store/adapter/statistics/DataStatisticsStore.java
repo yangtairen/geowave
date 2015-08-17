@@ -88,4 +88,15 @@ public interface DataStatisticsStore
 	public void removeAllStatistics(
 			ByteArrayId adapterId,
 			String... authorizations );
+	/**
+ 	 * Transform visibility for the data statistics
+-	 *
++	 * 
+ 	 * @param adapterId
+ 	 */
+	public void transformVisibility(
+			final ByteArrayId adapterId,
+			final String transformingRegex,
+			final String replacement,
+			final String... authorizations );
 }

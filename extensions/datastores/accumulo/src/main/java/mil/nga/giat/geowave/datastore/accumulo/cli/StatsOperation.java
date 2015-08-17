@@ -2,21 +2,19 @@ package mil.nga.giat.geowave.datastore.accumulo.cli;
 
 import java.io.IOException;
 
+import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
+import mil.nga.giat.geowave.core.cli.DataStatisticsStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloCommandLineOptions;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOptions;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -24,9 +22,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
 /**
- * 
+ *
  * Simple command line tool to recalculate statistics for an adapter.
- * 
+ *
  */
 public abstract class StatsOperation implements
 		CLIOperationDriver
@@ -34,22 +32,16 @@ public abstract class StatsOperation implements
 	protected static final Logger LOGGER = Logger.getLogger(StatsOperation.class);
 
 	public boolean runOperation(
-			final AccumuloOperations accumuloOperations,
+			final DataStore dataStore,
+			final AdapterStore adapterStore,
+			final IndexStore indexStore,
+			final DataStatisticsStore statsStore,
 			final ByteArrayId adapterId,
 			final String[] authorizations )
 			throws IOException {
 		final AccumuloOptions accumuloOptions = new AccumuloOptions();
 		accumuloOptions.setPersistDataStatistics(true);
-		final AccumuloDataStore dataStore = new AccumuloDataStore(
-				accumuloOperations,
-				accumuloOptions);
-		final AccumuloAdapterStore adapterStore = new AccumuloAdapterStore(
-				accumuloOperations);
-		final AccumuloIndexStore indexStore = new AccumuloIndexStore(
-				accumuloOperations);
-		final AccumuloDataStatisticsStore statsStore = new AccumuloDataStatisticsStore(
-				accumuloOperations);
-		DataAdapter<?> adapter = null;
+		final DataAdapter<?> adapter = null;
 		if (adapterId != null) {
 			adapterStore.getAdapter(adapterId);
 			if (adapter == null) {
@@ -66,7 +58,7 @@ public abstract class StatsOperation implements
 	}
 
 	public abstract boolean doWork(
-			AccumuloDataStatisticsStore statsStore,
+			DataStatisticsStore statsStore,
 			DataStore dataStore,
 			IndexStore indexStore,
 			DataAdapter<?> adapter,
@@ -90,39 +82,45 @@ public abstract class StatsOperation implements
 	}
 
 	@Override
-	public void run(
+	public void runOperation(
 			final String[] args )
 			throws ParseException {
+		final Options allOptions = new Options();
+		DataStoreCommandLineOptions.applyOptions(allOptions);
+		AdapterStoreCommandLineOptions.applyOptions(allOptions);
+		DataStatisticsStoreCommandLineOptions.applyOptions(allOptions);
+		IndexStoreCommandLineOptions.applyOptions(allOptions);
+		StatsCommandLineOptions.applyOptions(
+				allOptions,
+				isTypeRequired());
+		final BasicParser parser = new BasicParser();
 		try {
-			final Options allOptions = new Options();
-			AccumuloCommandLineOptions.applyOptions(allOptions);
-			StatsCommandLineOptions.applyOptions(
+			final CommandLine commandLine = parser.parse(
 					allOptions,
-					isTypeRequired());
-			final BasicParser parser = new BasicParser();
-			try {
-				final CommandLine commandLine = parser.parse(
-						allOptions,
-						args);
-				AccumuloCommandLineOptions accumuloOperations;
-				accumuloOperations = AccumuloCommandLineOptions.parseOptions(commandLine);
+					args);
+			final DataStoreCommandLineOptions dataStoreOptions = DataStoreCommandLineOptions.parseOptions(commandLine);
+			final AdapterStoreCommandLineOptions adapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(commandLine);
+			final DataStatisticsStoreCommandLineOptions dataStatisticsStoreOptions = DataStatisticsStoreCommandLineOptions.parseOptions(commandLine);
+			final IndexStoreCommandLineOptions indexStoreOptions = IndexStoreCommandLineOptions.parseOptions(commandLine);
 
-				final StatsCommandLineOptions statsOperations = StatsCommandLineOptions.parseOptions(commandLine);
-				runOperation(
-						accumuloOperations.getAccumuloOperations(),
-						statsOperations.getTypeName() != null ? new ByteArrayId(
-								statsOperations.getTypeName()) : null,
-						getAuthorizations(statsOperations.getAuthorizations()));
-			}
-			catch (final ParseException e) {
-				LOGGER.error(
-						"Unable to parse stats tool arguments",
-						e);
-			}
+			final StatsCommandLineOptions statsOperations = StatsCommandLineOptions.parseOptions(commandLine);
+			runOperation(
+					dataStoreOptions.createStore(),
+					adapterStoreOptions.createStore(),
+					indexStoreOptions.createStore(),
+					dataStatisticsStoreOptions.createStore(),
+					statsOperations.getTypeName() != null ? new ByteArrayId(
+							statsOperations.getTypeName()) : null,
+					getAuthorizations(statsOperations.getAuthorizations()));
 		}
-		catch (AccumuloException | AccumuloSecurityException | IOException e) {
+		catch (final ParseException e) {
 			LOGGER.error(
-					"Error while calculating statistics.",
+					"Unable to parse stats tool arguments",
+					e);
+		}
+		catch (final IOException e) {
+			LOGGER.error(
+					"Unable to run stats operation",
 					e);
 		}
 	}

@@ -47,7 +47,7 @@ abstract public class AbstractAccumuloPersistence<T extends Persistable>
 {
 	public final static String METADATA_TABLE = "GEOWAVE_METADATA";
 	private final static Logger LOGGER = Logger.getLogger(AbstractAccumuloPersistence.class);
-	private final AccumuloOperations accumuloOperations;
+	protected final AccumuloOperations accumuloOperations;
 
 	// TODO: should we concern ourselves with multiple distributed processes
 	// updating and looking up objects simultaneously that would require some

@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.core.store.index;
+package mil.nga.giat.geowave.core.store.memory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,6 +6,8 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 
 /**
  * This is a simple HashMap based in-memory implementation of the IndexStore and

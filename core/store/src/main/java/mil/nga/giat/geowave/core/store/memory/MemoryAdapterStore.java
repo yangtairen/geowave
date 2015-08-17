@@ -1,6 +1,5 @@
-package mil.nga.giat.geowave.core.store.adapter;
+package mil.nga.giat.geowave.core.store.memory;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -10,6 +9,8 @@ import java.util.Map;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
+import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 
 /**
  * This is a simple HashMap based in-memory implementation of the AdapterStore
@@ -21,7 +22,7 @@ public class MemoryAdapterStore implements
 		Serializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 	private Map<ByteArrayId, DataAdapter<?>> adapterMap;

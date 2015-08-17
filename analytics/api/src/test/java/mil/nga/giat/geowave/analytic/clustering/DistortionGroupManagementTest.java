@@ -10,29 +10,18 @@ import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapper;
 import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
-import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
-import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
-import mil.nga.giat.geowave.analytic.clustering.DistortionGroupManagement;
+import mil.nga.giat.geowave.analytic.clustering.DistortionGroupManagement.DistortionDataAdapter;
+import mil.nga.giat.geowave.analytic.clustering.DistortionGroupManagement.DistortionEntry;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStore;
+import mil.nga.giat.geowave.core.store.memory.MemoryDataStore;
+import mil.nga.giat.geowave.core.store.memory.MemoryIndexStore;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.BatchWriter;
-import org.apache.accumulo.core.client.BatchWriterConfig;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.MutationsRejectedException;
-import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.client.mock.MockInstance;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
-import org.apache.accumulo.core.data.Mutation;
-import org.apache.accumulo.core.data.Value;
-import org.apache.hadoop.io.Text;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,13 +36,12 @@ public class DistortionGroupManagementTest
 
 	final GeometryFactory factory = new GeometryFactory();
 	final SimpleFeatureType ftype;
-	final BasicAccumuloOperations dataOps;
-	final MockInstance mockDataInstance = new MockInstance();
-	final Connector mockDataConnector;
 	final Index index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 
 	final FeatureDataAdapter adapter;
-	final AccumuloDataStore dataStore;
+	final DataStore dataStore;
+	final AdapterStore adapterStore;
+	final IndexStore indexStore;
 
 	public DistortionGroupManagementTest() {
 		ftype = AnalyticFeature.createGeometryFeatureAdapter(
@@ -63,101 +51,66 @@ public class DistortionGroupManagementTest
 				},
 				BasicFeatureTypes.DEFAULT_NAMESPACE,
 				ClusteringUtils.CLUSTERING_CRS).getType();
-
-		try {
-			mockDataConnector = mockDataInstance.getConnector(
-					"root",
-					new PasswordToken(
-							new byte[0]));
-		}
-		catch (final Exception e) {
-			throw new RuntimeException(
-					e);
-		}
-		dataOps = new BasicAccumuloOperations(
-				mockDataConnector);
-
 		adapter = new FeatureDataAdapter(
 				ftype);
 
-		dataStore = new AccumuloDataStore(
-				dataOps);
-		dataOps.createTable("DIS");
+		dataStore = new MemoryDataStore();
 
-		final AccumuloAdapterStore adapterStore = new AccumuloAdapterStore(
-				dataOps);
+		adapterStore = new MemoryAdapterStore();
 		adapterStore.addAdapter(adapter);
-		final AccumuloIndexStore indexStore = new AccumuloIndexStore(
-				dataOps);
+		indexStore = new MemoryIndexStore();
 		indexStore.addIndex(index);
 	}
 
-	private void putMutation(
+	private void addDistortion(
 			final String grp,
-			final long count,
-			final Double distortion,
-			final BatchWriter writer )
-			throws MutationsRejectedException {
-		final Mutation m = new Mutation(
-				grp);
-		m.put(
-				new Text(
-						"dt"),
-				new Text(
-						Long.toString(count)),
-				new Value(
-						distortion.toString().getBytes()));
-		writer.addMutation(m);
+			final int count,
+			final Double distortion ) {
+		dataStore.ingest(
+				new DistortionDataAdapter(),
+				DistortionGroupManagement.DISTORTIONS_INDEX,
+				new DistortionEntry(
+						grp,
+						count,
+						distortion));
 
 	}
 
 	@Before
-	public void setup()
-			throws AccumuloException,
-			AccumuloSecurityException,
-			TableNotFoundException {
+	public void setup() {
 
-		final BatchWriterConfig config = new BatchWriterConfig();
-		final BatchWriter writer = mockDataConnector.createBatchWriter(
-				"DIS",
-				config);
+		final DataStore dataStore = new MemoryDataStore();
 		// big jump for grp1 between batch 2 and 3
 		// big jump for grp2 between batch 1 and 2
 		// thus, the jump occurs for different groups between different batches!
 
 		// b1
-		putMutation(
+		addDistortion(
 				"grp1",
 				1,
-				0.1,
-				writer);
-		putMutation(
+				0.1);
+		addDistortion(
 				"grp2",
 				1,
-				0.1,
-				writer);
+				0.1);
 		// b2
-		putMutation(
+		addDistortion(
 				"grp1",
 				2,
-				0.2,
-				writer);
-		putMutation(
+				0.2);
+		addDistortion(
 				"grp2",
 				2,
-				0.3,
-				writer);
+				0.3);
 		// b3
-		putMutation(
+		addDistortion(
 				"grp1",
 				3,
-				0.4,
-				writer);
-		putMutation(
+				0.4);
+		addDistortion(
 				"grp2",
 				3,
-				0.4,
-				writer);
+				0.4);
 
 		dataStore.ingest(
 				adapter,
@@ -439,31 +392,32 @@ public class DistortionGroupManagementTest
 
 	@Test
 	public void test()
-			throws AccumuloException,
-			AccumuloSecurityException,
-			IOException {
+			throws IOException {
 		DistortionGroupManagement.retainBestGroups(
-				dataOps,
+				dataStore,
+				indexStore,
+				adapterStore,
 				new SimpleFeatureItemWrapperFactory(),
 				StringUtils.stringFromBinary(adapter.getAdapterId().getBytes()),
 				StringUtils.stringFromBinary(index.getId().getBytes()),
-				"DIS",
 				"b1",
 				1);
 		final CentroidManagerGeoWave<SimpleFeature> centroidManager = new CentroidManagerGeoWave<SimpleFeature>(
-				dataOps,
+				dataStore,
+				indexStore,
+				adapterStore,
 				new SimpleFeatureItemWrapperFactory(),
 				StringUtils.stringFromBinary(adapter.getAdapterId().getBytes()),
 				StringUtils.stringFromBinary(index.getId().getBytes()),
 				"b1",
 				1);
-		List<String> groups = centroidManager.getAllCentroidGroups();
+		final List<String> groups = centroidManager.getAllCentroidGroups();
 		assertEquals(
 				2,
 				groups.size());
-		boolean groupFound[] = new boolean[2];
-		for (String grpId : groups) {
-			List<AnalyticItemWrapper<SimpleFeature>> items = centroidManager.getCentroidsForGroup(grpId);
+		final boolean groupFound[] = new boolean[2];
+		for (final String grpId : groups) {
+			final List<AnalyticItemWrapper<SimpleFeature>> items = centroidManager.getCentroidsForGroup(grpId);
 			assertEquals(
 					2,
 					items.size());
@@ -482,7 +436,7 @@ public class DistortionGroupManagementTest
 		}
 		// each unique group is found?
 		int c = 0;
-		for (boolean gf : groupFound) {
+		for (final boolean gf : groupFound) {
 			c += (gf ? 1 : 0);
 		}
 		assertEquals(

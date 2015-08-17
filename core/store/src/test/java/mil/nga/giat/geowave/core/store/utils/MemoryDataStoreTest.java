@@ -29,6 +29,7 @@ import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.memory.MemoryDataStore;
 import mil.nga.giat.geowave.core.store.query.Query;
 
 import org.junit.Test;

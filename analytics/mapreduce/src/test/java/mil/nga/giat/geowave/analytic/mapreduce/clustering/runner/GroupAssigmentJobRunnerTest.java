@@ -1,34 +1,38 @@
 package mil.nga.giat.geowave.analytic.mapreduce.clustering.runner;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
+import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
-import mil.nga.giat.geowave.analytic.clustering.NestedGroupCentroidAssignment;
 import mil.nga.giat.geowave.analytic.distance.DistanceFn;
 import mil.nga.giat.geowave.analytic.distance.FeatureCentroidDistanceFn;
 import mil.nga.giat.geowave.analytic.distance.GeometryCentroidDistanceFn;
 import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveAnalyticJobRunner;
-import mil.nga.giat.geowave.analytic.mapreduce.JobContextConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.mapreduce.MapReduceIntegration;
 import mil.nga.giat.geowave.analytic.mapreduce.SequenceFileInputFormatConfiguration;
 import mil.nga.giat.geowave.analytic.mapreduce.clustering.GroupAssignmentMapReduce;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters.MRConfig;
-import mil.nga.giat.geowave.analytic.partitioner.FeatureDataAdapterStoreFactory;
+import mil.nga.giat.geowave.analytic.param.ParameterHelper;
+import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
+import mil.nga.giat.geowave.analytic.store.PersistableAdapterStore;
+import mil.nga.giat.geowave.analytic.store.PersistableDataStore;
+import mil.nga.giat.geowave.analytic.store.PersistableIndexStore;
+import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStoreFactory;
+import mil.nga.giat.geowave.core.store.memory.MemoryDataStoreFactory;
+import mil.nga.giat.geowave.core.store.memory.MemoryIndexStoreFactory;
 
-import org.apache.commons.cli.Option;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Counters;
@@ -46,6 +50,7 @@ public class GroupAssigmentJobRunnerTest
 
 	final GroupAssigmentJobRunner runner = new GroupAssigmentJobRunner();
 	final PropertyManagement runTimeProperties = new PropertyManagement();
+	private static final String TEST_NAMESPACE = "test";
 
 	@Before
 	public void init() {
@@ -65,10 +70,11 @@ public class GroupAssigmentJobRunnerTest
 					final GeoWaveAnalyticJobRunner tool )
 					throws Exception {
 				tool.setConf(configuration);
-				FeatureDataAdapterStoreFactory.transferState(
+				((ParameterHelper<Object>) StoreParam.ADAPTER_STORE.getHelper()).setValue(
 						configuration,
 						GroupAssignmentMapReduce.class,
-						runTimeProperties);
+						StoreParam.ADAPTER_STORE.getHelper().getValue(
+								runTimeProperties));
 				return tool.run(runTimeProperties.toGeoWaveRunnerArguments());
 			}
 
@@ -85,7 +91,7 @@ public class GroupAssigmentJobRunnerTest
 				Assert.assertEquals(
 						10,
 						job.getNumReduceTasks());
-				final JobContextConfigurationWrapper configWrapper = new JobContextConfigurationWrapper(
+				final ScopedJobConfiguration configWrapper = new ScopedJobConfiguration(
 						job,
 						GroupAssignmentMapReduce.class);
 				Assert.assertEquals(
@@ -166,22 +172,6 @@ public class GroupAssigmentJobRunnerTest
 				"/");
 
 		runTimeProperties.store(
-				StoreParameters.DataStoreParam.ZOOKEEKER,
-				"localhost:3000");
-
-		runTimeProperties.store(
-				StoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-				"accumulo");
-		runTimeProperties.store(
-				StoreParameters.DataStoreParam.ACCUMULO_USER,
-				"root");
-		runTimeProperties.store(
-				StoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
-				"pwd");
-		runTimeProperties.store(
-				StoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
-				"test");
-		runTimeProperties.store(
 				GlobalParameters.Global.BATCH_ID,
 				"b12345");
 		runTimeProperties.store(
@@ -192,10 +182,34 @@ public class GroupAssigmentJobRunnerTest
 				CommonParameters.Common.DISTANCE_FUNCTION_CLASS,
 				FeatureCentroidDistanceFn.class);
 
-		FeatureDataAdapterStoreFactory.saveState(
+		runTimeProperties.store(
+				StoreParam.DATA_STORE,
+				new PersistableDataStore(
+						new DataStoreCommandLineOptions(
+								new MemoryDataStoreFactory(),
+								new HashMap<String, Object>(),
+								TEST_NAMESPACE)));
+		final MemoryAdapterStoreFactory adapterStoreFactory = new MemoryAdapterStoreFactory();
+		runTimeProperties.store(
+				StoreParam.ADAPTER_STORE,
+				new PersistableAdapterStore(
+						new AdapterStoreCommandLineOptions(
+								adapterStoreFactory,
+								new HashMap<String, Object>(),
+								TEST_NAMESPACE)));
+
+		runTimeProperties.store(
+				StoreParam.INDEX_STORE,
+				new PersistableIndexStore(
+						new IndexStoreCommandLineOptions(
+								new MemoryIndexStoreFactory(),
+								new HashMap<String, Object>(),
+								TEST_NAMESPACE)));
+		adapterStoreFactory.createStore(
+				new HashMap<String, Object>(),
+				TEST_NAMESPACE).addAdapter(
 				new FeatureDataAdapter(
-						ftype),
-				runTimeProperties);
+						ftype));
 	}
 
 	@Test
@@ -204,31 +218,4 @@ public class GroupAssigmentJobRunnerTest
 
 		runner.run(runTimeProperties);
 	}
-
-	@Test
-	public void testOptions() {
-		final Set<Option> options = new HashSet<Option>();
-		runner.fillOptions(options);
-
-		assertTrue(PropertyManagement.hasOption(
-				options,
-				CommonParameters.Common.DISTANCE_FUNCTION_CLASS));
-
-		assertTrue(PropertyManagement.hasOption(
-				options,
-				GlobalParameters.Global.PARENT_BATCH_ID));
-
-		assertTrue(PropertyManagement.hasOption(
-				options,
-				CentroidParameters.Centroid.ZOOM_LEVEL));
-
-		assertTrue(PropertyManagement.hasOption(
-				options,
-				StoreParameters.DataStoreParam.ACCUMULO_INSTANCE));
-
-		assertTrue(PropertyManagement.hasOption(
-				options,
-				CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS));
-	}
-
 }

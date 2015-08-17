@@ -7,7 +7,6 @@ import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
 import mil.nga.giat.geowave.core.store.data.visibility.FieldLevelVisibilityWriter;
 
-import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonProcessingException;

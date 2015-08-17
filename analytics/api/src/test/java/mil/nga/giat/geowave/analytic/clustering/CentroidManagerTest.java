@@ -10,12 +10,17 @@ import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapper;
 import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
-import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
-import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManager.CentroidProcessingFn;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStore;
+import mil.nga.giat.geowave.core.store.memory.MemoryDataStore;
+import mil.nga.giat.geowave.core.store.memory.MemoryIndexStore;
+
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.junit.Test;
 import org.opengis.feature.simple.SimpleFeature;
@@ -28,17 +33,7 @@ public class CentroidManagerTest
 {
 	@Test
 	public void testSampleRecall()
-			throws AccumuloException,
-			AccumuloSecurityException,
-			IOException {
-		final MockInstance mockDataInstance = new MockInstance();
-		final Connector mockDataConnector = mockDataInstance.getConnector(
-				"root",
-				new PasswordToken(
-						new byte[0]));
-
-		final BasicAccumuloOperations dataOps = new BasicAccumuloOperations(
-				mockDataConnector);
+			throws IOException {
 
 		final SimpleFeatureType ftype = AnalyticFeature.createGeometryFeatureAdapter(
 				"centroid",
@@ -74,8 +69,10 @@ public class CentroidManagerTest
 		final FeatureDataAdapter adapter = new FeatureDataAdapter(
 				ftype);
 
-		final AccumuloDataStore dataStore = new AccumuloDataStore(
-				dataOps);
+		final DataStore dataStore = new MemoryDataStore();
+		final IndexStore indexStore = new MemoryIndexStore();
+		final AdapterStore adapterStore = new MemoryAdapterStore();
+
 		dataStore.ingest(
 				adapter,
 				index,
@@ -179,7 +176,9 @@ public class CentroidManagerTest
 				feature);
 
 		CentroidManagerGeoWave<SimpleFeature> mananger = new CentroidManagerGeoWave<SimpleFeature>(
-				dataOps,
+				dataStore,
+				indexStore,
+				adapterStore,
 				new SimpleFeatureItemWrapperFactory(),
 				StringUtils.stringFromBinary(adapter.getAdapterId().getBytes()),
 				StringUtils.stringFromBinary(index.getId().getBytes()),
@@ -213,7 +212,9 @@ public class CentroidManagerTest
 				0.001);
 
 		mananger = new CentroidManagerGeoWave<SimpleFeature>(
-				dataOps,
+				dataStore,
+				indexStore,
+				adapterStore,
 				new SimpleFeatureItemWrapperFactory(),
 				StringUtils.stringFromBinary(adapter.getAdapterId().getBytes()),
 				StringUtils.stringFromBinary(index.getId().getBytes()),
@@ -224,20 +225,23 @@ public class CentroidManagerTest
 
 			@Override
 			public int processGroup(
-					String groupID,
-					List<AnalyticItemWrapper<SimpleFeature>> centroids ) {
-				if (groupID.equals(grp1))
+					final String groupID,
+					final List<AnalyticItemWrapper<SimpleFeature>> centroids ) {
+				if (groupID.equals(grp1)) {
 					assertEquals(
 							2,
 							centroids.size());
-				else if (groupID.equals(grp2))
+				}
+				else if (groupID.equals(grp2)) {
 					assertEquals(
 							1,
 							centroids.size());
-				else
+				}
+				else {
 					assertTrue(
 							"what group is this : " + groupID,
 							false);
+				}
 				return 0;
 			}
 

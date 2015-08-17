@@ -4,16 +4,16 @@ import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.Query;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 
 /**
- * 
+ *
  * Simple command line tool to recalculate statistics for an adapter.
- * 
+ *
  */
 public class ReCalculateStatsOperation extends
 		StatsOperation implements
@@ -28,11 +28,11 @@ public class ReCalculateStatsOperation extends
 
 	@Override
 	public boolean doWork(
-			AccumuloDataStatisticsStore statsStore,
-			DataStore dataStore,
-			IndexStore indexStore,
-			DataAdapter<?> adapter,
-			String[] authorizations ) {
+			final DataStatisticsStore statsStore,
+			final DataStore dataStore,
+			final IndexStore indexStore,
+			final DataAdapter<?> adapter,
+			final String[] authorizations ) {
 		statsStore.deleteObjects(
 				adapter.getAdapterId(),
 				authorizations);
