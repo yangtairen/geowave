@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import mil.nga.giat.geowave.adapter.vector.AccumuloDataStatisticsStoreExt;
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveTransaction;
 import mil.nga.giat.geowave.adapter.vector.query.TransformingVisibilityQuery;
@@ -68,7 +67,8 @@ public class GeoWaveDataStoreComponents
 	public void replaceDataVisibility(
 			final GeoWaveTransaction transaction,
 			final Collection<ByteArrayId> rowIDs,
-			final VisibilityTransformer transformer ) {
+			final String transformingRegex,
+			final String replacement  ) {
 		dataStore.query(new TransformingVisibilityQuery(
 				transformer,
 				currentIndex,
@@ -78,10 +78,12 @@ public class GeoWaveDataStoreComponents
 
 	public void replaceStatsVisibility(
 			final GeoWaveTransaction transaction,
-			final VisibilityTransformer transformer ) {
-		((AccumuloDataStatisticsStoreExt) dataStore.getStatsStore()).transformVisibility(
+			final String transformingRegex,
+			final String replacement ) {
+		dataStatisticsStore.transformVisibility(
 				adapter.getAdapterId(),
-				transformer,
+				transformingRegex,
+				replacement,
 				transaction.composeAuthorizations());
 	}
 

@@ -33,7 +33,7 @@ public class ReCalculateStatsOperation extends
 			final IndexStore indexStore,
 			final DataAdapter<?> adapter,
 			final String[] authorizations ) {
-		statsStore.deleteObjects(
+		statsStore.removeAllStatistics(				
 				adapter.getAdapterId(),
 				authorizations);
 		try (StatsCompositionTool<?> statsTool = new StatsCompositionTool(

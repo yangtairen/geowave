@@ -726,10 +726,8 @@ public class BasicAccumuloOperations implements
 									for (final Entry<String, String> e : configuredOptions.entrySet()) {
 										if (!existingOptions.containsKey(e.getKey())) {
 											// existing value should be null
-											// because
-											// this key is contained in the
-											// merged
-											// set
+											// because this key is contained in
+											// the merged set
 											if (e.getValue() == null) {
 												continue;
 											}

@@ -83,7 +83,6 @@ public class GeoWaveGTDataStore extends
 	private FeatureListenerManager listenerManager = null;
 	protected AdapterStore adapterStore;
 	protected VectorDataStore dataStore;
-	protected AccumuloOperations storeOperations;
 	private final Map<String, Index> preferredIndexes = new ConcurrentHashMap<String, Index>();
 	private final ColumnVisibilityManagement<SimpleFeature> visibilityManagement = VisibilityManagementHelper.loadVisibilityManagement();
 	private final AuthorizationSPI authorizationSPI;
@@ -112,9 +111,7 @@ public class GeoWaveGTDataStore extends
 
 	public GeoWaveGTDataStore(
 			final GeoWavePluginConfig config )
-			throws IOException,
-			AccumuloException,
-			AccumuloSecurityException {
+			throws IOException {
 		listenerManager = new FeatureListenerManager();
 		lockingManager = config.getLockingManagementFactory().createLockingManager(
 				config);

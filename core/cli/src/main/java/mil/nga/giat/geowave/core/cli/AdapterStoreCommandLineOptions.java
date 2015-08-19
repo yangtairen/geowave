@@ -58,6 +58,24 @@ public class AdapterStoreCommandLineOptions extends
 				new AdapterStoreCommandLineHelper());
 	}
 
+	public static AdapterStoreCommandLineOptions parseOptions(
+			final CommandLineOptions commandLine )
+			throws ParseException {
+		return parseOptions(
+				null,
+				commandLine);
+	}
+
+	public static AdapterStoreCommandLineOptions parseOptions(
+			final String prefix,
+			final CommandLineOptions commandLine )
+			throws ParseException {
+		return (AdapterStoreCommandLineOptions) parseOptions(
+				prefix,
+				commandLine,
+				new AdapterStoreCommandLineHelper());
+	}
+
 	@Override
 	public AdapterStore createStore() {
 		return GeoWaveStoreFinder.createAdapterStore(

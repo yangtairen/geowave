@@ -58,6 +58,24 @@ public class DataStatisticsStoreCommandLineOptions extends
 				new DataStatisticsStoreCommandLineHelper());
 	}
 
+	public static DataStatisticsStoreCommandLineOptions parseOptions(
+			final CommandLineOptions commandLine )
+			throws ParseException {
+		return parseOptions(
+				null,
+				commandLine);
+	}
+
+	public static DataStatisticsStoreCommandLineOptions parseOptions(
+			final String prefix,
+			final CommandLineOptions commandLine )
+			throws ParseException {
+		return (DataStatisticsStoreCommandLineOptions) parseOptions(
+				prefix,
+				commandLine,
+				new DataStatisticsStoreCommandLineHelper());
+	}
+
 	@Override
 	public DataStatisticsStore createStore() {
 		return GeoWaveStoreFinder.createDataStatisticsStore(

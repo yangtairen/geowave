@@ -11,7 +11,7 @@ public class KDECommandLineOptions
 	private static final String MIN_LEVEL_KEY = "minLevel";
 	private static final String MAX_LEVEL_KEY = "maxLevel";
 	private static final String MIN_SPLITS_KEY = "minSplits";
-	private static final String MAX_SPLITS_KEY = "amxSplits";
+	private static final String MAX_SPLITS_KEY = "maxSplits";
 	private static final String COVERAGE_NAME_KEY = "coverageName";
 	private static final String HDFS_HOST_PORT_KEY = "hdfsHostPort";
 	private static final String JOB_TRACKER_HOST_PORT_KEY = "jobSubmissionHostPort";
@@ -131,52 +131,62 @@ public class KDECommandLineOptions
 				FEATURE_TYPE_KEY,
 				true,
 				"The name of the feature type to run a KDE on");
+		featureTypeOption.setRequired(true);
 		allOptions.addOption(featureTypeOption);
 
 		final Option minLevelOption = new Option(
 				MIN_LEVEL_KEY,
 				true,
 				"The min level to run a KDE at");
+		minLevelOption.setRequired(true);
 		allOptions.addOption(minLevelOption);
 		final Option maxLevelOption = new Option(
 				MAX_LEVEL_KEY,
 				true,
 				"The max level to run a KDE at");
+		maxLevelOption.setRequired(true);
 		allOptions.addOption(maxLevelOption);
 		final Option minSplitsOption = new Option(
 				MIN_SPLITS_KEY,
 				true,
 				"The min partitions for the input data");
+		minSplitsOption.setRequired(true);
 		allOptions.addOption(minSplitsOption);
 		final Option maxSplitsOption = new Option(
 				MAX_SPLITS_KEY,
 				true,
 				"The max partitions for the input data");
+		maxSplitsOption.setRequired(true);
 		allOptions.addOption(maxSplitsOption);
 		final Option coverageNameOption = new Option(
 				COVERAGE_NAME_KEY,
 				true,
 				"The max partitions for the input data");
+		coverageNameOption.setRequired(true);
 		allOptions.addOption(coverageNameOption);
 		final Option hdfsHostPortOption = new Option(
 				HDFS_HOST_PORT_KEY,
 				true,
 				"The max partitions for the input data");
+		hdfsHostPortOption.setRequired(true);
 		allOptions.addOption(hdfsHostPortOption);
 		final Option jobTrackerOption = new Option(
 				JOB_TRACKER_HOST_PORT_KEY,
 				true,
 				"The max partitions for the input data");
+		jobTrackerOption.setRequired(true);
 		allOptions.addOption(jobTrackerOption);
 		final Option tileSizeOption = new Option(
 				TILE_SIZE_KEY,
 				true,
 				"The max partitions for the input data");
+		tileSizeOption.setRequired(true);
 		allOptions.addOption(tileSizeOption);
 		final Option cqlFilterOption = new Option(
 				CQL_FILTER_KEY,
 				true,
-				"The max partitions for the input data");
+				"An optional CQL filter applied to the input data");
+		cqlFilterOption.setRequired(false);
 		allOptions.addOption(cqlFilterOption);
 	}
 }

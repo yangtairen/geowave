@@ -20,6 +20,9 @@ import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.IngestCallback;
 import mil.nga.giat.geowave.core.store.IngestCallbackList;
+import mil.nga.giat.geowave.core.store.IteratorWrapper;
+import mil.nga.giat.geowave.core.store.IteratorWrapper.Callback;
+import mil.nga.giat.geowave.core.store.IteratorWrapper.Converter;
 import mil.nga.giat.geowave.core.store.ScanCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
@@ -52,9 +55,6 @@ import mil.nga.giat.geowave.datastore.accumulo.query.SingleEntryFilterIterator;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.AltIndexIngestCallback;
 import mil.nga.giat.geowave.datastore.accumulo.util.DataAdapterAndIndexCache;
-import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper;
-import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper.Callback;
-import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper.Converter;
 import mil.nga.giat.geowave.mapreduce.MapReduceDataStore;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 
@@ -1443,6 +1443,7 @@ public class AccumuloDataStore implements
 			final Index[] indices,
 			final List<ByteArrayId> adapterIds,
 			final DistributableQuery query,
+			final QueryOptions queryOptions,
 			final AdapterStore adapterStore,
 			final IndexStore indexStore,
 			final String[] additionalAuthorizations,
@@ -1461,6 +1462,7 @@ public class AccumuloDataStore implements
 			final Index[] indices,
 			final List<ByteArrayId> adapterIds,
 			final DistributableQuery query,
+			final QueryOptions queryOptions,
 			final AdapterStore adapterStore,
 			final IndexStore indexStore,
 			final boolean isOutputWritable,
@@ -1468,6 +1470,7 @@ public class AccumuloDataStore implements
 			final InputSplit inputSplit ) {
 		return new GeoWaveAccumuloRecordReader(
 				query,
+				queryOptions,
 				isOutputWritable,
 				additionalAuthorizations,
 				adapterIds,

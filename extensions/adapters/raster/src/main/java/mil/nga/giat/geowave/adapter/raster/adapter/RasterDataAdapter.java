@@ -21,7 +21,6 @@ import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,11 +45,8 @@ import javax.media.jai.remote.SerializerFactory;
 import mil.nga.giat.geowave.adapter.raster.FitToIndexGridCoverage;
 import mil.nga.giat.geowave.adapter.raster.RasterUtils;
 import mil.nga.giat.geowave.adapter.raster.Resolution;
-import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileCombiner;
-import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileCombinerConfig;
-import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileCombinerHelper;
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileMergeStrategy;
-import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileVisibilityCombiner;
+import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileRowTransform;
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.RootMergeStrategy;
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.nodata.NoDataMergeStrategy;
 import mil.nga.giat.geowave.adapter.raster.plugin.GeoWaveGTRasterFormat;
@@ -66,15 +62,18 @@ import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatist
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy;
+import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy.SubStrategy;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
-import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy.SubStrategy;
 import mil.nga.giat.geowave.core.index.dimension.NumericDimensionDefinition;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
+import mil.nga.giat.geowave.core.store.IteratorWrapper;
+import mil.nga.giat.geowave.core.store.IteratorWrapper.Converter;
 import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.FitToIndexPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.IndexDependentDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.CountDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsVisibilityHandler;
@@ -87,18 +86,9 @@ import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AttachedIteratorDataAdapter;
-import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
-import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper;
-import mil.nga.giat.geowave.datastore.accumulo.util.IteratorWrapper.Converter;
 import mil.nga.giat.geowave.mapreduce.HadoopDataAdapter;
 import mil.nga.giat.geowave.mapreduce.HadoopWritableSerializer;
 
-import org.apache.accumulo.core.client.IteratorSetting;
-import org.apache.accumulo.core.client.IteratorSetting.Column;
-import org.apache.accumulo.core.iterators.Combiner;
-import org.apache.accumulo.core.iterators.IteratorUtil.IteratorScope;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.math.util.MathUtils;
 import org.apache.log4j.Logger;
 import org.geotools.coverage.Category;
@@ -110,7 +100,6 @@ import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.Operations;
-import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.GeometryClipper;
 import org.geotools.geometry.jts.JTS;
@@ -141,8 +130,8 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 public class RasterDataAdapter implements
 		StatisticalDataAdapter<GridCoverage>,
 		IndexDependentDataAdapter<GridCoverage>,
-		AttachedIteratorDataAdapter<GridCoverage>,
-		HadoopDataAdapter<GridCoverage, GridCoverageWritable>
+		HadoopDataAdapter<GridCoverage, GridCoverageWritable>,
+		RowMergingDataAdapter<GridCoverage, RasterTile<?>>
 {
 	static {
 		SourceThresholdFixMosaicDescriptor.register(false);
@@ -865,7 +854,7 @@ public class RasterDataAdapter implements
 	/**
 	 * This method is responsible for creating a coverage from the supplied
 	 * {@link RenderedImage}.
-	 * 
+	 *
 	 * @param image
 	 * @return
 	 * @throws IOException
@@ -1683,7 +1672,7 @@ public class RasterDataAdapter implements
 
 		@Override
 		public boolean equals(
-				Object obj ) {
+				final Object obj ) {
 			if (!(obj instanceof SimplifiedGridSampleDimension)) {
 				return false;
 			}
@@ -1712,40 +1701,14 @@ public class RasterDataAdapter implements
 
 	}
 
-	@Override
-	public IteratorConfig[] getAttachedIteratorConfig(
-			final Index index ) {
-		final EnumSet<IteratorScope> visibilityCombinerScope = EnumSet.of(IteratorScope.scan);
-		final RasterTileCombinerConfig tileCombiner = new RasterTileCombinerConfig(
-				new IteratorSetting(
-						RASTER_TILE_COMBINER_PRIORITY,
-						RasterTileCombiner.class),
-				EnumSet.complementOf(visibilityCombinerScope));
-		final List<Column> columns = new ArrayList<Column>();
-		columns.add(new Column(
-				getCoverageName()));
-		Combiner.setColumns(
-				tileCombiner.getIteratorSettings(),
-				columns);
+	public Map<String, String> getConfiguredOptions() {
+		final Map<String, String> configuredOptions = new HashMap<String, String>();
 		final String mergeStrategyStr = ByteArrayUtils.byteArrayToString(PersistenceUtils.toBinary(mergeStrategy));
-		tileCombiner.getIteratorSettings().addOption(
-				RasterTileCombinerHelper.MERGE_STRATEGY_KEY,
+
+		configuredOptions.put(
+				RasterTileRowTransform.MERGE_STRATEGY_KEY,
 				mergeStrategyStr);
-		final RasterTileCombinerConfig tileVisibilityCombiner = new RasterTileCombinerConfig(
-				new IteratorSetting(
-						RASTER_TILE_VISIBILITY_COMBINER_PRIORITY,
-						RasterTileVisibilityCombiner.class),
-				visibilityCombinerScope);
-		tileVisibilityCombiner.getIteratorSettings().addOption(
-				RasterTileCombinerHelper.MERGE_STRATEGY_KEY,
-				mergeStrategyStr);
-		Combiner.setColumns(
-				tileVisibilityCombiner.getIteratorSettings(),
-				columns);
-		return new IteratorConfig[] {
-			tileCombiner,
-			tileVisibilityCombiner
-		};
+		return configuredOptions;
 	}
 
 	@Override
@@ -1801,6 +1764,95 @@ public class RasterDataAdapter implements
 
 	public Interpolation getInterpolation() {
 		return interpolation;
+	}
+
+	@Override
+	public Map<String, String> getOptions(
+			final Map<String, String> existingOptions ) {
+		final Map<String, String> configuredOptions = getConfiguredOptions();
+		final Map<String, String> mergedOptions = new HashMap<String, String>(
+				configuredOptions);
+		for (final Entry<String, String> e : existingOptions.entrySet()) {
+			final String configuredValue = configuredOptions.get(e.getKey());
+			if ((e.getValue() == null) && (configuredValue == null)) {
+				continue;
+			}
+			else if ((e.getValue() == null) || ((e.getValue() != null) && !e.getValue().equals(
+					configuredValue))) {
+				final String newValue = mergeOption(
+						e.getKey(),
+						e.getValue(),
+						configuredValue);
+				if ((newValue != null) && newValue.equals(e.getValue())) {
+					// once merged the value didn't
+					// change, so just continue
+					continue;
+				}
+				if (newValue == null) {
+					mergedOptions.remove(e.getKey());
+				}
+				else {
+					mergedOptions.put(
+							e.getKey(),
+							newValue);
+				}
+			}
+		}
+		for (final Entry<String, String> e : configuredOptions.entrySet()) {
+			if (!existingOptions.containsKey(e.getKey())) {
+				// existing value should be null
+				// because this key is contained in
+				// the merged set
+				if (e.getValue() == null) {
+					continue;
+				}
+				else {
+					final String newValue = mergeOption(
+							e.getKey(),
+							null,
+							e.getValue());
+					if (newValue == null) {
+						mergedOptions.remove(e.getKey());
+					}
+					else {
+						mergedOptions.put(
+								e.getKey(),
+								newValue);
+					}
+				}
+			}
+		}
+		return mergedOptions;
+	}
+
+	private String mergeOption(
+			final String optionKey,
+			final String currentValue,
+			final String nextValue ) {
+		if ((currentValue == null) || currentValue.trim().isEmpty()) {
+			return nextValue;
+		}
+		else if ((nextValue == null) || nextValue.trim().isEmpty()) {
+			return currentValue;
+		}
+		if (RasterTileRowTransform.MERGE_STRATEGY_KEY.equals(optionKey)) {
+			final byte[] currentStrategyBytes = ByteArrayUtils.byteArrayFromString(currentValue);
+			final byte[] nextStrategyBytes = ByteArrayUtils.byteArrayFromString(nextValue);
+			final RootMergeStrategy currentStrategy = PersistenceUtils.fromBinary(
+					currentStrategyBytes,
+					RootMergeStrategy.class);
+			final RootMergeStrategy nextStrategy = PersistenceUtils.fromBinary(
+					nextStrategyBytes,
+					RootMergeStrategy.class);
+			currentStrategy.merge(nextStrategy);
+			return ByteArrayUtils.byteArrayToString(PersistenceUtils.toBinary(currentStrategy));
+		}
+		return nextValue;
+	}
+
+	@Override
+	public RowTransform<RasterTile<?>> getTransform() {
+		return null;
 	}
 
 }

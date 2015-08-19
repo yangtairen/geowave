@@ -10,20 +10,20 @@ import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
-
-import org.apache.accumulo.core.data.Key;
+import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter.RowTransform;
 
 /**
  * This class can be used by both the RasterTileCombiner and the
  * RasterTileVisibilityCombiner to execute the merge strategy
  */
-public class RasterTileCombinerHelper<T extends Persistable>
+public class RasterTileRowTransform<T extends Persistable> implements
+		RowTransform<Mergeable>
 {
 	public static final String MERGE_STRATEGY_KEY = "MERGE_STRATEGY";
 	private RootMergeStrategy<T> mergeStrategy;
 
 	public Mergeable transform(
-			final Key key,
+			final ByteArrayId adapterId,
 			final Mergeable mergeable ) {
 		if ((mergeable != null) && (mergeable instanceof RasterTile)) {
 			final RasterTile<T> rasterTile = (RasterTile) mergeable;
@@ -31,13 +31,13 @@ public class RasterTileCombinerHelper<T extends Persistable>
 					rasterTile.getDataBuffer(),
 					rasterTile.getMetadata(),
 					mergeStrategy,
-					new ByteArrayId(
-							key.getColumnFamily().getBytes()));
+					adapterId);
 		}
 		return mergeable;
 	}
 
-	public void init(
+	@Override
+	public void initOptions(
 			final Map<String, String> options )
 			throws IOException {
 		final String mergeStrategyStr = options.get(MERGE_STRATEGY_KEY);
@@ -48,4 +48,36 @@ public class RasterTileCombinerHelper<T extends Persistable>
 					RootMergeStrategy.class);
 		}
 	}
+
+	@Override
+	public Mergeable getRowAsMergeableObject(
+			final ByteArrayId adapterId,
+			final ByteArrayId fieldId,
+			final byte[] rowValueBinary ) {
+		final RasterTile mergeable = PersistenceUtils.classFactory(
+				RasterTile.class.getName(),
+				RasterTile.class);
+
+		if (mergeable != null) {
+			mergeable.fromBinary(rowValueBinary);
+		}
+		return transform(
+				adapterId,
+				mergeable);
+	}
+
+	@Override
+	public byte[] getBinaryFromMergedObject(
+			final Mergeable rowObject ) {
+		return rowObject.toBinary();
+	}
+
+	@Override
+	public byte[] toBinary() {
+		return new byte[] {};
+	}
+
+	@Override
+	public void fromBinary(
+			final byte[] bytes ) {}
 }

@@ -8,6 +8,7 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
+import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -21,6 +22,7 @@ public interface MapReduceDataStore extends
 			Index[] indices,
 			List<ByteArrayId> adapterIds,
 			DistributableQuery query,
+			QueryOptions queryOptions,
 			AdapterStore adapterStore,
 			IndexStore indexStore,
 			boolean isOutputWritable,
@@ -31,6 +33,7 @@ public interface MapReduceDataStore extends
 			Index[] indices,
 			List<ByteArrayId> adapterIds,
 			DistributableQuery query,
+			QueryOptions queryOptions,
 			AdapterStore adapterStore,
 			IndexStore indexStore,
 			String[] additionalAuthorizations,

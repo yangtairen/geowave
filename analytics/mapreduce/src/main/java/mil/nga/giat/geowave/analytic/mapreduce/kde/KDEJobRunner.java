@@ -302,15 +302,15 @@ public class KDEJobRunner extends
 			final WritableDataAdapter<?> adapter,
 			final Index index )
 			throws Exception {
-		GeoWaveInputFormat.setDataStoreName(
+		GeoWaveOutputFormat.setDataStoreName(
 				job.getConfiguration(),
 				outputDataStoreOptions.getFactory().getName());
-		GeoWaveInputFormat.setStoreConfigOptions(
+		GeoWaveOutputFormat.setStoreConfigOptions(
 				job.getConfiguration(),
 				ConfigUtils.valuesToStrings(
 						outputDataStoreOptions.getConfigOptions(),
 						outputDataStoreOptions.getFactory().getOptions()));
-		GeoWaveInputFormat.setGeoWaveNamespace(
+		GeoWaveOutputFormat.setGeoWaveNamespace(
 				job.getConfiguration(),
 				outputDataStoreOptions.getNamespace());
 		GeoWaveOutputFormat.addDataAdapter(

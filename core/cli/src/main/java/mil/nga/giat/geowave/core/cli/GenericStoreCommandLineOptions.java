@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import mil.nga.giat.geowave.core.cli.CommandLineOptions.CommandLineWrapper;
 import mil.nga.giat.geowave.core.store.GenericStoreFactory;
 import mil.nga.giat.geowave.core.store.config.AbstractConfigOption;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
@@ -131,6 +132,18 @@ abstract public class GenericStoreCommandLineOptions<T>
 			final CommandLine commandLine,
 			final CommandLineHelper<T, F> helper )
 			throws ParseException {
+		return parseOptions(
+				prefix,
+				new CommandLineWrapper(
+						commandLine),
+				helper);
+	}
+
+	public static <T, F extends GenericStoreFactory<T>> GenericStoreCommandLineOptions<T> parseOptions(
+			final String prefix,
+			final CommandLineOptions commandLine,
+			final CommandLineHelper<T, F> helper )
+			throws ParseException {
 		final String optionName = prefix != null ? prefix + helper.getOptionName() : helper.getOptionName();
 		final String namespace = commandLine.getOptionValue(
 				prefix != null ? prefix + "n" : "n",
@@ -189,16 +202,32 @@ abstract public class GenericStoreCommandLineOptions<T>
 		final Map<String, F> factories = helper.getRegisteredFactories();
 		final String[] additionalArgs = commandLine.getArgs();
 		final Map<String, Exception> exceptionsPerDataStoreFactory = new HashMap<String, Exception>();
+		int matchingCommandLineOptionCount = -1;
+		GenericStoreCommandLineOptions<T> matchingCommandLineOptions = null;
+		boolean matchingCommandLineOptionsHaveSameOptionCount = false;
+		// if the hint is not provided, the parser will attempt to find
+		// a factory that does not have any missing options; if multiple
+		// factories will match, the one with the most options will be used with
+		// the assumption that it has the most specificity and closest match of
+		// the arguments; if there are multiple factories that match and have
+		// the same number of options, arbitrarily the last one will be chosen
+		// and a warning message will be logged
+
 		for (final Entry<String, F> factoryEntry : factories.entrySet()) {
 			final Map<String, Object> configOptions;
 			try {
 				configOptions = getConfigOptionsForStoreFactory(
 						additionalArgs,
 						factoryEntry.getValue());
-				return helper.createCommandLineOptions(
+				final GenericStoreCommandLineOptions<T> commandLineOptions = helper.createCommandLineOptions(
 						factoryEntry.getValue(),
 						configOptions,
 						namespace);
+				if (commandLineOptions.getFactory().getOptions().length >= matchingCommandLineOptionCount) {
+					matchingCommandLineOptions = commandLineOptions;
+					matchingCommandLineOptionsHaveSameOptionCount = (commandLineOptions.getFactory().getOptions().length == matchingCommandLineOptionCount);
+					matchingCommandLineOptionCount = commandLineOptions.getFactory().getOptions().length;
+				}
 			}
 			catch (final Exception e) {
 				// it just means this store is not compatible with the
@@ -209,15 +238,22 @@ abstract public class GenericStoreCommandLineOptions<T>
 						e);
 			}
 		}
-		// just log all the exceptions so that it is apparent where the
-		// commandline incompatibility might be
-		for (final Entry<String, Exception> exceptionEntry : exceptionsPerDataStoreFactory.entrySet()) {
-			LOGGER.error(
-					"Could not parse commandline for " + optionName + " '" + exceptionEntry.getKey() + "'",
-					exceptionEntry.getValue());
+		if (matchingCommandLineOptions == null) {
+			// just log all the exceptions so that it is apparent where the
+			// commandline incompatibility might be
+			for (final Entry<String, Exception> exceptionEntry : exceptionsPerDataStoreFactory.entrySet()) {
+				LOGGER.error(
+						"Could not parse commandline for " + optionName + " '" + exceptionEntry.getKey() + "'",
+						exceptionEntry.getValue());
+			}
+			throw new ParseException(
+					"No compatible " + optionName + " found");
 		}
-		throw new ParseException(
-				"No compatible " + optionName + " found");
+		else if (matchingCommandLineOptionsHaveSameOptionCount) {
+			LOGGER.warn("Multiple valid stores found with equal specificity for " + helper.getOptionName() + " store");
+			LOGGER.warn(matchingCommandLineOptions.getFactory().getName() + " will be automatically chosen");
+		}
+		return matchingCommandLineOptions;
 	}
 
 	protected static interface CommandLineHelper<T, F extends GenericStoreFactory<T>>

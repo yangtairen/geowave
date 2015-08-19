@@ -133,6 +133,7 @@ public class GeoWaveAccumuloRecordReader<T> extends
 	protected T currentValue = null;
 	protected GeoWaveAccumuloInputSplit split;
 	protected DistributableQuery query;
+	protected QueryOptions queryOptions;
 	protected boolean isOutputWritable;
 	protected String[] additionalAuthorizations;
 	protected List<ByteArrayId> adapterIds;
@@ -141,12 +142,14 @@ public class GeoWaveAccumuloRecordReader<T> extends
 
 	public GeoWaveAccumuloRecordReader(
 			final DistributableQuery query,
+			final QueryOptions queryOptions,
 			final boolean isOutputWritable,
 			final String[] additionalAuthorizations,
 			final List<ByteArrayId> adapterIds,
 			final AdapterStore adapterStore,
 			final AccumuloOperations accumuloOperations ) {
 		this.query = query;
+		this.queryOptions = queryOptions;
 		this.isOutputWritable = isOutputWritable;
 		this.additionalAuthorizations = additionalAuthorizations;
 		this.adapterIds = adapterIds;
@@ -186,6 +189,7 @@ public class GeoWaveAccumuloRecordReader<T> extends
 								r,
 								queryFilters,
 								isOutputWritable,
+								queryOptions,
 								additionalAuthorizations).query(
 								accumuloOperations,
 								adapterStore,

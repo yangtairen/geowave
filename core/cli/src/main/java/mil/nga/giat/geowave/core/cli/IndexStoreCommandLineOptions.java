@@ -58,6 +58,24 @@ public class IndexStoreCommandLineOptions extends
 				new IndexStoreCommandLineHelper());
 	}
 
+	public static IndexStoreCommandLineOptions parseOptions(
+			final CommandLineOptions commandLine )
+			throws ParseException {
+		return parseOptions(
+				null,
+				commandLine);
+	}
+
+	public static IndexStoreCommandLineOptions parseOptions(
+			final String prefix,
+			final CommandLineOptions commandLine )
+			throws ParseException {
+		return (IndexStoreCommandLineOptions) parseOptions(
+				prefix,
+				commandLine,
+				new IndexStoreCommandLineHelper());
+	}
+
 	@Override
 	public IndexStore createStore() {
 		return GeoWaveStoreFinder.createIndexStore(

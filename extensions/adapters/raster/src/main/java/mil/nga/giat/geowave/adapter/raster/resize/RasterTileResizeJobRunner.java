@@ -1,23 +1,20 @@
 package mil.nga.giat.geowave.adapter.raster.resize;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter;
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.nodata.NoDataMergeStrategy;
+import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStoreFactory;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.JobContextIndexStore;
@@ -26,6 +23,9 @@ import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputFormat;
 import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputKey;
 
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.io.ObjectWritable;
@@ -44,23 +44,11 @@ public class RasterTileResizeJobRunner extends
 	public static final String NEW_ADAPTER_ID_KEY = "NEW_ADAPTER_ID";
 	public static final String OLD_ADAPTER_ID_KEY = "OLD_ADAPTER_ID";
 
-	protected String user;
-	protected String password;
-	protected String instance;
-	protected String zookeeper;
-
-	protected String oldNamespace;
-	protected String oldCoverageName;
-	protected String newNamespace;
-	protected String newCoverageName;
-
-	protected int minSplits;
-	protected int maxSplits;
-	protected int newTileSize;
-
-	protected String hdfsHostPort;
-	protected String jobTrackerOrResourceManHostPort;
-	protected String indexId;
+	protected DataStoreCommandLineOptions inputDataStoreOptions;
+	protected DataStoreCommandLineOptions outputDataStoreOptions;
+	protected AdapterStoreCommandLineOptions inputAdapterStoreOptions;
+	protected IndexStoreCommandLineOptions inputIndexStoreOptions;
+	protected RasterTileResizeCommandLineOptions rasterResizeOptions;
 
 	public RasterTileResizeJobRunner() {
 
@@ -73,21 +61,21 @@ public class RasterTileResizeJobRunner extends
 			throws Exception {
 		final Configuration conf = super.getConf();
 		GeoWaveConfiguratorBase.setRemoteInvocationParams(
-				hdfsHostPort,
-				jobTrackerOrResourceManHostPort,
+				rasterResizeOptions.getHdfsHostPort(),
+				rasterResizeOptions.getJobTrackerOrResourceManHostPort(),
 				conf);
 		conf.set(
 				OLD_ADAPTER_ID_KEY,
-				oldCoverageName);
+				rasterResizeOptions.getInputCoverageName());
 		conf.set(
 				NEW_ADAPTER_ID_KEY,
-				newCoverageName);
+				rasterResizeOptions.getOutputCoverageName());
 		final Job job = new Job(
 				conf);
 
 		job.setJarByClass(this.getClass());
 
-		job.setJobName("Converting " + oldCoverageName + " to tile size=" + newTileSize);
+		job.setJobName("Converting " + rasterResizeOptions.getInputCoverageName() + " to tile size=" + rasterResizeOptions.getOutputTileSize());
 
 		job.setMapperClass(RasterTileResizeMapper.class);
 		job.setCombinerClass(RasterTileResizeCombiner.class);
@@ -102,55 +90,35 @@ public class RasterTileResizeJobRunner extends
 
 		GeoWaveInputFormat.setMinimumSplitCount(
 				job.getConfiguration(),
-				minSplits);
+				rasterResizeOptions.getMinSplits());
 		GeoWaveInputFormat.setMaximumSplitCount(
 				job.getConfiguration(),
-				maxSplits);
+				rasterResizeOptions.getMaxSplits());
+
 		GeoWaveInputFormat.setDataStoreName(
 				job.getConfiguration(),
-				new AccumuloDataStoreFactory().getName());
-		GeoWaveInputFormat.setGeoWaveNamespace(
-				job.getConfiguration(),
-				oldNamespace);
-		Map<String, String> configOptions = new HashMap<String, String>();
-		BasicAccumuloOperations.getOptions()
-		configOptions.put(arg0, arg1);
+				inputDataStoreOptions.getFactory().getName());
 		GeoWaveInputFormat.setStoreConfigOptions(
 				job.getConfiguration(),
-				oldNamespace);
-		GeoWaveInputFormat.setAccumuloOperationsInfo(
-				job,
-				zookeeper,
-				instance,
-				user,
-				password,
-				oldNamespace);
+				ConfigUtils.valuesToStrings(
+						inputDataStoreOptions.getConfigOptions(),
+						inputDataStoreOptions.getFactory().getOptions()));
+		GeoWaveInputFormat.setGeoWaveNamespace(
+				job.getConfiguration(),
+				inputDataStoreOptions.getNamespace());
 
-		GeoWaveOutputFormat.setAccumuloOperationsInfo(
-				job,
-				zookeeper,
-				instance,
-				user,
-				password,
-				newNamespace);
-		final AccumuloOperations oldNamespaceOperations = new BasicAccumuloOperations(
-				zookeeper,
-				instance,
-				user,
-				password,
-				oldNamespace);
-		final DataAdapter adapter = new AccumuloAdapterStore(
-				oldNamespaceOperations).getAdapter(new ByteArrayId(
-				oldCoverageName));
+		final DataAdapter adapter = inputAdapterStoreOptions.createStore().getAdapter(
+				new ByteArrayId(
+						rasterResizeOptions.getInputCoverageName()));
 		if (adapter == null) {
 			throw new IllegalArgumentException(
-					"Adapter for coverage '" + oldCoverageName + "' does not exist in namespace '" + oldNamespace + "'");
+					"Adapter for coverage '" + rasterResizeOptions.getInputCoverageName() + "' does not exist in namespace '" + inputAdapterStoreOptions.getNamespace() + "'");
 		}
 
 		final RasterDataAdapter newAdapter = new RasterDataAdapter(
 				(RasterDataAdapter) adapter,
-				newCoverageName,
-				newTileSize,
+				rasterResizeOptions.getOutputCoverageName(),
+				rasterResizeOptions.getOutputTileSize(),
 				new NoDataMergeStrategy());
 		JobContextAdapterStore.addDataAdapter(
 				job.getConfiguration(),
@@ -159,32 +127,35 @@ public class RasterTileResizeJobRunner extends
 				job.getConfiguration(),
 				newAdapter);
 		Index index = null;
-		if (indexId != null) {
-			index = new AccumuloIndexStore(
-					oldNamespaceOperations).getIndex(new ByteArrayId(
-					indexId));
+		final IndexStore indexStore = inputIndexStoreOptions.createStore();
+		if (rasterResizeOptions.getIndexId() != null) {
+			index = indexStore.getIndex(new ByteArrayId(
+					rasterResizeOptions.getIndexId()));
 		}
 		if (index == null) {
-			try (CloseableIterator<Index> indices = new AccumuloIndexStore(
-					oldNamespaceOperations).getIndices()) {
+			try (CloseableIterator<Index> indices = indexStore.getIndices()) {
 				index = indices.next();
 			}
 			if (index == null) {
 				throw new IllegalArgumentException(
-						"Index does not exist in namespace '" + oldNamespaceOperations + "'");
+						"Index does not exist in namespace '" + inputIndexStoreOptions.getNamespace() + "'");
 			}
 		}
+		GeoWaveOutputFormat.setDataStoreName(
+				job.getConfiguration(),
+				outputDataStoreOptions.getFactory().getName());
+		GeoWaveOutputFormat.setStoreConfigOptions(
+				job.getConfiguration(),
+				ConfigUtils.valuesToStrings(
+						outputDataStoreOptions.getConfigOptions(),
+						outputDataStoreOptions.getFactory().getOptions()));
+		GeoWaveOutputFormat.setGeoWaveNamespace(
+				job.getConfiguration(),
+				outputDataStoreOptions.getNamespace());
 		JobContextIndexStore.addIndex(
 				job.getConfiguration(),
 				index);
-		final AccumuloOperations ops = new BasicAccumuloOperations(
-				zookeeper,
-				instance,
-				user,
-				password,
-				newNamespace);
-		final DataStore store = new AccumuloDataStore(
-				ops);
+		final DataStore store = outputDataStoreOptions.createStore();
 		final IndexWriter writer = store.createIndexWriter(index);
 		writer.setupAdapter(newAdapter);
 		boolean retVal = false;
@@ -216,27 +187,38 @@ public class RasterTileResizeJobRunner extends
 	public int run(
 			final String[] args )
 			throws Exception {
-		if (args.length > 0) {
-			zookeeper = args[0];
-			instance = args[1];
-			user = args[2];
-			password = args[3];
-			oldNamespace = args[4];
-			oldCoverageName = args[5];
-			minSplits = Integer.parseInt(args[6]);
-			maxSplits = Integer.parseInt(args[7]);
-			hdfsHostPort = args[8];
-			if (!hdfsHostPort.contains("://")) {
-				hdfsHostPort = "hdfs://" + hdfsHostPort;
-			}
-			jobTrackerOrResourceManHostPort = args[9];
-			newCoverageName = args[10];
-			newNamespace = args[11];
-			newTileSize = Integer.parseInt(args[12]);
-			if (args.length > 13) {
-				indexId = args[13];
-			}
-		}
+		final Options allOptions = new Options();
+		DataStoreCommandLineOptions.applyOptions(
+				"input_",
+				allOptions);
+		DataStoreCommandLineOptions.applyOptions(
+				"output_",
+				allOptions);
+		AdapterStoreCommandLineOptions.applyOptions(
+				"input_",
+				allOptions);
+		IndexStoreCommandLineOptions.applyOptions(
+				"input_",
+				allOptions);
+
+		RasterTileResizeCommandLineOptions.applyOptions(allOptions);
+		final BasicParser parser = new BasicParser();
+		final CommandLine commandLine = parser.parse(
+				allOptions,
+				args);
+		inputDataStoreOptions = DataStoreCommandLineOptions.parseOptions(
+				"input_",
+				commandLine);
+		outputDataStoreOptions = DataStoreCommandLineOptions.parseOptions(
+				"output_",
+				commandLine);
+		inputAdapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(
+				"input_",
+				commandLine);
+		inputIndexStoreOptions = IndexStoreCommandLineOptions.parseOptions(
+				"input_",
+				commandLine);
+		rasterResizeOptions = RasterTileResizeCommandLineOptions.parseOptions(commandLine);
 		return runJob();
 	}
 

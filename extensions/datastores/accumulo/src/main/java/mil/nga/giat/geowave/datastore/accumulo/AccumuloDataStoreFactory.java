@@ -4,6 +4,7 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.DataStoreFactorySpi;
+import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
 
 public class AccumuloDataStoreFactory extends
 		AbstractAccumuloStoreFactory<DataStore> implements
@@ -16,9 +17,17 @@ public class AccumuloDataStoreFactory extends
 			final String namespace ) {
 		// TODO also need to add config options for AccumuloOptions
 		return new AccumuloDataStore(
+				GeoWaveStoreFinder.createIndexStore(
+						configOptions,
+						namespace),
+				GeoWaveStoreFinder.createAdapterStore(
+						configOptions,
+						namespace),
+				GeoWaveStoreFinder.createDataStatisticsStore(
+						configOptions,
+						namespace),
 				createOperations(
 						configOptions,
 						namespace));
 	}
-
 }

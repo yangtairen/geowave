@@ -7,8 +7,6 @@ import mil.nga.giat.geowave.adapter.vector.plugin.GeoWavePluginConfig;
 import mil.nga.giat.geowave.adapter.vector.plugin.GeoWavePluginException;
 import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -38,9 +36,7 @@ public class TransactionAllocationCLIOperation implements
 			final String args[] )
 			throws ParseException,
 			GeoWavePluginException,
-			IOException,
-			AccumuloException,
-			AccumuloSecurityException {
+			IOException {
 		final Options options = new Options();
 		final OptionGroup baseOptionGroup = new OptionGroup();
 		baseOptionGroup.setRequired(false);
@@ -96,7 +92,7 @@ public class TransactionAllocationCLIOperation implements
 		try {
 			main(args);
 		}
-		catch (GeoWavePluginException | IOException | AccumuloException | AccumuloSecurityException e) {
+		catch (GeoWavePluginException | IOException e) {
 			LOGGER.error(
 					"Unable to run transaction allocation",
 					e);
