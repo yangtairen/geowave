@@ -27,6 +27,7 @@ import mil.nga.giat.geowave.core.store.ScanCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexDependentDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
@@ -253,15 +254,16 @@ public class AccumuloDataStore implements
 						indexName,
 						adapterId);
 			}
-			if (writableAdapter instanceof AttachedIteratorDataAdapter) {
+			if (writableAdapter instanceof RowMergingDataAdapter) {
 				if (!DataAdapterAndIndexCache.getInstance(
-						AttachedIteratorDataAdapter.ATTACHED_ITERATOR_CACHE_ID).add(
+						RowMergingAdapterOptionProvider.ROW_MERGING_ADAPTER_CACHE_ID).add(
 						writableAdapter.getAdapterId(),
 						indexName)) {
-					accumuloOperations.attachIterators(
+					AccumuloUtils.attachRowMergingIterators(
+							((RowMergingDataAdapter<?, ?>) writableAdapter),
+							accumuloOperations,
 							indexName,
-							accumuloOptions.isCreateTable(),
-							((AttachedIteratorDataAdapter) writableAdapter).getAttachedIteratorConfig(index));
+							accumuloOptions.isCreateTable());
 				}
 			}
 			final DataStoreEntryInfo entryInfo = AccumuloUtils.write(
@@ -444,15 +446,16 @@ public class AccumuloDataStore implements
 						tableName,
 						adapterId);
 			}
-			if (dataWriter instanceof AttachedIteratorDataAdapter) {
+			if (dataWriter instanceof RowMergingDataAdapter) {
 				if (!DataAdapterAndIndexCache.getInstance(
-						AttachedIteratorDataAdapter.ATTACHED_ITERATOR_CACHE_ID).add(
+						RowMergingAdapterOptionProvider.ROW_MERGING_ADAPTER_CACHE_ID).add(
 						dataWriter.getAdapterId(),
 						indexName)) {
-					accumuloOperations.attachIterators(
+					AccumuloUtils.attachRowMergingIterators(
+							((RowMergingDataAdapter<?, ?>) dataWriter),
+							accumuloOperations,
 							indexName,
-							accumuloOptions.isCreateTable(),
-							((AttachedIteratorDataAdapter) dataWriter).getAttachedIteratorConfig(index));
+							accumuloOptions.isCreateTable());
 				}
 			}
 			final List<IngestCallback<T>> callbacks = new ArrayList<IngestCallback<T>>();

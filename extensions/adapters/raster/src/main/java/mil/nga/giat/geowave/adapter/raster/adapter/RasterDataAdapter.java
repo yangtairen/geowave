@@ -1852,7 +1852,7 @@ public class RasterDataAdapter implements
 
 	@Override
 	public RowTransform<RasterTile<?>> getTransform() {
-		return null;
+		return new RasterTileRowTransform();
 	}
 
 }

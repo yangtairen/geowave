@@ -33,6 +33,7 @@ public class GeoWaveStoreFinder
 			STORE_HINT_KEY,
 			"Set the GeoWave store, by default it will try to discover based on matching config options. " + getStoreNames(),
 			true);
+	private static Map<String, StoreFactoryFamilySpi> registeredStoreFactoryFamilies = null;
 	private static Map<String, DataStoreFactorySpi> registeredDataStoreFactories = null;
 	private static Map<String, AdapterStoreFactorySpi> registeredAdapterStoreFactories = null;
 	private static Map<String, DataStatisticsStoreFactorySpi> registeredDataStatisticsStoreFactories = null;
@@ -205,6 +206,13 @@ public class GeoWaveStoreFinder
 		return registeredDataStoreFactories;
 	}
 
+	public static synchronized Map<String, StoreFactoryFamilySpi> getRegisteredStoreFactoryFamilies() {
+		registeredStoreFactoryFamilies = getRegisteredFactories(
+				StoreFactoryFamilySpi.class,
+				registeredStoreFactoryFamilies);
+		return registeredStoreFactoryFamilies;
+	}
+
 	public static synchronized Map<String, DataStatisticsStoreFactorySpi> getRegisteredDataStatisticsStoreFactories() {
 		registeredDataStatisticsStoreFactories = getRegisteredFactories(
 				DataStatisticsStoreFactorySpi.class,
@@ -226,6 +234,16 @@ public class GeoWaveStoreFinder
 		return registeredIndexStoreFactories;
 	}
 
+	public static synchronized AbstractConfigOption<?>[] getAllOptions(
+			final StoreFactoryFamilySpi storeFactoryFamily ) {
+		final List<AbstractConfigOption<?>> allOptions = new ArrayList<AbstractConfigOption<?>>();
+		allOptions.addAll(Arrays.asList(storeFactoryFamily.getDataStoreFactory().getOptions()));
+		allOptions.addAll(Arrays.asList(storeFactoryFamily.getIndexStoreFactory().getOptions()));
+		allOptions.addAll(Arrays.asList(storeFactoryFamily.getDataStatisticsStoreFactory().getOptions()));
+		allOptions.addAll(Arrays.asList(storeFactoryFamily.getAdapterStoreFactory().getOptions()));
+		return allOptions.toArray(new AbstractConfigOption[] {});
+	}
+
 	public static synchronized AbstractConfigOption<?>[] getAllOptions() {
 		final List<AbstractConfigOption<?>> allOptions = new ArrayList<AbstractConfigOption<?>>();
 		for (final DataStoreFactorySpi f : getRegisteredDataStoreFactories().values()) {
@@ -243,7 +261,7 @@ public class GeoWaveStoreFinder
 		return allOptions.toArray(new AbstractConfigOption[] {});
 	}
 
-	private static <T extends GenericStoreFactory<?>> Map<String, T> getRegisteredFactories(
+	private static <T extends GenericFactory> Map<String, T> getRegisteredFactories(
 			final Class<T> cls,
 			Map<String, T> registeredFactories ) {
 		if (registeredFactories == null) {

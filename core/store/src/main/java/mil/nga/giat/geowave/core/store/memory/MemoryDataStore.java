@@ -298,7 +298,7 @@ public class MemoryDataStore implements
 
 	@Override
 	public CloseableIterator<?> query(
-			final Query query ) {
+			final Query query, String... authorizations) {
 		return query(
 				query,
 				-1);
@@ -513,7 +513,7 @@ public class MemoryDataStore implements
 	@Override
 	public CloseableIterator<?> query(
 			final Query query,
-			final int limit ) {
+			final int limit, ) {
 		final List<ByteArrayId> adapterIds = new ArrayList<ByteArrayId>();
 		try (CloseableIterator<DataAdapter<?>> adapterIt = adapterStore.getAdapters()) {
 			while (adapterIt.hasNext()) {
@@ -767,8 +767,11 @@ public class MemoryDataStore implements
 
 	@Override
 	public void delete(
-			final Query query ) {
-		try (CloseableIterator<?> it = this.query(query)) {
+			final Query query,
+			final String... authorizations ) {
+		try (CloseableIterator<?> it = this.query(
+				query,
+				authorizations)) {
 			while (it.hasNext()) {
 				it.next();
 				it.remove();

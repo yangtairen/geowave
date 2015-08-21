@@ -16,6 +16,11 @@ import java.util.ServiceLoader;
 import mil.nga.giat.geowave.adapter.vector.auth.AuthorizationFactorySPI;
 import mil.nga.giat.geowave.adapter.vector.auth.EmptyAuthorizationFactory;
 import mil.nga.giat.geowave.adapter.vector.plugin.lock.LockingManagementFactory;
+import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
+import mil.nga.giat.geowave.core.store.StoreFactoryFamilySpi;
+import mil.nga.giat.geowave.core.store.config.AbstractConfigOption;
+import mil.nga.giat.geowave.core.store.config.PasswordConfigOption;
+import mil.nga.giat.geowave.core.store.filter.GenericTypeResolver;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -25,21 +30,20 @@ import org.apache.log4j.Logger;
 import org.geotools.data.DataAccessFactory.Param;
 import org.geotools.data.Parameter;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+
 /**
  * This class encapsulates the parameterized configuration that can be provided
  * per GeoWave data store within GeoTools. For GeoServer this configuration can
  * be provided within the data store definition workflow.
- * 
+ *
  */
 public class GeoWavePluginConfig
 {
 	private final static Logger LOGGER = Logger.getLogger(GeoWavePluginConfig.class);
 
-	protected static final String ZOOKEEPER_SERVERS_KEY = "ZookeeperServers";
-	protected static final String INSTANCE_NAME_KEY = "InstanceName";
-	protected static final String USERNAME_KEY = "UserName";
-	protected static final String PASSWORD_KEY = "Password";
-	protected static final String ACCUMULO_NAMESPACE_KEY = "Namespace";
+	protected static final String GEOWAVE_NAMESPACE_KEY = "Namespace";
 	// name matches the workspace parameter provided to the factory
 	protected static final String FEATURE_NAMESPACE_KEY = "namespace";
 	protected static final String LOCK_MGT_KEY = "Lock Management";
@@ -47,39 +51,15 @@ public class GeoWavePluginConfig
 	protected static final String AUTH_URL_KEY = "Authorization Data URL";
 	protected static final String TRANSACTION_BUFFER_SIZE = "Transaction Buffer Size";
 
-	private static final Param ZOOKEEPER_SERVERS = new Param(
-			ZOOKEEPER_SERVERS_KEY,
-			String.class,
-			"A comma delimited list of zookeeper servers, as host:port",
-			true);
-	private static final Param INSTANCE_NAME = new Param(
-			INSTANCE_NAME_KEY,
-			String.class,
-			"The Instance Name",
-			true);
-	private static final Param USERNAME = new Param(
-			USERNAME_KEY,
-			String.class,
-			"The Username",
-			true);
-	private static final Param PASSWORD = new Param(
-			PASSWORD_KEY,
-			String.class,
-			"The Password",
-			true,
-			"mypassword",
-			Collections.singletonMap(
-					Parameter.IS_PASSWORD,
-					Boolean.TRUE));
-	private static final Param ACCUMULO_NAMESPACE = new Param(
-			ACCUMULO_NAMESPACE_KEY,
+	private static final Param GEOWAVE_NAMESPACE = new Param(
+			GEOWAVE_NAMESPACE_KEY,
 			String.class,
 			"The table namespace associated with this data store",
 			true);
 	private static final Param TRANSACTION_BUFFER_SIZE_PARAM = new Param(
 			TRANSACTION_BUFFER_SIZE,
 			Integer.class,
-			"Number of buffered buffered insertions before flush to the datastore.",
+			"Number of buffered feature insertions before flushing to the datastore.",
 			false);
 
 	/*
@@ -122,7 +102,7 @@ public class GeoWavePluginConfig
 	private final URL authorizationURL;
 	private final Integer transactionBufferSize;
 
-	private static List<Param> accumuloParams = null;
+	private static Map<String, List<Param>> paramMap = new HashMap<String, List<Param>>();
 
 	public static List<Param> getAuthPluginParams() {
 		final List<Param> accumuloParams = new ArrayList<Param>();
@@ -131,28 +111,31 @@ public class GeoWavePluginConfig
 		return accumuloParams;
 	}
 
-	public synchronized static List<Param> getPluginParams() {
-		if (accumuloParams == null) {
-			accumuloParams = new ArrayList<Param>();
-			accumuloParams.add(ZOOKEEPER_SERVERS);
-			accumuloParams.add(INSTANCE_NAME);
-			accumuloParams.add(USERNAME);
-			accumuloParams.add(PASSWORD);
-			accumuloParams.add(ACCUMULO_NAMESPACE);
-			// is pulled from the workspace
-			// accumuloParams.add(FEATURE_NAMESPACE);
-			accumuloParams.add(LOCK_MGT);
-			accumuloParams.add(AUTH_MGT);
-			accumuloParams.add(AUTH_URL);
-			accumuloParams.add(TRANSACTION_BUFFER_SIZE_PARAM);
+	public synchronized static List<Param> getPluginParams(
+			final StoreFactoryFamilySpi storeFactoryFamily ) {
+		List<Param> params = paramMap.get(storeFactoryFamily.getName());
+		if (params == null) {
+			final AbstractConfigOption<?>[] configOptions = GeoWaveStoreFinder.getAllOptions(storeFactoryFamily);
+			params = Lists.transform(
+					Lists.newArrayList(configOptions),
+					new GeoWaveConfigOptionToGeoToolsConfigOption());
+			params.add(GEOWAVE_NAMESPACE);
+			params.add(LOCK_MGT);
+			params.add(AUTH_MGT);
+			params.add(AUTH_URL);
+			params.add(TRANSACTION_BUFFER_SIZE_PARAM);
+			paramMap.put(
+					storeFactoryFamily.getName(),
+					params);
 		}
-		return accumuloParams;
+		return params;
 	}
 
 	public GeoWavePluginConfig(
+			final StoreFactoryFamilySpi storeFactoryFamily,
 			final Map<String, Serializable> params )
 			throws GeoWavePluginException {
-
+		
 		Serializable param = params.get(ZOOKEEPER_SERVERS_KEY);
 		if (param == null) {
 			throw new GeoWavePluginException(
@@ -404,6 +387,33 @@ public class GeoWavePluginConfig
 		return new GeoWavePluginConfig(
 				params);
 
+	}
+
+	private static class GeoWaveConfigOptionToGeoToolsConfigOption implements
+			Function<AbstractConfigOption<?>, Param>
+	{
+
+		@Override
+		public Param apply(
+				final AbstractConfigOption<?> input ) {
+			if (input instanceof PasswordConfigOption) {
+				return new Param(
+						input.getName(),
+						String.class,
+						input.getDescription(),
+						!input.isOptional(),
+						Collections.singletonMap(
+								Parameter.IS_PASSWORD,
+								Boolean.TRUE));
+			}
+			return new Param(
+					input.getName(),
+					GenericTypeResolver.resolveTypeArgument(
+							input.getClass(),
+							AbstractConfigOption.class),
+					input.getDescription(),
+					!input.isOptional());
+		}
 	}
 
 }

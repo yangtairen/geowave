@@ -7,13 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import mil.nga.giat.geowave.adapter.vector.AccumuloDataStatisticsStoreExt;
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
-import mil.nga.giat.geowave.adapter.vector.VectorDataStore;
 import mil.nga.giat.geowave.adapter.vector.auth.AuthorizationSPI;
-import mil.nga.giat.geowave.adapter.vector.auth.EmptyAuthorizationProvider;
 import mil.nga.giat.geowave.adapter.vector.plugin.lock.LockingManagement;
-import mil.nga.giat.geowave.adapter.vector.plugin.lock.MemoryLockManager;
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveAutoCommitTransactionState;
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveTransactionManagementState;
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveTransactionState;
@@ -29,18 +25,15 @@ import mil.nga.giat.geowave.core.geotime.store.dimension.TimeField;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.StoreFactoryFamilySpi;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.dimension.DimensionField;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.query.AdapterIdQuery;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.log4j.Logger;
 import org.geotools.data.FeatureListenerManager;
 import org.geotools.data.Query;
@@ -82,34 +75,17 @@ public class GeoWaveGTDataStore extends
 
 	private FeatureListenerManager listenerManager = null;
 	protected AdapterStore adapterStore;
-	protected VectorDataStore dataStore;
+	protected IndexStore indexStore;
+	protected DataStore dataStore;
 	private final Map<String, Index> preferredIndexes = new ConcurrentHashMap<String, Index>();
 	private final ColumnVisibilityManagement<SimpleFeature> visibilityManagement = VisibilityManagementHelper.loadVisibilityManagement();
 	private final AuthorizationSPI authorizationSPI;
 	private final TransactionsAllocater transactionsAllocater;
-	private URI featureNameSpaceURI;
+	private final URI featureNameSpaceURI;
 	private int transactionBufferSize = 10000;
 
 	public GeoWaveGTDataStore(
-			final TransactionsAllocater transactionsAllocater ) {
-		listenerManager = new FeatureListenerManager();
-		this.transactionsAllocater = transactionsAllocater;
-		lockingManager = new MemoryLockManager(
-				"default");
-		authorizationSPI = new EmptyAuthorizationProvider();
-	}
-
-	public GeoWaveGTDataStore(
-			final TransactionsAllocater transactionsAllocater,
-			final AuthorizationSPI authSPI ) {
-		listenerManager = new FeatureListenerManager();
-		authorizationSPI = authSPI;
-		lockingManager = new MemoryLockManager(
-				"default");
-		this.transactionsAllocater = transactionsAllocater;
-	}
-
-	public GeoWaveGTDataStore(
+			final StoreFactoryFamilySpi dataStoreFactory,
 			final GeoWavePluginConfig config )
 			throws IOException {
 		listenerManager = new FeatureListenerManager();
@@ -117,7 +93,9 @@ public class GeoWaveGTDataStore extends
 				config);
 		authorizationSPI = config.getAuthorizationFactory().create(
 				config.getAuthorizationURL());
-		init(config);
+		init(
+				dataStoreFactory,
+				config);
 		transactionsAllocater = new ZooKeeperTransactionsAllocater(
 				config.getZookeeperServers(),
 				config.getUserName(),
@@ -135,31 +113,16 @@ public class GeoWaveGTDataStore extends
 		return listenerManager;
 	}
 
-	public VectorDataStore getDataStore() {
+	public DataStore getDataStore() {
 		return dataStore;
 	}
 
 	public void init(
-			final GeoWavePluginConfig config )
-			throws AccumuloException,
-			AccumuloSecurityException {
-		storeOperations = new BasicAccumuloOperations(
-				config.getZookeeperServers(),
-				config.getInstanceName(),
-				config.getUserName(),
-				config.getPassword(),
-				config.getAccumuloNamespace());
-		final AccumuloIndexStore indexStore = new AccumuloIndexStore(
-				storeOperations);
-		final DataStatisticsStore statisticsStore = new AccumuloDataStatisticsStoreExt(
-				storeOperations);
-		adapterStore = new AccumuloAdapterStore(
-				storeOperations);
-		dataStore = new VectorDataStore(
-				indexStore,
-				adapterStore,
-				statisticsStore,
-				storeOperations);
+			final StoreFactoryFamilySpi dataStoreFactory,
+			final GeoWavePluginConfig config ) {
+		dataStore = dataStoreFactory.getDataStoreFactory().createStore(
+				configOptions,
+				namespace);
 	}
 
 	protected Index getIndex(
@@ -207,7 +170,7 @@ public class GeoWaveGTDataStore extends
 	@Override
 	protected List<Name> createTypeNames()
 			throws IOException {
-		List<Name> names = new ArrayList<>();
+		final List<Name> names = new ArrayList<>();
 		final CloseableIterator<DataAdapter<?>> adapters = adapterStore.getAdapters();
 		while (adapters.hasNext()) {
 			final DataAdapter<?> adapter = adapters.next();
@@ -222,7 +185,7 @@ public class GeoWaveGTDataStore extends
 
 	@Override
 	public ContentFeatureSource getFeatureSource(
-			String typeName )
+			final String typeName )
 			throws IOException {
 		return getFeatureSource(
 				typeName,
@@ -231,8 +194,8 @@ public class GeoWaveGTDataStore extends
 
 	@Override
 	public ContentFeatureSource getFeatureSource(
-			String typeName,
-			Transaction tx )
+			final String typeName,
+			final Transaction tx )
 			throws IOException {
 		return super.getFeatureSource(
 				new NameImpl(
@@ -243,8 +206,8 @@ public class GeoWaveGTDataStore extends
 
 	@Override
 	public ContentFeatureSource getFeatureSource(
-			Name typeName,
-			Transaction tx )
+			final Name typeName,
+			final Transaction tx )
 			throws IOException {
 		return getFeatureSource(
 				typeName.getLocalPart(),
@@ -254,7 +217,7 @@ public class GeoWaveGTDataStore extends
 
 	@Override
 	public ContentFeatureSource getFeatureSource(
-			Name typeName )
+			final Name typeName )
 			throws IOException {
 		return getFeatureSource(
 				typeName.getLocalPart(),
@@ -286,26 +249,18 @@ public class GeoWaveGTDataStore extends
 				StringUtils.stringToBinary(typeName)));
 		if (adapter != null) {
 			final String[] authorizations = getAuthorizationSPI().getAuthorizations();
-			try (CloseableIterator<Index> indicesIt = dataStore.getIndices()) {
-				while (indicesIt.hasNext()) {
-					dataStore.deleteEntries(
-							adapter,
-							indicesIt.next(),
-							authorizations);
-				}
-			}
-			catch (final IOException ex) {
-				LOGGER.error(
-						"Unable to remove schema",
-						ex);
-			}
+			dataStore.delete(
+					new AdapterIdQuery(
+							adapter.getAdapterId()),
+					authorizations);
+			// TODO don't we want to delete the adapter from the adapter store?
 		}
 	}
 
 	/**
 	 * Used to retrieve the TransactionStateDiff for this transaction.
 	 * <p>
-	 * 
+	 *
 	 * @param transaction
 	 * @return GeoWaveTransactionState or null if subclass is handling
 	 *         differences
@@ -348,7 +303,7 @@ public class GeoWaveGTDataStore extends
 
 		final boolean needTime = adapter.hasTemporalConstraints();
 
-		try (CloseableIterator<Index> indices = dataStore.getIndices()) {
+		try (CloseableIterator<Index> indices = indexStore.getIndices()) {
 			boolean currentSelectionHasTime = false;
 			while (indices.hasNext()) {
 				final Index index = indices.next();
@@ -391,23 +346,4 @@ public class GeoWaveGTDataStore extends
 				currentSelection);
 		return currentSelection;
 	}
-
-	@Override
-	public boolean transactionCreated(
-			final String clientID,
-			final String txID ) {
-		try {
-			((BasicAccumuloOperations) storeOperations).insureAuthorization(
-					clientID,
-					txID);
-			return true;
-		}
-		catch (final Exception ex) {
-			LOGGER.error(
-					"Cannot add transaction id as an authorization.",
-					ex);
-			return false;
-		}
-	}
-
 }

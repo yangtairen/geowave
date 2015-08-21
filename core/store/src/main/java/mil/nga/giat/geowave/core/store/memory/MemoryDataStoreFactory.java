@@ -4,9 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.DataStoreFactorySpi;
 
 public class MemoryDataStoreFactory extends
-		AbstractMemoryStoreFactory<DataStore>
+		AbstractMemoryStoreFactory<DataStore> implements
+		DataStoreFactorySpi
 {
 	private static final Map<String, DataStore> DATA_STORE_CACHE = new HashMap<String, DataStore>();
 

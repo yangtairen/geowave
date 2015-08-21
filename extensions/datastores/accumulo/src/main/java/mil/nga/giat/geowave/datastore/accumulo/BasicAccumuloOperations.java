@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.config.AbstractConfigOption;
+import mil.nga.giat.geowave.core.store.config.PasswordConfigOption;
 import mil.nga.giat.geowave.core.store.config.StringConfigOption;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.ConnectorPool;
@@ -66,7 +67,7 @@ public class BasicAccumuloOperations implements
 		new StringConfigOption(
 				USER_CONFIG_NAME,
 				"A valid Accumulo user ID"),
-		new StringConfigOption(
+		new PasswordConfigOption(
 				PASSWORD_CONFIG_NAME,
 				"The password for the user")
 	};
@@ -655,10 +656,9 @@ public class BasicAccumuloOperations implements
 				final Map<String, EnumSet<IteratorScope>> iteratorScopes = connector.tableOperations().listIterators(
 						qName);
 				for (final IteratorConfig iteratorConfig : iterators) {
-					final IteratorSetting iteratorSetting = iteratorConfig.getIteratorSettings();
 					boolean mustDelete = false;
 					boolean exists = false;
-					final EnumSet<IteratorScope> existingScopes = iteratorScopes.get(iteratorSetting.getName());
+					final EnumSet<IteratorScope> existingScopes = iteratorScopes.get(iteratorConfig.getIteratorName());
 					EnumSet<IteratorScope> configuredScopes;
 					if (iteratorConfig.getScopes() == null) {
 						configuredScopes = EnumSet.allOf(IteratorScope.class);
@@ -666,6 +666,7 @@ public class BasicAccumuloOperations implements
 					else {
 						configuredScopes = iteratorConfig.getScopes();
 					}
+					Map<String, String> configuredOptions = null;
 					if (existingScopes != null) {
 						if (existingScopes.size() == configuredScopes.size()) {
 							exists = true;
@@ -674,7 +675,7 @@ public class BasicAccumuloOperations implements
 									// this iterator exists with the wrong
 									// scope, we will assume we want to remove
 									// it and add the new configuration
-									LOGGER.warn("found iterator '" + iteratorSetting.getName() + "' missing scope '" + s.name() + "', removing it and re-attaching");
+									LOGGER.warn("found iterator '" + iteratorConfig.getIteratorName() + "' missing scope '" + s.name() + "', removing it and re-attaching");
 
 									mustDelete = true;
 									break;
@@ -690,64 +691,16 @@ public class BasicAccumuloOperations implements
 								final IteratorScope scope = it.next();
 								final IteratorSetting setting = connector.tableOperations().getIteratorSetting(
 										qName,
-										iteratorSetting.getName(),
+										iteratorConfig.getIteratorName(),
 										scope);
 								if (setting != null) {
 									final Map<String, String> existingOptions = setting.getOptions();
-									final Map<String, String> configuredOptions = iteratorSetting.getOptions();
-									for (final Entry<String, String> e : existingOptions.entrySet()) {
-										final String configuredValue = configuredOptions.get(e.getKey());
-										if ((e.getValue() == null) && (configuredValue == null)) {
-											continue;
-										}
-										else if ((e.getValue() == null) || ((e.getValue() != null) && !e.getValue().equals(
-												configuredValue))) {
-											final String newValue = iteratorConfig.mergeOption(
-													e.getKey(),
-													e.getValue(),
-													configuredValue);
-											if ((newValue != null) && newValue.equals(e.getValue())) {
-												// once merged the value didn't
-												// change,
-												// so just continue
-												continue;
-											}
-											mustDelete = true;
-											if (newValue == null) {
-												iteratorSetting.removeOption(e.getKey());
-											}
-											else {
-												iteratorSetting.addOption(
-														e.getKey(),
-														newValue);
-											}
-										}
-									}
-									for (final Entry<String, String> e : configuredOptions.entrySet()) {
-										if (!existingOptions.containsKey(e.getKey())) {
-											// existing value should be null
-											// because this key is contained in
-											// the merged set
-											if (e.getValue() == null) {
-												continue;
-											}
-											else {
-												final String newValue = iteratorConfig.mergeOption(
-														e.getKey(),
-														null,
-														e.getValue());
-												mustDelete = true;
-												if (newValue == null) {
-													iteratorSetting.removeOption(e.getKey());
-												}
-												else {
-													iteratorSetting.addOption(
-															e.getKey(),
-															newValue);
-												}
-											}
-										}
-									}
+									configuredOptions = iteratorConfig.getOptions(existingOptions);
+									// we found the setting existing in one
+									// scope, assume the options are the same
+									// for each scope
+									mustDelete = true;
+									break;
 								}
 							}
 						}
@@ -755,14 +708,21 @@ public class BasicAccumuloOperations implements
 					if (mustDelete) {
 						connector.tableOperations().removeIterator(
 								qName,
-								iteratorSetting.getName(),
+								iteratorConfig.getIteratorName(),
 								existingScopes);
 						exists = false;
 					}
 					if (!exists) {
+						if (configuredOptions == null) {
+							configuredOptions = iteratorConfig.getOptions(new HashMap<String, String>());
+						}
 						connector.tableOperations().attachIterator(
 								qName,
-								iteratorSetting,
+								new IteratorSetting(
+										iteratorConfig.getIteratorPriority(),
+										iteratorConfig.getIteratorName(),
+										iteratorConfig.getIteratorClass(),
+										configuredOptions),
 								configuredScopes);
 					}
 				}

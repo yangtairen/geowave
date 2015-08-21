@@ -14,7 +14,6 @@ import mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveDataStoreComponents;
 import mil.nga.giat.geowave.adapter.vector.plugin.lock.LockingManagement;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
-import mil.nga.giat.geowave.datastore.accumulo.util.VisibilityTransformer;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;

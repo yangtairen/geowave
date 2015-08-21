@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -28,6 +29,7 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.data.DataWriter;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
@@ -50,7 +52,11 @@ import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloRowId;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.ModelConvertingDataAdapter;
+import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
+import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig.OptionProvider;
+import mil.nga.giat.geowave.datastore.accumulo.RowMergingAdapterOptionProvider;
+import mil.nga.giat.geowave.datastore.accumulo.RowMergingCombiner;
+import mil.nga.giat.geowave.datastore.accumulo.RowMergingVisibilityCombiner;
 import mil.nga.giat.geowave.datastore.accumulo.Writer;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AbstractAccumuloPersistence;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
@@ -68,6 +74,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.iterators.IteratorUtil.IteratorScope;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.commons.lang3.tuple.Pair;
@@ -84,6 +91,10 @@ public class AccumuloUtils
 {
 	private final static Logger LOGGER = Logger.getLogger(AccumuloUtils.class);
 	public final static String ALT_INDEX_TABLE = "_GEOWAVE_ALT_INDEX";
+	private static final String ROW_MERGING_SUFFIX = "_COMBINER";
+	private static final String ROW_MERGING_VISIBILITY_SUFFIX = "_VISIBILITY_COMBINER";
+	private static final int ROW_MERGING_COMBINER_PRIORITY = 4;
+	private static final int ROW_MERGING_VISIBILITY_COMBINER_PRIORITY = 6;
 
 	@SuppressWarnings({
 		"rawtypes",
@@ -325,13 +336,7 @@ public class AccumuloUtils
 			}
 			final ByteArrayId fieldId = new ByteArrayId(
 					entry.getKey().getColumnQualifierData().getBackingArray());
-			final CommonIndexModel indexModel;
-			if (adapter instanceof ModelConvertingDataAdapter) {
-				indexModel = ((ModelConvertingDataAdapter) adapter).convertModel(index.getIndexModel());
-			}
-			else {
-				indexModel = index.getIndexModel();
-			}
+			final CommonIndexModel indexModel = index.getIndexModel();
 			// first check if this field is part of the index model
 			final FieldReader<? extends CommonIndexValue> indexFieldReader = indexModel.getReader(fieldId);
 			final byte byteValue[] = entry.getValue().get();
@@ -600,13 +605,7 @@ public class AccumuloUtils
 			final Index index,
 			final T entry,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-		final CommonIndexModel indexModel;
-		if (dataWriter instanceof ModelConvertingDataAdapter) {
-			indexModel = ((ModelConvertingDataAdapter) dataWriter).convertModel(index.getIndexModel());
-		}
-		else {
-			indexModel = index.getIndexModel();
-		}
+		final CommonIndexModel indexModel = index.getIndexModel();
 
 		final AdapterPersistenceEncoding encodedData = dataWriter.encode(
 				entry,
@@ -1181,6 +1180,35 @@ public class AccumuloUtils
 			iterator.close();
 		}
 		return counter;
+	}
+
+	public static void attachRowMergingIterators(
+			final RowMergingDataAdapter<?, ?> adapter,
+			final AccumuloOperations operations,
+			final String tableName,
+			final boolean createTable )
+			throws TableNotFoundException {
+		final EnumSet<IteratorScope> visibilityCombinerScope = EnumSet.of(IteratorScope.scan);
+		final OptionProvider optionProvider = new RowMergingAdapterOptionProvider(
+				adapter);
+		final IteratorConfig rowMergingCombinerConfig = new IteratorConfig(
+				EnumSet.complementOf(visibilityCombinerScope),
+				ROW_MERGING_COMBINER_PRIORITY,
+				RowMergingCombiner.class.getName(),
+				adapter.getAdapterId().getString() + ROW_MERGING_SUFFIX,
+				optionProvider);
+		final IteratorConfig rowMergingVisibilityCombinerConfig = new IteratorConfig(
+				visibilityCombinerScope,
+				ROW_MERGING_VISIBILITY_COMBINER_PRIORITY,
+				RowMergingVisibilityCombiner.class.getName(),
+				adapter.getAdapterId().getString() + ROW_MERGING_VISIBILITY_SUFFIX,
+				optionProvider);
+
+		operations.attachIterators(
+				tableName,
+				createTable,
+				rowMergingCombinerConfig,
+				rowMergingVisibilityCombinerConfig);
 	}
 
 	private static CloseableIterator<Entry<Key, Value>> getIterator(

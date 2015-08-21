@@ -4,21 +4,30 @@ import java.awt.RenderingHints.Key;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
+
 import org.apache.log4j.Logger;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFactorySpi;
+import org.geotools.factory.FactoryIteratorProvider;
+import org.geotools.factory.GeoTools;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
 
 /**
  * This factory is injected by GeoTools using Java SPI and is used to expose
  * GeoWave as a DataStore to GeoTools. It should be defined within a file
  * META-INF/services/org.geotools.data.DataStoreFactorySpi to inject this into
  * GeoTools.
- * 
+ *
  */
 public class GeoWaveGTDataStoreFactory implements
 		DataStoreFactorySpi
@@ -38,12 +47,32 @@ public class GeoWaveGTDataStoreFactory implements
 
 	private static final Logger LOGGER = Logger.getLogger(GeoWaveGTDataStoreFactory.class);
 	private final List<DataStoreCacheEntry> dataStoreCache = new ArrayList<DataStoreCacheEntry>();
+	private final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory;
 
 	/**
 	 * Public "no argument" constructor called by Factory Service Provider (SPI)
 	 * entry listed in META-INF/services/org.geotools.data.DataStoreFactorySPI
 	 */
-	public GeoWaveGTDataStoreFactory() {}
+	public GeoWaveGTDataStoreFactory() {
+		final Collection<mil.nga.giat.geowave.core.store.DataStoreFactorySpi> dataStoreFactories = GeoWaveStoreFinder.getRegisteredDataStoreFactories().values();
+		if (dataStoreFactories.isEmpty()) {
+			LOGGER.error("No GeoWave DataStore found!  Geotools datastore for GeoWave is unavailable");
+			geowaveDataStoreFactory = null;
+			isAvailable = false;
+		}
+		else {
+			final Iterator<mil.nga.giat.geowave.core.store.DataStoreFactorySpi> it = dataStoreFactories.iterator();
+			geowaveDataStoreFactory = it.next();
+			if (it.hasNext()) {
+				GeoTools.addFactoryIteratorProvider(new GeoWaveGTDataStoreFactoryIteratorProvider());
+			}
+		}
+	}
+
+	public GeoWaveGTDataStoreFactory(
+			final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+		this.geowaveDataStoreFactory = geowaveDataStoreFactory;
+	}
 
 	// GeoServer seems to call this several times so we should cache a
 	// connection if the parameters are the same, I'm not sure this is entirely
@@ -110,12 +139,12 @@ public class GeoWaveGTDataStoreFactory implements
 
 	@Override
 	public String getDisplayName() {
-		return "GeoWave Datastore";
+		return "GeoWave Datastore - " + geowaveDataStoreFactory.getName();
 	}
 
 	@Override
 	public String getDescription() {
-		return "A datastore that uses the GeoWave API for spatial data persistence in the cloud";
+		return "A datastore that uses the GeoWave API for spatial data persistence in " + geowaveDataStoreFactory.getName() + ". " + geowaveDataStoreFactory.getDescription();
 	}
 
 	@Override
@@ -126,14 +155,14 @@ public class GeoWaveGTDataStoreFactory implements
 
 	@Override
 	public boolean canProcess(
-			Map<String, Serializable> params ) {
+			final Map<String, Serializable> params ) {
 		try {
 			// rely on validation in GeoWavePluginConfig's constructor
 			new GeoWavePluginConfig(
 					params);
 			return true;
 		}
-		catch (GeoWavePluginException e) {
+		catch (final GeoWavePluginException e) {
 			// supplied map does not contain all necessary parameters to
 			// construct GeoWaveGTDataStore
 			return false;
@@ -149,7 +178,7 @@ public class GeoWaveGTDataStoreFactory implements
 				Class.forName("mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveGTDataStore");
 				isAvailable = true;
 			}
-			catch (ClassNotFoundException e) {
+			catch (final ClassNotFoundException e) {
 				isAvailable = false;
 			}
 		}
@@ -162,4 +191,191 @@ public class GeoWaveGTDataStoreFactory implements
 		return Collections.emptyMap();
 	}
 
+	private static class GeoWaveGTDataStoreFactoryIteratorProvider implements
+			FactoryIteratorProvider
+	{
+
+		@Override
+		public <T> Iterator<T> iterator(
+				final Class<T> arg0 ) {
+			return null;
+		}
+
+		private static class GeoWaveGTDataStoreFactoryIterator implements
+				Iterator<DataStoreFactorySpi>
+		{
+			private final Iterator<DataStoreFactorySpi> it;
+
+			private GeoWaveGTDataStoreFactoryIterator() {
+				final Iterator<mil.nga.giat.geowave.core.store.DataStoreFactorySpi> geowaveDataStoreIt = GeoWaveStoreFinder.getRegisteredDataStoreFactories().values().iterator();
+				geowaveDataStoreIt.next();
+				it = Iterators.transform(
+						geowaveDataStoreIt,
+						new GeoWaveDataStoreToGeoToolsDataStore());
+			}
+
+			@Override
+			public boolean hasNext() {
+				return it.hasNext();
+			}
+
+			@Override
+			public DataStoreFactorySpi next() {
+				return it.next();
+			}
+
+		}
+	}
+
+	/**
+	 * Below is a set of 9 additional GeoWaveGTDataStoreFactory's, its a bit of
+	 * a hack, but must be done because the geotools factory registry will
+	 * re-use instances of the same class, so each individual geowave data store
+	 * must be registered as a different class (the alternative is dynamic
+	 * compilation of classes to add to the classloader).
+	 *
+	 *
+	 */
+	private static class GeoWaveDataStoreToGeoToolsDataStore implements
+			Function<mil.nga.giat.geowave.core.store.DataStoreFactorySpi, DataStoreFactorySpi>
+	{
+		private final int i = 1;
+
+		@Override
+		public DataStoreFactorySpi apply(
+				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi input ) {
+			switch (i) {
+				case 1:
+					return new GeoWaveGTDataStoreFactory1(
+							input);
+				case 2:
+					return new GeoWaveGTDataStoreFactory2(
+							input);
+				case 3:
+					return new GeoWaveGTDataStoreFactory3(
+							input);
+				case 4:
+					return new GeoWaveGTDataStoreFactory4(
+							input);
+				case 5:
+					return new GeoWaveGTDataStoreFactory5(
+							input);
+				case 6:
+					return new GeoWaveGTDataStoreFactory6(
+							input);
+				case 7:
+					return new GeoWaveGTDataStoreFactory7(
+							input);
+				case 8:
+					return new GeoWaveGTDataStoreFactory8(
+							input);
+				case 9:
+					return new GeoWaveGTDataStoreFactory9(
+							input);
+
+			}
+			LOGGER.error("Too many GeoWave Datastores registered for GeoTools data store");
+			return new GeoWaveGTDataStoreFactory(
+					input);
+		}
+	}
+
+	private static class GeoWaveGTDataStoreFactory1 extends
+			GeoWaveGTDataStoreFactory
+	{
+
+		public GeoWaveGTDataStoreFactory1(
+				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+			super(
+					geowaveDataStoreFactory);
+		}
+	}
+
+	private static class GeoWaveGTDataStoreFactory2 extends
+			GeoWaveGTDataStoreFactory
+	{
+
+		public GeoWaveGTDataStoreFactory2(
+				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+			super(
+					geowaveDataStoreFactory);
+		}
+	}
+
+	private static class GeoWaveGTDataStoreFactory3 extends
+			GeoWaveGTDataStoreFactory
+	{
+
+		public GeoWaveGTDataStoreFactory3(
+				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+			super(
+					geowaveDataStoreFactory);
+		}
+	}
+
+	private static class GeoWaveGTDataStoreFactory4 extends
+			GeoWaveGTDataStoreFactory
+	{
+
+		public GeoWaveGTDataStoreFactory4(
+				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+			super(
+					geowaveDataStoreFactory);
+		}
+	}
+
+	private static class GeoWaveGTDataStoreFactory5 extends
+			GeoWaveGTDataStoreFactory
+	{
+
+		public GeoWaveGTDataStoreFactory5(
+				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+			super(
+					geowaveDataStoreFactory);
+		}
+	}
+
+	private static class GeoWaveGTDataStoreFactory6 extends
+			GeoWaveGTDataStoreFactory
+	{
+
+		public GeoWaveGTDataStoreFactory6(
+				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+			super(
+					geowaveDataStoreFactory);
+		}
+	}
+
+	private static class GeoWaveGTDataStoreFactory7 extends
+			GeoWaveGTDataStoreFactory
+	{
+
+		public GeoWaveGTDataStoreFactory7(
+				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+			super(
+					geowaveDataStoreFactory);
+		}
+	}
+
+	private static class GeoWaveGTDataStoreFactory8 extends
+			GeoWaveGTDataStoreFactory
+	{
+
+		public GeoWaveGTDataStoreFactory8(
+				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+			super(
+					geowaveDataStoreFactory);
+		}
+	}
+
+	private static class GeoWaveGTDataStoreFactory9 extends
+			GeoWaveGTDataStoreFactory
+	{
+
+		public GeoWaveGTDataStoreFactory9(
+				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+			super(
+					geowaveDataStoreFactory);
+		}
+	}
 }

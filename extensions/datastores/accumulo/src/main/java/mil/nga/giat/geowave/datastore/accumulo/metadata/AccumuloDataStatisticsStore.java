@@ -1,8 +1,8 @@
 package mil.nga.giat.geowave.datastore.accumulo.metadata;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -10,6 +10,7 @@ import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.BasicOptionProvider;
 import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
 import mil.nga.giat.geowave.datastore.accumulo.MergingCombiner;
 import mil.nga.giat.geowave.datastore.accumulo.MergingVisibilityCombiner;
@@ -22,8 +23,8 @@ import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.iterators.Combiner;
 import org.apache.accumulo.core.iterators.IteratorUtil.IteratorScope;
+import org.apache.accumulo.core.iterators.conf.ColumnSet;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
@@ -45,6 +46,7 @@ public class AccumuloDataStatisticsStore extends
 	// iterator added
 	private static final int STATS_COMBINER_PRIORITY = 10;
 	private static final int STATS_MULTI_VISIBILITY_COMBINER_PRIORITY = 15;
+	private static final String STATISTICS_COMBINER_NAME = "STATS_COMBINER";
 	private static final String STATISTICS_CF = "STATS";
 
 	public AccumuloDataStatisticsStore(
@@ -105,17 +107,21 @@ public class AccumuloDataStatisticsStore extends
 
 	@Override
 	protected IteratorConfig[] getIteratorConfig() {
+		final Column adapterColumn = new Column(
+				STATISTICS_CF);
+		final Map<String, String> options = new HashMap<String, String>();
+		options.put(
+				MergingCombiner.COLUMNS_OPTION,
+				ColumnSet.encodeColumns(
+						adapterColumn.getFirst(),
+						adapterColumn.getSecond()));
 		final IteratorConfig statsCombiner = new IteratorConfig(
-				new IteratorSetting(
-						STATS_COMBINER_PRIORITY,
-						MergingCombiner.class),
-				EnumSet.allOf(IteratorScope.class));
-		final List<Column> columns = new ArrayList<Column>();
-		columns.add(new Column(
-				STATISTICS_CF));
-		Combiner.setColumns(
-				statsCombiner.getIteratorSettings(),
-				columns);
+				EnumSet.allOf(IteratorScope.class),
+				STATS_COMBINER_PRIORITY,
+				STATISTICS_COMBINER_NAME,
+				MergingCombiner.class.getName(),
+				new BasicOptionProvider(
+						options));
 		return new IteratorConfig[] {
 			statsCombiner
 		};

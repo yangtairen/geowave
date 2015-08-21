@@ -10,20 +10,11 @@ import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract public class AbstractAccumuloStoreFactory<T> implements
+abstract public class AbstractAccumuloStoreFactory<T> extends
+		AbstractAccumuloFactory implements
 		GenericStoreFactory<T>
 {
 	private final static Logger LOGGER = LoggerFactory.getLogger(AbstractAccumuloStoreFactory.class);
-
-	@Override
-	public String getName() {
-		return "accumulo";
-	}
-
-	@Override
-	public String getDescription() {
-		return "A GeoWave store backed by tables in Apache Accumulo";
-	}
 
 	@Override
 	public AbstractConfigOption<?>[] getOptions() {

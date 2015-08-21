@@ -12,6 +12,7 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.IndexDependentDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsBuilder;
@@ -31,7 +32,7 @@ import org.apache.log4j.Logger;
  * This class can write many entries for a single index by retaining a single
  * open writer. The first entry that is written will open a writer and it is the
  * responsibility of the caller to close this writer when complete.
- * 
+ *
  */
 public class AccumuloIndexWriter implements
 		IndexWriter
@@ -171,15 +172,16 @@ public class AccumuloIndexWriter implements
 		final byte[] adapterId = writableAdapter.getAdapterId().getBytes();
 
 		try {
-			if (writableAdapter instanceof AttachedIteratorDataAdapter) {
+			if (writableAdapter instanceof RowMergingDataAdapter) {
 				if (!DataAdapterAndIndexCache.getInstance(
-						AttachedIteratorDataAdapter.ATTACHED_ITERATOR_CACHE_ID).add(
+						RowMergingAdapterOptionProvider.ROW_MERGING_ADAPTER_CACHE_ID).add(
 						adapterIdObj,
 						indexName)) {
-					accumuloOperations.attachIterators(
+					AccumuloUtils.attachRowMergingIterators(
+							((RowMergingDataAdapter<?, ?>) writableAdapter),
+							accumuloOperations,
 							indexName,
-							accumuloOptions.isCreateTable(),
-							((AttachedIteratorDataAdapter) writableAdapter).getAttachedIteratorConfig(index));
+							accumuloOptions.isCreateTable());
 				}
 			}
 			if (accumuloOptions.isUseLocalityGroups() && !accumuloOperations.localityGroupExists(
@@ -292,15 +294,16 @@ public class AccumuloIndexWriter implements
 			final ByteArrayId adapterIdObj = writableAdapter.getAdapterId();
 
 			final byte[] adapterId = writableAdapter.getAdapterId().getBytes();
-			if (writableAdapter instanceof AttachedIteratorDataAdapter) {
+			if (writableAdapter instanceof RowMergingDataAdapter) {
 				if (!DataAdapterAndIndexCache.getInstance(
-						AttachedIteratorDataAdapter.ATTACHED_ITERATOR_CACHE_ID).add(
+						RowMergingAdapterOptionProvider.ROW_MERGING_ADAPTER_CACHE_ID).add(
 						adapterIdObj,
 						indexName)) {
-					accumuloOperations.attachIterators(
+					AccumuloUtils.attachRowMergingIterators(
+							((RowMergingDataAdapter<?, ?>) writableAdapter),
+							accumuloOperations,
 							indexName,
-							accumuloOptions.isCreateTable(),
-							((AttachedIteratorDataAdapter) writableAdapter).getAttachedIteratorConfig(index));
+							accumuloOptions.isCreateTable());
 				}
 			}
 			if (accumuloOptions.isUseLocalityGroups() && !accumuloOperations.localityGroupExists(

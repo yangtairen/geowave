@@ -160,7 +160,7 @@ public interface AccumuloOperations
 	public boolean attachIterators(
 			final String tableName,
 			final boolean createTable,
-			final IteratorConfig[] iterators )
+			final IteratorConfig... iterators )
 			throws TableNotFoundException;
 
 	/**

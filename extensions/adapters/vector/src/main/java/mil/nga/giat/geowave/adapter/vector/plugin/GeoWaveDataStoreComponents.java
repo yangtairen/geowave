@@ -64,29 +64,6 @@ public class GeoWaveDataStoreComponents
 		return currentIndex;
 	}
 
-	public void replaceDataVisibility(
-			final GeoWaveTransaction transaction,
-			final Collection<ByteArrayId> rowIDs,
-			final String transformingRegex,
-			final String replacement  ) {
-		dataStore.query(new TransformingVisibilityQuery(
-				transformer,
-				currentIndex,
-				rowIDs,
-				transaction.composeAuthorizations()));
-	}
-
-	public void replaceStatsVisibility(
-			final GeoWaveTransaction transaction,
-			final String transformingRegex,
-			final String replacement ) {
-		dataStatisticsStore.transformVisibility(
-				adapter.getAdapterId(),
-				transformingRegex,
-				replacement,
-				transaction.composeAuthorizations());
-	}
-
 	@SuppressWarnings("unchecked")
 	public Map<ByteArrayId, DataStatistics<SimpleFeature>> getDataStatistics(
 			final GeoWaveTransaction transaction ) {
