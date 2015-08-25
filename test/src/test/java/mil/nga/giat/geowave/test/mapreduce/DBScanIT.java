@@ -3,6 +3,7 @@ package mil.nga.giat.geowave.test.mapreduce;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapper;
 import mil.nga.giat.geowave.analytic.GeometryDataSetGenerator;
@@ -23,7 +24,12 @@ import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.OutputParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.PartitionParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
 import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
+import mil.nga.giat.geowave.analytic.store.PersistableDataStore;
+import mil.nga.giat.geowave.core.cli.CommandLineOptions.OptionMapWrapper;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
@@ -53,7 +59,7 @@ public class DBScanIT extends
 					ClusteringUtils.CLUSTERING_CRS,
 					true));
 		}
-		catch (FactoryException e) {
+		catch (final FactoryException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -91,6 +97,12 @@ public class DBScanIT extends
 			throws Exception {
 
 		final DBScanIterationsJobRunner jobRunner = new DBScanIterationsJobRunner();
+		final Map<String, String> options = getAccumuloConfigOptions();
+		options.put(
+				GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
+				TEST_NAMESPACE);
+		final DataStoreCommandLineOptions dataStoreOptions = DataStoreCommandLineOptions.parseOptions(new OptionMapWrapper(
+				options));
 		final int res = jobRunner.run(
 				getConfiguration(),
 				new PropertyManagement(
@@ -102,11 +114,7 @@ public class DBScanIT extends
 							PartitionParameters.Partition.PARTITION_DISTANCE,
 							PartitionParameters.Partition.PARTITIONER_CLASS,
 							ClusteringParameters.Clustering.MINIMUM_SIZE,
-							GlobalParameters.Global.ZOOKEEKER,
-							GlobalParameters.Global.ACCUMULO_INSTANCE,
-							GlobalParameters.Global.ACCUMULO_USER,
-							GlobalParameters.Global.ACCUMULO_PASSWORD,
-							GlobalParameters.Global.ACCUMULO_NAMESPACE,
+							StoreParam.DATA_STORE,
 							MapReduceParameters.MRConfig.HDFS_BASE_DIR,
 							OutputParameters.Output.REDUCER_COUNT,
 							InputParameters.Input.INPUT_FORMAT,
@@ -121,11 +129,8 @@ public class DBScanIT extends
 							10000,
 							OrthodromicDistancePartitioner.class,
 							10,
-							zookeeper,
-							accumuloInstance,
-							accumuloUser,
-							accumuloPassword,
-							TEST_NAMESPACE,
+							new PersistableDataStore(
+									dataStoreOptions),
 							hdfsBaseDirectory + "/t1",
 							2,
 							GeoWaveInputFormatConfiguration.class,
@@ -143,12 +148,9 @@ public class DBScanIT extends
 
 	private int readHulls()
 			throws Exception {
+
 		final CentroidManager<SimpleFeature> centroidManager = new CentroidManagerGeoWave<SimpleFeature>(
-				zookeeper,
-				accumuloInstance,
-				accumuloUser,
-				accumuloPassword,
-				TEST_NAMESPACE,
+
 				new SimpleFeatureItemWrapperFactory(),
 				"concave_hull",
 				"hull_idx",
@@ -156,8 +158,8 @@ public class DBScanIT extends
 				0);
 
 		int count = 0;
-		for (String grp : centroidManager.getAllCentroidGroups()) {
-			for (AnalyticItemWrapper<SimpleFeature> feature : centroidManager.getCentroidsForGroup(grp)) {
+		for (final String grp : centroidManager.getAllCentroidGroups()) {
+			for (final AnalyticItemWrapper<SimpleFeature> feature : centroidManager.getCentroidsForGroup(grp)) {
 				ShapefileTool.writeShape(
 						feature.getName(),
 						new File(
@@ -208,12 +210,6 @@ public class DBScanIT extends
 				new File(
 						"./target/test_in"),
 				features);
-		dataGenerator.writeToGeoWave(
-				zookeeper,
-				accumuloInstance,
-				accumuloUser,
-				accumuloPassword,
-				TEST_NAMESPACE,
-				features);
+		dataGenerator.writeToGeoWave(features);
 	}
 }

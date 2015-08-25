@@ -1,8 +1,5 @@
-package mil.nga.giat.geowave.adapter.vector.wms;
+package mil.nga.giat.geowave.adapter.vector.render;
 
-import mil.nga.giat.geowave.adapter.vector.query.row.AbstractRowProvider;
-import mil.nga.giat.geowave.adapter.vector.wms.accumulo.RenderedMaster;
-import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.Persistable;
 
 /**
@@ -12,7 +9,7 @@ import mil.nga.giat.geowave.core.index.Persistable;
  * in the case of multiple styles and an additional one for labels to adhere to
  * layering rules). The client of this iterator can then composite the images
  * from the tablet server.
- * 
+ *
  */
 public interface DistributableRenderer extends
 		Persistable
@@ -23,8 +20,10 @@ public interface DistributableRenderer extends
 
 	public boolean isDecimationEnabled();
 
-	public AbstractRowProvider newRowProvider(
-			final NumericIndexStrategy indexStrategy );
+	//
+	// public AbstractRowProvider newRowProvider(
+	// final NumericIndexStrategy indexStrategy );
 
 	public RenderedMaster getResult();
+
 }

@@ -11,21 +11,25 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ServiceLoader;
 
 import mil.nga.giat.geowave.adapter.vector.auth.AuthorizationFactorySPI;
 import mil.nga.giat.geowave.adapter.vector.auth.EmptyAuthorizationFactory;
 import mil.nga.giat.geowave.adapter.vector.plugin.lock.LockingManagementFactory;
+import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
 import mil.nga.giat.geowave.core.store.StoreFactoryFamilySpi;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.config.AbstractConfigOption;
+import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.config.PasswordConfigOption;
 import mil.nga.giat.geowave.core.store.filter.GenericTypeResolver;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 
-import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 import org.geotools.data.DataAccessFactory.Param;
 import org.geotools.data.Parameter;
@@ -43,7 +47,7 @@ public class GeoWavePluginConfig
 {
 	private final static Logger LOGGER = Logger.getLogger(GeoWavePluginConfig.class);
 
-	protected static final String GEOWAVE_NAMESPACE_KEY = "Namespace";
+	protected static final String GEOWAVE_NAMESPACE_KEY = "gwNamespace";
 	// name matches the workspace parameter provided to the factory
 	protected static final String FEATURE_NAMESPACE_KEY = "namespace";
 	protected static final String LOCK_MGT_KEY = "Lock Management";
@@ -91,11 +95,11 @@ public class GeoWavePluginConfig
 			"The providers data URL.",
 			false);
 
-	private final String zookeeperServers;
-	private final String instanceName;
-	private final String userName;
-	private final String password;
-	private final String namespace;
+	private final AdapterStore adapterStore;
+	private final DataStore dataStore;
+	private final IndexStore indexStore;
+	private final DataStatisticsStore dataStatisticsStore;
+	private final String name;
 	private final URI featureNameSpaceURI;
 	private final LockingManagementFactory lockingManagementFactory;
 	private final AuthorizationFactorySPI authorizationFactory;
@@ -135,42 +139,23 @@ public class GeoWavePluginConfig
 			final StoreFactoryFamilySpi storeFactoryFamily,
 			final Map<String, Serializable> params )
 			throws GeoWavePluginException {
-		
-		Serializable param = params.get(ZOOKEEPER_SERVERS_KEY);
+
+		Serializable param = params.get(GEOWAVE_NAMESPACE_KEY);
 		if (param == null) {
 			throw new GeoWavePluginException(
-					"Accumulo Plugin: Missing zookeeper servers param");
+					"GeoWave Plugin: Missing namespace param");
 		}
-
-		zookeeperServers = param.toString();
-		param = params.get(INSTANCE_NAME_KEY);
-		if (param == null) {
-			throw new GeoWavePluginException(
-					"Accumulo Plugin: Missing instance name param");
+		final String namespace = param.toString();
+		name = storeFactoryFamily.getName() + (namespace == null ? "" : ("_" + namespace));
+		final Map<String, String> paramStrs = new HashMap<String, String>();
+		// first converts serializable objects to String to avoid any issue if
+		// there's a difference how geotools is converting objects to how
+		// geowave intends to convert objects
+		for (final Entry<String, Serializable> e : params.entrySet()) {
+			paramStrs.put(
+					e.getKey(),
+					e.getValue() == null ? null : e.getValue().toString());
 		}
-		instanceName = param.toString();
-
-		param = params.get(USERNAME_KEY);
-		if (param == null) {
-			throw new GeoWavePluginException(
-					"Accumulo Plugin: Missing username param");
-		}
-
-		userName = param.toString();
-
-		param = params.get(PASSWORD_KEY);
-		if (param == null) {
-			throw new GeoWavePluginException(
-					"Accumulo Plugin: Missing password param");
-		}
-		password = param.toString();
-
-		param = params.get(ACCUMULO_NAMESPACE_KEY);
-		if (param == null) {
-			throw new GeoWavePluginException(
-					"Accumulo Plugin: Missing namespace param");
-		}
-		namespace = param.toString();
 
 		param = params.get(FEATURE_NAMESPACE_KEY);
 		URI namespaceURI = null;
@@ -208,10 +193,38 @@ public class GeoWavePluginConfig
 				break;
 			}
 		}
+
+		adapterStore = storeFactoryFamily.getAdapterStoreFactory().createStore(
+				ConfigUtils.valuesFromStrings(
+						paramStrs,
+						storeFactoryFamily.getAdapterStoreFactory().getOptions()),
+				namespace);
+
+		dataStore = storeFactoryFamily.getDataStoreFactory().createStore(
+				ConfigUtils.valuesFromStrings(
+						paramStrs,
+						storeFactoryFamily.getDataStoreFactory().getOptions()),
+				namespace);
+
+		dataStatisticsStore = storeFactoryFamily.getDataStatisticsStoreFactory().createStore(
+				ConfigUtils.valuesFromStrings(
+						paramStrs,
+						storeFactoryFamily.getDataStatisticsStoreFactory().getOptions()),
+				namespace);
+
+		indexStore = storeFactoryFamily.getIndexStoreFactory().createStore(
+				ConfigUtils.valuesFromStrings(
+						paramStrs,
+						storeFactoryFamily.getIndexStoreFactory().getOptions()),
+				namespace);
 		lockingManagementFactory = factory;
 
 		authorizationFactory = getAuthorizationFactory(params);
 		authorizationURL = getAuthorizationURL(params);
+	}
+
+	public String getName() {
+		return name;
 	}
 
 	public static AuthorizationFactorySPI getAuthorizationFactory(
@@ -229,6 +242,22 @@ public class GeoWavePluginConfig
 			}
 		}
 		return authFactory;
+	}
+
+	public AdapterStore getAdapterStore() {
+		return adapterStore;
+	}
+
+	public DataStore getDataStore() {
+		return dataStore;
+	}
+
+	public IndexStore getIndexStore() {
+		return indexStore;
+	}
+
+	public DataStatisticsStore getDataStatisticsStore() {
+		return dataStatisticsStore;
 	}
 
 	public static URL getAuthorizationURL(
@@ -263,26 +292,6 @@ public class GeoWavePluginConfig
 
 	public LockingManagementFactory getLockingManagementFactory() {
 		return lockingManagementFactory;
-	}
-
-	public String getZookeeperServers() {
-		return zookeeperServers;
-	}
-
-	public String getInstanceName() {
-		return instanceName;
-	}
-
-	public String getUserName() {
-		return userName;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public String getAccumuloNamespace() {
-		return namespace;
 	}
 
 	public URI getFeatureNamespace() {
@@ -362,31 +371,6 @@ public class GeoWavePluginConfig
 				true,
 				"The table namespace (optional; default is no namespace)");
 		allOptions.addOption(namespace);
-	}
-
-	public static GeoWavePluginConfig buildFromOptions(
-			final CommandLine commandLine )
-			throws ParseException,
-			GeoWavePluginException {
-		final Map<String, Serializable> params = new HashMap<String, Serializable>();
-		params.put(
-				ZOOKEEPER_SERVERS_KEY,
-				commandLine.getOptionValue("z"));
-		params.put(
-				INSTANCE_NAME_KEY,
-				commandLine.getOptionValue("i"));
-		params.put(
-				USERNAME_KEY,
-				commandLine.getOptionValue("u"));
-		params.put(
-				PASSWORD_KEY,
-				commandLine.getOptionValue("p"));
-		params.put(
-				ACCUMULO_NAMESPACE_KEY,
-				commandLine.getOptionValue("n"));
-		return new GeoWavePluginConfig(
-				params);
-
 	}
 
 	private static class GeoWaveConfigOptionToGeoToolsConfigOption implements

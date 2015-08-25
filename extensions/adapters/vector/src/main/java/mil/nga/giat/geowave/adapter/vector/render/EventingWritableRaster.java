@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.adapter.vector.wms;
+package mil.nga.giat.geowave.adapter.vector.render;
 
 import java.awt.Point;
 import java.awt.image.Raster;
@@ -8,7 +8,7 @@ import java.awt.image.WritableRaster;
  * This class wraps an AWT WritableRaster with a callback to be able to notify
  * when pixels are written for the raster. All methods are delegated to the
  * underlying writable raster.
- * 
+ *
  */
 public class EventingWritableRaster extends
 		WritableRaster

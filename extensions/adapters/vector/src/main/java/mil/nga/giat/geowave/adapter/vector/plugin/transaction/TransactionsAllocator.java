@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.adapter.vector.transaction;
+package mil.nga.giat.geowave.adapter.vector.plugin.transaction;
 
 import java.io.IOException;
 
@@ -12,7 +12,7 @@ import java.io.IOException;
  * The set of IDs is associated with visibility/access.
  * 
  */
-public interface TransactionsAllocater
+public interface TransactionsAllocator
 {
 	public String getTransaction()
 			throws IOException;

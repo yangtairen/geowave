@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.adapter.vector.wms.accumulo;
+package mil.nga.giat.geowave.adapter.vector.render;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -18,8 +18,6 @@ import javax.media.jai.remote.SerializableState;
 import javax.media.jai.remote.Serializer;
 import javax.media.jai.remote.SerializerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import mil.nga.giat.geowave.adapter.vector.wms.DelayedBackbufferGraphic;
 import mil.nga.giat.geowave.core.index.Persistable;
 
 import org.apache.log4j.Logger;
@@ -36,7 +34,7 @@ import com.sun.media.jai.rmi.SerializableStateImpl;
  * for a layer (any render configuration that is not self-contained within a
  * single style). It contains the master image to which all labels will be
  * rendered on.
- * 
+ *
  */
 public class ServerRenderOptions implements
 		Persistable
@@ -125,7 +123,7 @@ public class ServerRenderOptions implements
 	 * Sets up a {@link BufferedImage#TYPE_4BYTE_ABGR} if the paletteInverter is
 	 * not provided, or a indexed image otherwise. Subclasses may override this
 	 * method should they need a special kind of image
-	 * 
+	 *
 	 * @param width
 	 * @param height
 	 * @param paletteInverter
@@ -184,9 +182,6 @@ public class ServerRenderOptions implements
 		return buf.array();
 	}
 
-	@SuppressFBWarnings(value = {
-		"JLM_JSR166_UTILCONCURRENT_MONITORENTER"
-	}, justification = "lock ensures transactional atomicity")
 	private void registerSerializers() {
 		synchronized (serializerRegistered) {
 			if (!serializerRegistered.get()) {
@@ -266,7 +261,7 @@ public class ServerRenderOptions implements
 			SerializableStateImpl
 	{
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 1L;
 
@@ -324,7 +319,7 @@ public class ServerRenderOptions implements
 			SerializableStateImpl
 	{
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 1L;
 

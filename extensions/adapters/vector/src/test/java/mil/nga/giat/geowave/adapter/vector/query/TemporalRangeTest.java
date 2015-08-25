@@ -3,19 +3,22 @@ package mil.nga.giat.geowave.adapter.vector.query;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
 
-import mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveGTMemDataStore;
+import mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveGTDataStoreFactory;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureTimeRangeStatistics;
 import mil.nga.giat.geowave.adapter.vector.utils.DateUtilities;
 import mil.nga.giat.geowave.core.geotime.store.query.TemporalRange;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.store.memory.MemoryStoreFactoryFamily;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.geotools.data.DataStore;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureWriter;
@@ -33,20 +36,28 @@ import com.vividsolutions.jts.geom.PrecisionModel;
 
 public class TemporalRangeTest
 {
-	GeoWaveGTMemDataStore dataStore;
+	DataStore dataStore;
 	SimpleFeatureType type;
 	GeometryFactory factory = new GeometryFactory(
 			new PrecisionModel(
 					PrecisionModel.FIXED));
 
+	private DataStore createDataStore()
+			throws IOException {
+		final Map<String, Serializable> params = new HashMap<String, Serializable>();
+		params.put(
+				"gwNamespace",
+				"test");
+		return new GeoWaveGTDataStoreFactory(
+				new MemoryStoreFactoryFamily()).createNewDataStore(params);
+	}
+
 	@Before
 	public void setup()
-			throws AccumuloException,
-			AccumuloSecurityException,
-			SchemaException,
+			throws SchemaException,
 			CQLException,
 			IOException {
-		dataStore = new GeoWaveGTMemDataStore();
+		dataStore = createDataStore();
 		type = DataUtilities.createType(
 				"geostuff",
 				"geometry:Geometry:srid=4326,pop:java.lang.Long,pid:String,when:Date");
@@ -58,13 +69,13 @@ public class TemporalRangeTest
 	public void test()
 			throws ParseException,
 			IOException {
-		Calendar gmt = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-		Calendar local = Calendar.getInstance(TimeZone.getTimeZone("EDT"));
+		final Calendar gmt = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		final Calendar local = Calendar.getInstance(TimeZone.getTimeZone("EDT"));
 		local.setTimeInMillis(gmt.getTimeInMillis());
-		TemporalRange rGmt = new TemporalRange(
+		final TemporalRange rGmt = new TemporalRange(
 				gmt.getTime(),
 				gmt.getTime());
-		TemporalRange rLocal = new TemporalRange(
+		final TemporalRange rLocal = new TemporalRange(
 				local.getTime(),
 				local.getTime());
 		rGmt.fromBinary(rGmt.toBinary());
@@ -78,12 +89,12 @@ public class TemporalRangeTest
 				rLocal.getEndTime().getTime(),
 				rGmt.getEndTime().getTime());
 
-		Transaction transaction1 = new DefaultTransaction();
+		final Transaction transaction1 = new DefaultTransaction();
 
-		FeatureWriter<SimpleFeatureType, SimpleFeature> writer = dataStore.getFeatureWriter(
+		final FeatureWriter<SimpleFeatureType, SimpleFeature> writer = dataStore.getFeatureWriter(
 				type.getTypeName(),
 				transaction1);
-		SimpleFeature newFeature = writer.next();
+		final SimpleFeature newFeature = writer.next();
 		newFeature.setAttribute(
 				"pop",
 				Long.valueOf(77));
@@ -99,7 +110,7 @@ public class TemporalRangeTest
 						43.454,
 						28.232)));
 
-		FeatureTimeRangeStatistics stats = new FeatureTimeRangeStatistics(
+		final FeatureTimeRangeStatistics stats = new FeatureTimeRangeStatistics(
 				new ByteArrayId(
 						"a"),
 				"when");

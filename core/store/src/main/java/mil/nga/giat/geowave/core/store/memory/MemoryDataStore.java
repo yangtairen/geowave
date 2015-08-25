@@ -298,7 +298,8 @@ public class MemoryDataStore implements
 
 	@Override
 	public CloseableIterator<?> query(
-			final Query query, String... authorizations) {
+			final Query query,
+			final String... authorizations ) {
 		return query(
 				query,
 				-1);
@@ -450,7 +451,8 @@ public class MemoryDataStore implements
 	@Override
 	public <T> CloseableIterator<T> query(
 			final DataAdapter<T> adapter,
-			final Query query ) {
+			final Query query,
+			final String... additionalAuthorizations ) {
 		return (CloseableIterator<T>) query(
 				Arrays.asList(adapter.getAdapterId()),
 				query,
@@ -460,7 +462,8 @@ public class MemoryDataStore implements
 	@Override
 	public <T> CloseableIterator<T> query(
 			final Index index,
-			final Query query ) {
+			final Query query,
+			final String... additionalAuthorizations ) {
 		return query(
 				index,
 				query,
@@ -471,7 +474,8 @@ public class MemoryDataStore implements
 	public <T> CloseableIterator<T> query(
 			final Index index,
 			final Query query,
-			final QueryOptions queryOptions ) {
+			final QueryOptions queryOptions,
+			final String... additionalAuthorizations ) {
 		return query(
 				index,
 				query,
@@ -482,7 +486,8 @@ public class MemoryDataStore implements
 	public <T> CloseableIterator<T> query(
 			final DataAdapter<T> adapter,
 			final Index index,
-			final Query query ) {
+			final Query query,
+			final String... additionalAuthorizations ) {
 		return query(
 				adapter,
 				index,
@@ -497,13 +502,14 @@ public class MemoryDataStore implements
 
 					}
 				},
-				"");
+				additionalAuthorizations);
 	}
 
 	@Override
 	public CloseableIterator<?> query(
 			final List<ByteArrayId> adapterIds,
-			final Query query ) {
+			final Query query,
+			final String... additionalAuthorizations ) {
 		return query(
 				adapterIds,
 				query,
@@ -513,7 +519,8 @@ public class MemoryDataStore implements
 	@Override
 	public CloseableIterator<?> query(
 			final Query query,
-			final int limit, ) {
+			final int limit,
+			final String... authorizations ) {
 		final List<ByteArrayId> adapterIds = new ArrayList<ByteArrayId>();
 		try (CloseableIterator<DataAdapter<?>> adapterIt = adapterStore.getAdapters()) {
 			while (adapterIt.hasNext()) {
@@ -535,7 +542,8 @@ public class MemoryDataStore implements
 	public <T> CloseableIterator<T> query(
 			final DataAdapter<T> adapter,
 			final Query query,
-			final int limit ) {
+			final int limit,
+			final String... additionalAuthorizations ) {
 		return (CloseableIterator<T>) query(
 				Arrays.asList(adapter.getAdapterId()),
 				query,
@@ -546,7 +554,8 @@ public class MemoryDataStore implements
 	public <T> CloseableIterator<T> query(
 			final Index index,
 			final Query query,
-			final int limit ) {
+			final int limit,
+			final String... additionalAuthorizations ) {
 		return query(
 				null,
 				index,
@@ -561,37 +570,15 @@ public class MemoryDataStore implements
 
 					}
 				},
-				"");
-	}
-
-	@Override
-	public <T> CloseableIterator<T> query(
-			final DataAdapter<T> adapter,
-			final Index index,
-			final Query query,
-			final int limit ) {
-		return query(
-				adapter,
-				index,
-				query,
-				limit,
-				new ScanCallback<T>() {
-
-					@Override
-					public void entryScanned(
-							final DataStoreEntryInfo entryInfo,
-							final T entry ) {
-
-					}
-				},
-				"");
+				additionalAuthorizations);
 	}
 
 	@Override
 	public CloseableIterator<?> query(
 			final List<ByteArrayId> adapterIds,
 			final Query query,
-			final int limit ) {
+			final int limit,
+			final String... additionalAuthorizations ) {
 		final CloseableIterator<Index> indexIt = indexStore.getIndices();
 		return new CloseableIterator<Object>() {
 			Iterator<ByteArrayId> adapterIt = adapterIds.iterator();
@@ -624,7 +611,7 @@ public class MemoryDataStore implements
 
 									}
 								},
-								"");
+								additionalAuthorizations);
 						continue;
 					}
 					index = null;
@@ -667,7 +654,7 @@ public class MemoryDataStore implements
 			final Index index,
 			final Query query,
 			final int limit,
-			final String... authorizations ) {
+			final String... additionalAuthorizations ) {
 		return query(
 				adapter,
 				index,
@@ -682,7 +669,7 @@ public class MemoryDataStore implements
 
 					}
 				},
-				authorizations);
+				additionalAuthorizations);
 	}
 
 	@Override
@@ -692,7 +679,7 @@ public class MemoryDataStore implements
 			final Query query,
 			final Integer limit,
 			final ScanCallback<?> scanCallback,
-			final String... authorizations ) {
+			final String... additionalAuthorizations ) {
 		final Iterator<EntryRow> rowIt = query.isSupported(index) ? getRowsForIndex(
 				index.getId()).iterator() : Collections.<EntryRow> emptyIterator();
 

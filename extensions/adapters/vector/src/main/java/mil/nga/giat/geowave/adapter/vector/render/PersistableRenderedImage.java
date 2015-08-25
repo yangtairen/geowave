@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.adapter.vector.wms.accumulo;
+package mil.nga.giat.geowave.adapter.vector.render;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 /**
  * This class wraps a rendered image as a GeoWave Persistable object. It
  * serializes and deserializes the BufferedImage as a png using ImageIO.
- * 
+ *
  */
 abstract public class PersistableRenderedImage implements
 		Persistable

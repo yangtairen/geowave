@@ -5,13 +5,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import mil.nga.giat.geowave.adapter.vector.utils.DateUtilities;
+import mil.nga.giat.geowave.core.store.memory.MemoryStoreFactoryFamily;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.geotools.data.DataStore;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureReader;
@@ -32,7 +35,7 @@ import com.vividsolutions.jts.geom.PrecisionModel;
 
 public class WFSSpatialTest
 {
-	GeoWaveGTMemDataStore dataStore;
+	DataStore dataStore;
 	SimpleFeatureType schema;
 	SimpleFeatureType type;
 	final GeometryFactory factory = new GeometryFactory(
@@ -40,14 +43,22 @@ public class WFSSpatialTest
 					PrecisionModel.FIXED));
 	Query query = null;
 
+	private DataStore createDataStore()
+			throws IOException {
+		final Map<String, Serializable> params = new HashMap<String, Serializable>();
+		params.put(
+				"gwNamespace",
+				"test");
+		return new GeoWaveGTDataStoreFactory(
+				new MemoryStoreFactoryFamily()).createNewDataStore(params);
+	}
+
 	@Before
 	public void setup()
-			throws AccumuloException,
-			AccumuloSecurityException,
-			SchemaException,
+			throws SchemaException,
 			CQLException,
 			IOException {
-		dataStore = new GeoWaveGTMemDataStore();
+		dataStore = createDataStore();
 		type = DataUtilities.createType(
 				"geostuff",
 				"geometry:Geometry:srid=4326,pop:java.lang.Long,when:Date,pid:String");

@@ -321,14 +321,8 @@ public class BasicMapReduceIT extends
 			job.setOutputFormatClass(NullOutputFormat.class);
 			job.setNumReduceTasks(0);
 			job.setSpeculativeExecution(false);
-
-			GeoWaveInputFormat.setAccumuloOperationsInfo(
-					job.getConfiguration(),
-					zookeeper,
-					instance,
-					user,
-					password,
-					namespace);
+			GeoWaveInputFormat.setStoreConfigOptions(job.getConfiguration(), getAccumuloConfigOptions());
+			GeoWaveInputFormat.setGeoWaveNamespace(job.getConfiguration(), namespace);
 			FileInputFormat.setInputPaths(
 					job,
 					getHdfsOutputPath());

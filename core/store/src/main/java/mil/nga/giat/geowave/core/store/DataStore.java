@@ -176,7 +176,7 @@ public interface DataStore
 	 *            The data ID to use for the query.
 	 * @param adapterId
 	 *            The adapter ID to use for the query.
-	 * @param authorizations
+	 * @param additionalAuthorizations
 	 *            additional authorizations to fetch the entry
 	 *
 	 * @return The entry that was ingested with the given data ID and adapter
@@ -201,7 +201,7 @@ public interface DataStore
 	 *            The data ID to use for the query.
 	 * @param adapterId
 	 *            The adapter ID to use for the query.
-	 * @param authorizations
+	 * @param additionalAuthorizations
 	 *            additional authorizations to delete the entry
 	 * @return Returns true if the entry was found and deleted successfully.
 	 *         Returns false if the entry could not be found, if the entry could
@@ -212,7 +212,7 @@ public interface DataStore
 			final Index index,
 			final ByteArrayId dataId,
 			final ByteArrayId adapterId,
-			final String... authorizations );
+			final String... additionalAuthorizations );
 
 	/**
 	 * Returns all data with the given row ID prefix stored in the given index
@@ -231,7 +231,7 @@ public interface DataStore
 	public <T> CloseableIterator<T> getEntriesByPrefix(
 			final Index index,
 			final ByteArrayId rowPrefix,
-			final String... authorizations );
+			final String... additionalAuthorizations );
 
 	/**
 	 * Returns all data in this data store that matches the query parameter and
@@ -243,13 +243,16 @@ public interface DataStore
 	 *            the data adapter to use for the query
 	 * @param query
 	 *            The description of the query to be performed
+	 * @param additionalAuthorizations
+	 *            additional authorizations to any data store specific defaults
 	 * @return An iterator on all results that match the query. The iterator
 	 *         implements Closeable and it is best practice to close the
 	 *         iterator after it is no longer needed.
 	 */
 	public <T> CloseableIterator<T> query(
 			DataAdapter<T> adapter,
-			final Query query );
+			final Query query,
+			String... additionalAuthorizations );
 
 	/**
 	 * Returns all data in this data store that matches the query parameter
@@ -262,13 +265,17 @@ public interface DataStore
 	 *            index of this index ID will be queried and returned.
 	 * @param query
 	 *            The description of the query to be performed
+	 * @param additionalAuthorizations
+	 *            The authorizations used to override the default authorization
+	 *            for cell visibility.
 	 * @return An iterator on all results that match the query. The iterator
 	 *         implements Closeable and it is best practice to close the
 	 *         iterator after it is no longer needed.
 	 */
 	public <T> CloseableIterator<T> query(
 			Index index,
-			final Query query );
+			final Query query,
+			String... additionalAuthorizations );
 
 	/**
 	 * Returns all data in this data store that matches the query parameter
@@ -284,6 +291,9 @@ public interface DataStore
 	 *            The description of the query to be performed
 	 * @param queryOptions
 	 *            Additional options to be applied to the query results
+	 * @param additionalAuthorizations
+	 *            The authorizations used to override the default authorization
+	 *            for cell visibility.
 	 * @return An iterator on all results that match the query. The iterator
 	 *         implements Closeable and it is best practice to close the
 	 *         iterator after it is no longer needed.
@@ -291,7 +301,8 @@ public interface DataStore
 	public <T> CloseableIterator<T> query(
 			Index index,
 			final Query query,
-			final QueryOptions queryOptions );
+			final QueryOptions queryOptions,
+			String... additionalAuthorizations );
 
 	/**
 	 * Returns all data in this data store that matches the query parameter
@@ -307,6 +318,9 @@ public interface DataStore
 	 *            index of this index ID will be queried and returned.
 	 * @param query
 	 *            The description of the query to be performed
+	 * @param additionalAuthorizations
+	 *            The authorizations used to override the default authorization
+	 *            for cell visibility.
 	 * @return An iterator on all results that match the query. The iterator
 	 *         implements Closeable and it is best practice to close the
 	 *         iterator after it is no longer needed.
@@ -314,7 +328,8 @@ public interface DataStore
 	public <T> CloseableIterator<T> query(
 			DataAdapter<T> adapter,
 			Index index,
-			final Query query );
+			final Query query,
+			String... additionalAuthorizations );
 
 	/**
 	 * Returns all data in this data store that matches the query parameter and
@@ -327,13 +342,17 @@ public interface DataStore
 	 *            matches one of these adapter IDs will be returned
 	 * @param query
 	 *            The description of the query to be performed
+	 * @param additionalAuthorizations
+	 *            The authorizations used to override the default authorization
+	 *            for cell visibility.
 	 * @return An iterator on all results that match the query. The iterator
 	 *         implements Closeable and it is best practice to close the
 	 *         iterator after it is no longer needed.
 	 */
 	public CloseableIterator<?> query(
 			List<ByteArrayId> adapterIds,
-			final Query query );
+			final Query query,
+			String... additionalAuthorizations );
 
 	/**
 	 * Returns all data in this data store that matches the query parameter. All
@@ -346,13 +365,17 @@ public interface DataStore
 	 *            The description of the query to be performed
 	 * @param limit
 	 *            The maximum number of entries to return
+	 * @param additionalAuthorizations
+	 *            The authorization used to override the default authorization
+	 *            for cell visibility.
 	 * @return An iterator on all results that match the query. The iterator
 	 *         implements Closeable and it is best practice to close the
 	 *         iterator after it is no longer needed.
 	 */
 	public CloseableIterator<?> query(
 			final Query query,
-			final int limit );
+			final int limit,
+			String... additionalAuthorizations );
 
 	/**
 	 * Returns all data in this data store that matches the query parameter and
@@ -367,6 +390,9 @@ public interface DataStore
 	 *            The description of the query to be performed
 	 * @param limit
 	 *            The maximum number of entries to return
+	 * @param additionalAuthorizations
+	 *            The authorization used to override the default authorization
+	 *            for cell visibility.
 	 * @return An iterator on all results that match the query. The iterator
 	 *         implements Closeable and it is best practice to close the
 	 *         iterator after it is no longer needed.
@@ -374,7 +400,8 @@ public interface DataStore
 	public <T> CloseableIterator<T> query(
 			DataAdapter<T> adapter,
 			final Query query,
-			final int limit );
+			final int limit,
+			String... additionalAuthorizations );
 
 	/**
 	 * Returns all data in this data store that matches the query parameter
@@ -389,7 +416,10 @@ public interface DataStore
 	 * @param query
 	 *            The description of the query to be performed
 	 * @param limit
-	 *            The maximum number of entries to return
+	 *            The maximum number of entries to return	 *            
+	 * @param additionalAuthorizations
+	 *            The authorization used to override the default authorization
+	 *            for cell visibility.
 	 * @return An iterator on all results that match the query. The iterator
 	 *         implements Closeable and it is best practice to close the
 	 *         iterator after it is no longer needed.
@@ -397,7 +427,8 @@ public interface DataStore
 	public <T> CloseableIterator<T> query(
 			Index index,
 			final Query query,
-			final int limit );
+			final int limit,
+			String... additionalAuthorizations );
 
 	/**
 	 * Returns all data in this data store that matches the query parameter
@@ -416,6 +447,10 @@ public interface DataStore
 	 *            The description of the query to be performed
 	 * @param limit
 	 *            The maximum number of entries to return
+	 *            
+	 * @param additionalAuthorizations
+	 *            The authorizations used to override the default authorization
+	 *            for cell visibility.
 	 * @return An iterator on all results that match the query. The iterator
 	 *         implements Closeable and it is best practice to close the
 	 *         iterator after it is no longer needed.
@@ -424,7 +459,8 @@ public interface DataStore
 			DataAdapter<T> adapter,
 			Index index,
 			final Query query,
-			final int limit );
+			final int limit,
+			String... additionalAuthorizations );
 
 	/**
 	 * Returns all data in this data store that matches the query parameter and
@@ -439,7 +475,10 @@ public interface DataStore
 	 * @param query
 	 *            The description of the query to be performed
 	 * @param limit
-	 *            The maximum number of entries to return
+	 *            The maximum number of entries to return	 *            
+	 * @param additionalAuthorizations
+	 *            The authorizations used to override the default authorization
+	 *            for cell visibility.
 	 * @return An iterator on all results that match the query. The iterator
 	 *         implements Closeable and it is best practice to close the
 	 *         iterator after it is no longer needed.
@@ -447,35 +486,8 @@ public interface DataStore
 	public CloseableIterator<?> query(
 			List<ByteArrayId> adapterIds,
 			final Query query,
-			final int limit );
-
-	/**
-	 * Returns all data in this data store that matches the query parameter and
-	 * matches one of the adapter IDs. All data types that match the query and
-	 * one of the adapter IDs will be returned as an instance of the native data
-	 * type that was originally ingested. The iterator will only return as many
-	 * results as the limit passed in.
-	 *
-	 * @param adapterIds
-	 *            The data adapter IDs to use for the query - only data that
-	 *            matches one of these adapter IDs will be returned
-	 * @param query
-	 *            The description of the query to be performed
-	 * @param limit
-	 *            The maximum number of entries to return
-	 * @param authorization
-	 *            The authorization used to override the default authorization
-	 *            for cell visibility.
-	 * @return An iterator on all results that match the query. The iterator
-	 *         implements Closeable and it is best practice to close the
-	 *         iterator after it is no longer needed.
-	 */
-	public <T> CloseableIterator<T> query(
-			final DataAdapter<T> adapter,
-			final Index index,
-			final Query query,
 			final int limit,
-			final String... authorizations );
+			String... additionalAuthorizations );
 
 	/**
 	 * Returns all data in this data store that matches the query parameter and
@@ -493,8 +505,8 @@ public interface DataStore
 	 *            The maximum number of entries to return
 	 * @param scanCallback
 	 *            A callback invoked for each row with full row information.
-	 * @param authorizations
-	 *            The authorization used to override the default authorization
+	 * @param additionalAuthorizations
+	 *            The authorizations used to override the default authorization
 	 *            for cell visibility.
 	 * @return An iterator on all results that match the query. The iterator
 	 *         implements Closeable and it is best practice to close the
@@ -506,7 +518,7 @@ public interface DataStore
 			final Query query,
 			final Integer limit,
 			final ScanCallback<?> scanCallback,
-			final String... authorizations );
+			final String... additionalAuthorizations );
 
 	/**
 	 * Delete all data in this data store that matches the query parameter.
@@ -514,11 +526,11 @@ public interface DataStore
 	 * @param query
 	 *            The description of the query to be performed. Anything
 	 *            matching this query will be deleted.
-	 * @param authorizations
-	 *            The authorization used to override the default authorization
+	 * @param additionalAuthorizations
+	 *            The authorizations used to override the default authorization
 	 *            for cell visibility.
 	 */
 	public void delete(
 			final Query query,
-			final String... authorizations );
+			final String... additionalAuthorizations );
 }

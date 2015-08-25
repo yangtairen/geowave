@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.adapter.vector.wms.accumulo;
+package mil.nga.giat.geowave.adapter.vector.render;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -7,7 +7,6 @@ import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
-import mil.nga.giat.geowave.adapter.vector.wms.DelayedBackbufferGraphic;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.StringUtils;
 
@@ -28,7 +27,7 @@ import org.opengis.referencing.operation.MathTransform;
 /**
  * This class persists and encapsulates the rules and tyle information
  * associated with a GeoTools SLD.
- * 
+ *
  */
 public class ServerFeatureStyle implements
 		Persistable
@@ -202,9 +201,9 @@ public class ServerFeatureStyle implements
 					if ((styles != null) && (styles.length > 0)) {
 						for (final Style s : styles) {
 							if (!s.featureTypeStyles().isEmpty()) {
-								List<Rule> var = s.featureTypeStyles().get(
-										0).rules();
-								return var.toArray(new Rule[var.size()]);
+								return s.featureTypeStyles().get(
+										0).rules().toArray(
+										new Rule[] {});
 							}
 						}
 					}

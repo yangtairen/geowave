@@ -916,11 +916,15 @@ public class AccumuloDataStore implements
 	@Override
 	public <T> CloseableIterator<T> query(
 			final DataAdapter<T> adapter,
-			final Query query ) {
+			final Query query,
+			final String... additionalAuthorizations ) {
 		return query(
 				adapter,
+				null,
 				query,
-				null);
+				null,
+				null,
+				additionalAuthorizations);
 	}
 
 	@Override
@@ -943,37 +947,23 @@ public class AccumuloDataStore implements
 	public <T> CloseableIterator<T> query(
 			final DataAdapter<T> adapter,
 			final Query query,
-			final int limit ) {
+			final int limit,
+			final String... additionalAuthorizations ) {
 		return query(
 				adapter,
+				null,
 				query,
-				Integer.valueOf(limit));
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T> CloseableIterator<T> query(
-			final DataAdapter<T> adapter,
-			final Query query,
-			final Integer limit ) {
-		store(adapter);
-		return ((CloseableIterator<T>) query(
-				Arrays.asList(new ByteArrayId[] {
-					adapter.getAdapterId()
-				}),
-				query,
-				new MemoryAdapterStore(
-						new DataAdapter[] {
-							adapter
-						}),
-				limit,
-				null));
+				Integer.valueOf(limit),
+				null,
+				additionalAuthorizations);
 	}
 
 	@Override
 	public CloseableIterator<?> query(
 			final List<ByteArrayId> adapterIds,
 			final Query query,
-			final int limit ) {
+			final int limit,
+			final String... additionalAuthorizations ) {
 		return query(
 				adapterIds,
 				query,
@@ -985,13 +975,15 @@ public class AccumuloDataStore implements
 	@Override
 	public CloseableIterator<?> query(
 			final List<ByteArrayId> adapterIds,
-			final Query query ) {
+			final Query query,
+			final String... additionalAuthorizations ) {
 		return query(
 				adapterIds,
 				query,
 				adapterStore,
 				null,
-				null);
+				null,
+				additionalAuthorizations);
 	}
 
 	private CloseableIterator<?> query(
@@ -1099,55 +1091,64 @@ public class AccumuloDataStore implements
 
 	@Override
 	public CloseableIterator<?> query(
-			final Query query ) {
+			final Query query,
+			final String... additionalAuthorizations ) {
 		return query(
 				(List<ByteArrayId>) null,
-				query);
-	}
-
-	@Override
-	public <T> CloseableIterator<T> query(
-			final Index index,
-			final Query query ) {
-		return query(
-				index,
 				query,
-				null,
-				null);
+				additionalAuthorizations);
 	}
 
 	@Override
 	public <T> CloseableIterator<T> query(
 			final Index index,
 			final Query query,
-			final QueryOptions queryOptions ) {
+			final String... additionalAuthorizations ) {
 		return query(
 				index,
 				query,
 				null,
-				queryOptions);
+				additionalAuthorizations);
 	}
 
 	@Override
 	public <T> CloseableIterator<T> query(
 			final Index index,
 			final Query query,
-			final int limit ) {
+			final QueryOptions queryOptions,
+			final String... additionalAuthorizations ) {
+		return query(
+				index,
+				query,
+				null,
+				queryOptions,
+				additionalAuthorizations);
+	}
+
+	@Override
+	public <T> CloseableIterator<T> query(
+			final Index index,
+			final Query query,
+			final int limit,
+			final String... additionalAuthorizations ) {
 		return query(
 				index,
 				query,
 				(Integer) limit,
-				null);
+				null,
+				additionalAuthorizations);
 	}
 
 	@Override
 	public CloseableIterator<?> query(
 			final Query query,
-			final int limit ) {
+			final int limit,
+			final String... additionalAuthorizations ) {
 		return query(
 				(List<ByteArrayId>) null,
 				query,
-				limit);
+				limit,
+				additionalAuthorizations);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1155,7 +1156,8 @@ public class AccumuloDataStore implements
 			final Index index,
 			final Query query,
 			final Integer limit,
-			final QueryOptions queryOptions ) {
+			final QueryOptions queryOptions,
+			final String... additionalAuthorizations ) {
 		if ((query != null) && !query.isSupported(index)) {
 			throw new IllegalArgumentException(
 					"Index does not support the query");
@@ -1172,7 +1174,7 @@ public class AccumuloDataStore implements
 				limit,
 				null,
 				queryOptions,
-				null);
+				additionalAuthorizations);
 	}
 
 	@Override
@@ -1180,36 +1182,42 @@ public class AccumuloDataStore implements
 			final DataAdapter<T> adapter,
 			final Index index,
 			final Query query,
-			final int limit ) {
-		return query(
-				adapter,
-				index,
-				query,
-				limit,
-				(String[]) null);
-	}
-
-	@Override
-	public <T> CloseableIterator<T> query(
-			final DataAdapter<T> adapter,
-			final Index index,
-			final Query query ) {
+			final String... additionalAuthorizations ) {
 		return query(
 				adapter,
 				index,
 				query,
 				null,
-				null);
+				null,
+				additionalAuthorizations);
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public <T> CloseableIterator<T> query(
 			final DataAdapter<T> adapter,
 			final Index index,
 			final Query query,
 			final Integer limit,
 			final ScanCallback<?> scanCallback,
+			final String... authorizations ) {
+		return query(
+				adapter,
+				index,
+				query,
+				limit,
+				scanCallback,
+				null,
+				authorizations);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> CloseableIterator<T> query(
+			final DataAdapter<T> adapter,
+			final Index index,
+			final Query query,
+			final Integer limit,
+			final ScanCallback<?> scanCallback,
+			final QueryOptions queryOptions,
 			final String... authorizations ) {
 		if ((query != null) && !query.isSupported(index)) {
 			throw new IllegalArgumentException(
@@ -1239,7 +1247,8 @@ public class AccumuloDataStore implements
 
 	@Override
 	public void delete(
-			final Query query ) {
+			final Query query,
+			final String... additionalAuthorizations ) {
 		// TODO: we need a general purpose method to delete entries matching a
 		// query, for now this is intended to merely replace the dependencies of
 		// any module external to geowave-datastore-accumulo that had been using

@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.GeoWaveMain;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
@@ -88,7 +89,7 @@ abstract public class GeoWaveTestEnvironment
 		// ingest framework's main method and pre-defined commandline arguments
 		LOGGER.warn("Ingesting '" + ingestFilePath + "' - this may take several minutes...");
 		final String[] args = StringUtils.split(
-				"-localingest -f geotools-vector -b " + ingestFilePath + " -z " + zookeeper + " -i " + accumuloInstance + " -u " + accumuloUser + " -p " + accumuloPassword + " -n " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
+				"-localingest -f geotools-vector -b " + ingestFilePath + " -" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME + " " + zookeeper + " -" + BasicAccumuloOperations.INSTANCE_CONFIG_NAME + " " + accumuloInstance + " -" + BasicAccumuloOperations.USER_CONFIG_NAME + " " + accumuloUser + " -" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME + " " + accumuloPassword + " -" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY + " " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
 				' ');
 		GeoWaveMain.main(args);
 		verifyStats();
@@ -97,15 +98,15 @@ abstract public class GeoWaveTestEnvironment
 	private void verifyStats() {
 		GeoWaveMain.main(new String[] {
 			"-statsdump",
-			"-z",
+			"-" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
 			zookeeper,
-			"-n",
+			"-" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
 			TEST_NAMESPACE,
-			"-u",
+			"-" + BasicAccumuloOperations.USER_CONFIG_NAME,
 			accumuloUser,
-			"-p",
+			"-" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME,
 			accumuloPassword,
-			"-i",
+			"-" + BasicAccumuloOperations.INSTANCE_CONFIG_NAME,
 			accumuloInstance
 		});
 	}

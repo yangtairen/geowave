@@ -1,9 +1,12 @@
 package mil.nga.giat.geowave.test.mapreduce;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import mil.nga.giat.geowave.core.cli.GeoWaveMain;
 import mil.nga.giat.geowave.core.geotime.IndexType;
+import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.test.GeoWaveTestEnvironment;
 
 import org.apache.commons.lang.StringUtils;
@@ -140,4 +143,20 @@ abstract public class MapReduceTestEnvironment extends
 
 	}
 
+	protected static Map<String, String> getAccumuloConfigOptions() {
+		final Map<String, String> configOptions = new HashMap<String, String>();
+		configOptions.put(
+				BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
+				zookeeper);
+		configOptions.put(
+				BasicAccumuloOperations.INSTANCE_CONFIG_NAME,
+				accumuloInstance);
+		configOptions.put(
+				BasicAccumuloOperations.USER_CONFIG_NAME,
+				accumuloUser);
+		configOptions.put(
+				BasicAccumuloOperations.PASSWORD_CONFIG_NAME,
+				accumuloPassword);
+		return configOptions;
+	}
 }

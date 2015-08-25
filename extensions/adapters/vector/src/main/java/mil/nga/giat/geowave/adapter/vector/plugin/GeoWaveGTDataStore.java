@@ -13,11 +13,10 @@ import mil.nga.giat.geowave.adapter.vector.plugin.lock.LockingManagement;
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveAutoCommitTransactionState;
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveTransactionManagementState;
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveTransactionState;
+import mil.nga.giat.geowave.adapter.vector.plugin.transaction.MemoryTransactionsAllocator;
+import mil.nga.giat.geowave.adapter.vector.plugin.transaction.TransactionsAllocator;
 import mil.nga.giat.geowave.adapter.vector.plugin.visibility.ColumnVisibilityManagement;
 import mil.nga.giat.geowave.adapter.vector.plugin.visibility.VisibilityManagementHelper;
-import mil.nga.giat.geowave.adapter.vector.transaction.TransactionNotification;
-import mil.nga.giat.geowave.adapter.vector.transaction.TransactionsAllocater;
-import mil.nga.giat.geowave.adapter.vector.transaction.ZooKeeperTransactionsAllocater;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.geotime.store.dimension.LatitudeField;
 import mil.nga.giat.geowave.core.geotime.store.dimension.LongitudeField;
@@ -26,9 +25,9 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
-import mil.nga.giat.geowave.core.store.StoreFactoryFamilySpi;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.dimension.DimensionField;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
@@ -50,8 +49,7 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public class GeoWaveGTDataStore extends
-		ContentDataStore implements
-		TransactionNotification
+		ContentDataStore
 {
 	/** Package logger */
 	private final static Logger LOGGER = Logger.getLogger(GeoWaveGTDataStore.class);
@@ -76,16 +74,16 @@ public class GeoWaveGTDataStore extends
 	private FeatureListenerManager listenerManager = null;
 	protected AdapterStore adapterStore;
 	protected IndexStore indexStore;
+	protected DataStatisticsStore dataStatisticsStore;
 	protected DataStore dataStore;
 	private final Map<String, Index> preferredIndexes = new ConcurrentHashMap<String, Index>();
 	private final ColumnVisibilityManagement<SimpleFeature> visibilityManagement = VisibilityManagementHelper.loadVisibilityManagement();
 	private final AuthorizationSPI authorizationSPI;
-	private final TransactionsAllocater transactionsAllocater;
 	private final URI featureNameSpaceURI;
 	private int transactionBufferSize = 10000;
+	private final TransactionsAllocator transactionsAllocator;
 
 	public GeoWaveGTDataStore(
-			final StoreFactoryFamilySpi dataStoreFactory,
 			final GeoWavePluginConfig config )
 			throws IOException {
 		listenerManager = new FeatureListenerManager();
@@ -93,16 +91,19 @@ public class GeoWaveGTDataStore extends
 				config);
 		authorizationSPI = config.getAuthorizationFactory().create(
 				config.getAuthorizationURL());
-		init(
-				dataStoreFactory,
-				config);
-		transactionsAllocater = new ZooKeeperTransactionsAllocater(
-				config.getZookeeperServers(),
-				config.getUserName(),
-				this);
+		init(config);
 		featureNameSpaceURI = config.getFeatureNamespace();
 		transactionBufferSize = config.getTransactionBufferSize();
+		transactionsAllocator = new MemoryTransactionsAllocator();
 
+	}
+
+	public void init(
+			final GeoWavePluginConfig config ) {
+		dataStore = config.getDataStore();
+		dataStatisticsStore = config.getDataStatisticsStore();
+		indexStore = config.getIndexStore();
+		adapterStore = config.getAdapterStore();
 	}
 
 	public AuthorizationSPI getAuthorizationSPI() {
@@ -117,12 +118,16 @@ public class GeoWaveGTDataStore extends
 		return dataStore;
 	}
 
-	public void init(
-			final StoreFactoryFamilySpi dataStoreFactory,
-			final GeoWavePluginConfig config ) {
-		dataStore = dataStoreFactory.getDataStoreFactory().createStore(
-				configOptions,
-				namespace);
+	public AdapterStore getAdapterStore() {
+		return adapterStore;
+	}
+
+	public IndexStore getIndexStore() {
+		return indexStore;
+	}
+
+	public DataStatisticsStore getDataStatisticsStore() {
+		return dataStatisticsStore;
 	}
 
 	protected Index getIndex(
@@ -146,10 +151,6 @@ public class GeoWaveGTDataStore extends
 
 		adapterStore.addAdapter(adapter);
 		getPreferredIndex(adapter);
-	}
-
-	public TransactionsAllocater getTransactionsAllocater() {
-		return transactionsAllocater;
 	}
 
 	private FeatureDataAdapter getAdapter(
@@ -231,7 +232,8 @@ public class GeoWaveGTDataStore extends
 		return new GeoWaveFeatureSource(
 				entry,
 				Query.ALL,
-				getAdapter(entry.getTypeName()));
+				getAdapter(entry.getTypeName()),
+				transactionsAllocator);
 	}
 
 	@Override

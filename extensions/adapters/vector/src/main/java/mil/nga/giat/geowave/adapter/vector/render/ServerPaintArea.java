@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.adapter.vector.wms.accumulo;
+package mil.nga.giat.geowave.adapter.vector.render;
 
 import java.awt.Rectangle;
 import java.nio.ByteBuffer;
@@ -7,7 +7,7 @@ import mil.nga.giat.geowave.core.index.Persistable;
 
 /**
  * This class persists information about the image (width, height).
- * 
+ *
  */
 public class ServerPaintArea implements
 		Persistable

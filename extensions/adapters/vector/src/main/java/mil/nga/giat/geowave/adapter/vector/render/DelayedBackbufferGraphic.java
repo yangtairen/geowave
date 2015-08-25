@@ -14,7 +14,7 @@
  *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *    Lesser General Public License for more details.
  */
-package mil.nga.giat.geowave.adapter.vector.wms;
+package mil.nga.giat.geowave.adapter.vector.render;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 

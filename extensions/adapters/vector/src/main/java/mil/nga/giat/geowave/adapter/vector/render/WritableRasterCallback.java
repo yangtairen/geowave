@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.adapter.vector.wms;
+package mil.nga.giat.geowave.adapter.vector.render;
 
 import java.awt.image.BufferedImage;
 

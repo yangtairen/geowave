@@ -25,6 +25,7 @@ abstract public class GenericStoreCommandLineOptions<T>
 	protected final GenericStoreFactory<T> factory;
 	protected final Map<String, Object> configOptions;
 	protected final String namespace;
+	public static String NAMESPACE_OPTION_KEY = "gwNamespace";
 
 	public GenericStoreCommandLineOptions(
 			final GenericStoreFactory<T> factory,
@@ -119,8 +120,7 @@ abstract public class GenericStoreCommandLineOptions<T>
 						helper.getRegisteredFactories().keySet(),
 						"Available " + optionName + "s: ")));
 		final Option namespace = new Option(
-				prefix != null ? prefix + "n" : "n",
-				prefix != null ? prefix + "namespace" : "namespace",
+				prefix != null ? prefix + NAMESPACE_OPTION_KEY : NAMESPACE_OPTION_KEY,
 				true,
 				"The geowave namespace (optional; default is no namespace)");
 		namespace.setRequired(false);
@@ -146,7 +146,7 @@ abstract public class GenericStoreCommandLineOptions<T>
 			throws ParseException {
 		final String optionName = prefix != null ? prefix + helper.getOptionName() : helper.getOptionName();
 		final String namespace = commandLine.getOptionValue(
-				prefix != null ? prefix + "n" : "n",
+				prefix != null ? prefix + NAMESPACE_OPTION_KEY : NAMESPACE_OPTION_KEY,
 				"");
 		if (commandLine.hasOption(optionName)) {
 			// if data store is given, make sure the commandline options

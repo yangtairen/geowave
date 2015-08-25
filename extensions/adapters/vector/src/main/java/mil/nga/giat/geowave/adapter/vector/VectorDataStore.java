@@ -1,6 +1,6 @@
 package mil.nga.giat.geowave.adapter.vector;
 
-import mil.nga.giat.geowave.adapter.vector.wms.DistributableRenderer;
+import mil.nga.giat.geowave.adapter.vector.render.DistributableRenderer;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.Query;

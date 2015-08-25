@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
+import mil.nga.giat.geowave.core.store.StoreFactoryFamilySpi;
 
 import org.apache.log4j.Logger;
 import org.geotools.data.DataStore;
@@ -47,22 +48,22 @@ public class GeoWaveGTDataStoreFactory implements
 
 	private static final Logger LOGGER = Logger.getLogger(GeoWaveGTDataStoreFactory.class);
 	private final List<DataStoreCacheEntry> dataStoreCache = new ArrayList<DataStoreCacheEntry>();
-	private final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory;
+	private final StoreFactoryFamilySpi geowaveStoreFactoryFamily;
 
 	/**
 	 * Public "no argument" constructor called by Factory Service Provider (SPI)
 	 * entry listed in META-INF/services/org.geotools.data.DataStoreFactorySPI
 	 */
 	public GeoWaveGTDataStoreFactory() {
-		final Collection<mil.nga.giat.geowave.core.store.DataStoreFactorySpi> dataStoreFactories = GeoWaveStoreFinder.getRegisteredDataStoreFactories().values();
+		final Collection<StoreFactoryFamilySpi> dataStoreFactories = GeoWaveStoreFinder.getRegisteredStoreFactoryFamilies().values();
 		if (dataStoreFactories.isEmpty()) {
 			LOGGER.error("No GeoWave DataStore found!  Geotools datastore for GeoWave is unavailable");
-			geowaveDataStoreFactory = null;
+			geowaveStoreFactoryFamily = null;
 			isAvailable = false;
 		}
 		else {
-			final Iterator<mil.nga.giat.geowave.core.store.DataStoreFactorySpi> it = dataStoreFactories.iterator();
-			geowaveDataStoreFactory = it.next();
+			final Iterator<StoreFactoryFamilySpi> it = dataStoreFactories.iterator();
+			geowaveStoreFactoryFamily = it.next();
 			if (it.hasNext()) {
 				GeoTools.addFactoryIteratorProvider(new GeoWaveGTDataStoreFactoryIteratorProvider());
 			}
@@ -70,8 +71,8 @@ public class GeoWaveGTDataStoreFactory implements
 	}
 
 	public GeoWaveGTDataStoreFactory(
-			final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
-		this.geowaveDataStoreFactory = geowaveDataStoreFactory;
+			final StoreFactoryFamilySpi geowaveStoreFactoryFamily ) {
+		this.geowaveStoreFactoryFamily = geowaveStoreFactoryFamily;
 	}
 
 	// GeoServer seems to call this several times so we should cache a
@@ -124,6 +125,7 @@ public class GeoWaveGTDataStoreFactory implements
 		try {
 			dataStore = new GeoWaveGTDataStore(
 					new GeoWavePluginConfig(
+							geowaveStoreFactoryFamily,
 							params));
 			dataStoreCache.add(new DataStoreCacheEntry(
 					params,
@@ -139,17 +141,17 @@ public class GeoWaveGTDataStoreFactory implements
 
 	@Override
 	public String getDisplayName() {
-		return "GeoWave Datastore - " + geowaveDataStoreFactory.getName();
+		return "GeoWave Datastore - " + geowaveStoreFactoryFamily.getName();
 	}
 
 	@Override
 	public String getDescription() {
-		return "A datastore that uses the GeoWave API for spatial data persistence in " + geowaveDataStoreFactory.getName() + ". " + geowaveDataStoreFactory.getDescription();
+		return "A datastore that uses the GeoWave API for spatial data persistence in " + geowaveStoreFactoryFamily.getName() + ". " + geowaveStoreFactoryFamily.getDescription();
 	}
 
 	@Override
 	public Param[] getParametersInfo() {
-		final List<Param> params = GeoWavePluginConfig.getPluginParams();
+		final List<Param> params = GeoWavePluginConfig.getPluginParams(geowaveStoreFactoryFamily);
 		return params.toArray(new Param[params.size()]);
 	}
 
@@ -159,6 +161,7 @@ public class GeoWaveGTDataStoreFactory implements
 		try {
 			// rely on validation in GeoWavePluginConfig's constructor
 			new GeoWavePluginConfig(
+					geowaveStoreFactoryFamily,
 					params);
 			return true;
 		}
@@ -207,11 +210,11 @@ public class GeoWaveGTDataStoreFactory implements
 			private final Iterator<DataStoreFactorySpi> it;
 
 			private GeoWaveGTDataStoreFactoryIterator() {
-				final Iterator<mil.nga.giat.geowave.core.store.DataStoreFactorySpi> geowaveDataStoreIt = GeoWaveStoreFinder.getRegisteredDataStoreFactories().values().iterator();
+				final Iterator<StoreFactoryFamilySpi> geowaveDataStoreIt = GeoWaveStoreFinder.getRegisteredStoreFactoryFamilies().values().iterator();
 				geowaveDataStoreIt.next();
 				it = Iterators.transform(
 						geowaveDataStoreIt,
-						new GeoWaveDataStoreToGeoToolsDataStore());
+						new GeoWaveStoreToGeoToolsDataStore());
 			}
 
 			@Override
@@ -236,14 +239,14 @@ public class GeoWaveGTDataStoreFactory implements
 	 *
 	 *
 	 */
-	private static class GeoWaveDataStoreToGeoToolsDataStore implements
-			Function<mil.nga.giat.geowave.core.store.DataStoreFactorySpi, DataStoreFactorySpi>
+	private static class GeoWaveStoreToGeoToolsDataStore implements
+			Function<StoreFactoryFamilySpi, DataStoreFactorySpi>
 	{
 		private final int i = 1;
 
 		@Override
 		public DataStoreFactorySpi apply(
-				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi input ) {
+				final StoreFactoryFamilySpi input ) {
 			switch (i) {
 				case 1:
 					return new GeoWaveGTDataStoreFactory1(
@@ -285,9 +288,9 @@ public class GeoWaveGTDataStoreFactory implements
 	{
 
 		public GeoWaveGTDataStoreFactory1(
-				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+				final StoreFactoryFamilySpi geowaveStoreFactoryFamily ) {
 			super(
-					geowaveDataStoreFactory);
+					geowaveStoreFactoryFamily);
 		}
 	}
 
@@ -296,9 +299,9 @@ public class GeoWaveGTDataStoreFactory implements
 	{
 
 		public GeoWaveGTDataStoreFactory2(
-				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+				final StoreFactoryFamilySpi geowaveStoreFactoryFamily ) {
 			super(
-					geowaveDataStoreFactory);
+					geowaveStoreFactoryFamily);
 		}
 	}
 
@@ -307,9 +310,9 @@ public class GeoWaveGTDataStoreFactory implements
 	{
 
 		public GeoWaveGTDataStoreFactory3(
-				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+				final StoreFactoryFamilySpi geowaveStoreFactoryFamily ) {
 			super(
-					geowaveDataStoreFactory);
+					geowaveStoreFactoryFamily);
 		}
 	}
 
@@ -318,9 +321,9 @@ public class GeoWaveGTDataStoreFactory implements
 	{
 
 		public GeoWaveGTDataStoreFactory4(
-				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+				final StoreFactoryFamilySpi geowaveStoreFactoryFamily ) {
 			super(
-					geowaveDataStoreFactory);
+					geowaveStoreFactoryFamily);
 		}
 	}
 
@@ -329,9 +332,9 @@ public class GeoWaveGTDataStoreFactory implements
 	{
 
 		public GeoWaveGTDataStoreFactory5(
-				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+				final StoreFactoryFamilySpi geowaveStoreFactoryFamily ) {
 			super(
-					geowaveDataStoreFactory);
+					geowaveStoreFactoryFamily);
 		}
 	}
 
@@ -340,9 +343,9 @@ public class GeoWaveGTDataStoreFactory implements
 	{
 
 		public GeoWaveGTDataStoreFactory6(
-				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+				final StoreFactoryFamilySpi geowaveStoreFactoryFamily ) {
 			super(
-					geowaveDataStoreFactory);
+					geowaveStoreFactoryFamily);
 		}
 	}
 
@@ -351,9 +354,9 @@ public class GeoWaveGTDataStoreFactory implements
 	{
 
 		public GeoWaveGTDataStoreFactory7(
-				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+				final StoreFactoryFamilySpi geowaveStoreFactoryFamily ) {
 			super(
-					geowaveDataStoreFactory);
+					geowaveStoreFactoryFamily);
 		}
 	}
 
@@ -362,9 +365,9 @@ public class GeoWaveGTDataStoreFactory implements
 	{
 
 		public GeoWaveGTDataStoreFactory8(
-				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+				final StoreFactoryFamilySpi geowaveStoreFactoryFamily ) {
 			super(
-					geowaveDataStoreFactory);
+					geowaveStoreFactoryFamily);
 		}
 	}
 
@@ -373,9 +376,9 @@ public class GeoWaveGTDataStoreFactory implements
 	{
 
 		public GeoWaveGTDataStoreFactory9(
-				final mil.nga.giat.geowave.core.store.DataStoreFactorySpi geowaveDataStoreFactory ) {
+				final StoreFactoryFamilySpi geowaveStoreFactoryFamily ) {
 			super(
-					geowaveDataStoreFactory);
+					geowaveStoreFactoryFamily);
 		}
 	}
 }

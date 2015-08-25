@@ -1,7 +1,6 @@
 package mil.nga.giat.geowave.adapter.vector.plugin;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -9,8 +8,7 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveTransaction;
-import mil.nga.giat.geowave.adapter.vector.query.TransformingVisibilityQuery;
-import mil.nga.giat.geowave.adapter.vector.transaction.TransactionsAllocater;
+import mil.nga.giat.geowave.adapter.vector.plugin.transaction.TransactionsAllocator;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.DataStore;
@@ -21,6 +19,7 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.data.visibility.GlobalVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -28,24 +27,31 @@ public class GeoWaveDataStoreComponents
 {
 	private final FeatureDataAdapter adapter;
 	private final DataStore dataStore;
+	private final IndexStore indexStore;
 	private final DataStatisticsStore dataStatisticsStore;
-	private final GeoWaveGTDataStore GTstore;
-	private final TransactionsAllocater transactionsAllocater;
+	private final GeoWaveGTDataStore gtStore;
+	private final TransactionsAllocator transactionAllocator;
 
 	private final Index currentIndex;
 
 	public GeoWaveDataStoreComponents(
 			final DataStore dataStore,
 			final DataStatisticsStore dataStatisticsStore,
-			final GeoWaveGTDataStore GTstore,
+			final IndexStore indexStore,
 			final FeatureDataAdapter adapter,
-			final TransactionsAllocater transactionsAllocater ) {
+			final GeoWaveGTDataStore gtStore,
+			final TransactionsAllocator transactionAllocator ) {
 		this.adapter = adapter;
 		this.dataStore = dataStore;
+		this.indexStore = indexStore;
 		this.dataStatisticsStore = dataStatisticsStore;
-		this.GTstore = GTstore;
-		currentIndex = GTstore.getIndex(adapter);
-		this.transactionsAllocater = transactionsAllocater;
+		this.gtStore = gtStore;
+		currentIndex = gtStore.getIndex(adapter);
+		this.transactionAllocator = transactionAllocator;
+	}
+
+	public IndexStore getIndexStore() {
+		return indexStore;
 	}
 
 	public FeatureDataAdapter getAdapter() {
@@ -57,7 +63,7 @@ public class GeoWaveDataStoreComponents
 	}
 
 	public GeoWaveGTDataStore getGTstore() {
-		return GTstore;
+		return gtStore;
 	}
 
 	public Index getCurrentIndex() {
@@ -159,12 +165,12 @@ public class GeoWaveDataStoreComponents
 
 	public String getTransaction()
 			throws IOException {
-		return transactionsAllocater.getTransaction();
+		return transactionAllocator.getTransaction();
 	}
 
 	public void releaseTransaction(
 			final String txID )
 			throws IOException {
-		transactionsAllocater.releaseTransaction(txID);
+		transactionAllocator.releaseTransaction(txID);
 	}
 }

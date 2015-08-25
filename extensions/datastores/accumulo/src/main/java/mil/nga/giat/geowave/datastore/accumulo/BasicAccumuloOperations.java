@@ -53,10 +53,10 @@ public class BasicAccumuloOperations implements
 		AccumuloOperations
 {
 	private final static Logger LOGGER = Logger.getLogger(BasicAccumuloOperations.class);
-	private static final String ZOOKEEPER_CONFIG_NAME = "zookeeper";
-	private static final String INSTANCE_CONFIG_NAME = "instance";
-	private static final String USER_CONFIG_NAME = "user";
-	private static final String PASSWORD_CONFIG_NAME = "password";
+	public static final String ZOOKEEPER_CONFIG_NAME = "zookeeper";
+	public static final String INSTANCE_CONFIG_NAME = "instance";
+	public static final String USER_CONFIG_NAME = "user";
+	public static final String PASSWORD_CONFIG_NAME = "password";
 	private static final AbstractConfigOption<?>[] CONFIG_OPTIONS = new AbstractConfigOption[] {
 		new StringConfigOption(
 				ZOOKEEPER_CONFIG_NAME,

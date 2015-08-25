@@ -5,11 +5,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import mil.nga.giat.geowave.adapter.vector.render.DistributableRenderer;
+import mil.nga.giat.geowave.adapter.vector.render.RenderedMaster;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureBoundingBoxStatistics;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureNumericRangeStatistics;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureTimeRangeStatistics;
-import mil.nga.giat.geowave.adapter.vector.wms.DistributableRenderer;
-import mil.nga.giat.geowave.adapter.vector.wms.accumulo.RenderedMaster;
 import mil.nga.giat.geowave.core.geotime.store.query.TemporalConstraintsSet;
 import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -45,7 +45,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  * object in order to open the appropriate cursor to iterate over data. It uses
  * Keys within the Query hints to determine whether to perform special purpose
  * queries such as decimation or distributed rendering.
- * 
+ *
  */
 public class GeoWaveFeatureCollection extends
 		DataFeatureCollection
@@ -224,12 +224,12 @@ public class GeoWaveFeatureCollection extends
 	}
 
 	private Filter getFilter(
-			Query query ) {
-		Filter filter = query.getFilter();
+			final Query query ) {
+		final Filter filter = query.getFilter();
 		if (filter instanceof BBOXImpl) {
-			BBOXImpl bbox = ((BBOXImpl) filter);
-			String propName = bbox.getPropertyName();
-			if (propName == null || propName.isEmpty()) {
+			final BBOXImpl bbox = ((BBOXImpl) filter);
+			final String propName = bbox.getPropertyName();
+			if ((propName == null) || propName.isEmpty()) {
 				bbox.setPropertyName(getSchema(
 						reader,
 						query).getGeometryDescriptor().getLocalName());
@@ -377,7 +377,7 @@ public class GeoWaveFeatureCollection extends
 					null);
 			int acceptedCount = 0;
 			for (final String attr : attrs) {
-				for (DataStatistics<SimpleFeature> stat : reader.getStatsFor(attr)) {
+				for (final DataStatistics<SimpleFeature> stat : reader.getStatsFor(attr)) {
 					if (stat instanceof FeatureTimeRangeStatistics) {
 						minVisitor.setValue(reader.convertToType(
 								attr,
@@ -409,7 +409,7 @@ public class GeoWaveFeatureCollection extends
 					null);
 			int acceptedCount = 0;
 			for (final String attr : attrs) {
-				for (DataStatistics<SimpleFeature> stat : reader.getStatsFor(attr)) {
+				for (final DataStatistics<SimpleFeature> stat : reader.getStatsFor(attr)) {
 					if (stat instanceof FeatureTimeRangeStatistics) {
 						maxVisitor.setValue(reader.convertToType(
 								attr,
@@ -440,7 +440,7 @@ public class GeoWaveFeatureCollection extends
 
 	/**
 	 * Return constraints that are indexed
-	 * 
+	 *
 	 * @param query
 	 * @return
 	 */

@@ -5,7 +5,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureNumericRangeStatistics;
@@ -17,7 +20,9 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.statistics.CountDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
+import mil.nga.giat.geowave.core.store.memory.MemoryStoreFactoryFamily;
 
+import org.geotools.data.DataStore;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureWriter;
@@ -52,12 +57,22 @@ public class GeoWaveFeatureSourceTest
 		testPartial();
 	}
 
+	private DataStore createDataStore()
+			throws IOException {
+		final Map<String, Serializable> params = new HashMap<String, Serializable>();
+		params.put(
+				"gwNamespace",
+				"test");
+		return new GeoWaveGTDataStoreFactory(
+				new MemoryStoreFactoryFamily()).createNewDataStore(params);
+	}
+
 	public void testEmpty()
 			throws Exception {
 		final SimpleFeatureType type = DataUtilities.createType(
 				"GeoWaveFeatureSourceTest_e",
 				"geometry:Geometry:srid=4326,pop:java.lang.Long,pid:String,when:Date");
-		final GeoWaveGTMemDataStore dataStore = new GeoWaveGTMemDataStore();
+		final DataStore dataStore = createDataStore();
 		dataStore.createSchema(type);
 		final SimpleFeatureSource source = dataStore.getFeatureSource("GeoWaveFeatureSourceTest_e");
 		final ReferencedEnvelope env = source.getBounds();
@@ -82,7 +97,7 @@ public class GeoWaveFeatureSourceTest
 		final SimpleFeatureType type = DataUtilities.createType(
 				"GeoWaveFeatureSourceTest_full",
 				"geometry:Geometry:srid=4326,pop:java.lang.Long,pid:String,when:Date");
-		final GeoWaveGTMemDataStore dataStore = new GeoWaveGTMemDataStore();
+		final DataStore dataStore = createDataStore();
 		populate(
 				type,
 				dataStore);
@@ -105,7 +120,7 @@ public class GeoWaveFeatureSourceTest
 				Filter.INCLUDE);
 		assertTrue(source.getCount(query) > 2);
 
-		final CloseableIterator<DataStatistics<?>> stats = dataStore.dataStore.getStatsStore().getDataStatistics(
+		final CloseableIterator<DataStatistics<?>> stats = ((GeoWaveGTDataStore) dataStore).getDataStatisticsStore().getDataStatistics(
 				new ByteArrayId(
 						"GeoWaveFeatureSourceTest_full".getBytes(StringUtils.UTF8_CHAR_SET)));
 		assertTrue(stats.hasNext());
@@ -170,7 +185,7 @@ public class GeoWaveFeatureSourceTest
 		final SimpleFeatureType type = DataUtilities.createType(
 				"GeoWaveFeatureSourceTest_p",
 				"geometry:Geometry:srid=4326,pop:java.lang.Long,pid:String,when:Date");
-		final GeoWaveGTMemDataStore dataStore = new GeoWaveGTMemDataStore();
+		final DataStore dataStore = createDataStore();
 		populate(
 				type,
 				dataStore);
@@ -204,7 +219,7 @@ public class GeoWaveFeatureSourceTest
 
 	private void populate(
 			final SimpleFeatureType type,
-			final GeoWaveGTMemDataStore dataStore )
+			final DataStore dataStore )
 			throws IOException,
 			CQLException,
 			ParseException {

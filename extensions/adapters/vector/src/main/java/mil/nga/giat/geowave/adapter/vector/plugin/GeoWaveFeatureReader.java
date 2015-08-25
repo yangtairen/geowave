@@ -17,10 +17,11 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TimeZone;
 
+import mil.nga.giat.geowave.adapter.vector.VectorDataStore;
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveTransaction;
+import mil.nga.giat.geowave.adapter.vector.render.DistributableRenderer;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureStatistic;
 import mil.nga.giat.geowave.adapter.vector.util.QueryIndexHelper;
-import mil.nga.giat.geowave.adapter.vector.wms.DistributableRenderer;
 import mil.nga.giat.geowave.core.geotime.DimensionalityType;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.geotime.store.query.TemporalConstraintsSet;
@@ -50,7 +51,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * This class wraps a geotools data store as well as one for statistics (for
  * example to display Heatmaps) into a GeoTools FeatureReader for simple feature
  * data. It acts as a helper for GeoWave's GeoTools data store.
- * 
+ *
  */
 public class GeoWaveFeatureReader implements
 		FeatureReader<SimpleFeatureType, SimpleFeature>
@@ -138,7 +139,7 @@ public class GeoWaveFeatureReader implements
 		final List<CloseableIterator<SimpleFeature>> results = new ArrayList<CloseableIterator<SimpleFeature>>();
 		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = components.getDataStatistics(transaction);
 
-		try (CloseableIterator<Index> indexIt = getComponents().getDataStore().getIndices()) {
+		try (CloseableIterator<Index> indexIt = getComponents().getIndexStore().getIndices()) {
 			while (indexIt.hasNext()) {
 				final Index index = indexIt.next();
 
@@ -231,17 +232,23 @@ public class GeoWaveFeatureReader implements
 		public CloseableIterator<SimpleFeature> query(
 				final Index index,
 				final mil.nga.giat.geowave.core.store.query.Query query ) {
-			return components.getDataStore().query(
-					components.getAdapter(),
-					index,
-					query,
-					filter,
-					(limit != null) && (limit >= 0) ? limit : null,
-					transaction.composeAuthorizations());
+
+			if (components.getDataStore() instanceof VectorDataStore) {
+				return ((VectorDataStore) components.getDataStore()).query(
+						components.getAdapter(),
+						index,
+						query,
+						filter,
+						(limit != null) && (limit >= 0) ? limit : null,
+						transaction.composeAuthorizations());
+			}
+			LOGGER.warn("Data Store does not support CQL filters");
+			return new CloseableIterator.Wrapper(
+					Iterators.emptyIterator());
 		}
 	}
 
-	private class EnvelopQueryIssuer extends
+	private class EnvelopeQueryIssuer extends
 			BaseIssuer implements
 			QueryIssuer
 	{
@@ -250,7 +257,7 @@ public class GeoWaveFeatureReader implements
 		final int height;
 		final double pixelSize;
 
-		public EnvelopQueryIssuer(
+		public EnvelopeQueryIssuer(
 				final int width,
 				final int height,
 				final double pixelSize,
@@ -271,17 +278,22 @@ public class GeoWaveFeatureReader implements
 		public CloseableIterator<SimpleFeature> query(
 				final Index index,
 				final mil.nga.giat.geowave.core.store.query.Query query ) {
-			return components.getDataStore().query(
-					components.getAdapter(),
-					index,
-					query,
-					width,
-					height,
-					pixelSize,
-					filter,
-					envelope,
-					limit,
-					transaction.composeAuthorizations());
+			if (components.getDataStore() instanceof VectorDataStore) {
+				return ((VectorDataStore) components.getDataStore()).query(
+						components.getAdapter(),
+						index,
+						query,
+						width,
+						height,
+						pixelSize,
+						filter,
+						envelope,
+						limit,
+						transaction.composeAuthorizations());
+			}
+			LOGGER.warn("Data Store does not support spatial subsampling");
+			return new CloseableIterator.Wrapper(
+					Iterators.emptyIterator());
 		}
 
 	}
@@ -306,13 +318,18 @@ public class GeoWaveFeatureReader implements
 		public CloseableIterator<SimpleFeature> query(
 				final Index index,
 				final mil.nga.giat.geowave.core.store.query.Query query ) {
-			return components.getDataStore().query(
-					components.getAdapter(),
-					index,
-					query,
-					filter,
-					renderer,
-					transaction.composeAuthorizations());
+			if (components.getDataStore() instanceof VectorDataStore) {
+				return ((VectorDataStore) components.getDataStore()).query(
+						components.getAdapter(),
+						index,
+						query,
+						filter,
+						renderer,
+						transaction.composeAuthorizations());
+			}
+			LOGGER.warn("Data Store does not support distributed rendering");
+			return new CloseableIterator.Wrapper(
+					Iterators.emptyIterator());
 		}
 
 	}
@@ -370,7 +387,7 @@ public class GeoWaveFeatureReader implements
 		return issueQuery(
 				jtsBounds,
 				timeBounds,
-				new EnvelopQueryIssuer(
+				new EnvelopeQueryIssuer(
 						width,
 						height,
 						pixelSize,
