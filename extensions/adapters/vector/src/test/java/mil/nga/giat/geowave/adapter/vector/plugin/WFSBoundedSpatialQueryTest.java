@@ -34,7 +34,7 @@ import com.vividsolutions.jts.geom.PrecisionModel;
 
 /**
  * Test with a default spatial index rather than geo-temporal
- *
+ * 
  */
 public class WFSBoundedSpatialQueryTest
 {

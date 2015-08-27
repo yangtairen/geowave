@@ -26,11 +26,18 @@ import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.PartitionParameters;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
 import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
+import mil.nga.giat.geowave.analytic.store.PersistableAdapterStore;
 import mil.nga.giat.geowave.analytic.store.PersistableDataStore;
+import mil.nga.giat.geowave.analytic.store.PersistableIndexStore;
+import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.CommandLineOptions.OptionMapWrapper;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
+import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 
@@ -86,23 +93,35 @@ public class DBScanIT extends
 	@Test
 	public void testDBScan()
 			throws Exception {
-		dataGenerator.setIncludePolygons(false);
-		ingest();
-		runScan(new SpatialQuery(
-				dataGenerator.getBoundingRegion()));
-	}
-
-	private void runScan(
-			final DistributableQuery query )
-			throws Exception {
-
-		final DBScanIterationsJobRunner jobRunner = new DBScanIterationsJobRunner();
 		final Map<String, String> options = getAccumuloConfigOptions();
 		options.put(
 				GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
 				TEST_NAMESPACE);
 		final DataStoreCommandLineOptions dataStoreOptions = DataStoreCommandLineOptions.parseOptions(new OptionMapWrapper(
 				options));
+		final IndexStoreCommandLineOptions indexStoreOptions = IndexStoreCommandLineOptions.parseOptions(new OptionMapWrapper(
+				options));
+		final AdapterStoreCommandLineOptions adapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(new OptionMapWrapper(
+				options));
+		dataGenerator.setIncludePolygons(false);
+		ingest(dataStoreOptions.createStore());
+		runScan(
+				new SpatialQuery(
+						dataGenerator.getBoundingRegion()),
+				dataStoreOptions,
+				indexStoreOptions,
+				adapterStoreOptions);
+	}
+
+	private void runScan(
+			final DistributableQuery query,
+			final DataStoreCommandLineOptions dataStoreOptions,
+			final IndexStoreCommandLineOptions indexStoreOptions,
+			final AdapterStoreCommandLineOptions adapterStoreOptions )
+			throws Exception {
+
+		final DBScanIterationsJobRunner jobRunner = new DBScanIterationsJobRunner();
+
 		final int res = jobRunner.run(
 				getConfiguration(),
 				new PropertyManagement(
@@ -115,6 +134,8 @@ public class DBScanIT extends
 							PartitionParameters.Partition.PARTITIONER_CLASS,
 							ClusteringParameters.Clustering.MINIMUM_SIZE,
 							StoreParam.DATA_STORE,
+							StoreParam.INDEX_STORE,
+							StoreParam.ADAPTER_STORE,
 							MapReduceParameters.MRConfig.HDFS_BASE_DIR,
 							OutputParameters.Output.REDUCER_COUNT,
 							InputParameters.Input.INPUT_FORMAT,
@@ -131,6 +152,10 @@ public class DBScanIT extends
 							10,
 							new PersistableDataStore(
 									dataStoreOptions),
+							new PersistableIndexStore(
+									indexStoreOptions),
+							new PersistableAdapterStore(
+									adapterStoreOptions),
 							hdfsBaseDirectory + "/t1",
 							2,
 							GeoWaveInputFormatConfiguration.class,
@@ -141,16 +166,23 @@ public class DBScanIT extends
 				0,
 				res);
 
-		Assert.assertTrue(readHulls() > 2);
+		Assert.assertTrue(readHulls(
+				dataStoreOptions.createStore(),
+				indexStoreOptions.createStore(),
+				adapterStoreOptions.createStore()) > 2);
 		// for travis-ci to run, we want to limit the memory consumption
 		System.gc();
 	}
 
-	private int readHulls()
+	private int readHulls(
+			final DataStore dataStore,
+			final IndexStore indexStore,
+			final AdapterStore adapterStore )
 			throws Exception {
-
 		final CentroidManager<SimpleFeature> centroidManager = new CentroidManagerGeoWave<SimpleFeature>(
-
+				dataStore,
+				indexStore,
+				adapterStore,
 				new SimpleFeatureItemWrapperFactory(),
 				"concave_hull",
 				"hull_idx",
@@ -174,7 +206,8 @@ public class DBScanIT extends
 		return count;
 	}
 
-	private void ingest()
+	private void ingest(
+			final DataStore dataStore )
 			throws IOException {
 		final List<SimpleFeature> features = dataGenerator.generatePointSet(
 				0.05,
@@ -210,6 +243,8 @@ public class DBScanIT extends
 				new File(
 						"./target/test_in"),
 				features);
-		dataGenerator.writeToGeoWave(features);
+		dataGenerator.writeToGeoWave(
+				dataStore,
+				features);
 	}
 }

@@ -35,10 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * 
  * Run 'K' means until convergence across ALL groups.
- *
- *
+ * 
+ * 
  */
 public class KMeansIterationsJobRunner<T> implements
 		MapReduceJobRunner,
@@ -55,8 +55,8 @@ public class KMeansIterationsJobRunner<T> implements
 			final Configuration config,
 			final PropertyManagement runTimeProperties )
 			throws IOException {
-			return new CentroidManagerGeoWave<T>(
-					runTimeProperties);
+		return new CentroidManagerGeoWave<T>(
+				runTimeProperties);
 	}
 
 	public void setInputFormatConfiguration(

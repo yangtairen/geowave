@@ -155,7 +155,7 @@ abstract public class GenericStoreCommandLineOptions<T>
 			final F selectedStoreFactory = helper.getRegisteredFactories().get(
 					selectedStoreName);
 			if (selectedStoreFactory == null) {
-				final String errorMsg = "Cannot find selected " + optionName + " '" + selectedStoreFactory + "'";
+				final String errorMsg = "Cannot find selected " + optionName + " '" + selectedStoreName + "'";
 				LOGGER.error(errorMsg);
 				throw new ParseException(
 						errorMsg);

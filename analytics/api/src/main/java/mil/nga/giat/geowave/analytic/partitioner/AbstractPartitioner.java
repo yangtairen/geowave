@@ -31,7 +31,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 
 /**
  * Basic support class for Partitioners (e.g {@link Paritioner}
- *
+ * 
  * @param <T>
  */
 public abstract class AbstractPartitioner<T> implements

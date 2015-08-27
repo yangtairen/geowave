@@ -22,7 +22,7 @@ public class GeoWaveOutputFormatConfiguration implements
 	/**
 	 * Captures the state, but the output format is flexible enough to deal with
 	 * both.
-	 *
+	 * 
 	 */
 	protected boolean isDataWritable = false;
 

@@ -90,9 +90,11 @@ public class ConfigUtils
 		}
 		for (final Entry<String, String> stringValue : stringValues.entrySet()) {
 			final AbstractConfigOption<?> option = configOptionMap.get(stringValue.getKey());
-			objectValues.put(
-					stringValue.getKey(),
-					option.valueFromString(stringValue.getValue()));
+			if (option != null) {
+				objectValues.put(
+						stringValue.getKey(),
+						option.valueFromString(stringValue.getValue()));
+			}
 		}
 		return objectValues;
 

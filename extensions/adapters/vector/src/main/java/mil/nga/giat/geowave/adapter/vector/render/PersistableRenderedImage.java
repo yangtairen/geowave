@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 /**
  * This class wraps a rendered image as a GeoWave Persistable object. It
  * serializes and deserializes the BufferedImage as a png using ImageIO.
- *
+ * 
  */
 abstract public class PersistableRenderedImage implements
 		Persistable

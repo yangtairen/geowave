@@ -7,6 +7,7 @@ import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.adapter.MockComponents.MockAbstractDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.MockComponents.TestNativeFieldHandler;
 import mil.nga.giat.geowave.core.store.adapter.MockComponents.TestPersistentIndexFieldHandler;
+import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.Index;
 
@@ -51,6 +52,7 @@ public class AbstractDataAdapterTest
 						null,
 						1,
 						testEncoding.getCommonData(),
+						new PersistentDataset<byte[]>(),
 						testEncoding.getAdapterExtendedData()),
 				new Index(
 						null,

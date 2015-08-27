@@ -759,7 +759,7 @@ public class AccumuloMRUtils
 
 	/**
 	 * Initializes an Accumulo {@link TabletLocator} based on the configuration.
-	 *
+	 * 
 	 * @param instance
 	 *            the accumulo instance
 	 * @param tableName

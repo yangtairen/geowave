@@ -18,8 +18,8 @@ import org.apache.hadoop.mapreduce.JobContext;
 
 /**
  * Provide a partition for a data item.
- *
- *
+ * 
+ * 
  * Multiple partitions are permitted. Only one partition is consider primary. A
  * primary partition is the partition for an item in which the item is processed
  * on behalf of itself. All other partitions are those partitions that require
@@ -28,7 +28,7 @@ import org.apache.hadoop.mapreduce.JobContext;
  * discover neighbors in its partition. However, the item can be discovered as a
  * nearest neighbor in those partitions in which the item participates as a none
  * primary.
- *
+ * 
  * @param <T>
  */
 public interface Partitioner<T>

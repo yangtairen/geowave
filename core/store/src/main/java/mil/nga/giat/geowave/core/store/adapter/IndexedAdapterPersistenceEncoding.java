@@ -23,19 +23,21 @@ public class IndexedAdapterPersistenceEncoding extends
 			final ByteArrayId indexId,
 			final int duplicateCount,
 			final PersistentDataset<? extends CommonIndexValue> commonData,
+			final PersistentDataset<byte[]> unknownData,
 			final PersistentDataset<Object> adapterExtendedData ) {
 		super(
 				adapterId,
 				dataId,
 				indexId,
 				duplicateCount,
-				commonData);
+				commonData,
+				unknownData);
 		this.adapterExtendedData = adapterExtendedData;
 	}
 
 	/**
 	 * This returns a representation of the custom fields for the data adapter
-	 * 
+	 *
 	 * @return the extended data beyond the common index fields that are
 	 *         provided by the adapter
 	 */

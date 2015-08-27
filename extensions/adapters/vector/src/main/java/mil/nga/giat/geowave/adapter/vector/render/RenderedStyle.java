@@ -9,7 +9,7 @@ import mil.nga.giat.geowave.core.index.StringUtils;
  * This class represents a persisted BufferedImage with a given style ID so that
  * it can be matched to the appropriate style ID for rendering in the correct
  * order in the composite image.
- *
+ * 
  */
 public class RenderedStyle extends
 		PersistableRenderedImage

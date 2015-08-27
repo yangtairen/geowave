@@ -19,9 +19,9 @@ public interface FormatConfiguration
 	/**
 	 * If the format supports only one option, then 'setting' the data has no
 	 * effect.
-	 *
+	 * 
 	 * @return true if the data is a Hadoop Writable or an POJO.
-	 *
+	 * 
 	 */
 
 	public boolean isDataWritable();

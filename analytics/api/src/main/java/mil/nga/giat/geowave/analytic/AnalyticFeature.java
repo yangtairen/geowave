@@ -19,7 +19,7 @@ import com.vividsolutions.jts.geom.Geometry;
 /**
  * A set of utilities to describe and create a simple feature for use within the
  * set of analytics.
- *
+ * 
  */
 public class AnalyticFeature
 {

@@ -26,21 +26,21 @@ import org.opengis.feature.simple.SimpleFeature;
 
 /**
  * The KMeans Parallel algorithm,labeled Algorithm 2 within in section 3.3 of
- *
+ * 
  * Bahmani, Kumar, Moseley, Vassilvitskii and Vattani. Scalable K-means++. VLDB
  * Endowment Vol. 5, No. 7. 2012.
- *
+ * 
  * @formatter:off Couple things to note:
- *
+ * 
  *                (1) Updating the cost of each sampled point occurs as the
  *                first step within sampling loop; the initial sample is
  *                performed outside the loop.
- *
+ * 
  *                (2) A final update cost occurs outside the sampling loop just
  *                prior to stripping off the top 'K' centers.
- *
+ * 
  * @formatter:on
- *
+ * 
  */
 public class KMeansParallelJobRunner extends
 		MapReduceJobController implements

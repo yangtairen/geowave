@@ -28,14 +28,14 @@ import org.apache.hadoop.mapreduce.Job;
 //@formatter:on
 
 /**
- *
+ * 
  * Calculate the distortation.
- *
+ * 
  * See Catherine A. Sugar and Gareth M. James (2003).
  * "Finding the number of clusters in a data set: An information theoretic approach"
  * Journal of the American Statistical Association 98 (January): 750–763
- *
- *
+ * 
+ * 
  */
 public class KMeansDistortionJobRunner extends
 		GeoWaveAnalyticJobRunner

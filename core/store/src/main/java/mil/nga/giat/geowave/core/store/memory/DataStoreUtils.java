@@ -78,14 +78,14 @@ public class DataStoreUtils
 	public static boolean isAuthorized(
 			final byte[] visibility,
 			final String[] authorizations ) {
-		if (visibility == null || visibility.length == 0) {
+		if ((visibility == null) || (visibility.length == 0)) {
 			return true;
 		}
 		VisibilityExpression expr;
 		try {
 			expr = new VisibilityExpressionParser().parse(visibility);
 		}
-		catch (IOException e) {
+		catch (final IOException e) {
 			LOGGER.error(
 					"inavalid visibility " + Arrays.toString(visibility),
 					e);
@@ -126,10 +126,18 @@ public class DataStoreUtils
 			final EntryRow row ) {
 		final PersistentDataset<CommonIndexValue> commonData = new PersistentDataset<CommonIndexValue>();
 		final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
+		final PersistentDataset<byte[]> unknownData = new PersistentDataset<byte[]>();
 		for (final FieldInfo column : row.info.getFieldInfo()) {
 			final FieldReader<? extends CommonIndexValue> reader = model.getReader(column.getDataValue().getId());
 			if (reader == null) {
-				extendedData.addValue(column.getDataValue());
+				if (dataAdapter.getReader(column.getDataValue().getId()) != null) {
+					extendedData.addValue(column.getDataValue());
+				}
+				else {
+					unknownData.addValue(new PersistentValue<byte[]>(
+							column.getDataValue().getId(),
+							column.getWrittenValue()));
+				}
 			}
 			else {
 				commonData.addValue(column.getDataValue());
@@ -144,6 +152,7 @@ public class DataStoreUtils
 						row.getTableRowId().getInsertionId()),
 				row.getTableRowId().getNumberOfDuplicates(),
 				commonData,
+				unknownData,
 				extendedData);
 	}
 
@@ -162,7 +171,7 @@ public class DataStoreUtils
 	}
 
 	/**
-	 * 
+	 *
 	 * @param dataWriter
 	 * @param index
 	 * @param entry

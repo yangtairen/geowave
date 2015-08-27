@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * set of points and produces small clusters (nearest neighbors). Each
  * subsequent iteration merges clusters within a given distance from each other.
  * This process can continue no new clusters are created (merges do not occur).
- *
+ * 
  * The first iteration places a constraint on the minimum number of neighbors.
  * Subsequent iterations do not have a minimum, since each of the clusters is
  * already vetted out by the first iteration.

@@ -16,7 +16,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * Coordinate Reference System and bounding box. It is important that the
  * distributed rendering is performed in the requested CRS, or there will be
  * artifacts.
- *
+ * 
  */
 public class ServerMapArea implements
 		Persistable

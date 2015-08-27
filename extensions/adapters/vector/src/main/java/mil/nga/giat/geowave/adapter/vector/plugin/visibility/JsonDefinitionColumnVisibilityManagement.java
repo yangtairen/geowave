@@ -15,20 +15,20 @@ import org.codehaus.jackson.map.ObjectMapper;
 /**
  * Object defining visibility is a json structure where each attribute defines
  * the visibility for a field with the same name (as the attribute).
- *
+ * 
  * Example: { "geometry" : "S", "eventName": "TS"}
- *
+ * 
  * Json attributes can also be regular expressions, matching more than one field
  * name.
- *
+ * 
  * Example: { "geo.*" : "S", ".*" : "TS"}.
- *
+ * 
  * The order of the expression must be considered if one expression is more
  * general than another, as shown in the example. The expression ".*" matches
  * all attributes. The more specific expression "geo.*" must be ordered first.
- *
- *
- *
+ * 
+ * 
+ * 
  */
 public class JsonDefinitionColumnVisibilityManagement<T> extends
 		ColumnVisibilityManagement<T>
@@ -90,7 +90,7 @@ public class JsonDefinitionColumnVisibilityManagement<T> extends
 
 		// TODO come up with another way to validate, below is the accumulo
 		// dependent validation
-		
+
 		// try {
 		// ColumnVisibility cVis = new ColumnVisibility(
 		// vis);

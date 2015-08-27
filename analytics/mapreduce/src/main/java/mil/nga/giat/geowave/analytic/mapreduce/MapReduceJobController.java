@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * added task is to support information from a prior job in the sequence(such as
  * temporary file names, job IDs, stats) to be provided to the next job or set
  * of jobs.
- *
+ * 
  */
 public class MapReduceJobController implements
 		MapReduceJobRunner,

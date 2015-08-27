@@ -10,7 +10,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * Assumes two-dimensional simple feature without time dimensions.
- *
+ * 
  */
 public class SimpleFeatureProjection implements
 		Projection<SimpleFeature>

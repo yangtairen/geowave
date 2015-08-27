@@ -38,7 +38,7 @@ import com.vividsolutions.jts.geom.Point;
  * See Catherine A. Sugar and Gareth M. James (2003).
  * "Finding the number of clusters in a data set: An information theoretic approach"
  * Journal of the American Statistical Association 98 (January): 750–763
- *
+ * 
  * @formatter:off Context configuration parameters include:
  *                <p/>
  *                "KMeansDistortionMapReduce.Common.DistanceFunctionClass" ->

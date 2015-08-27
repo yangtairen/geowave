@@ -1348,7 +1348,7 @@ public class AccumuloDataStore implements
 
 	/**
 	 * Delete rows associated with a single entry
-	 *
+	 * 
 	 * @param tableName
 	 * @param rows
 	 * @param deleteRowObserver

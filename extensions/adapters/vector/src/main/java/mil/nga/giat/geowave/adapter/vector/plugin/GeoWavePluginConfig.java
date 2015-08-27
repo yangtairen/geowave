@@ -120,9 +120,10 @@ public class GeoWavePluginConfig
 		List<Param> params = paramMap.get(storeFactoryFamily.getName());
 		if (params == null) {
 			final AbstractConfigOption<?>[] configOptions = GeoWaveStoreFinder.getAllOptions(storeFactoryFamily);
-			params = Lists.transform(
-					Lists.newArrayList(configOptions),
-					new GeoWaveConfigOptionToGeoToolsConfigOption());
+			params = new ArrayList<Param>(
+					Lists.transform(
+							Lists.newArrayList(configOptions),
+							new GeoWaveConfigOptionToGeoToolsConfigOption()));
 			params.add(GEOWAVE_NAMESPACE);
 			params.add(LOCK_MGT);
 			params.add(AUTH_MGT);
@@ -146,7 +147,7 @@ public class GeoWavePluginConfig
 					"GeoWave Plugin: Missing namespace param");
 		}
 		final String namespace = param.toString();
-		name = storeFactoryFamily.getName() + (namespace == null ? "" : ("_" + namespace));
+		name = storeFactoryFamily.getName() + "_" + namespace;
 		final Map<String, String> paramStrs = new HashMap<String, String>();
 		// first converts serializable objects to String to avoid any issue if
 		// there's a difference how geotools is converting objects to how

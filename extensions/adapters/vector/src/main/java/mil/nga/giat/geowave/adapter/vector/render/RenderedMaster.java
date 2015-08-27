@@ -12,7 +12,7 @@ import mil.nga.giat.geowave.core.index.PersistenceUtils;
  * The main image contains any labels, and the styles each persist a per-style
  * image so that all of the images can be correctly layered from each Accumulo
  * Iterator for the composite image.
- *
+ * 
  */
 public class RenderedMaster extends
 		PersistableRenderedImage

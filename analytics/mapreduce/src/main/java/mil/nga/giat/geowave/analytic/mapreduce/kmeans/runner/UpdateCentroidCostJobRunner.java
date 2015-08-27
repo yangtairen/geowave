@@ -20,8 +20,8 @@ import org.opengis.feature.simple.SimpleFeature;
 /**
  * Update the centroid with its cost, measured by the average distance of
  * assigned points.
- *
- *
+ * 
+ * 
  */
 public class UpdateCentroidCostJobRunner extends
 		GeoWaveAnalyticJobRunner implements

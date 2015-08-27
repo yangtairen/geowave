@@ -9,9 +9,9 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 
 /**
- *
+ * 
  * Simple command line tool to print statistics to the standard output
- *
+ * 
  */
 public class DumpStatsOperation extends
 		StatsOperation implements

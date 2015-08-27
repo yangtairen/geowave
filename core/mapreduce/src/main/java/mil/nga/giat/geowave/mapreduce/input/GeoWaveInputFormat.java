@@ -39,7 +39,7 @@ public class GeoWaveInputFormat<T> extends
 
 	/**
 	 * Add an adapter specific to the input format
-	 *
+	 * 
 	 * @param job
 	 * @param adapter
 	 */
@@ -274,7 +274,7 @@ public class GeoWaveInputFormat<T> extends
 	/**
 	 * Check whether a configuration is fully configured to be used with an
 	 * Accumulo {@link org.apache.hadoop.mapreduce.InputFormat}.
-	 *
+	 * 
 	 * @param context
 	 *            the Hadoop context for the configured job
 	 * @throws IOException
@@ -376,7 +376,7 @@ public class GeoWaveInputFormat<T> extends
 
 	/**
 	 * First look for input-specific adapters
-	 *
+	 * 
 	 * @param context
 	 * @param adapterStore
 	 * @return

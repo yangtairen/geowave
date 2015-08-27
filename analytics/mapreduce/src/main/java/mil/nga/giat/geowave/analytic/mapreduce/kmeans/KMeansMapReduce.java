@@ -41,7 +41,7 @@ import com.vividsolutions.jts.geom.Point;
  * dimensions updated towards their respective mean for the assigned items.
  * <p/>
  * Properties:
- *
+ * 
  * @formatter:off "KMeansMapReduce.Common.DistanceFunctionClass" - Used to
  *                determine distance to centroid
  *                <p/>

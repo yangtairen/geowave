@@ -13,6 +13,7 @@ import mil.nga.giat.geowave.core.store.memory.MemoryStoreFactoryFamily;
 
 import org.geotools.data.DataAccessFactory.Param;
 import org.geotools.data.Parameter;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class GeoWavePluginConfigTest
@@ -41,16 +42,25 @@ public class GeoWavePluginConfigTest
 						new URI(
 								"http://test/test"));
 			}
+			else if (param.getName().equals(
+					GeoWavePluginConfig.TRANSACTION_BUFFER_SIZE)) {
+				paramValues.put(
+						param.getName(),
+						1000);
+			}
 			else if (!param.getName().equals(
 					GeoWavePluginConfig.AUTH_URL_KEY)) {
 				paramValues.put(
-				param.getName(),
-				(Serializable) (param.getDefaultValue() == null ? "" : param.getDefaultValue()));
+						param.getName(),
+						(Serializable) (param.getDefaultValue() == null ? "" : param.getDefaultValue()));
 			}
 		}
 		final GeoWavePluginConfig config = new GeoWavePluginConfig(
 				new MemoryStoreFactoryFamily(),
 				paramValues);
+		Assert.assertEquals(
+				1000,
+				(int) config.getTransactionBufferSize());
 		assertNotNull(config.getLockingManagementFactory());
 		assertNotNull(config.getLockingManagementFactory().createLockingManager(
 				config));

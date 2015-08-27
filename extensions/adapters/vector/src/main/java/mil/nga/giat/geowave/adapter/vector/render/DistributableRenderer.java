@@ -9,7 +9,7 @@ import mil.nga.giat.geowave.core.index.Persistable;
  * in the case of multiple styles and an additional one for labels to adhere to
  * layering rules). The client of this iterator can then composite the images
  * from the tablet server.
- *
+ * 
  */
 public interface DistributableRenderer extends
 		Persistable

@@ -20,11 +20,11 @@ public interface ParameterHelper<T>
 
 	public T getValue(
 			PropertyManagement propertyManagement );
-	
+
 	public void setValue(
 			PropertyManagement propertyManagement,
-			T value  );
-	
+			T value );
+
 	public void setValue(
 			Configuration config,
 			Class<?> scope,

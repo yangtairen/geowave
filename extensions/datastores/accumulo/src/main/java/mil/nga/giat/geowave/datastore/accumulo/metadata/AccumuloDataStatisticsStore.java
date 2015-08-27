@@ -31,11 +31,11 @@ import org.apache.log4j.Logger;
 /**
  * This class will persist Index objects within an Accumulo table for GeoWave
  * metadata. The adapters will be persisted in an "INDEX" column family.
- *
+ * 
  * There is an LRU cache associated with it so staying in sync with external
  * updates is not practical - it assumes the objects are not updated often or at
  * all. The objects are stored in their own table.
- *
+ * 
  **/
 public class AccumuloDataStatisticsStore extends
 		AbstractAccumuloPersistence<DataStatistics<?>> implements

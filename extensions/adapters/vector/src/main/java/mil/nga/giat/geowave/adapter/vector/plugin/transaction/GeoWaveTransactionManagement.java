@@ -335,22 +335,23 @@ public class GeoWaveTransactionManagement implements
 
 		final Iterator<Pair<SimpleFeature, SimpleFeature>> updateIt = getUpdates();
 
-//		if (addedFidList.size() > 0) {
-//			final String transId = "\\(?" + txID + "\\)?";
-//			final VisibilityTransformer visibilityTransformer = new VisibilityTransformer(
-//					"&?" + transId,
-//					"");
-//			for (final Collection<ByteArrayId> rowIDs : addedFidList.values()) {
-//				components.replaceDataVisibility(
-//						this,
-//						rowIDs,
-//						visibilityTransformer);
-//			}
-//
-//			components.replaceStatsVisibility(
-//					this,
-//					visibilityTransformer);
-//		}
+		// if (addedFidList.size() > 0) {
+		// final String transId = "\\(?" + txID + "\\)?";
+		// final VisibilityTransformer visibilityTransformer = new
+		// VisibilityTransformer(
+		// "&?" + transId,
+		// "");
+		// for (final Collection<ByteArrayId> rowIDs : addedFidList.values()) {
+		// components.replaceDataVisibility(
+		// this,
+		// rowIDs,
+		// visibilityTransformer);
+		// }
+		//
+		// components.replaceStatsVisibility(
+		// this,
+		// visibilityTransformer);
+		// }
 
 		final Iterator<SimpleFeature> removeIt = removedFeatures.values().iterator();
 

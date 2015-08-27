@@ -45,7 +45,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  * object in order to open the appropriate cursor to iterate over data. It uses
  * Keys within the Query hints to determine whether to perform special purpose
  * queries such as decimation or distributed rendering.
- *
+ * 
  */
 public class GeoWaveFeatureCollection extends
 		DataFeatureCollection
@@ -440,7 +440,7 @@ public class GeoWaveFeatureCollection extends
 
 	/**
 	 * Return constraints that are indexed
-	 *
+	 * 
 	 * @param query
 	 * @return
 	 */

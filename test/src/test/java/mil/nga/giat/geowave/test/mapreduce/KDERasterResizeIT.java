@@ -6,6 +6,7 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 import javax.media.jai.Interpolation;
 
@@ -229,12 +230,11 @@ public class KDERasterResizeIT extends
 			throws IOException,
 			AccumuloException,
 			AccumuloSecurityException {
+		final Map<String, String> options = getAccumuloConfigOptions();
+
 		final GeoWaveRasterReader reader = new GeoWaveRasterReader(
 				GeoWaveRasterConfig.createConfig(
-						zookeeper,
-						accumuloInstance,
-						accumuloUser,
-						accumuloPassword,
+						options,
 						TEST_NAMESPACE,
 						false,
 						Interpolation.INTERP_NEAREST));

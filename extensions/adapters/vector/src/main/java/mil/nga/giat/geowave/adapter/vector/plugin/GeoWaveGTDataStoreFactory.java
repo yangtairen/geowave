@@ -28,7 +28,7 @@ import com.google.common.collect.Iterators;
  * GeoWave as a DataStore to GeoTools. It should be defined within a file
  * META-INF/services/org.geotools.data.DataStoreFactorySpi to inject this into
  * GeoTools.
- *
+ * 
  */
 public class GeoWaveGTDataStoreFactory implements
 		DataStoreFactorySpi
@@ -49,6 +49,7 @@ public class GeoWaveGTDataStoreFactory implements
 	private static final Logger LOGGER = Logger.getLogger(GeoWaveGTDataStoreFactory.class);
 	private final List<DataStoreCacheEntry> dataStoreCache = new ArrayList<DataStoreCacheEntry>();
 	private final StoreFactoryFamilySpi geowaveStoreFactoryFamily;
+	private static Boolean isAvailable = null;
 
 	/**
 	 * Public "no argument" constructor called by Factory Service Provider (SPI)
@@ -59,7 +60,6 @@ public class GeoWaveGTDataStoreFactory implements
 		if (dataStoreFactories.isEmpty()) {
 			LOGGER.error("No GeoWave DataStore found!  Geotools datastore for GeoWave is unavailable");
 			geowaveStoreFactoryFamily = null;
-			isAvailable = false;
 		}
 		else {
 			final Iterator<StoreFactoryFamilySpi> it = dataStoreFactories.iterator();
@@ -172,17 +172,20 @@ public class GeoWaveGTDataStoreFactory implements
 		}
 	}
 
-	private static Boolean isAvailable = null;
-
 	@Override
 	public synchronized boolean isAvailable() {
 		if (isAvailable == null) {
-			try {
-				Class.forName("mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveGTDataStore");
-				isAvailable = true;
-			}
-			catch (final ClassNotFoundException e) {
+			if (geowaveStoreFactoryFamily == null) {
 				isAvailable = false;
+			}
+			else {
+				try {
+					Class.forName("mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveGTDataStore");
+					isAvailable = true;
+				}
+				catch (final ClassNotFoundException e) {
+					isAvailable = false;
+				}
 			}
 		}
 		return isAvailable;
@@ -200,7 +203,10 @@ public class GeoWaveGTDataStoreFactory implements
 
 		@Override
 		public <T> Iterator<T> iterator(
-				final Class<T> arg0 ) {
+				final Class<T> cls ) {
+			if ((cls != null) && cls.isAssignableFrom(DataStoreFactorySpi.class)) {
+				return (Iterator<T>) new GeoWaveGTDataStoreFactoryIterator();
+			}
 			return null;
 		}
 
@@ -208,13 +214,15 @@ public class GeoWaveGTDataStoreFactory implements
 				Iterator<DataStoreFactorySpi>
 		{
 			private final Iterator<DataStoreFactorySpi> it;
+			private int i = 1;
 
 			private GeoWaveGTDataStoreFactoryIterator() {
 				final Iterator<StoreFactoryFamilySpi> geowaveDataStoreIt = GeoWaveStoreFinder.getRegisteredStoreFactoryFamilies().values().iterator();
 				geowaveDataStoreIt.next();
 				it = Iterators.transform(
 						geowaveDataStoreIt,
-						new GeoWaveStoreToGeoToolsDataStore());
+						new GeoWaveStoreToGeoToolsDataStore(
+								i++));
 			}
 
 			@Override
@@ -227,6 +235,8 @@ public class GeoWaveGTDataStoreFactory implements
 				return it.next();
 			}
 
+			@Override
+			public void remove() {}
 		}
 	}
 
@@ -236,13 +246,18 @@ public class GeoWaveGTDataStoreFactory implements
 	 * re-use instances of the same class, so each individual geowave data store
 	 * must be registered as a different class (the alternative is dynamic
 	 * compilation of classes to add to the classloader).
-	 *
-	 *
+	 * 
+	 * 
 	 */
 	private static class GeoWaveStoreToGeoToolsDataStore implements
 			Function<StoreFactoryFamilySpi, DataStoreFactorySpi>
 	{
-		private final int i = 1;
+		private final int i;
+
+		public GeoWaveStoreToGeoToolsDataStore(
+				final int i ) {
+			this.i = i;
+		}
 
 		@Override
 		public DataStoreFactorySpi apply(

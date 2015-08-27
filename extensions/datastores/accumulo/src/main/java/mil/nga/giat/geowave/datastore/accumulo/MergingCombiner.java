@@ -15,6 +15,7 @@ public class MergingCombiner extends
 	// this is "columns" because it is mimicing the behavior of
 	// org.apache.accumulo.core.iterators.Combiner.setColumns()
 	public static final String COLUMNS_OPTION = "columns";
+
 	@Override
 	public Value reduce(
 			final Key key,

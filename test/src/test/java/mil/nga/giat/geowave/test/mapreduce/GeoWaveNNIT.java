@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.test.mapreduce;
 
 import java.io.IOException;
+import java.util.Map;
 
 import mil.nga.giat.geowave.analytic.GeometryDataSetGenerator;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
@@ -10,14 +11,23 @@ import mil.nga.giat.geowave.analytic.mapreduce.SequenceFileOutputFormatConfigura
 import mil.nga.giat.geowave.analytic.mapreduce.nn.NNJobRunner;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
 import mil.nga.giat.geowave.analytic.param.ExtractParameters;
-import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.InputParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.OutputParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.PartitionParameters;
+import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
 import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
+import mil.nga.giat.geowave.analytic.store.PersistableAdapterStore;
+import mil.nga.giat.geowave.analytic.store.PersistableDataStore;
+import mil.nga.giat.geowave.analytic.store.PersistableIndexStore;
+import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.CommandLineOptions.OptionMapWrapper;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
+import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 
 import org.apache.hadoop.fs.FileStatus;
@@ -66,14 +76,31 @@ public class GeoWaveNNIT extends
 	@Test
 	public void testNN()
 			throws Exception {
+		final Map<String, String> options = getAccumuloConfigOptions();
+		options.put(
+				GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
+				TEST_NAMESPACE);
+		final DataStoreCommandLineOptions dataStoreOptions = DataStoreCommandLineOptions.parseOptions(new OptionMapWrapper(
+				options));
+		final IndexStoreCommandLineOptions indexStoreOptions = IndexStoreCommandLineOptions.parseOptions(new OptionMapWrapper(
+				options));
+		final AdapterStoreCommandLineOptions adapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(new OptionMapWrapper(
+				options));
 		dataGenerator.setIncludePolygons(false);
-		ingest();
-		runNN(new SpatialQuery(
-				dataGenerator.getBoundingRegion()));
+		ingest(dataStoreOptions.createStore());
+		runNN(
+				new SpatialQuery(
+						dataGenerator.getBoundingRegion()),
+				dataStoreOptions,
+				indexStoreOptions,
+				adapterStoreOptions);
 	}
 
 	private void runNN(
-			final DistributableQuery query )
+			final DistributableQuery query,
+			final DataStoreCommandLineOptions dataStoreOptions,
+			final IndexStoreCommandLineOptions indexStoreOptions,
+			final AdapterStoreCommandLineOptions adapterStoreOptions )
 			throws Exception {
 
 		final NNJobRunner jobRunner = new NNJobRunner();
@@ -87,11 +114,9 @@ public class GeoWaveNNIT extends
 							PartitionParameters.Partition.PARTITION_DISTANCE,
 							ClusteringParameters.Clustering.DISTANCE_THRESHOLDS,
 							PartitionParameters.Partition.PARTITIONER_CLASS,
-							DataStoreParameters.DataStoreParam.ZOOKEEKER,
-							DataStoreParameters.DataStoreParam.ACCUMULO_INSTANCE,
-							DataStoreParameters.DataStoreParam.ACCUMULO_USER,
-							DataStoreParameters.DataStoreParam.ACCUMULO_PASSWORD,
-							DataStoreParameters.DataStoreParam.ACCUMULO_NAMESPACE,
+							StoreParam.DATA_STORE,
+							StoreParam.INDEX_STORE,
+							StoreParam.ADAPTER_STORE,
 							OutputParameters.Output.HDFS_OUTPUT_PATH,
 							MapReduceParameters.MRConfig.HDFS_BASE_DIR,
 							OutputParameters.Output.REDUCER_COUNT,
@@ -105,11 +130,12 @@ public class GeoWaveNNIT extends
 							0.2,
 							"0.2,0.2",
 							OrthodromicDistancePartitioner.class,
-							zookeeper,
-							accumuloInstance,
-							accumuloUser,
-							accumuloPassword,
-							TEST_NAMESPACE,
+							new PersistableDataStore(
+									dataStoreOptions),
+							new PersistableIndexStore(
+									indexStoreOptions),
+							new PersistableAdapterStore(
+									adapterStoreOptions),
 							hdfsBaseDirectory + "/t1/pairs",
 							hdfsBaseDirectory + "/t1",
 							3,
@@ -155,15 +181,12 @@ public class GeoWaveNNIT extends
 		return count;
 	}
 
-	private void ingest()
+	private void ingest(
+			final DataStore dataStore )
 			throws IOException {
 
 		dataGenerator.writeToGeoWave(
-				zookeeper,
-				accumuloInstance,
-				accumuloUser,
-				accumuloPassword,
-				TEST_NAMESPACE,
+				dataStore,
 				dataGenerator.generatePointSet(
 						0.00002,
 						0.02,

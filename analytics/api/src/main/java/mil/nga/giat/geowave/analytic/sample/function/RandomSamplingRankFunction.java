@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 /**
  * Pick any object at random by assigning a random weight over a uniform
  * distribution.
- *
+ * 
  * @param <T>
  */
 public class RandomSamplingRankFunction<T> implements

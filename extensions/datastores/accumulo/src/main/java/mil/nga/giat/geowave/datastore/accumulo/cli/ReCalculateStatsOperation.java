@@ -11,9 +11,9 @@ import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.Query;
 
 /**
- *
+ * 
  * Simple command line tool to recalculate statistics for an adapter.
- *
+ * 
  */
 public class ReCalculateStatsOperation extends
 		StatsOperation implements
@@ -33,7 +33,7 @@ public class ReCalculateStatsOperation extends
 			final IndexStore indexStore,
 			final DataAdapter<?> adapter,
 			final String[] authorizations ) {
-		statsStore.removeAllStatistics(				
+		statsStore.removeAllStatistics(
 				adapter.getAdapterId(),
 				authorizations);
 		try (StatsCompositionTool<?> statsTool = new StatsCompositionTool(

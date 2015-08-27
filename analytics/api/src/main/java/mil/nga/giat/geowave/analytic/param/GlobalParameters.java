@@ -1,6 +1,5 @@
 package mil.nga.giat.geowave.analytic.param;
 
-
 public class GlobalParameters
 {
 	public enum Global

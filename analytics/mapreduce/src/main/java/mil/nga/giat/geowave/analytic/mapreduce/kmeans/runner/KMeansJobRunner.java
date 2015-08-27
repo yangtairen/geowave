@@ -18,10 +18,10 @@ import org.apache.hadoop.mapreduce.Job;
 import org.opengis.feature.simple.SimpleFeature;
 
 /**
- *
+ * 
  * Run 'K' means one time to move the centroids towards the mean.
- *
- *
+ * 
+ * 
  */
 public class KMeansJobRunner extends
 		GeoWaveAnalyticJobRunner implements

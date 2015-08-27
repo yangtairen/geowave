@@ -3,8 +3,8 @@ package mil.nga.giat.geowave.core.store.config;
 /**
  * This is a marker so that implementations that use config options can treat
  * passwords appropriately
- *
- *
+ * 
+ * 
  */
 public class PasswordConfigOption extends
 		StringConfigOption

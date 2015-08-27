@@ -89,20 +89,21 @@ public class GeoWaveServicesIT extends
 		success = false;
 
 		// verify that the namespace was created
-		LOGGER.info("Verify that the namespace was created via localIngest.");
-		JSONArray namespaces = infoServiceClient.getNamespaces().getJSONArray(
-				"namespaces");
-		for (int i = 0; i < namespaces.size(); i++) {
-			if (namespaces.getJSONObject(
-					i).getString(
-					"name").equals(
-					TEST_NAMESPACE)) {
-				success = true;
-				break;
-			}
-		}
-		assertTrue(success);
-		success = false;
+		// LOGGER.info("Verify that the namespace was created via localIngest.");
+		// JSONArray namespaces =
+		// infoServiceClient.getNamespaces().getJSONArray(
+		// "namespaces");
+		// for (int i = 0; i < namespaces.size(); i++) {
+		// if (namespaces.getJSONObject(
+		// i).getString(
+		// "name").equals(
+		// TEST_NAMESPACE)) {
+		// success = true;
+		// break;
+		// }
+		// }
+		// assertTrue(success);
+		// success = false;
 
 		try {
 			accumuloOperations.deleteAll();
@@ -130,20 +131,20 @@ public class GeoWaveServicesIT extends
 		success = false;
 
 		// verify that the namespace was created
-		LOGGER.info("Verify that the namespace was created via localIngest.");
-		namespaces = infoServiceClient.getNamespaces().getJSONArray(
-				"namespaces");
-		for (int i = 0; i < namespaces.size(); i++) {
-			if (namespaces.getJSONObject(
-					i).getString(
-					"name").equals(
-					TEST_NAMESPACE)) {
-				success = true;
-				break;
-			}
-		}
-		assertTrue(success);
-		success = false;
+		// LOGGER.info("Verify that the namespace was created via localIngest.");
+		// namespaces = infoServiceClient.getNamespaces().getJSONArray(
+		// "namespaces");
+		// for (int i = 0; i < namespaces.size(); i++) {
+		// if (namespaces.getJSONObject(
+		// i).getString(
+		// "name").equals(
+		// TEST_NAMESPACE)) {
+		// success = true;
+		// break;
+		// }
+		// }
+		// assertTrue(success);
+		// success = false;
 
 		// verify the adapter type
 		LOGGER.info("Verify the adapter type.");

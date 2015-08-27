@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Remove weak centers. Looking for a large gaps of distances AND retain a
  * minimum set.
- *
+ * 
  */
 public class StripWeakCentroidsRunner<T> implements
 		MapReduceJobRunner
@@ -43,7 +43,7 @@ public class StripWeakCentroidsRunner<T> implements
 	}
 
 	/**
-	 *
+	 * 
 	 * @param minimum
 	 *            new minimum number of centroids to retain, regardless of weak
 	 *            center;
@@ -57,7 +57,7 @@ public class StripWeakCentroidsRunner<T> implements
 
 	/**
 	 * Available only after execution.
-	 *
+	 * 
 	 * @return The count of current centroids after execution
 	 */
 	public int getCurrentCentroidCount() {

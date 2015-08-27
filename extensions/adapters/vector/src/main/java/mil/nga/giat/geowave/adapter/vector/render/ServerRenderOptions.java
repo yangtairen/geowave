@@ -34,7 +34,7 @@ import com.sun.media.jai.rmi.SerializableStateImpl;
  * for a layer (any render configuration that is not self-contained within a
  * single style). It contains the master image to which all labels will be
  * rendered on.
- *
+ * 
  */
 public class ServerRenderOptions implements
 		Persistable
@@ -42,6 +42,7 @@ public class ServerRenderOptions implements
 	private final static Logger LOGGER = Logger.getLogger(ServerRenderOptions.class);
 	private static final AtomicBoolean serializerRegistered = new AtomicBoolean(
 			false);
+	private static final Object MUTEX = new Object();
 
 	protected RenderingHints renderingHints;
 	protected Color bgColor;
@@ -123,7 +124,7 @@ public class ServerRenderOptions implements
 	 * Sets up a {@link BufferedImage#TYPE_4BYTE_ABGR} if the paletteInverter is
 	 * not provided, or a indexed image otherwise. Subclasses may override this
 	 * method should they need a special kind of image
-	 *
+	 * 
 	 * @param width
 	 * @param height
 	 * @param paletteInverter
@@ -183,7 +184,7 @@ public class ServerRenderOptions implements
 	}
 
 	private void registerSerializers() {
-		synchronized (serializerRegistered) {
+		synchronized (MUTEX) {
 			if (!serializerRegistered.get()) {
 				SerializerFactory.registerSerializer(new TextureAnchorKeySerializer());
 				SerializerFactory.registerSerializer(new Point2dSerializer());

@@ -38,11 +38,11 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
- *
+ * 
  * Run a map reduce job to extract a population of data from GeoWave (Accumulo),
  * remove duplicates, and output a SimpleFeature with the ID and the extracted
  * geometry from each of the GeoWave data item.
- *
+ * 
  */
 public class GeoWaveAnalyticExtractJobRunner extends
 		GeoWaveDedupeJobRunner implements

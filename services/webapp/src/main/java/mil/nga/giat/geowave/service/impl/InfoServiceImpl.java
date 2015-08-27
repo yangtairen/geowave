@@ -56,7 +56,9 @@ public class InfoServiceImpl implements
 			final String key = it.next().toString();
 			strMap.put(
 					key,
-					ServiceUtils.getProperty(props, key));
+					ServiceUtils.getProperty(
+							props,
+							key));
 		}
 		configOptions = ConfigUtils.valuesFromStrings(strMap);
 		indexStoreFactory = GeoWaveStoreFinder.findIndexStoreFactory(configOptions);
@@ -64,28 +66,29 @@ public class InfoServiceImpl implements
 	}
 
 	// lists the namespaces in geowave
-	//TODO should we create a namespace store for this?
-//	@Override
-//	@GET
-//	@Produces(MediaType.APPLICATION_JSON)
-//	@Path("/namespaces")
-//	public Response getNamespaces() {
-//		final Collection<String> namespaces = AccumuloUtils.getNamespaces(connector);
-//		final JSONArray namespacesArray = new JSONArray();
-//		for (final String namespace : namespaces) {
-//			final JSONObject namespaceObj = new JSONObject();
-//			namespaceObj.put(
-//					"name",
-//					namespace);
-//			namespacesArray.add(namespaceObj);
-//		}
-//		final JSONObject namespacesObj = new JSONObject();
-//		namespacesObj.put(
-//				"namespaces",
-//				namespacesArray);
-//		return Response.ok(
-//				namespacesObj.toString(defaultIndentation)).build();
-//	}
+	// TODO should we create a namespace store for this?
+	// @Override
+	// @GET
+	// @Produces(MediaType.APPLICATION_JSON)
+	// @Path("/namespaces")
+	// public Response getNamespaces() {
+	// final Collection<String> namespaces =
+	// AccumuloUtils.getNamespaces(connector);
+	// final JSONArray namespacesArray = new JSONArray();
+	// for (final String namespace : namespaces) {
+	// final JSONObject namespaceObj = new JSONObject();
+	// namespaceObj.put(
+	// "name",
+	// namespace);
+	// namespacesArray.add(namespaceObj);
+	// }
+	// final JSONObject namespacesObj = new JSONObject();
+	// namespacesObj.put(
+	// "namespaces",
+	// namespacesArray);
+	// return Response.ok(
+	// namespacesObj.toString(defaultIndentation)).build();
+	// }
 
 	// lists the indices associated with the given namespace
 	@Override

@@ -24,7 +24,7 @@ import org.apache.commons.lang.ArrayUtils;
  * reference to the next value. It maintains the adapter ID, data ID, and
  * original accumulo key in the GeoWaveInputKey for use by the
  * GeoWaveInputFormat.
- *
+ * 
  * @param <T>
  *            The type for the entry
  */

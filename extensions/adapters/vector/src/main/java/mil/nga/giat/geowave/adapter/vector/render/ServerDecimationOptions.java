@@ -17,7 +17,7 @@ import mil.nga.giat.geowave.core.index.Persistable;
  * pixelSize which can improve performance by decimated on multi-pixel cells
  * rather than single pizels (eg. if pixelSize is 5, it would decimate on 5x5
  * pixel cells).
- *
+ * 
  */
 public class ServerDecimationOptions implements
 		Persistable

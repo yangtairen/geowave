@@ -7,7 +7,7 @@ import mil.nga.giat.geowave.core.index.Persistable;
 
 /**
  * This class persists information about the image (width, height).
- *
+ * 
  */
 public class ServerPaintArea implements
 		Persistable

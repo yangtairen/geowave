@@ -27,7 +27,7 @@ import org.opengis.referencing.operation.MathTransform;
 /**
  * This class persists and encapsulates the rules and tyle information
  * associated with a GeoTools SLD.
- *
+ * 
  */
 public class ServerFeatureStyle implements
 		Persistable

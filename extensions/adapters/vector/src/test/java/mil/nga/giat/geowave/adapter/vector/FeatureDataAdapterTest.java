@@ -101,8 +101,7 @@ public class FeatureDataAdapterTest
 		assertTrue(crs.getIdentifiers().toString().contains(
 				"EPSG:4326"));
 		@SuppressWarnings("unchecked")
-		final
-		SimpleFeature newFeature = FeatureDataUtils.buildFeature(
+		final SimpleFeature newFeature = FeatureDataUtils.buildFeature(
 				schema,
 				new Pair[] {
 					Pair.of(

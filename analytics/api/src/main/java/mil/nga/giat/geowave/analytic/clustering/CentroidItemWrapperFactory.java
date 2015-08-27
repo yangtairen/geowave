@@ -15,9 +15,9 @@ import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * Determine the group ID for an item dynamically.
- *
- *
- *
+ * 
+ * 
+ * 
  * @param <T>
  */
 public class CentroidItemWrapperFactory<T> implements

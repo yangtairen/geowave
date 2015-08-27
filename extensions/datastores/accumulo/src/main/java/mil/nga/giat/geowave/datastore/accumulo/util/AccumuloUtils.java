@@ -299,6 +299,7 @@ public class AccumuloUtils
 		// decode the persistence model into the native data type
 		final PersistentDataset<CommonIndexValue> indexData = new PersistentDataset<CommonIndexValue>();
 		final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
+		final PersistentDataset<byte[]> unknownData = new PersistentDataset<byte[]>();
 		// for now we are assuming all entries in a row are of the same type
 		// and use the same adapter
 		boolean adapterMatchVerified;
@@ -359,7 +360,10 @@ public class AccumuloUtils
 				if (extFieldReader == null) {
 					// if it still isn't resolved, log an error, and
 					// continue
-					LOGGER.error("field reader not found for data entry, the value will be ignored");
+					LOGGER.error("field reader not found for data entry, the value may be ignored");
+					unknownData.addValue(new PersistentValue<byte[]>(
+							fieldId,
+							byteValue));
 					continue;
 				}
 				final Object value = extFieldReader.readField(byteValue);
@@ -381,6 +385,7 @@ public class AccumuloUtils
 						rowId.getInsertionId()),
 				rowId.getNumberOfDuplicates(),
 				indexData,
+				unknownData,
 				extendedData);
 		if ((clientFilter == null) || clientFilter.accept(encodedRow)) {
 			// cannot get here unless adapter is found (not null)

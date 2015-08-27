@@ -9,15 +9,15 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 /**
  * Create an analytic item wrapper for the provided item.
- *
- *
+ * 
+ * 
  * @param <T>
  */
 public interface AnalyticItemWrapperFactory<T>
 {
 	/**
 	 * Wrap the item.
-	 *
+	 * 
 	 * @param item
 	 * @return
 	 */
@@ -27,7 +27,7 @@ public interface AnalyticItemWrapperFactory<T>
 	/**
 	 * Creates a new item based on the old item with new coordinates and
 	 * dimension values
-	 *
+	 * 
 	 * @param feature
 	 * @param coordinate
 	 * @param extraNames

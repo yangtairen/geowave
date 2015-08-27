@@ -24,13 +24,17 @@ public class AdapterPersistenceEncoding extends
 		super(
 				adapterId,
 				dataId,
-				commonData);
+				commonData,
+				new PersistentDataset<byte[]>()); // all data is identified by
+													// the adapter, there is
+													// inherently no unknown
+													// data elements
 		this.adapterExtendedData = adapterExtendedData;
 	}
 
 	/**
 	 * This returns a representation of the custom fields for the data adapter
-	 * 
+	 *
 	 * @return the extended data beyond the common index fields that are
 	 *         provided by the adapter
 	 */

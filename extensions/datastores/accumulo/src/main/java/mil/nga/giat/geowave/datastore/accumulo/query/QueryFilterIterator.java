@@ -52,6 +52,7 @@ public class QueryFilterIterator extends
 			final AccumuloRowId rowId = new AccumuloRowId(
 					currentRow.getBytes());
 			final PersistentDataset<CommonIndexValue> commonData = new PersistentDataset<CommonIndexValue>();
+			final PersistentDataset<byte[]> unknownData = new PersistentDataset<byte[]>();
 			for (int i = 0; (i < keys.size()) && (i < values.size()); i++) {
 				final Key key = keys.get(i);
 				final ByteArrayId fieldId = new ByteArrayId(
@@ -75,7 +76,8 @@ public class QueryFilterIterator extends
 					new ByteArrayId(
 							rowId.getInsertionId()),
 					rowId.getNumberOfDuplicates(),
-					commonData);
+					commonData,
+					unknownData);
 			return filter.accept(encoding);
 		}
 		// if the query filter or index model did not get sent to this iterator,

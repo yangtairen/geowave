@@ -1,6 +1,5 @@
 package mil.nga.giat.geowave.analytic.param;
 
-
 public class StoreParameters
 {
 	public enum StoreParam
@@ -14,7 +13,7 @@ public class StoreParameters
 				new IndexStoreParameterHelper()),
 		DATA_STATISTICS_STORE(
 				new DataStatisticsStoreParameterHelper());
-		
+
 		private final ParameterHelper<?> helper;
 
 		private StoreParam(

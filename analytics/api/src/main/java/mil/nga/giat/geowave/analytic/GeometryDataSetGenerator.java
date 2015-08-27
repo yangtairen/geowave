@@ -47,7 +47,7 @@ import com.vividsolutions.jts.geom.Point;
 
 /**
  * Generate clusters of geometries.
- *
+ * 
  */
 public class GeometryDataSetGenerator
 {
@@ -117,7 +117,7 @@ public class GeometryDataSetGenerator
 
 	/**
 	 * Calculate the range for the given bounds
-	 *
+	 * 
 	 * @param factor
 	 * @param minAxis
 	 * @param maxAxis
@@ -138,7 +138,7 @@ public class GeometryDataSetGenerator
 	 * Pick a random grid cell and supply the boundary. The grid is determined
 	 * by the parameter,which provides a percentage of distance over the total
 	 * range for each cell.
-	 *
+	 * 
 	 * @param minCenterDistanceFactor
 	 * @return
 	 */
@@ -247,7 +247,7 @@ public class GeometryDataSetGenerator
 
 		/**
 		 * Pick the initial centers which have minimum distance from each other.
-		 *
+		 * 
 		 */
 		while (pointSet.size() < numberOfCenters) {
 
@@ -361,7 +361,7 @@ public class GeometryDataSetGenerator
 	 * Find the distance maximum distance of the entire space and multiply that
 	 * by the distance factor to determine a minimum distance each initial
 	 * center point occurs from each other.
-	 *
+	 * 
 	 * @param minCenterDistanceFactor
 	 * @return
 	 */
@@ -445,7 +445,7 @@ public class GeometryDataSetGenerator
 	/**
 	 * Change the constrain min and max to center around the coordinate to keep
 	 * the polygons tight.
-	 *
+	 * 
 	 * @param coordinate
 	 * @param constrainedMaxAxis
 	 * @param constrainedMinAxis
