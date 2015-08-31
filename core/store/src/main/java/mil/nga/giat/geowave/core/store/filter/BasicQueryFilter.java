@@ -15,12 +15,13 @@ import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.dimension.DimensionField;
+import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 
 /**
  * This filter can perform fine-grained acceptance testing on generic
  * dimensions, but is limited to only using MBR (min-max in a single dimension,
  * hyper-cubes in multi-dimensional space)
- * 
+ *
  */
 public class BasicQueryFilter implements
 		DistributableQueryFilter
@@ -80,6 +81,7 @@ public class BasicQueryFilter implements
 
 	@Override
 	public boolean accept(
+			final CommonIndexModel indexModel,
 			final IndexedPersistenceEncoding persistenceEncoding ) {
 		final BinnedNumericDataset[] dataRanges = BinnedNumericDataset.applyBins(
 				persistenceEncoding.getNumericData(dimensionFields),

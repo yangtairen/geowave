@@ -140,14 +140,14 @@ public class MemoryDataStoreTest
 	}
 
 	private boolean checkStats(
-			DataStatistics<Integer> stat,
-			int count,
-			NumericRange range ) {
+			final DataStatistics<Integer> stat,
+			final int count,
+			final NumericRange range ) {
 		if (stat instanceof CountDataStatistics) {
 			return ((CountDataStatistics) stat).getCount() == count;
 		}
 		else {
-			return ((IntegerRangeDataStatistics) stat).getMin() == range.getMin() && ((IntegerRangeDataStatistics) stat).getMax() == range.getMax();
+			return (((IntegerRangeDataStatistics) stat).getMin() == range.getMin()) && (((IntegerRangeDataStatistics) stat).getMax() == range.getMax());
 		}
 	}
 
@@ -169,6 +169,7 @@ public class MemoryDataStoreTest
 
 		@Override
 		public boolean accept(
+				final CommonIndexModel indexModel,
 				final IndexedPersistenceEncoding persistenceEncoding ) {
 			final double min = persistenceEncoding.getNumericData(
 					indexModel.getDimensions()).getDataPerDimension()[0].getMin();

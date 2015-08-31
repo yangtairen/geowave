@@ -78,7 +78,9 @@ public class QueryFilterIterator extends
 					rowId.getNumberOfDuplicates(),
 					commonData,
 					unknownData);
-			return filter.accept(encoding);
+			return filter.accept(
+					model,
+					encoding);
 		}
 		// if the query filter or index model did not get sent to this iterator,
 		// it'll just have to accept everything

@@ -7,12 +7,13 @@ import java.util.Set;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 
 /**
  * This filter will perform de-duplication using the combination of data adapter
  * ID and data ID to determine uniqueness. It can be performed client-side
  * and/or distributed.
- * 
+ *
  */
 public class DedupeFilter implements
 		DistributableQueryFilter
@@ -25,6 +26,7 @@ public class DedupeFilter implements
 
 	@Override
 	public boolean accept(
+			final CommonIndexModel indexModel,
 			final IndexedPersistenceEncoding persistenceEncoding ) {
 		if (!persistenceEncoding.isDeduplicationEnabled()) {
 			// certain types of data such as raster do not intend to be

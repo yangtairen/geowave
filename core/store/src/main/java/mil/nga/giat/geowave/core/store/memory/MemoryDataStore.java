@@ -699,7 +699,9 @@ public class MemoryDataStore implements
 							row);
 					boolean ok = true;
 					for (final QueryFilter filter : filters) {
-						if (!filter.accept(encoding)) {
+						if (!filter.accept(
+								index.getIndexModel(),
+								encoding)) {
 							ok = false;
 							break;
 						}

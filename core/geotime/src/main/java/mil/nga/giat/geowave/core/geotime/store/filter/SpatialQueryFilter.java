@@ -7,9 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
-
 import mil.nga.giat.geowave.core.geotime.GeometryUtils;
 import mil.nga.giat.geowave.core.geotime.store.dimension.GeometryWrapper;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -20,7 +17,10 @@ import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.dimension.DimensionField;
 import mil.nga.giat.geowave.core.store.filter.BasicQueryFilter;
 import mil.nga.giat.geowave.core.store.filter.GenericTypeResolver;
+import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
@@ -28,7 +28,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 /**
  * This filter can perform fine-grained acceptance testing (intersection test
  * with a query geometry) with JTS geometry
- * 
+ *
  */
 public class SpatialQueryFilter extends
 		BasicQueryFilter
@@ -118,6 +118,7 @@ public class SpatialQueryFilter extends
 
 	@Override
 	public boolean accept(
+			final CommonIndexModel indexModel,
 			final IndexedPersistenceEncoding persistenceEncoding ) {
 		if (preparedGeometryImage == null) {
 			return true;
@@ -145,7 +146,9 @@ public class SpatialQueryFilter extends
 		}
 		// otherwise, if the geometry passes, and there are other dimensions,
 		// check the other dimensions
-		return super.accept(persistenceEncoding);
+		return super.accept(
+				indexModel,
+				persistenceEncoding);
 	}
 
 	private boolean geometryPasses(
@@ -216,21 +219,21 @@ public class SpatialQueryFilter extends
 	/**
 	 * This class is used for interning a PreparedGeometry. Prepared geometries
 	 * cannot be interned since they do not extend Object.hashCode().
-	 * 
+	 *
 	 * Interning a geometry assumes a geometry is already constructed on the
 	 * heap at the time interning begins. The byte image of geometry provides a
 	 * more efficient component to hash and associate with a single image of the
 	 * geometry.
-	 * 
+	 *
 	 * The approach of interning the Geometry prior to construction of a
 	 * PreparedGeometry lead to excessive memory use. Thus, this class is
 	 * constructed to hold the prepared geometry and prevent reconstruction of
 	 * the underlying geometry from a byte array if the Geometry has been
 	 * interned.
-	 * 
+	 *
 	 * Using this approach increased performance of a large query unit test by
 	 * 40% and reduced heap memory consumption by roughly 50%.
-	 * 
+	 *
 	 */
 	public static class GeometryImage
 	{
@@ -239,20 +242,22 @@ public class SpatialQueryFilter extends
 		PreparedGeometry preparedGeometry = null;
 
 		public GeometryImage(
-				PreparedGeometry preparedGeometry ) {
+				final PreparedGeometry preparedGeometry ) {
 			super();
 			this.preparedGeometry = preparedGeometry;
 			geometryBinary = GeometryUtils.geometryToBinary(preparedGeometry.getGeometry());
 		}
 
 		public GeometryImage(
-				byte[] geometryBinary ) {
+				final byte[] geometryBinary ) {
 			super();
 			this.geometryBinary = geometryBinary;
 		}
 
 		public synchronized void init() {
-			if (preparedGeometry == null) preparedGeometry = FACTORY.create(GeometryUtils.geometryFromBinary(geometryBinary));
+			if (preparedGeometry == null) {
+				preparedGeometry = FACTORY.create(GeometryUtils.geometryFromBinary(geometryBinary));
+			}
 		}
 
 		public PreparedGeometry getGeometry() {
@@ -263,20 +268,28 @@ public class SpatialQueryFilter extends
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + Arrays.hashCode(geometryBinary);
+			result = (prime * result) + Arrays.hashCode(geometryBinary);
 			return result;
 		}
 
 		@Override
 		public boolean equals(
-				Object obj ) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			GeometryImage other = (GeometryImage) obj;
+				final Object obj ) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			final GeometryImage other = (GeometryImage) obj;
 			if (!Arrays.equals(
 					geometryBinary,
-					other.geometryBinary)) return false;
+					other.geometryBinary)) {
+				return false;
+			}
 			return true;
 		}
 

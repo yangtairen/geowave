@@ -387,7 +387,9 @@ public class AccumuloUtils
 				indexData,
 				unknownData,
 				extendedData);
-		if ((clientFilter == null) || clientFilter.accept(encodedRow)) {
+		if ((clientFilter == null) || clientFilter.accept(
+				index.getIndexModel(),
+				encodedRow)) {
 			// cannot get here unless adapter is found (not null)
 			if (adapter == null) {
 				LOGGER.error("Error, adapter was null when it should not be");

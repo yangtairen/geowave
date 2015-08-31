@@ -19,6 +19,7 @@ import java.util.TimeZone;
 
 import mil.nga.giat.geowave.adapter.vector.VectorDataStore;
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveTransaction;
+import mil.nga.giat.geowave.adapter.vector.query.cql.CQLQuery;
 import mil.nga.giat.geowave.adapter.vector.render.DistributableRenderer;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureStatistic;
 import mil.nga.giat.geowave.adapter.vector.util.QueryIndexHelper;
@@ -51,7 +52,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * This class wraps a geotools data store as well as one for statistics (for
  * example to display Heatmaps) into a GeoTools FeatureReader for simple feature
  * data. It acts as a helper for GeoWave's GeoTools data store.
- * 
+ *
  */
 public class GeoWaveFeatureReader implements
 		FeatureReader<SimpleFeatureType, SimpleFeature>
@@ -232,19 +233,27 @@ public class GeoWaveFeatureReader implements
 		public CloseableIterator<SimpleFeature> query(
 				final Index index,
 				final mil.nga.giat.geowave.core.store.query.Query query ) {
-
-			if (components.getDataStore() instanceof VectorDataStore) {
-				return ((VectorDataStore) components.getDataStore()).query(
+			if ((limit != null) && (limit >= 0)) {
+				return components.getDataStore().query(
 						components.getAdapter(),
 						index,
-						query,
-						filter,
-						(limit != null) && (limit >= 0) ? limit : null,
+						new CQLQuery(
+								query,
+								filter,
+								components.getAdapter()),
+						limit,
 						transaction.composeAuthorizations());
 			}
-			LOGGER.warn("Data Store does not support CQL filters");
-			return new CloseableIterator.Wrapper(
-					Iterators.emptyIterator());
+			else {
+				return components.getDataStore().query(
+						components.getAdapter(),
+						index,
+						new CQLQuery(
+								query,
+								filter,
+								components.getAdapter()),
+						transaction.composeAuthorizations());
+			}
 		}
 	}
 
