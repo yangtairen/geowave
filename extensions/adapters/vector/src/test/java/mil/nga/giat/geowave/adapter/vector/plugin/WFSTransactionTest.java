@@ -5,12 +5,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
-import mil.nga.giat.geowave.core.store.memory.MemoryStoreFactoryFamily;
+import mil.nga.giat.geowave.adapter.vector.BaseDataStoreTest;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataUtilities;
@@ -31,7 +28,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
-public class WFSTransactionTest
+public class WFSTransactionTest extends
+		BaseDataStoreTest
 {
 	DataStore dataStore;
 	SimpleFeatureType schema;
@@ -41,21 +39,12 @@ public class WFSTransactionTest
 					PrecisionModel.FIXED));
 	Query query = null;
 
-	private DataStore createDataStore()
-			throws IOException {
-		final Map<String, Serializable> params = new HashMap<String, Serializable>();
-		params.put(
-				"gwNamespace",
-				"test");
-		return new GeoWaveGTDataStoreFactory(
-				new MemoryStoreFactoryFamily()).createNewDataStore(params);
-	}
-
 	@Before
 	public void setup()
 			throws SchemaException,
 			CQLException,
-			IOException {
+			IOException,
+			GeoWavePluginException {
 		dataStore = createDataStore();
 		type = DataUtilities.createType(
 				"geostuff",

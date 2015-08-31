@@ -17,10 +17,9 @@ import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.IngestCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
-import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.data.DataWriter;
+import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
@@ -120,9 +119,8 @@ public class DataStoreUtils
 				ingestInfo);
 	}
 
-	protected static IndexedAdapterPersistenceEncoding getEncoding(
+	protected static IndexedPersistenceEncoding getEncoding(
 			final CommonIndexModel model,
-			final DataAdapter<?> dataAdapter,
 			final EntryRow row ) {
 		final PersistentDataset<CommonIndexValue> commonData = new PersistentDataset<CommonIndexValue>();
 		final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
@@ -130,20 +128,15 @@ public class DataStoreUtils
 		for (final FieldInfo column : row.info.getFieldInfo()) {
 			final FieldReader<? extends CommonIndexValue> reader = model.getReader(column.getDataValue().getId());
 			if (reader == null) {
-				if (dataAdapter.getReader(column.getDataValue().getId()) != null) {
-					extendedData.addValue(column.getDataValue());
-				}
-				else {
-					unknownData.addValue(new PersistentValue<byte[]>(
-							column.getDataValue().getId(),
-							column.getWrittenValue()));
-				}
+				unknownData.addValue(new PersistentValue<byte[]>(
+						column.getDataValue().getId(),
+						column.getWrittenValue()));
 			}
 			else {
 				commonData.addValue(column.getDataValue());
 			}
 		}
-		return new IndexedAdapterPersistenceEncoding(
+		return new IndexedPersistenceEncoding(
 				new ByteArrayId(
 						row.getTableRowId().getAdapterId()),
 				new ByteArrayId(
@@ -152,8 +145,7 @@ public class DataStoreUtils
 						row.getTableRowId().getInsertionId()),
 				row.getTableRowId().getNumberOfDuplicates(),
 				commonData,
-				unknownData,
-				extendedData);
+				unknownData);
 	}
 
 	private static <T> List<EntryRow> buildRows(

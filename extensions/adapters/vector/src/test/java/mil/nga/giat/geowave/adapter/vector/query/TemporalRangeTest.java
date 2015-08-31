@@ -3,20 +3,17 @@ package mil.nga.giat.geowave.adapter.vector.query;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
 
-import mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveGTDataStoreFactory;
+import mil.nga.giat.geowave.adapter.vector.BaseDataStoreTest;
+import mil.nga.giat.geowave.adapter.vector.plugin.GeoWavePluginException;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureTimeRangeStatistics;
 import mil.nga.giat.geowave.adapter.vector.utils.DateUtilities;
 import mil.nga.giat.geowave.core.geotime.store.query.TemporalRange;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.store.memory.MemoryStoreFactoryFamily;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataUtilities;
@@ -34,7 +31,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
-public class TemporalRangeTest
+public class TemporalRangeTest extends
+		BaseDataStoreTest
 {
 	DataStore dataStore;
 	SimpleFeatureType type;
@@ -42,21 +40,12 @@ public class TemporalRangeTest
 			new PrecisionModel(
 					PrecisionModel.FIXED));
 
-	private DataStore createDataStore()
-			throws IOException {
-		final Map<String, Serializable> params = new HashMap<String, Serializable>();
-		params.put(
-				"gwNamespace",
-				"test");
-		return new GeoWaveGTDataStoreFactory(
-				new MemoryStoreFactoryFamily()).createNewDataStore(params);
-	}
-
 	@Before
 	public void setup()
 			throws SchemaException,
 			CQLException,
-			IOException {
+			IOException,
+			GeoWavePluginException {
 		dataStore = createDataStore();
 		type = DataUtilities.createType(
 				"geostuff",

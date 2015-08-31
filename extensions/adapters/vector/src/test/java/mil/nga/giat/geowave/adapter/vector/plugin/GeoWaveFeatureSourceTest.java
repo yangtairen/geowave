@@ -5,12 +5,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
+import mil.nga.giat.geowave.adapter.vector.BaseDataStoreTest;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureNumericRangeStatistics;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureTimeRangeStatistics;
 import mil.nga.giat.geowave.adapter.vector.utils.DateUtilities;
@@ -20,7 +18,6 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.statistics.CountDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
-import mil.nga.giat.geowave.core.store.memory.MemoryStoreFactoryFamily;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataUtilities;
@@ -41,7 +38,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
-public class GeoWaveFeatureSourceTest
+public class GeoWaveFeatureSourceTest extends
+		BaseDataStoreTest
 {
 	final GeometryFactory factory = new GeometryFactory(
 			new PrecisionModel(
@@ -50,21 +48,9 @@ public class GeoWaveFeatureSourceTest
 	@Test
 	public void test()
 			throws Exception {
-		// Mock instance is not thread safe. Even with the separate instance ids
-		// per each test.
 		testEmpty();
 		testFull();
 		testPartial();
-	}
-
-	private DataStore createDataStore()
-			throws IOException {
-		final Map<String, Serializable> params = new HashMap<String, Serializable>();
-		params.put(
-				"gwNamespace",
-				"test");
-		return new GeoWaveGTDataStoreFactory(
-				new MemoryStoreFactoryFamily()).createNewDataStore(params);
 	}
 
 	public void testEmpty()

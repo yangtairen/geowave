@@ -21,10 +21,10 @@ import mil.nga.giat.geowave.core.store.IngestCallback;
 import mil.nga.giat.geowave.core.store.ScanCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
+import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
@@ -680,10 +680,10 @@ public class MemoryDataStore implements
 			final Integer limit,
 			final ScanCallback<?> scanCallback,
 			final String... additionalAuthorizations ) {
-		final Iterator<EntryRow> rowIt = query.isSupported(index) ? getRowsForIndex(
+		final Iterator<EntryRow> rowIt = ((query == null) || query.isSupported(index)) ? getRowsForIndex(
 				index.getId()).iterator() : Collections.<EntryRow> emptyIterator();
 
-		final List<QueryFilter> filters = query.createFilters(index.getIndexModel());
+		final List<QueryFilter> filters = (query == null) ? new ArrayList<QueryFilter>() : query.createFilters(index.getIndexModel());
 		return new CloseableIterator<T>() {
 			int count = 0;
 			EntryRow nextRow = null;
@@ -691,11 +691,8 @@ public class MemoryDataStore implements
 			private boolean getNext() {
 				while ((nextRow == null) && rowIt.hasNext()) {
 					final EntryRow row = rowIt.next();
-					final DataAdapter<T> innerAdapter = (DataAdapter<T>) (adapter == null ? adapterStore.getAdapter(new ByteArrayId(
-							row.getTableRowId().getAdapterId())) : adapter);
-					final IndexedAdapterPersistenceEncoding encoding = DataStoreUtils.getEncoding(
+					final IndexedPersistenceEncoding encoding = DataStoreUtils.getEncoding(
 							index.getIndexModel(),
-							innerAdapter,
 							row);
 					boolean ok = true;
 					for (final QueryFilter filter : filters) {

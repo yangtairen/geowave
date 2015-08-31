@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import mil.nga.giat.geowave.adapter.vector.BaseDataStoreTest;
 import mil.nga.giat.geowave.adapter.vector.utils.DateUtilities;
 import mil.nga.giat.geowave.core.store.memory.MemoryStoreFactoryFamily;
 
@@ -40,7 +41,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
-public class GeoWaveFeatureReaderTest
+public class GeoWaveFeatureReaderTest extends
+		BaseDataStoreTest
 {
 	DataStore dataStore;
 	SimpleFeatureType schema;
@@ -58,12 +60,7 @@ public class GeoWaveFeatureReaderTest
 			throws SchemaException,
 			CQLException,
 			Exception {
-		final Map<String, Serializable> params = new HashMap<String, Serializable>();
-		params.put(
-				"gwNamespace",
-				"test");
-		dataStore = new GeoWaveGTDataStoreFactory(
-				new MemoryStoreFactoryFamily()).createNewDataStore(params);
+		dataStore = createDataStore();
 		type = DataUtilities.createType(
 				"GeoWaveFeatureReaderTest",
 				"geometry:Geometry:srid=4326,start:Date,end:Date,pop:java.lang.Long,pid:String");
