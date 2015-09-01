@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Copy data from an GeoWave Input to a index using the same adapter.
- * 
+ *
  */
 
 public class InputToOutputKeyReducer extends
@@ -48,7 +48,7 @@ public class InputToOutputKeyReducer extends
 			InterruptedException {
 		super.setup(context);
 		final ScopedJobConfiguration config = new ScopedJobConfiguration(
-				context,
+				context.getConfiguration(),
 				InputToOutputKeyReducer.class,
 				LOGGER);
 		outputKey = new GeoWaveOutputKey(

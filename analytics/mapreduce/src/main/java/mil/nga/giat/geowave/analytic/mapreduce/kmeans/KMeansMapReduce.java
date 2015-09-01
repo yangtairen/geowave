@@ -41,7 +41,7 @@ import com.vividsolutions.jts.geom.Point;
  * dimensions updated towards their respective mean for the assigned items.
  * <p/>
  * Properties:
- * 
+ *
  * @formatter:off "KMeansMapReduce.Common.DistanceFunctionClass" - Used to
  *                determine distance to centroid
  *                <p/>
@@ -118,7 +118,7 @@ public class KMeansMapReduce
 				InterruptedException {
 			super.setup(context);
 			final ScopedJobConfiguration config = new ScopedJobConfiguration(
-					context,
+					context.getConfiguration(),
 					KMeansMapReduce.class,
 					KMeansMapReduce.LOGGER);
 

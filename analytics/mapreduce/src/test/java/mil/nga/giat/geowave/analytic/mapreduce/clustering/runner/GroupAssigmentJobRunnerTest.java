@@ -92,7 +92,7 @@ public class GroupAssigmentJobRunnerTest
 						10,
 						job.getNumReduceTasks());
 				final ScopedJobConfiguration configWrapper = new ScopedJobConfiguration(
-						job,
+						job.getConfiguration(),
 						GroupAssignmentMapReduce.class);
 				Assert.assertEquals(
 						"file://foo/bin",

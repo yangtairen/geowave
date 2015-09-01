@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,19 +18,22 @@ import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.IngestCallback;
+import mil.nga.giat.geowave.core.store.StoreFactoryFamilySpi;
 import mil.nga.giat.geowave.core.store.adapter.MockComponents;
 import mil.nga.giat.geowave.core.store.adapter.MockComponents.IntegerRangeDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.MockComponents.TestIndexModel;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.CountDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.core.store.memory.MemoryDataStore;
+import mil.nga.giat.geowave.core.store.memory.MemoryStoreFactoryFamily;
 import mil.nga.giat.geowave.core.store.query.Query;
 
 import org.junit.Test;
@@ -43,8 +47,15 @@ public class MemoryDataStoreTest
 		final Index index = new Index(
 				new MockComponents.MockIndexStrategy(),
 				new MockComponents.TestIndexModel());
+		final String namespace = "test_" + getClass().getName();
+		final StoreFactoryFamilySpi storeFamily = new MemoryStoreFactoryFamily();
+		final DataStore dataStore = storeFamily.getDataStoreFactory().createStore(
+				new HashMap<String, Object>(),
+				namespace);
+		final DataStatisticsStore statsStore = storeFamily.getDataStatisticsStoreFactory().createStore(
+				new HashMap<String, Object>(),
+				namespace);
 		final WritableDataAdapter<Integer> adapter = new MockComponents.MockAbstractDataAdapter();
-		final MemoryDataStore dataStore = new MemoryDataStore();
 		final AtomicInteger record = new AtomicInteger(
 				0);
 		dataStore.ingest(
@@ -95,7 +106,8 @@ public class MemoryDataStoreTest
 					itemIt.next());
 			assertFalse(itemIt.hasNext());
 		}
-		final Iterator<DataStatistics<?>> statsIt = dataStore.getStatsStore().getAllDataStatistics();
+
+		final Iterator<DataStatistics<?>> statsIt = statsStore.getAllDataStatistics();
 		assertTrue(checkStats(
 				(DataStatistics<Integer>) statsIt.next(),
 				2,

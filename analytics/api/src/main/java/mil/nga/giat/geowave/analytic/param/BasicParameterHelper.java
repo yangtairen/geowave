@@ -144,7 +144,7 @@ public class BasicParameterHelper implements
 			final Class<?> scope,
 			final Object defaultValue ) {
 		final ScopedJobConfiguration scopedConfig = new ScopedJobConfiguration(
-				context,
+				context.getConfiguration(),
 				scope);
 		if (baseClass.isAssignableFrom(Integer.class)) {
 			return new Integer(
@@ -171,7 +171,10 @@ public class BasicParameterHelper implements
 	@Override
 	public Object getValue(
 			final CommandLine commandline ) {
-		final String optionValueStr = commandline.getOptionValue(options[0].getArgName());
+		if (baseClass.isAssignableFrom(Boolean.class)) {
+			return commandline.hasOption(options[0].getOpt());
+		}
+		final String optionValueStr = commandline.getOptionValue(options[0].getOpt());
 		if (optionValueStr == null) {
 			return null;
 		}

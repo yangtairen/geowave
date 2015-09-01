@@ -44,16 +44,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The KMeans Jump algorithm
- * 
+ *
  * Catherine A. Sugar and Gareth M. James (2003).
  * "Finding the number of clusters in a data set: An information theoretic approach"
  * Journal of the American Statistical Association 98 (January): 750–763
- * 
+ *
  * @formatter:off Couple things to note:
- * 
- * 
+ *
+ *
  * @formatter:on
- * 
+ *
  */
 public class KMeansJumpJobRunner extends
 		MapReduceJobController implements
@@ -150,8 +150,8 @@ public class KMeansJumpJobRunner extends
 					currentBatchId);
 
 			final GenericStoreCommandLineOptions<DataStore> dataStoreOptions = ((PersistableDataStore) propertyManagement.getProperty(StoreParam.DATA_STORE)).getCliOptions();
-			final GenericStoreCommandLineOptions<IndexStore> indexStoreOptions = ((PersistableIndexStore) propertyManagement.getProperty(StoreParam.ADAPTER_STORE)).getCliOptions();
-			final GenericStoreCommandLineOptions<AdapterStore> adapterStoreOptions = ((PersistableAdapterStore) propertyManagement.getProperty(StoreParam.DATA_STORE)).getCliOptions();
+			final GenericStoreCommandLineOptions<IndexStore> indexStoreOptions = ((PersistableIndexStore) propertyManagement.getProperty(StoreParam.INDEX_STORE)).getCliOptions();
+			final GenericStoreCommandLineOptions<AdapterStore> adapterStoreOptions = ((PersistableAdapterStore) propertyManagement.getProperty(StoreParam.ADAPTER_STORE)).getCliOptions();
 
 			for (int k = (int) Math.max(
 					2,

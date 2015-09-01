@@ -29,30 +29,30 @@ import org.slf4j.LoggerFactory;
  * Adjust input items so that so that the assigned centroid becomes the group
  * ID. If the item has an assigned group ID, the resulting item's group ID is
  * replaced in the output.
- * 
+ *
  * From a multi-level clustering algorithm, an item has a different grouping in
  * each level. Items are clustered within their respective groups.
- * 
+ *
  * @formatter:off
- * 
+ *
  *                Context configuration parameters include:
- * 
+ *
  *                "GroupAssignmentMapReduce.Common.DistanceFunctionClass" ->
  *                Used to determine distance to centroid
- * 
+ *
  *                "GroupAssignmentMapReduce.Centroid.ExtractorClass" ->
  *                {@link mil.nga.giat.geowave.analytic.extract.CentroidExtractor}
- * 
+ *
  *                "GroupAssignmentMapReduce.Centroid.WrapperFactoryClass" ->
  *                {@link AnalyticItemWrapperFactory} to extract wrap spatial
  *                objects with Centroid management functions
- * 
+ *
  *                "GroupAssignmentMapReduce.Centroid.ZoomLevel" -> The current
  *                zoom level
- * 
+ *
  * @see CentroidManagerGeoWave
  * @formatter:on
- * 
+ *
  */
 public class GroupAssignmentMapReduce
 {
@@ -138,7 +138,7 @@ public class GroupAssignmentMapReduce
 			super.setup(context);
 
 			final ScopedJobConfiguration config = new ScopedJobConfiguration(
-					context,
+					context.getConfiguration(),
 					GroupAssignmentMapReduce.class,
 					GroupAssignmentMapReduce.LOGGER);
 

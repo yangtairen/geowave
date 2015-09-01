@@ -205,7 +205,7 @@ public abstract class GeoWaveAnalyticJobRunner extends
 		configure(job);
 
 		final ScopedJobConfiguration configWrapper = new ScopedJobConfiguration(
-				job,
+				job.getConfiguration(),
 				getScope());
 
 		final FormatConfiguration inputFormat = configWrapper.getInstance(

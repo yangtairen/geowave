@@ -14,6 +14,8 @@ import org.apache.commons.cli.ParseException;
 public class DataStatisticsStoreCommandLineOptions extends
 		GenericStoreCommandLineOptions<DataStatisticsStore>
 {
+	public static final String DATA_STATISTICS_STORE_NAME_KEY = "statstore";
+
 	public DataStatisticsStoreCommandLineOptions(
 			final GenericStoreFactory<DataStatisticsStore> factory,
 			final Map<String, Object> configOptions,
@@ -93,7 +95,7 @@ public class DataStatisticsStoreCommandLineOptions extends
 
 		@Override
 		public String getOptionName() {
-			return "statstore";
+			return DATA_STATISTICS_STORE_NAME_KEY;
 		}
 
 		@Override

@@ -20,7 +20,7 @@ import com.google.common.io.BaseEncoding;
 public class SingleEntryFilterIterator extends
 		Filter
 {
-	private final static Logger LOGGER = Logger.getLogger(AccumuloDataStore.class);
+	private final static Logger LOGGER = Logger.getLogger(SingleEntryFilterIterator.class);
 	public static final String ENTRY_FILTER_ITERATOR_NAME = "GEOWAVE_ENTRY_FILTER_ITERATOR";
 	public static final int ENTRY_FILTER_ITERATOR_PRIORITY = 15;
 	public static final String WHOLE_ROW_ITERATOR_NAME = "GEOWAVE_WHOLE_ROW_ITERATOR";

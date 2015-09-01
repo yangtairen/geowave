@@ -25,9 +25,9 @@ import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.StoreParameters;
-import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
-import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
-import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
+import mil.nga.giat.geowave.analytic.store.PersistableAdapterStore;
+import mil.nga.giat.geowave.analytic.store.PersistableDataStore;
+import mil.nga.giat.geowave.analytic.store.PersistableIndexStore;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
@@ -202,7 +202,7 @@ public class CentroidManagerGeoWave<T> implements
 			final Logger logger )
 			throws IOException {
 		final ScopedJobConfiguration scopedJob = new ScopedJobConfiguration(
-				context,
+				context.getConfiguration(),
 				scope,
 				logger);
 		try {
@@ -240,20 +240,20 @@ public class CentroidManagerGeoWave<T> implements
 				CentroidParameters.Centroid.INDEX_ID,
 				IndexType.SPATIAL_VECTOR.getDefaultId());
 
-		dataStore = ((DataStoreCommandLineOptions) StoreParameters.StoreParam.DATA_STORE.getHelper().getValue(
+		dataStore = ((PersistableDataStore) StoreParameters.StoreParam.DATA_STORE.getHelper().getValue(
 				context,
 				scope,
-				null)).createStore();
-		indexStore = ((IndexStoreCommandLineOptions) StoreParameters.StoreParam.INDEX_STORE.getHelper().getValue(
+				null)).getCliOptions().createStore();
+		indexStore = ((PersistableIndexStore) StoreParameters.StoreParam.INDEX_STORE.getHelper().getValue(
 				context,
 				scope,
-				null)).createStore();
+				null)).getCliOptions().createStore();
 		index = indexStore.getIndex(new ByteArrayId(
 				StringUtils.stringToBinary(indexId)));
-		adapterStore = ((AdapterStoreCommandLineOptions) StoreParameters.StoreParam.ADAPTER_STORE.getHelper().getValue(
+		adapterStore = ((PersistableAdapterStore) StoreParameters.StoreParam.ADAPTER_STORE.getHelper().getValue(
 				context,
 				scope,
-				null)).createStore();
+				null)).getCliOptions().createStore();
 		adapter = adapterStore.getAdapter(new ByteArrayId(
 				StringUtils.stringToBinary(centroidDataTypeId)));
 	}
@@ -474,8 +474,7 @@ public class CentroidManagerGeoWave<T> implements
 				new CQLQuery(
 						null,
 						finalFilter,
-						(FeatureDataAdapter) adapter),
-				(Integer) null);
+						(FeatureDataAdapter) adapter));
 	}
 
 	@SuppressWarnings("unchecked")

@@ -230,7 +230,7 @@ public class OrthodromicDistancePartitioner<T> extends
 			throws IOException {
 
 		final ScopedJobConfiguration config = new ScopedJobConfiguration(
-				context,
+				context.getConfiguration(),
 				scope);
 		final String crsName = config.getString(
 				GlobalParameters.Global.CRS_ID,

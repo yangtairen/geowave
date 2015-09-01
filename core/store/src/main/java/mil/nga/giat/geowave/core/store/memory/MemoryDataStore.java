@@ -266,9 +266,10 @@ public class MemoryDataStore implements
 					(VisibilityWriter<T>) customFieldVisibilityWriter);
 			for (final EntryRow row : rows) {
 				ids.add(row.getRowId());
-				getRowsForIndex(
-						index.getId()).add(
-						row);
+				final TreeSet<EntryRow> rowTreeSet = getRowsForIndex(index.getId());
+				if (!rowTreeSet.add(row)) {
+					LOGGER.warn("Unable to add new entry");
+				}
 			}
 			return ids;
 		}

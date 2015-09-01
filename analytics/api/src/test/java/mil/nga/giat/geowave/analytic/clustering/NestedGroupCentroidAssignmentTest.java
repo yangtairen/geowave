@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
@@ -14,12 +15,14 @@ import mil.nga.giat.geowave.analytic.kmeans.AssociationNotification;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.StoreFactoryFamilySpi;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStore;
 import mil.nga.giat.geowave.core.store.memory.MemoryDataStore;
 import mil.nga.giat.geowave.core.store.memory.MemoryIndexStore;
+import mil.nga.giat.geowave.core.store.memory.MemoryStoreFactoryFamily;
 
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.junit.Test;
@@ -69,10 +72,17 @@ public class NestedGroupCentroidAssignmentTest
 		final Index index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 		final FeatureDataAdapter adapter = new FeatureDataAdapter(
 				ftype);
-
-		final DataStore dataStore = new MemoryDataStore();
-		final IndexStore indexStore = new MemoryIndexStore();
-		final AdapterStore adapterStore = new MemoryAdapterStore();
+		String namespace = "test_" + getClass().getName();
+		final StoreFactoryFamilySpi storeFamily = new MemoryStoreFactoryFamily();
+		final DataStore dataStore = storeFamily.getDataStoreFactory().createStore(
+				new HashMap<String, Object>(),
+				namespace);
+		final IndexStore indexStore = storeFamily.getIndexStoreFactory().createStore(
+				new HashMap<String, Object>(),
+				namespace);
+		final AdapterStore adapterStore = storeFamily.getAdapterStoreFactory().createStore(
+				new HashMap<String, Object>(),
+				namespace);
 		dataStore.ingest(
 				adapter,
 				index,

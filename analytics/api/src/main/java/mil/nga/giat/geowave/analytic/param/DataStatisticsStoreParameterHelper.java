@@ -86,7 +86,7 @@ public class DataStatisticsStoreParameterHelper implements
 							geowaveNamespace));
 		}
 		else {
-			return null;
+			return defaultValue;
 		}
 	}
 

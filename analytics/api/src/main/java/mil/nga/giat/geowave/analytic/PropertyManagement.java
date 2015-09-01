@@ -38,20 +38,20 @@ import com.vividsolutions.jts.io.WKTReader;
  * Manage properties used by the Map Reduce environment that are provided
  * through the API (e.g. command). Allow these arguments to be placed an 'args'
  * list for 'main' executables (e.g. ToolRunner).
- * 
+ *
  * The class supports some basic conversions.
- * 
+ *
  * Non-serializable objects: {@link Persistable} instances are converted to and
  * from byte formats. {@link DistributableQuery} is a special case, supporting
  * WKT String. {@link Path} are converted to a from string representation of the
  * their URI.
- * 
+ *
  * Serializable objects: {@link NumericRange} supports min,max in string
  * representation (e.g. "1.0,2.0")
- * 
- * 
+ *
+ *
  * NOTE: ConfigutationWrapper implementation is scopeless.
- * 
+ *
  * EXPECTED FUTURE WORK: I am bit unsatisfied with the duality of the parameters
  * base class. In one case, in is treated a description for a class value and,
  * in the other case, it is treated as a description for the type of a property
@@ -61,7 +61,7 @@ import com.vividsolutions.jts.io.WKTReader;
  * goal is to uniformly provide feedback to parameters from command line
  * arguments and property files on submission to the manager rather than on
  * extraction from the manager.
- * 
+ *
  */
 public class PropertyManagement implements
 		Serializable
@@ -77,7 +77,12 @@ public class PropertyManagement implements
 	private final List<PropertyConverter<?>> converters = new ArrayList<PropertyConverter<?>>();
 	private PropertyManagement nestProperties = null;
 
-	public PropertyManagement() {}
+	public PropertyManagement() {
+		converters.add(new QueryConverter());
+		converters.add(new QueryOptionsConverter());
+		converters.add(new PathConverter());
+		converters.add(new PersistableConverter());
+	}
 
 	public PropertyManagement(
 			final PropertyConverter<?>[] converters,
@@ -115,7 +120,7 @@ public class PropertyManagement implements
 
 	public Serializable get(
 			final ParameterEnum<?> propertyName ) {
-		return localProperties.get(propertyName);
+		return getPropertyValue(propertyName);
 	}
 
 	public synchronized <T> void store(
@@ -166,13 +171,13 @@ public class PropertyManagement implements
 
 	/**
 	 * Does not work for non-serializable data (e.g. Path or Persistable)
-	 * 
+	 *
 	 */
 
 	public synchronized Serializable storeIfEmpty(
 			final ParameterEnum<?> propertyEnum,
 			final Serializable value ) {
-		if (!localProperties.containsKey(propertyEnum)) {
+		if (!containsPropertyValue(propertyEnum)) {
 			LOGGER.info(
 					"Setting parameter : {} to {}",
 					propertyEnum.toString(),
@@ -182,16 +187,16 @@ public class PropertyManagement implements
 					value);
 			return value;
 		}
-		return localProperties.get(propertyEnum);
+		return getPropertyValue(propertyEnum);
 	}
 
 	public synchronized void copy(
 			final ParameterEnum<?> propertyNameFrom,
 			final ParameterEnum<?> propertyNameTo ) {
-		if (localProperties.containsKey(propertyNameFrom)) {
+		if (containsPropertyValue(propertyNameFrom)) {
 			localProperties.put(
 					propertyNameTo,
-					localProperties.get(propertyNameFrom));
+					getPropertyValue(propertyNameFrom));
 		}
 	}
 
@@ -242,7 +247,7 @@ public class PropertyManagement implements
 			final Class<T> iface,
 			final Class<?> defaultClass )
 			throws InstantiationException {
-		final Object o = localProperties.get(property);
+		final Object o = getPropertyValue(property);
 
 		try {
 			final Class<?> clazz = o == null ? defaultClass : (o instanceof Class) ? (Class<?>) o : Class.forName(o.toString());
@@ -277,7 +282,7 @@ public class PropertyManagement implements
 
 	public synchronized boolean hasProperty(
 			final ParameterEnum<?> property ) {
-		return localProperties.containsKey(property);
+		return containsPropertyValue(property);
 	}
 
 	public String getPropertyAsString(
@@ -290,7 +295,7 @@ public class PropertyManagement implements
 	/**
 	 * Returns the value as, without conversion from the properties. Throws an
 	 * exception if a conversion is required to a specific type
-	 * 
+	 *
 	 * @param property
 	 * @return
 	 * @throws Exception
@@ -299,7 +304,7 @@ public class PropertyManagement implements
 	public Object getProperty(
 			final ParameterEnum<?> property )
 			throws Exception {
-		final Serializable value = localProperties.get(property);
+		final Serializable value = getPropertyValue(property);
 		if (!Serializable.class.isAssignableFrom(property.getHelper().getBaseClass())) {
 			for (final PropertyConverter converter : converters) {
 				if (property.getHelper().getBaseClass().isAssignableFrom(
@@ -318,7 +323,7 @@ public class PropertyManagement implements
 	/**
 	 * Returns the value after conversion. Throws an exception if a conversion
 	 * fails.
-	 * 
+	 *
 	 * @param property
 	 * @return
 	 * @throws Exception
@@ -329,13 +334,13 @@ public class PropertyManagement implements
 			final PropertyConverter<T> converter )
 			throws Exception {
 
-		final Serializable value = localProperties.get(property);
+		final Serializable value = getPropertyValue(property);
 		return converter.convert(value);
 	}
 
 	public byte[] getPropertyAsBytes(
 			final ParameterEnum<?> property ) {
-		final Object val = localProperties.get(property);
+		final Object val = getPropertyValue(property);
 		if (val != null) {
 			if (val instanceof byte[]) {
 				return (byte[]) val;
@@ -349,7 +354,7 @@ public class PropertyManagement implements
 			final ParameterEnum<?> property,
 			final String defaultValue ) {
 		// not using containsKey to avoid synchronization
-		final Object value = localProperties.get(property);
+		final Object value = getPropertyValue(property);
 		return (String) validate(
 				property,
 				value == null ? defaultValue : value.toString());
@@ -358,7 +363,7 @@ public class PropertyManagement implements
 	public Boolean getPropertyAsBoolean(
 			final ParameterEnum<?> property,
 			final Boolean defaultValue ) {
-		final Object val = localProperties.get(property);
+		final Object val = getPropertyValue(property);
 		if (val != null) {
 			return Boolean.valueOf(val.toString());
 		}
@@ -604,6 +609,11 @@ public class PropertyManagement implements
 					param.getHelper().getValue(
 							this));
 		}
+		if (nestProperties != null && !nestProperties.localProperties.isEmpty()) {
+			nestProperties.setJobConfiguration(
+					configuration,
+					scope);
+		}
 	}
 
 	/**
@@ -714,11 +724,11 @@ public class PropertyManagement implements
 	/**
 	 * Add to the set of converters used to take a String representation of a
 	 * value and convert it into another serializable form.
-	 * 
+	 *
 	 * This is done if the preferred internal representation does not match that
 	 * of a string. For example, a query is maintained as bytes even though it
 	 * can be provided as a query
-	 * 
+	 *
 	 * @param converter
 	 */
 	public synchronized void addConverter(
@@ -991,8 +1001,8 @@ public class PropertyManagement implements
 	}
 
 	private boolean containsPropertyValue(
-			final String name ) {
-		return ((nestProperties != null) && nestProperties.containsPropertyValue(name)) || localProperties.containsKey(name);
+			final ParameterEnum<?> property ) {
+		return ((nestProperties != null) && nestProperties.containsPropertyValue(property)) || localProperties.containsKey(property);
 	}
 
 	private Serializable getPropertyValue(

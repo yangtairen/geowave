@@ -14,6 +14,8 @@ import org.apache.commons.cli.ParseException;
 public class AdapterStoreCommandLineOptions extends
 		GenericStoreCommandLineOptions<AdapterStore>
 {
+	public static final String ADAPTER_STORE_NAME_KEY = "adapterstore";
+
 	public AdapterStoreCommandLineOptions(
 			final GenericStoreFactory<AdapterStore> factory,
 			final Map<String, Object> configOptions,
@@ -93,7 +95,7 @@ public class AdapterStoreCommandLineOptions extends
 
 		@Override
 		public String getOptionName() {
-			return "adapterstore";
+			return ADAPTER_STORE_NAME_KEY;
 		}
 
 		@Override

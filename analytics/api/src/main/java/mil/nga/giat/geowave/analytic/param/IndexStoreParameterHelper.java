@@ -86,7 +86,7 @@ public class IndexStoreParameterHelper implements
 							geowaveNamespace));
 		}
 		else {
-			return null;
+			return defaultValue;
 		}
 	}
 

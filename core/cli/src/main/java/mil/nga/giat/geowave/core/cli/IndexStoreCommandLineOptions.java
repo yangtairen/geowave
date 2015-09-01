@@ -14,6 +14,8 @@ import org.apache.commons.cli.ParseException;
 public class IndexStoreCommandLineOptions extends
 		GenericStoreCommandLineOptions<IndexStore>
 {
+	public static final String INDEX_STORE_NAME_KEY = "indexstore";
+
 	public IndexStoreCommandLineOptions(
 			final GenericStoreFactory<IndexStore> factory,
 			final Map<String, Object> configOptions,
@@ -93,7 +95,7 @@ public class IndexStoreCommandLineOptions extends
 
 		@Override
 		public String getOptionName() {
-			return "indexstore";
+			return INDEX_STORE_NAME_KEY;
 		}
 
 		@Override

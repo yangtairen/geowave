@@ -31,7 +31,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 
 /**
  * Basic support class for Partitioners (e.g {@link Paritioner}
- * 
+ *
  * @param <T>
  */
 public abstract class AbstractPartitioner<T> implements
@@ -153,7 +153,7 @@ public abstract class AbstractPartitioner<T> implements
 			final JobContext context,
 			final Class<?> scope ) {
 		final ScopedJobConfiguration config = new ScopedJobConfiguration(
-				context,
+				context.getConfiguration(),
 				scope);
 		final String distances = config.getString(
 				ClusteringParameters.Clustering.DISTANCE_THRESHOLDS,
@@ -177,11 +177,11 @@ public abstract class AbstractPartitioner<T> implements
 			throws IOException {
 
 		final ScopedJobConfiguration config = new ScopedJobConfiguration(
-				context,
+				context.getConfiguration(),
 				scope);
 		distancePerDimension = getDistances(
 				context,
-				this.getClass());
+				scope);
 
 		this.precisionFactor = config.getDouble(
 				Partition.PARTITION_PRECISION,

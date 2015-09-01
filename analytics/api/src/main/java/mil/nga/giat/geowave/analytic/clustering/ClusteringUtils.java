@@ -11,8 +11,8 @@ import mil.nga.giat.geowave.analytic.extract.DimensionExtractor;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.StoreParameters;
-import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
-import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
+import mil.nga.giat.geowave.analytic.store.PersistableAdapterStore;
+import mil.nga.giat.geowave.analytic.store.PersistableIndexStore;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -98,8 +98,8 @@ public class ClusteringUtils
 	public static DataAdapter[] getAdapters(
 			final PropertyManagement propertyManagement )
 			throws IOException {
-		final AdapterStore adapterStore = ((AdapterStoreCommandLineOptions) StoreParameters.StoreParam.ADAPTER_STORE.getHelper().getValue(
-				propertyManagement)).createStore();
+		final AdapterStore adapterStore = ((PersistableAdapterStore) StoreParameters.StoreParam.ADAPTER_STORE.getHelper().getValue(
+				propertyManagement)).getCliOptions().createStore();
 
 		final mil.nga.giat.geowave.core.store.CloseableIterator<DataAdapter<?>> it = adapterStore.getAdapters();
 		final List<DataAdapter> adapters = new LinkedList<DataAdapter>();
@@ -115,8 +115,8 @@ public class ClusteringUtils
 	public static Index[] getIndices(
 			final PropertyManagement propertyManagement ) {
 
-		final IndexStore indexStore = ((IndexStoreCommandLineOptions) StoreParameters.StoreParam.INDEX_STORE.getHelper().getValue(
-				propertyManagement)).createStore();
+		final IndexStore indexStore = ((PersistableIndexStore) StoreParameters.StoreParam.INDEX_STORE.getHelper().getValue(
+				propertyManagement)).getCliOptions().createStore();
 
 		final mil.nga.giat.geowave.core.store.CloseableIterator<Index> it = indexStore.getIndices();
 		final List<Index> indices = new LinkedList<Index>();
@@ -148,8 +148,8 @@ public class ClusteringUtils
 			final PropertyManagement propertyManagement )
 			throws Exception {
 
-		final IndexStore indexStore = ((IndexStoreCommandLineOptions) StoreParameters.StoreParam.INDEX_STORE.getHelper().getValue(
-				propertyManagement)).createStore();
+		final IndexStore indexStore = ((PersistableIndexStore) StoreParameters.StoreParam.INDEX_STORE.getHelper().getValue(
+				propertyManagement)).getCliOptions().createStore();
 		return indexStore.getIndex(new ByteArrayId(
 				propertyManagement.getPropertyAsString(CentroidParameters.Centroid.INDEX_ID)));
 	}
@@ -167,8 +167,8 @@ public class ClusteringUtils
 				propertyManagement.getPropertyAsString(
 						CentroidParameters.Centroid.DATA_NAMESPACE_URI,
 						BasicFeatureTypes.DEFAULT_NAMESPACE),
-				((AdapterStoreCommandLineOptions) StoreParameters.StoreParam.ADAPTER_STORE.getHelper().getValue(
-						propertyManagement)).createStore(),
+				((PersistableAdapterStore) StoreParameters.StoreParam.ADAPTER_STORE.getHelper().getValue(
+						propertyManagement)).getCliOptions().createStore(),
 				dimensionExtractorClass.newInstance().getDimensionNames());
 	}
 }

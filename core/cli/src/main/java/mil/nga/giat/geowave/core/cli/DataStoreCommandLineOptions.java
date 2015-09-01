@@ -14,6 +14,8 @@ import org.apache.commons.cli.ParseException;
 public class DataStoreCommandLineOptions extends
 		GenericStoreCommandLineOptions<DataStore>
 {
+	public static final String DATA_STORE_NAME_KEY = "datastore";
+
 	public DataStoreCommandLineOptions(
 			final GenericStoreFactory<DataStore> factory,
 			final Map<String, Object> configOptions,
@@ -93,7 +95,7 @@ public class DataStoreCommandLineOptions extends
 
 		@Override
 		public String getOptionName() {
-			return "datastore";
+			return DATA_STORE_NAME_KEY;
 		}
 
 		@Override

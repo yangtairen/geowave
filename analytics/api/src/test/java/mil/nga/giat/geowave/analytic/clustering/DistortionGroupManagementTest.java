@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
@@ -15,12 +16,11 @@ import mil.nga.giat.geowave.analytic.clustering.DistortionGroupManagement.Distor
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.StoreFactoryFamilySpi;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
-import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStore;
-import mil.nga.giat.geowave.core.store.memory.MemoryDataStore;
-import mil.nga.giat.geowave.core.store.memory.MemoryIndexStore;
+import mil.nga.giat.geowave.core.store.memory.MemoryStoreFactoryFamily;
 
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.junit.Before;
@@ -54,11 +54,18 @@ public class DistortionGroupManagementTest
 		adapter = new FeatureDataAdapter(
 				ftype);
 
-		dataStore = new MemoryDataStore();
-
-		adapterStore = new MemoryAdapterStore();
+		final String namespace = "test_" + getClass().getName();
+		final StoreFactoryFamilySpi storeFamily = new MemoryStoreFactoryFamily();
+		dataStore = storeFamily.getDataStoreFactory().createStore(
+				new HashMap<String, Object>(),
+				namespace);
+		adapterStore = storeFamily.getAdapterStoreFactory().createStore(
+				new HashMap<String, Object>(),
+				namespace);
 		adapterStore.addAdapter(adapter);
-		indexStore = new MemoryIndexStore();
+		indexStore = storeFamily.getIndexStoreFactory().createStore(
+				new HashMap<String, Object>(),
+				namespace);
 		indexStore.addIndex(index);
 	}
 
@@ -78,8 +85,6 @@ public class DistortionGroupManagementTest
 
 	@Before
 	public void setup() {
-
-		final DataStore dataStore = new MemoryDataStore();
 		// big jump for grp1 between batch 2 and 3
 		// big jump for grp2 between batch 1 and 2
 		// thus, the jump occurs for different groups between different batches!

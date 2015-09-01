@@ -168,7 +168,7 @@ public class NNMapReduce
 				InterruptedException {
 			super.setup(context);
 			final ScopedJobConfiguration config = new ScopedJobConfiguration(
-					context,
+					context.getConfiguration(),
 					NNMapReduce.class,
 					LOGGER);
 				serializationTool = new HadoopWritableSerializationTool(
@@ -365,7 +365,7 @@ public class NNMapReduce
 				InterruptedException {
 
 			final ScopedJobConfiguration config = new ScopedJobConfiguration(
-					context,
+					context.getConfiguration(),
 					NNMapReduce.class,
 					NNMapReduce.LOGGER);
 

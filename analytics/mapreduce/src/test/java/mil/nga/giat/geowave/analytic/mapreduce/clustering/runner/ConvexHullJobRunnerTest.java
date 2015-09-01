@@ -92,7 +92,7 @@ public class ConvexHullJobRunnerTest
 						10,
 						job.getNumReduceTasks());
 				final ScopedJobConfiguration configWrapper = new ScopedJobConfiguration(
-						job,
+						job.getConfiguration(),
 						ConvexHullMapReduce.class);
 				Assert.assertEquals(
 						"file://foo/bin",

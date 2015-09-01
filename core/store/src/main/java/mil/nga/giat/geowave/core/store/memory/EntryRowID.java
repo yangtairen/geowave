@@ -7,13 +7,14 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * This class encapsulates the elements that compose the row ID in Accumulo, and
- * 
- * 
+ *
+ *
  */
 @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "private class only accessed internally")
 public class EntryRowID implements
 		Comparable<EntryRowID>
 {
+	private long timestamp;
 	private final byte[] insertionId;
 	private final byte[] dataId;
 	private final byte[] adapterId;
@@ -44,6 +45,7 @@ public class EntryRowID implements
 		this.dataId = dataId;
 		this.adapterId = adapterId;
 		this.numberOfDuplicates = numberOfDuplicates;
+		timestamp = System.currentTimeMillis();
 	}
 
 	public EntryRowID(
@@ -51,7 +53,7 @@ public class EntryRowID implements
 			final byte[] dataId,
 			final byte[] adapterId,
 			final int numberOfDuplicates ) {
-		this.insertionId = indexId;
+		insertionId = indexId;
 		this.dataId = dataId;
 		this.adapterId = adapterId;
 		this.numberOfDuplicates = numberOfDuplicates;
@@ -90,20 +92,28 @@ public class EntryRowID implements
 
 	@Override
 	public int compareTo(
-			EntryRowID other ) {
-		int indexIdCompare = compare(
+			final EntryRowID other ) {
+		final int indexIdCompare = compare(
 				insertionId,
 				other.insertionId);
-		if (indexIdCompare != 0) return indexIdCompare;
-		int dataIdCompare = compare(
+		if (indexIdCompare != 0) {
+			return indexIdCompare;
+		}
+		final int dataIdCompare = compare(
 				dataId,
 				other.dataId);
-		if (dataIdCompare != 0) return dataIdCompare;
-		int adapterIdCompare = compare(
+		if (dataIdCompare != 0) {
+			return dataIdCompare;
+		}
+		final int adapterIdCompare = compare(
 				adapterId,
 				other.adapterId);
-		if (adapterIdCompare != 0) return adapterIdCompare;
-		return 0;
+		if (adapterIdCompare != 0) {
+			return adapterIdCompare;
+		}
+		return Long.compare(
+				timestamp,
+				other.timestamp);
 
 	}
 
@@ -111,10 +121,14 @@ public class EntryRowID implements
 			final byte[] a,
 			final byte[] b ) {
 		int j = 0;
-		for (byte aByte : a) {
-			if (b.length <= j) break;
-			int val = aByte - b[j];
-			if (val != 0) return val;
+		for (final byte aByte : a) {
+			if (b.length <= j) {
+				break;
+			}
+			final int val = aByte - b[j];
+			if (val != 0) {
+				return val;
+			}
 			j++;
 		}
 		return a.length - b.length;
@@ -124,28 +138,48 @@ public class EntryRowID implements
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + Arrays.hashCode(adapterId);
-		result = prime * result + Arrays.hashCode(dataId);
-		result = prime * result + Arrays.hashCode(insertionId);
+		result = (prime * result) + Arrays.hashCode(adapterId);
+		result = (prime * result) + Arrays.hashCode(dataId);
+		result = (prime * result) + Arrays.hashCode(insertionId);
+		result = (prime * result) + numberOfDuplicates;
+		result = (prime * result) + (int) (timestamp ^ (timestamp >>> 32));
 		return result;
 	}
 
 	@Override
 	public boolean equals(
-			Object obj ) {
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
-		EntryRowID other = (EntryRowID) obj;
+			final Object obj ) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final EntryRowID other = (EntryRowID) obj;
 		if (!Arrays.equals(
 				adapterId,
-				other.adapterId)) return false;
+				other.adapterId)) {
+			return false;
+		}
 		if (!Arrays.equals(
 				dataId,
-				other.dataId)) return false;
+				other.dataId)) {
+			return false;
+		}
 		if (!Arrays.equals(
 				insertionId,
-				other.insertionId)) return false;
+				other.insertionId)) {
+			return false;
+		}
+		if (numberOfDuplicates != other.numberOfDuplicates) {
+			return false;
+		}
+		if (timestamp != other.timestamp) {
+			return false;
+		}
 		return true;
 	}
 

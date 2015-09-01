@@ -70,7 +70,7 @@ public class NNJobRunnerTest
 						10,
 						job.getNumReduceTasks());
 				final ScopedJobConfiguration configWrapper = new ScopedJobConfiguration(
-						job,
+						job.getConfiguration(),
 						NNMapReduce.class);
 				Assert.assertEquals(
 						"file://foo/bin",
