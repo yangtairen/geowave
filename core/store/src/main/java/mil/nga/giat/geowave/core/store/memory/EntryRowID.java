@@ -7,8 +7,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * This class encapsulates the elements that compose the row ID in Accumulo, and
- * 
- * 
+ *
+ *
  */
 @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "private class only accessed internally")
 public class EntryRowID implements
@@ -18,6 +18,7 @@ public class EntryRowID implements
 	private final byte[] dataId;
 	private final byte[] adapterId;
 	private final int numberOfDuplicates;
+	private long timestamp;
 
 	public EntryRowID(
 			final byte[] byteID ) {
@@ -110,7 +111,9 @@ public class EntryRowID implements
 		if (adapterIdCompare != 0) {
 			return adapterIdCompare;
 		}
-		return 0;
+		return Long.compare(
+				timestamp,
+				other.timestamp);
 
 	}
 
@@ -139,6 +142,7 @@ public class EntryRowID implements
 		result = (prime * result) + Arrays.hashCode(dataId);
 		result = (prime * result) + Arrays.hashCode(insertionId);
 		result = (prime * result) + numberOfDuplicates;
+		result = (prime * result) + (int) (timestamp ^ (timestamp >>> 32));
 		return result;
 	}
 
@@ -171,6 +175,9 @@ public class EntryRowID implements
 			return false;
 		}
 		if (numberOfDuplicates != other.numberOfDuplicates) {
+			return false;
+		}
+		if (timestamp != other.timestamp) {
 			return false;
 		}
 		return true;

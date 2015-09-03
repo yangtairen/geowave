@@ -39,6 +39,7 @@ import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.junit.Assert;
 import org.junit.Before;
@@ -75,7 +76,10 @@ public class GroupAssigmentJobRunnerTest
 						GroupAssignmentMapReduce.class,
 						StoreParam.ADAPTER_STORE.getHelper().getValue(
 								runTimeProperties));
-				return tool.run(runTimeProperties);
+				return ToolRunner.run(
+						configuration,
+						tool,
+						new String[] {});
 			}
 
 			@Override
