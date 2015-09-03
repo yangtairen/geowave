@@ -5,10 +5,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import mil.nga.giat.geowave.analytic.AnalyticCLIOperationDriver;
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
 import mil.nga.giat.geowave.analytic.IndependentJobRunner;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
-import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.param.FormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.InputParameters;
@@ -31,9 +31,7 @@ import mil.nga.giat.geowave.mapreduce.JobContextIndexStore;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.mapreduce.Counters;
-import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.slf4j.Logger;
@@ -58,7 +56,7 @@ public abstract class GeoWaveAnalyticJobRunner extends
 	private FormatConfiguration outputFormat = null;
 	private int reducerCount = 1;
 	private MapReduceIntegration mapReduceIntegrater = new ToolRunnerMapReduceIntegration();
-	private Counters lastCounterSet = null;
+	private final Counters lastCounterSet = null;
 
 	public FormatConfiguration getInputFormatConfiguration() {
 		return inputFormat;
@@ -200,42 +198,48 @@ public abstract class GeoWaveAnalyticJobRunner extends
 	public int run(
 			final String[] args )
 			throws Exception {
-		final Job job = mapReduceIntegrater.getJob(this);
-
-		configure(job);
-
-		final ScopedJobConfiguration configWrapper = new ScopedJobConfiguration(
-				job.getConfiguration(),
-				getScope());
-
-		final FormatConfiguration inputFormat = configWrapper.getInstance(
-				InputParameters.Input.INPUT_FORMAT,
-				FormatConfiguration.class,
-				null);
-
-		if (inputFormat != null) {
-			job.setInputFormatClass((Class<? extends InputFormat>) inputFormat.getFormatClass());
-		}
-
-		final FormatConfiguration outputFormat = configWrapper.getInstance(
-				OutputParameters.Output.OUTPUT_FORMAT,
-				FormatConfiguration.class,
-				null);
-
-		if (outputFormat != null) {
-			job.setOutputFormatClass((Class<? extends OutputFormat>) outputFormat.getFormatClass());
-		}
-
-		job.setJobName("GeoWave Convex Hull");
-
-		job.setNumReduceTasks(configWrapper.getInt(
-				OutputParameters.Output.REDUCER_COUNT,
-				1));
-
-		job.setJarByClass(this.getClass());
-		final Counters counters = mapReduceIntegrater.waitForCompletion(job);
-		lastCounterSet = counters;
-		return (counters == null) ? 1 : 0;
+		new AnalyticCLIOperationDriver(
+				this).runOperation(args);
+		return 0;
+		// final Job job = mapReduceIntegrater.getJob(this);
+		//
+		// configure(job);
+		//
+		// final ScopedJobConfiguration configWrapper = new
+		// ScopedJobConfiguration(
+		// job.getConfiguration(),
+		// getScope());
+		//
+		// final FormatConfiguration inputFormat = configWrapper.getInstance(
+		// InputParameters.Input.INPUT_FORMAT,
+		// FormatConfiguration.class,
+		// null);
+		//
+		// if (inputFormat != null) {
+		// job.setInputFormatClass((Class<? extends InputFormat>)
+		// inputFormat.getFormatClass());
+		// }
+		//
+		// final FormatConfiguration outputFormat = configWrapper.getInstance(
+		// OutputParameters.Output.OUTPUT_FORMAT,
+		// FormatConfiguration.class,
+		// null);
+		//
+		// if (outputFormat != null) {
+		// job.setOutputFormatClass((Class<? extends OutputFormat>)
+		// outputFormat.getFormatClass());
+		// }
+		//
+		// job.setJobName("GeoWave Convex Hull");
+		//
+		// job.setNumReduceTasks(configWrapper.getInt(
+		// OutputParameters.Output.REDUCER_COUNT,
+		// 1));
+		//
+		// job.setJarByClass(this.getClass());
+		// final Counters counters = mapReduceIntegrater.waitForCompletion(job);
+		// lastCounterSet = counters;
+		// return (counters == null) ? 1 : 0;
 	}
 
 	public long getCounterValue(

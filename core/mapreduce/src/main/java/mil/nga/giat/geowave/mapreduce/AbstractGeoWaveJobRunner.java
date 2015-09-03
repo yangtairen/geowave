@@ -156,7 +156,8 @@ public abstract class AbstractGeoWaveJobRunner extends
 	public int run(
 			final String[] args )
 			throws Exception {
-		return runJob();
+		runOperation(args);
+		return 0;
 	}
 
 	@Override

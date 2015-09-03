@@ -16,7 +16,7 @@ public class ToolRunnerMapReduceIntegration implements
 
 	@Override
 	public Job getJob(
-			Tool tool )
+			final Tool tool )
 			throws IOException {
 		return new Job(
 				tool.getConf());
@@ -24,14 +24,14 @@ public class ToolRunnerMapReduceIntegration implements
 
 	@Override
 	public int submit(
-			Configuration configuration,
-			PropertyManagement runTimeProperties,
-			GeoWaveAnalyticJobRunner tool )
+			final Configuration configuration,
+			final PropertyManagement runTimeProperties,
+			final GeoWaveAnalyticJobRunner tool )
 			throws Exception {
 		return ToolRunner.run(
 				configuration,
 				tool,
-				runTimeProperties.toGeoWaveRunnerArguments());
+				new String[] {});
 	}
 
 	@Override

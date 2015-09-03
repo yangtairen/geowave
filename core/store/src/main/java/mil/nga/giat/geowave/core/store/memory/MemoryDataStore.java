@@ -681,8 +681,8 @@ public class MemoryDataStore implements
 			final Integer limit,
 			final ScanCallback<?> scanCallback,
 			final String... additionalAuthorizations ) {
-		final Iterator<EntryRow> rowIt = ((query == null) || query.isSupported(index)) ? getRowsForIndex(
-				index.getId()).iterator() : Collections.<EntryRow> emptyIterator();
+		final Iterator<EntryRow> rowIt = ((query == null) || query.isSupported(index)) ? ((TreeSet<EntryRow>)getRowsForIndex(
+				index.getId()).clone()).iterator() : Collections.<EntryRow> emptyIterator();
 
 		final List<QueryFilter> filters = (query == null) ? new ArrayList<QueryFilter>() : query.createFilters(index.getIndexModel());
 		return new CloseableIterator<T>() {

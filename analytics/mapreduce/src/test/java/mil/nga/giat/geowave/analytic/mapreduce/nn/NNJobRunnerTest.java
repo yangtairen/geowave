@@ -13,14 +13,19 @@ import mil.nga.giat.geowave.analytic.mapreduce.MapReduceIntegration;
 import mil.nga.giat.geowave.analytic.mapreduce.SequenceFileInputFormatConfiguration;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters.MRConfig;
-import mil.nga.giat.geowave.analytic.param.ParameterHelper;
 import mil.nga.giat.geowave.analytic.param.PartitionParameters.Partition;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
 import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner;
+import mil.nga.giat.geowave.analytic.store.PersistableAdapterStore;
 import mil.nga.giat.geowave.analytic.store.PersistableDataStore;
+import mil.nga.giat.geowave.analytic.store.PersistableIndexStore;
+import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStoreFactory;
 import mil.nga.giat.geowave.core.store.memory.MemoryDataStoreFactory;
+import mil.nga.giat.geowave.core.store.memory.MemoryIndexStoreFactory;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -48,12 +53,7 @@ public class NNJobRunnerTest
 					final GeoWaveAnalyticJobRunner tool )
 					throws Exception {
 				tool.setConf(configuration);
-				((ParameterHelper<Object>) StoreParam.ADAPTER_STORE.getHelper()).setValue(
-						configuration,
-						NNMapReduce.class,
-						StoreParam.ADAPTER_STORE.getHelper().getValue(
-								runTimeProperties));
-				return tool.run(runTimeProperties.toGeoWaveRunnerArguments());
+				return tool.run(runTimeProperties);
 			}
 
 			@Override
@@ -152,6 +152,22 @@ public class NNJobRunnerTest
 				new PersistableDataStore(
 						new DataStoreCommandLineOptions(
 								new MemoryDataStoreFactory(),
+								new HashMap<String, Object>(),
+								TEST_NAMESPACE)));
+
+		runTimeProperties.store(
+				StoreParam.ADAPTER_STORE,
+				new PersistableAdapterStore(
+						new AdapterStoreCommandLineOptions(
+								new MemoryAdapterStoreFactory(),
+								new HashMap<String, Object>(),
+								TEST_NAMESPACE)));
+
+		runTimeProperties.store(
+				StoreParam.INDEX_STORE,
+				new PersistableIndexStore(
+						new IndexStoreCommandLineOptions(
+								new MemoryIndexStoreFactory(),
 								new HashMap<String, Object>(),
 								TEST_NAMESPACE)));
 

@@ -75,7 +75,7 @@ public class ConvexHullJobRunnerTest
 						ConvexHullMapReduce.class,
 						StoreParam.ADAPTER_STORE.getHelper().getValue(
 								runTimeProperties));
-				return tool.run(runTimeProperties.toGeoWaveRunnerArguments());
+				return tool.run(new String[] {});
 			}
 
 			@Override

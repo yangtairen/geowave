@@ -16,7 +16,9 @@ import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
-import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.analytic.store.PersistableDataStore;
+import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
@@ -27,10 +29,10 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Reducer;
 
 /**
- * 
+ *
  * Assign group IDs to input items based on centroids.
- * 
- * 
+ *
+ *
  */
 public class GroupAssigmentJobRunner extends
 		GeoWaveAnalyticJobRunner
@@ -71,7 +73,7 @@ public class GroupAssigmentJobRunner extends
 
 		// Required since the Mapper uses the input format parameters to lookup
 		// the adapter
-		final DataStoreCommandLineOptions dataStoreOptions = (DataStoreCommandLineOptions) runTimeProperties.getProperty(StoreParam.DATA_STORE);
+		final GenericStoreCommandLineOptions<DataStore> dataStoreOptions = ((PersistableDataStore) runTimeProperties.getProperty(StoreParam.DATA_STORE)).getCliOptions();
 		GeoWaveInputFormat.setDataStoreName(
 				config,
 				dataStoreOptions.getFactory().getName());

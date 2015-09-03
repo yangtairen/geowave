@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
+import mil.nga.giat.geowave.analytic.AnalyticCLIOperationDriver;
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
 import mil.nga.giat.geowave.analytic.IndependentJobRunner;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
@@ -22,8 +23,10 @@ import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
+import mil.nga.giat.geowave.analytic.store.PersistableDataStore;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.store.DataStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
@@ -49,10 +52,20 @@ public class GeoWaveAnalyticExtractJobRunner extends
 		MapReduceJobRunner,
 		IndependentJobRunner
 {
+
 	private String outputBaseDir = "/tmp";
 	private int reducerCount = 1;
 
 	public GeoWaveAnalyticExtractJobRunner() {}
+	
+	@Override
+	public int run(
+			final String[] args )
+			throws Exception {
+		new AnalyticCLIOperationDriver(
+				this).runOperation(args);
+		return 0;
+	}
 
 	@Override
 	protected int getNumReduceTasks() {
@@ -204,7 +217,7 @@ public class GeoWaveAnalyticExtractJobRunner extends
 
 		@SuppressWarnings("rawtypes")
 		final DataAdapter[] adapters = ClusteringUtils.getAdapters(runTimeProperties);
-
+		dataStoreFactory = (DataStoreFactorySpi) ((PersistableDataStore) runTimeProperties.getProperty(StoreParam.DATA_STORE)).getCliOptions().getFactory();
 		if (adapterId != null) {
 			final ByteArrayId byteId = new ByteArrayId(
 					StringUtils.stringToBinary(adapterId));
@@ -229,7 +242,7 @@ public class GeoWaveAnalyticExtractJobRunner extends
 		return ToolRunner.run(
 				config,
 				this,
-				runTimeProperties.toGeoWaveRunnerArguments());
+				new String[] {});
 	}
 
 	@Override

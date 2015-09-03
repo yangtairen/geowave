@@ -181,7 +181,7 @@ public class NNMapReduce
 
 				partitioner.initialize(
 						context,
-						NNMapReduce.class);
+						partitioner.getClass());
 			}
 			catch (final Exception e1) {
 				throw new IOException(

@@ -118,11 +118,13 @@ public class KMeansDistortionMapReduceTest
 		propManagement.store(
 				CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
 				SimpleFeatureItemWrapperFactory.class);
-
-		NestedGroupCentroidAssignment.setParameters(
-				reduceDriver.getConfiguration(),
-				KMeansDistortionMapReduce.class,
-				propManagement);
+		propManagement.store(
+				StoreParam.DATA_STORE,
+				new PersistableDataStore(
+						new DataStoreCommandLineOptions(
+								new MemoryDataStoreFactory(),
+								new HashMap<String, Object>(),
+								TEST_NAMESPACE)));
 		NestedGroupCentroidAssignment.setParameters(
 				mapDriver.getConfiguration(),
 				KMeansDistortionMapReduce.class,

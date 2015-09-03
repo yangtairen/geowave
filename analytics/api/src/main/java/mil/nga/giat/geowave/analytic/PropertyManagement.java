@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.Persistable;
@@ -21,7 +20,6 @@ import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
-import mil.nga.giat.geowave.mapreduce.AbstractGeoWaveJobRunner;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
@@ -307,8 +305,8 @@ public class PropertyManagement implements
 		final Serializable value = getPropertyValue(property);
 		if (!Serializable.class.isAssignableFrom(property.getHelper().getBaseClass())) {
 			for (final PropertyConverter converter : converters) {
-				if (property.getHelper().getBaseClass().isAssignableFrom(
-						converter.baseClass())) {
+				if (converter.baseClass().isAssignableFrom(
+						property.getHelper().getBaseClass())) {
 					return this.validate(
 							property,
 							converter.convert(value));
@@ -586,19 +584,6 @@ public class PropertyManagement implements
 		return null;
 	}
 
-	public synchronized String[] toArguments(
-			final ParameterEnum<?>[] names ) {
-		final String[] resultArgs = new String[names.length];
-		int i = 0;
-		for (final ParameterEnum<?> name : names) {
-			resultArgs[i] = getPropertyAsString(
-					name,
-					"");
-			i++;
-		}
-		return resultArgs;
-	}
-
 	public void setJobConfiguration(
 			final Configuration configuration,
 			final Class<?> scope ) {
@@ -609,25 +594,11 @@ public class PropertyManagement implements
 					param.getHelper().getValue(
 							this));
 		}
-		if (nestProperties != null && !nestProperties.localProperties.isEmpty()) {
+		if ((nestProperties != null) && !nestProperties.localProperties.isEmpty()) {
 			nestProperties.setJobConfiguration(
 					configuration,
 					scope);
 		}
-	}
-
-	/**
-	 * Arguments, in the correct order, passed to
-	 * {@link AbstractGeoWaveJobRunner}
-	 */
-	public static final ParameterEnum<?>[] GeoWaveRunnerArguments = new ParameterEnum[] {
-		StoreParameters.StoreParam.DATA_STORE,
-	};
-
-	public String[] toGeoWaveRunnerArguments() {
-		// TODO: is this trying to establish default arguments? in that case, it
-		// needs to change
-		return toArguments(GeoWaveRunnerArguments);
 	}
 
 	//
@@ -759,8 +730,7 @@ public class PropertyManagement implements
 			final Object value ) {
 		if (value != null) {
 			if (value instanceof Class) {
-				if (propertyName.getHelper().getBaseClass().isAssignableFrom(
-						(Class<?>) value)) {
+				if (((Class<?>) value).isAssignableFrom(propertyName.getHelper().getBaseClass())) {
 					throw new IllegalArgumentException(
 							String.format(
 									"%s does not accept class %s",
@@ -789,8 +759,8 @@ public class PropertyManagement implements
 		if (!(value instanceof Serializable)) {
 			for (@SuppressWarnings("rawtypes")
 			final PropertyConverter converter : converters) {
-				if (property.getHelper().getBaseClass().isAssignableFrom(
-						converter.baseClass())) {
+				if (converter.baseClass().isAssignableFrom(
+						property.getHelper().getBaseClass())) {
 					return converter.convert(value);
 				}
 			}
@@ -799,8 +769,8 @@ public class PropertyManagement implements
 				value) && (value instanceof String)) {
 			for (@SuppressWarnings("rawtypes")
 			final PropertyConverter converter : converters) {
-				if (property.getHelper().getBaseClass().isAssignableFrom(
-						converter.baseClass())) {
+				if (converter.baseClass().isAssignableFrom(
+						property.getHelper().getBaseClass())) {
 					return converter.convert(converter.convert(value.toString()));
 				}
 			}
