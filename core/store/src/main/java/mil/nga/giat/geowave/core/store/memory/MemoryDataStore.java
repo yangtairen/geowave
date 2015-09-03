@@ -267,6 +267,9 @@ public class MemoryDataStore implements
 			for (final EntryRow row : rows) {
 				ids.add(row.getRowId());
 				final TreeSet<EntryRow> rowTreeSet = getRowsForIndex(index.getId());
+				if (rowTreeSet.contains(row)) {
+					rowTreeSet.remove(row);
+				}
 				if (!rowTreeSet.add(row)) {
 					LOGGER.warn("Unable to add new entry");
 				}
