@@ -17,6 +17,7 @@ import mil.nga.giat.geowave.core.store.CloseableIterator;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
+import org.geotools.data.Query;
 import org.geotools.data.Transaction;
 import org.geotools.factory.Hints;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -213,6 +214,39 @@ public class GeoWaveTransactionManagement implements
 				bounds,
 				false);
 
+	}
+
+	public Iterator<SimpleFeature> query(
+			final Query query ) {
+		return new Iterator<SimpleFeature>() {
+
+			final Iterator<SimpleFeature> it = addedFeatures.values().iterator();
+			SimpleFeature nextFeature = null;
+
+			@Override
+			public boolean hasNext() {
+				while (it.hasNext() && nextFeature == null) {
+					nextFeature = it.next();
+					if (!query.getFilter().evaluate(
+							nextFeature)) nextFeature = null;
+				}
+				return nextFeature != null;
+			}
+
+			@Override
+			public SimpleFeature next() {
+				final SimpleFeature result = nextFeature;
+				nextFeature = null;
+				return result;
+			}
+
+			@Override
+			public void remove() {
+				// TODO Auto-generated method stub
+
+			}
+
+		};
 	}
 
 	@Override

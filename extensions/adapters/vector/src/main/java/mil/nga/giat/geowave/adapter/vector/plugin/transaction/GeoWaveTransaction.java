@@ -1,9 +1,11 @@
 package mil.nga.giat.geowave.adapter.vector.plugin.transaction;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 
+import org.geotools.data.Query;
 import org.opengis.feature.simple.SimpleFeature;
 
 /**
@@ -50,6 +52,16 @@ public interface GeoWaveTransaction
 			String fid,
 			SimpleFeature feature )
 			throws IOException;
+
+	/**
+	 * Query pending additions
+	 * 
+	 * @param query
+	 * @return
+	 */
+
+	public Iterator<SimpleFeature> query(
+			Query query );
 
 	public String[] composeAuthorizations();
 

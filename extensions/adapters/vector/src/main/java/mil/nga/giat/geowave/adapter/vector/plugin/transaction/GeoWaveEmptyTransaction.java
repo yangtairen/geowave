@@ -1,10 +1,13 @@
 package mil.nga.giat.geowave.adapter.vector.plugin.transaction;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Iterator;
 
 import mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveDataStoreComponents;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 
+import org.geotools.data.Query;
 import org.geotools.data.Transaction;
 import org.geotools.factory.Hints;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -146,6 +149,12 @@ public class GeoWaveEmptyTransaction implements
 	@Override
 	public String composeVisibility() {
 		return "";
+	}
+
+	@Override
+	public Iterator<SimpleFeature> query(
+			Query query ) {
+		return Collections.<SimpleFeature>emptyList().iterator();
 	}
 
 }
