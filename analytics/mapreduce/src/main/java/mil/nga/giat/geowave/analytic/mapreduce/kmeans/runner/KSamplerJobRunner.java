@@ -158,4 +158,8 @@ public class KSamplerJobRunner extends
 
 	}
 
+	@Override
+	protected String getJobName() {
+		return "K-Sampler";
+	}
 }

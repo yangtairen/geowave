@@ -165,6 +165,19 @@ public class BasicParameterHelper implements
 		else if (baseClass.isAssignableFrom(byte[].class)) {
 			return scopedConfig.getBytes(parent.self());
 		}
+		else if ((defaultValue == null) || (defaultValue instanceof Class)) {
+			try {
+				return scopedConfig.getInstance(
+						parent.self(),
+						baseClass,
+						(Class) defaultValue);
+			}
+			catch (InstantiationException | IllegalAccessException e) {
+				LOGGER.error(
+						"Unable to get instance from job context",
+						e);
+			}
+		}
 		return null;
 	}
 

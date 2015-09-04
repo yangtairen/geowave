@@ -279,7 +279,8 @@ public class KMeansDistortionMapReduce
 						"Unable to initialize centroid manager",
 						e);
 				throw new IOException(
-						"Unable to initialize centroid manager");
+						"Unable to initialize centroid manager",
+						e);
 			}
 
 		}

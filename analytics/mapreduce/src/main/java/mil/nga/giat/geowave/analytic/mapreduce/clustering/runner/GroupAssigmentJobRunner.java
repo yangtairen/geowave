@@ -127,4 +127,9 @@ public class GroupAssigmentJobRunner extends
 		return params;
 	}
 
+	@Override
+	protected String getJobName() {
+		return "Group Assignment";
+	}
+
 }

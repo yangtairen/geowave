@@ -1,7 +1,11 @@
 package mil.nga.giat.geowave.analytic.mapreduce.clustering.runner;
 
 import java.io.IOException;
+import java.security.AccessControlContext;
+import java.security.AccessController;
 import java.util.HashMap;
+
+import javax.security.auth.Subject;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
@@ -39,7 +43,6 @@ import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.junit.Assert;
 import org.junit.Before;
@@ -76,10 +79,7 @@ public class GroupAssigmentJobRunnerTest
 						GroupAssignmentMapReduce.class,
 						StoreParam.ADAPTER_STORE.getHelper().getValue(
 								runTimeProperties));
-				return ToolRunner.run(
-						configuration,
-						tool,
-						new String[] {});
+				return tool.run(new String[] {});
 			}
 
 			@Override
@@ -150,10 +150,6 @@ public class GroupAssigmentJobRunnerTest
 							e);
 				}
 
-				Assert.assertEquals(
-						10,
-						job.getNumReduceTasks());
-
 				return new Counters();
 			}
 
@@ -163,6 +159,13 @@ public class GroupAssigmentJobRunnerTest
 					throws IOException {
 				return new Job(
 						tool.getConf());
+			}
+
+			@Override
+			public Configuration getConfiguration(
+					final PropertyManagement runTimeProperties )
+					throws IOException {
+				return new Configuration();
 			}
 		});
 		runner.setInputFormatConfiguration(new SequenceFileInputFormatConfiguration(

@@ -45,4 +45,11 @@ public class ToolRunnerMapReduceIntegration implements
 
 	}
 
+	@Override
+	public Configuration getConfiguration(
+			final PropertyManagement runTimeProperties )
+			throws IOException {
+		return MapReduceJobController.getConfiguration(runTimeProperties);
+	}
+
 }

@@ -127,4 +127,9 @@ public class KMeansDistortionJobRunner extends
 				config,
 				runTimeProperties);
 	}
+
+	@Override
+	protected String getJobName() {
+		return "K-Means Distortion";
+	}
 }

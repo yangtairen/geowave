@@ -601,55 +601,6 @@ public class PropertyManagement implements
 		}
 	}
 
-	//
-	// /**
-	// * Does not validate the option values.
-	// *
-	// * @param commandLine
-	// * @throws ParseException
-	// */
-	// public synchronized void buildFromOptions(
-	// final CommandLine commandLine )
-	// throws ParseException {
-	// for (final Option option : commandLine.getOptions()) {
-	// if (!option.hasArg()) {
-	// properties.put(
-	// option.getLongOpt(),
-	// Boolean.TRUE);
-	// }
-	// else {
-	// properties.put(
-	// option.getLongOpt(),
-	// option.getValue());
-	// }
-	// }
-	// }
-	//
-	// public static boolean hasOption(
-	// final Set<Option> options,
-	// final ParameterEnum optionParameter ) {
-	// for (final Option option : options) {
-	// if (option.getLongOpt().equals(optionParameter.self().toString())) {
-	// return true;
-	// }
-	// }
-	// return false;
-	// }
-	//
-	// public static void removeOption(
-	// final Set<Option> options,
-	// final ParameterEnum parameter ) {
-	// for (final Option option : options) {
-	// if (option.getLongOpt().equals(
-	// toPropertyName(
-	// parameter))) {
-	// options.remove(
-	// option);
-	// break;
-	// }
-	// }
-	// }
-
 	public void toOutput(
 			final OutputStream os )
 			throws IOException {

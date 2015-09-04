@@ -40,7 +40,6 @@ import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.junit.Assert;
 import org.junit.Before;
@@ -76,10 +75,7 @@ public class ConvexHullJobRunnerTest
 						ConvexHullMapReduce.class,
 						StoreParam.ADAPTER_STORE.getHelper().getValue(
 								runTimeProperties));
-				return ToolRunner.run(
-						configuration,
-						tool,
-						new String[] {});
+				return tool.run(new String[] {});
 			}
 
 			@Override
@@ -158,6 +154,13 @@ public class ConvexHullJobRunnerTest
 					throws IOException {
 				return new Job(
 						tool.getConf());
+			}
+
+			@Override
+			public Configuration getConfiguration(
+					final PropertyManagement runTimeProperties )
+					throws IOException {
+				return new Configuration();
 			}
 		});
 		hullRunner.setInputFormatConfiguration(new SequenceFileInputFormatConfiguration());

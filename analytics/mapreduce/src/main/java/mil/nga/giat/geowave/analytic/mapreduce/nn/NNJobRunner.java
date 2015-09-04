@@ -85,4 +85,8 @@ public class NNJobRunner extends
 		return params;
 	}
 
+	@Override
+	protected String getJobName() {
+		return "Nearest Neighbors";
+	}
 }

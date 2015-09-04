@@ -140,6 +140,13 @@ public class NNJobRunnerTest
 				return new Job(
 						tool.getConf());
 			}
+
+			@Override
+			public Configuration getConfiguration(
+					final PropertyManagement runTimeProperties )
+					throws IOException {
+				return new Configuration();
+			}
 		});
 
 		jjJobRunner.setInputFormatConfiguration(new SequenceFileInputFormatConfiguration(
