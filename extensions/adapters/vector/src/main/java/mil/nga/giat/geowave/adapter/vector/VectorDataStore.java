@@ -15,7 +15,7 @@ import org.opengis.filter.Filter;
  * query and ingest of any data adapter type) this class enables distributed
  * rendering and decimation on SimpleFeature, both with CQL filtering able to be
  * applied to features server.
- *
+ * 
  */
 public interface VectorDataStore
 {

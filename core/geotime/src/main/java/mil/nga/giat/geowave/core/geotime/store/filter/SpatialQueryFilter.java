@@ -28,7 +28,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 /**
  * This filter can perform fine-grained acceptance testing (intersection test
  * with a query geometry) with JTS geometry
- *
+ * 
  */
 public class SpatialQueryFilter extends
 		BasicQueryFilter
@@ -219,21 +219,21 @@ public class SpatialQueryFilter extends
 	/**
 	 * This class is used for interning a PreparedGeometry. Prepared geometries
 	 * cannot be interned since they do not extend Object.hashCode().
-	 *
+	 * 
 	 * Interning a geometry assumes a geometry is already constructed on the
 	 * heap at the time interning begins. The byte image of geometry provides a
 	 * more efficient component to hash and associate with a single image of the
 	 * geometry.
-	 *
+	 * 
 	 * The approach of interning the Geometry prior to construction of a
 	 * PreparedGeometry lead to excessive memory use. Thus, this class is
 	 * constructed to hold the prepared geometry and prevent reconstruction of
 	 * the underlying geometry from a byte array if the Geometry has been
 	 * interned.
-	 *
+	 * 
 	 * Using this approach increased performance of a large query unit test by
 	 * 40% and reduced heap memory consumption by roughly 50%.
-	 *
+	 * 
 	 */
 	public static class GeometryImage
 	{

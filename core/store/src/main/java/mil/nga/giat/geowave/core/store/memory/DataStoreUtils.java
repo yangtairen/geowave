@@ -123,7 +123,6 @@ public class DataStoreUtils
 			final CommonIndexModel model,
 			final EntryRow row ) {
 		final PersistentDataset<CommonIndexValue> commonData = new PersistentDataset<CommonIndexValue>();
-		final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
 		final PersistentDataset<byte[]> unknownData = new PersistentDataset<byte[]>();
 		for (final FieldInfo column : row.info.getFieldInfo()) {
 			final FieldReader<? extends CommonIndexValue> reader = model.getReader(column.getDataValue().getId());
@@ -163,7 +162,7 @@ public class DataStoreUtils
 	}
 
 	/**
-	 *
+	 * 
 	 * @param dataWriter
 	 * @param index
 	 * @param entry

@@ -41,7 +41,7 @@ import com.google.common.collect.Lists;
  * This class encapsulates the parameterized configuration that can be provided
  * per GeoWave data store within GeoTools. For GeoServer this configuration can
  * be provided within the data store definition workflow.
- *
+ * 
  */
 public class GeoWavePluginConfig
 {
