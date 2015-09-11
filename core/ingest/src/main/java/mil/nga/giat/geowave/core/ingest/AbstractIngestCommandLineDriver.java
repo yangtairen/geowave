@@ -11,6 +11,9 @@ import java.util.Map.Entry;
 import java.util.ServiceLoader;
 
 import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
+import mil.nga.giat.geowave.core.cli.CommandLineOptions.CommandLineWrapper;
+import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.DataStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
@@ -32,7 +35,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * of ingest format plugins and using them to drive an ingestion process. The
  * class is sub-classed to perform the specific ingestion required based on the
  * operation set by the user.
- * 
+ *
  */
 abstract public class AbstractIngestCommandLineDriver implements
 		CLIOperationDriver
@@ -127,7 +130,7 @@ abstract public class AbstractIngestCommandLineDriver implements
 					pw.println();
 				}
 				pw.println("Available datastores currently registered:\n");
-				Map<String, DataStoreFactorySpi> dataStoreFactories = GeoWaveStoreFinder.getRegisteredDataStoreFactories();
+				final Map<String, DataStoreFactorySpi> dataStoreFactories = GeoWaveStoreFinder.getRegisteredDataStoreFactories();
 				for (final Entry<String, DataStoreFactorySpi> dataStoreFactoryEntry : dataStoreFactories.entrySet()) {
 					final DataStoreFactorySpi dataStoreFactory = dataStoreFactoryEntry.getValue();
 					final String desc = dataStoreFactory.getDescription() == null ? "no description" : dataStoreFactory.getDescription();
@@ -161,18 +164,17 @@ abstract public class AbstractIngestCommandLineDriver implements
 					System.exit(-3);
 				}
 			}
-			for (final IngestFormatPluginProviderSpi<?, ?> plugin : selectedPluginProviders) {
-				final IngestFormatOptionProvider optionProvider = plugin.getIngestFormatOptionProvider();
-				if (optionProvider != null) {
-					optionProvider.applyOptions(options);
-				}
-			}
+			applyAdditionalOptions(
+					selectedPluginProviders,
+					commandLine,
+					options);
 			if (options.getOptions().size() > optionCount) {
 				// custom options have been added, reparse the commandline
 				// arguments with the new set of options
 				commandLine = parser.parse(
 						options,
-						args);
+						args,
+						true);
 				for (final IngestFormatPluginProviderSpi<?, ?> plugin : selectedPluginProviders) {
 					final IngestFormatOptionProvider optionProvider = plugin.getIngestFormatOptionProvider();
 					if (optionProvider != null) {
@@ -184,7 +186,7 @@ abstract public class AbstractIngestCommandLineDriver implements
 		}
 		catch (final ParseException e) {
 			LOGGER.fatal(
-					"",
+					"Error parsing commandline",
 					e);
 			printHelp(
 					options,
@@ -192,6 +194,26 @@ abstract public class AbstractIngestCommandLineDriver implements
 			System.exit(-1);
 		}
 		return selectedPluginProviders;
+	}
+
+	private void applyAdditionalOptions(
+			final List<IngestFormatPluginProviderSpi<?, ?>> selectedPluginProviders,
+			final CommandLine commandLine,
+			final Options options )
+			throws ParseException {
+		for (final IngestFormatPluginProviderSpi<?, ?> plugin : selectedPluginProviders) {
+			final IngestFormatOptionProvider optionProvider = plugin.getIngestFormatOptionProvider();
+			if (optionProvider != null) {
+				optionProvider.applyOptions(options);
+			}
+		}
+		final DataStoreFactorySpi dataStoreFactory = DataStoreCommandLineOptions.getSelectedStore(new CommandLineWrapper(
+				commandLine));
+		if (dataStoreFactory != null) {
+			GenericStoreCommandLineOptions.applyStoreOptions(
+					dataStoreFactory,
+					options);
+		}
 	}
 
 	private List<IngestFormatPluginProviderSpi<?, ?>> getPluginProviders(

@@ -205,7 +205,8 @@ public class RasterTileResizeJobRunner extends
 		final BasicParser parser = new BasicParser();
 		final CommandLine commandLine = parser.parse(
 				allOptions,
-				args);
+				args,
+				true);
 		inputDataStoreOptions = DataStoreCommandLineOptions.parseOptions(
 				"input_",
 				commandLine);

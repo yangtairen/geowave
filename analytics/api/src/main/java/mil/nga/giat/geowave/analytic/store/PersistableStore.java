@@ -136,8 +136,13 @@ abstract public class PersistableStore<T> implements
 			}
 		}
 		final BasicParser parser = new BasicParser();
+		final Options options = new Options();
+		GenericStoreCommandLineOptions.applyStoreOptions(
+				genericStoreFactory,
+				options);
 		return parser.parse(
-				new Options(),
-				args.toArray(new String[] {}));
+				options,
+				args.toArray(new String[] {}),
+				true);
 	}
 }

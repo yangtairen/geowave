@@ -53,7 +53,8 @@ public class AnalyticCLIOperationDriver implements
 		final BasicParser parser = new BasicParser();
 		final CommandLine commandLine = parser.parse(
 				options,
-				args);
+				args,
+				true);
 		if (commandLine.hasOption("h")) {
 			printHelp(options);
 			return;
@@ -63,6 +64,7 @@ public class AnalyticCLIOperationDriver implements
 				final PropertyManagement properties = new PropertyManagement();
 				for (final ParameterEnum<?> param : params) {
 					final Object value = param.getHelper().getValue(
+							options,
 							commandLine);
 					((ParameterEnum<Object>) param).getHelper().setValue(
 							properties,

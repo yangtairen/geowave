@@ -10,7 +10,6 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
-import mil.nga.giat.geowave.analytic.JobContextConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.model.SpatialIndexModelBuilder;
@@ -29,6 +28,7 @@ import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStoreFactory;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.Job;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.geotools.referencing.CRS;
 import org.junit.Test;
@@ -107,7 +107,7 @@ public class AdapterBasedPartitionerTest
 				new MemoryAdapterStoreFactory().getName());
 
 		final PersistableAdapterStore adapterStore = new PersistableAdapterStore(
-				AdapterStoreCommandLineOptions.parseOptions(new OptionMapWrapper(
+				AdapterStoreCommandLineOptions.parseOptions(null, new OptionMapWrapper(
 						memoryAdapterStoreOptions)));
 		adapterStore.getCliOptions().createStore().addAdapter(
 				new FeatureDataAdapter(
@@ -117,8 +117,7 @@ public class AdapterBasedPartitionerTest
 				scope,
 				adapterStore);
 		partitioner.initialize(
-				new JobContextConfigurationWrapper(
-						configuration),
+				Job.getInstance(configuration),
 				scope);
 
 		List<PartitionData> partitions = partitioner.getCubeIdentifiers(new AdapterDataEntry(

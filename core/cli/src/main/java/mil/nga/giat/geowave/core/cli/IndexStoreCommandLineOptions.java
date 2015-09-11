@@ -43,46 +43,57 @@ public class IndexStoreCommandLineOptions extends
 	}
 
 	public static IndexStoreCommandLineOptions parseOptions(
+			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
 		return parseOptions(
 				null,
+				options,
 				commandLine);
 	}
 
 	public static IndexStoreCommandLineOptions parseOptions(
 			final String prefix,
+			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
 		return (IndexStoreCommandLineOptions) parseOptions(
 				prefix,
+				options,
 				commandLine,
 				new IndexStoreCommandLineHelper());
 	}
 
 	public static IndexStoreCommandLineOptions parseOptions(
+			final Options options,
 			final CommandLineOptions commandLine )
 			throws ParseException {
 		return parseOptions(
 				null,
+				options,
 				commandLine);
 	}
 
 	public static IndexStoreCommandLineOptions parseOptions(
 			final String prefix,
+			final Options options,
 			final CommandLineOptions commandLine )
 			throws ParseException {
 		return (IndexStoreCommandLineOptions) parseOptions(
 				prefix,
+				options,
 				commandLine,
 				new IndexStoreCommandLineHelper());
 	}
 
-	@Override
-	public IndexStore createStore() {
-		return GeoWaveStoreFinder.createIndexStore(
-				configOptions,
-				namespace);
+	public static IndexStoreFactorySpi getSelectedStore(
+			final CommandLineOptions commandLine )
+			throws ParseException {
+		final IndexStoreCommandLineHelper helper = new IndexStoreCommandLineHelper();
+		return getSelectedStore(
+				helper.getOptionName(),
+				commandLine,
+				helper);
 	}
 
 	private static class IndexStoreCommandLineHelper implements

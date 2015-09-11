@@ -41,10 +41,13 @@ public class IndexStoreParameterHelper implements
 
 	@Override
 	public PersistableIndexStore getValue(
+			final Options allOptions,
 			final CommandLine commandLine )
 			throws ParseException {
 		return new PersistableIndexStore(
-				IndexStoreCommandLineOptions.parseOptions(commandLine));
+				IndexStoreCommandLineOptions.parseOptions(
+						allOptions,
+						commandLine));
 	}
 
 	@Override

@@ -41,10 +41,13 @@ public class AdapterStoreParameterHelper implements
 
 	@Override
 	public PersistableAdapterStore getValue(
+			final Options allOptions,
 			final CommandLine commandLine )
 			throws ParseException {
 		return new PersistableAdapterStore(
-				AdapterStoreCommandLineOptions.parseOptions(commandLine));
+				AdapterStoreCommandLineOptions.parseOptions(
+						allOptions,
+						commandLine));
 	}
 
 	@Override

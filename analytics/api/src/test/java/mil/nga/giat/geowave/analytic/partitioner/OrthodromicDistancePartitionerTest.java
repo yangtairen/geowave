@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.List;
 
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
-import mil.nga.giat.geowave.analytic.JobContextConfigurationWrapper;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.clustering.ClusteringUtils;
 import mil.nga.giat.geowave.analytic.extract.SimpleFeatureGeometryExtractor;
@@ -21,6 +20,7 @@ import mil.nga.giat.geowave.analytic.partitioner.Partitioner.PartitionData;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.Job;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.geotools.referencing.CRS;
 import org.junit.Test;
@@ -105,8 +105,7 @@ public class OrthodromicDistancePartitionerTest
 				configuration,
 				scope);
 		partitioner.initialize(
-				new JobContextConfigurationWrapper(
-						configuration),
+				Job.getInstance(configuration),
 				scope);
 
 		List<PartitionData> partitions = partitioner.getCubeIdentifiers(feature);

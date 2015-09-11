@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
  * This is the primary entry point for command line tools. When run it will
  * expect an operation is specified, and will use the appropriate command-line
  * driver for the chosen operation.
- * 
+ *
  */
 public class GeoWaveMain
 {
@@ -43,7 +43,8 @@ public class GeoWaveMain
 		try {
 			operationCommandLine = parser.parse(
 					operations,
-					operationsArgs);
+					operationsArgs,
+					true);
 			final OperationCommandLineOptions operationOption = OperationCommandLineOptions.parseOptions(operationCommandLine);
 			operationOption.getOperation().getDriver().runOperation(
 					optionsArgs);

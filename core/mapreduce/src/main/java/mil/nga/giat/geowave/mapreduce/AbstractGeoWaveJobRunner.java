@@ -177,7 +177,8 @@ public abstract class AbstractGeoWaveJobRunner extends
 		final BasicParser parser = new BasicParser();
 		final CommandLine commandLine = parser.parse(
 				allOptions,
-				args);
+				args,
+				true);
 		final DataStoreCommandLineOptions dataStoreOptions = DataStoreCommandLineOptions.parseOptions(commandLine);
 		dataStoreFactory = (DataStoreFactorySpi) dataStoreOptions.getFactory();
 		configOptions = dataStoreOptions.getConfigOptions();

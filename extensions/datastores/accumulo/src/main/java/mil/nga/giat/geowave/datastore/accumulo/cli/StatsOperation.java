@@ -22,9 +22,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
 /**
- * 
+ *
  * Simple command line tool to recalculate statistics for an adapter.
- * 
+ *
  */
 public abstract class StatsOperation implements
 		CLIOperationDriver
@@ -97,7 +97,8 @@ public abstract class StatsOperation implements
 		try {
 			final CommandLine commandLine = parser.parse(
 					allOptions,
-					args);
+					args,
+					true);
 			final DataStoreCommandLineOptions dataStoreOptions = DataStoreCommandLineOptions.parseOptions(commandLine);
 			final AdapterStoreCommandLineOptions adapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(commandLine);
 			final DataStatisticsStoreCommandLineOptions dataStatisticsStoreOptions = DataStatisticsStoreCommandLineOptions.parseOptions(commandLine);

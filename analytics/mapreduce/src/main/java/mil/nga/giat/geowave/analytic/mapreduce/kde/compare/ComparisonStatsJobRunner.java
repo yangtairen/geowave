@@ -229,7 +229,8 @@ public class ComparisonStatsJobRunner extends
 		final BasicParser basicParser = new BasicParser();
 		final CommandLine commandLine = basicParser.parse(
 				allOptions,
-				args);
+				args,
+				true);
 		final ComparisonCommandLineOptions comparisonOptions = ComparisonCommandLineOptions.parseOptions(commandLine);
 		timeAttribute = comparisonOptions.getTimeAttribute();
 		return super.run(args);

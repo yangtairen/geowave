@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
+import mil.nga.giat.geowave.core.cli.CommandLineResult;
 import mil.nga.giat.geowave.core.cli.DataStatisticsStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
@@ -91,12 +92,26 @@ public class StatsOperation implements
 		try {
 			final CommandLine commandLine = parser.parse(
 					allOptions,
-					args);
-			final DataStoreCommandLineOptions dataStoreCli = DataStoreCommandLineOptions.parseOptions(commandLine);
-			final AdapterStoreCommandLineOptions adapterStoreCli = AdapterStoreCommandLineOptions.parseOptions(commandLine);
-			final IndexStoreCommandLineOptions indexStoreCli = IndexStoreCommandLineOptions.parseOptions(commandLine);
-			final DataStatisticsStoreCommandLineOptions statsStoreCli = DataStatisticsStoreCommandLineOptions.parseOptions(commandLine);
-			final StatsCommandLineOptions statsOperations = StatsCommandLineOptions.parseOptions(commandLine);
+					args,
+					true);
+			final boolean newCommandLine = true;
+			while (newCommandLine) {
+				final CommandLineResult<DataStoreCommandLineOptions> dataStoreCli = DataStoreCommandLineOptions.parseOptions(
+						allOptions,
+						commandLine);
+				final CommandLineResult<AdapterStoreCommandLineOptions> adapterStoreCli = AdapterStoreCommandLineOptions.parseOptions(
+						allOptions,
+						commandLine);
+				final IndexStoreCommandLineOptions indexStoreCli = IndexStoreCommandLineOptions.parseOptions(
+						allOptions,
+						commandLine);
+				final DataStatisticsStoreCommandLineOptions statsStoreCli = DataStatisticsStoreCommandLineOptions.parseOptions(
+						allOptions,
+						commandLine);
+				final StatsCommandLineOptions statsOperations = StatsCommandLineOptions.parseOptions(
+						allOptions,
+						commandLine);
+			}
 			System.exit(calculateStastics(
 					dataStoreCli.createStore(),
 					indexStoreCli.createStore(),

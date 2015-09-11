@@ -41,10 +41,13 @@ public class DataStoreParameterHelper implements
 
 	@Override
 	public PersistableDataStore getValue(
+			final Options allOptions,
 			final CommandLine commandLine )
 			throws ParseException {
 		return new PersistableDataStore(
-				DataStoreCommandLineOptions.parseOptions(commandLine));
+				DataStoreCommandLineOptions.parseOptions(
+						allOptions,
+						commandLine));
 	}
 
 	@Override

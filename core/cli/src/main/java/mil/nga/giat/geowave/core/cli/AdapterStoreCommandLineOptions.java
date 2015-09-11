@@ -42,47 +42,58 @@ public class AdapterStoreCommandLineOptions extends
 				new AdapterStoreCommandLineHelper());
 	}
 
-	public static AdapterStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<AdapterStoreCommandLineOptions> parseOptions(
+			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
 		return parseOptions(
 				null,
+				options,
 				commandLine);
 	}
 
-	public static AdapterStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<AdapterStoreCommandLineOptions> parseOptions(
 			final String prefix,
+			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
-		return (AdapterStoreCommandLineOptions) parseOptions(
+		return (CommandLineResult) parseOptions(
 				prefix,
+				options,
 				commandLine,
 				new AdapterStoreCommandLineHelper());
 	}
 
-	public static AdapterStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<AdapterStoreCommandLineOptions> parseOptions(
+			final Options options,
 			final CommandLineOptions commandLine )
 			throws ParseException {
 		return parseOptions(
 				null,
+				options,
 				commandLine);
 	}
 
-	public static AdapterStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<AdapterStoreCommandLineOptions> parseOptions(
 			final String prefix,
+			final Options options,
 			final CommandLineOptions commandLine )
 			throws ParseException {
-		return (AdapterStoreCommandLineOptions) parseOptions(
+		return (CommandLineResult) parseOptions(
 				prefix,
+				options,
 				commandLine,
 				new AdapterStoreCommandLineHelper());
 	}
 
-	@Override
-	public AdapterStore createStore() {
-		return GeoWaveStoreFinder.createAdapterStore(
-				configOptions,
-				namespace);
+	public static AdapterStoreFactorySpi getSelectedStore(
+			final CommandLineOptions commandLine )
+			throws ParseException {
+		final AdapterStoreCommandLineHelper helper = new AdapterStoreCommandLineHelper();
+		return getSelectedStore(
+				helper.getOptionName(),
+				commandLine,
+				helper);
 	}
 
 	private static class AdapterStoreCommandLineHelper implements

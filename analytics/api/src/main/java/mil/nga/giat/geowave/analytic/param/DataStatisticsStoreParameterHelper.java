@@ -41,10 +41,13 @@ public class DataStatisticsStoreParameterHelper implements
 
 	@Override
 	public PersistableDataStatisticsStore getValue(
+			final Options allOptions,
 			final CommandLine commandLine )
 			throws ParseException {
 		return new PersistableDataStatisticsStore(
-				DataStatisticsStoreCommandLineOptions.parseOptions(commandLine));
+				DataStatisticsStoreCommandLineOptions.parseOptions(
+						allOptions,
+						commandLine));
 	}
 
 	@Override

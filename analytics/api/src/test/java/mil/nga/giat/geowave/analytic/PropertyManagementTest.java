@@ -16,6 +16,7 @@ import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.InputParameters.Input;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.ParameterHelper;
+import mil.nga.giat.geowave.core.cli.CommandLineResult;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 
@@ -182,10 +183,12 @@ public class PropertyManagementTest
 				}
 
 				@Override
-				public NonSerializableExample getValue(
+				public CommandLineResult<NonSerializableExample> getValue(
+						final Options allOptions,
 						final CommandLine commandline )
 						throws ParseException {
-					return null;
+					return new CommandLineResult<NonSerializableExample>(
+							null);
 				}
 
 				@Override
@@ -372,6 +375,7 @@ public class PropertyManagementTest
 			((ParameterEnum<Object>) param).getHelper().setValue(
 					pm,
 					param.getHelper().getValue(
+							options,
 							commandLine));
 		}
 

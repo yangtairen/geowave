@@ -43,46 +43,57 @@ public class DataStoreCommandLineOptions extends
 	}
 
 	public static DataStoreCommandLineOptions parseOptions(
+			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
 		return parseOptions(
 				null,
+				options,
 				commandLine);
 	}
 
 	public static DataStoreCommandLineOptions parseOptions(
 			final String prefix,
+			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
 		return (DataStoreCommandLineOptions) parseOptions(
 				prefix,
+				options,
 				commandLine,
 				new DataStoreCommandLineHelper());
 	}
 
 	public static DataStoreCommandLineOptions parseOptions(
+			final Options options,
 			final CommandLineOptions commandLine )
 			throws ParseException {
 		return parseOptions(
 				null,
+				options,
 				commandLine);
 	}
 
 	public static DataStoreCommandLineOptions parseOptions(
 			final String prefix,
+			final Options options,
 			final CommandLineOptions commandLine )
 			throws ParseException {
 		return (DataStoreCommandLineOptions) parseOptions(
 				prefix,
+				options,
 				commandLine,
 				new DataStoreCommandLineHelper());
 	}
 
-	@Override
-	public DataStore createStore() {
-		return GeoWaveStoreFinder.createDataStore(
-				configOptions,
-				namespace);
+	public static DataStoreFactorySpi getSelectedStore(
+			final CommandLineOptions commandLine )
+			throws ParseException {
+		final DataStoreCommandLineHelper helper = new DataStoreCommandLineHelper();
+		return getSelectedStore(
+				helper.getOptionName(),
+				commandLine,
+				helper);
 	}
 
 	private static class DataStoreCommandLineHelper implements

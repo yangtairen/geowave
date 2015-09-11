@@ -354,15 +354,19 @@ public class KDEJobRunner extends
 		final BasicParser parser = new BasicParser();
 		final CommandLine commandLine = parser.parse(
 				allOptions,
-				args);
+				args,
+				true);
 		inputDataStoreOptions = DataStoreCommandLineOptions.parseOptions(
 				"input_",
+				allOptions,
 				commandLine);
 		outputDataStoreOptions = DataStoreCommandLineOptions.parseOptions(
 				"output_",
+				allOptions,
 				commandLine);
 		inputAdapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(
 				"input_",
+				allOptions,
 				commandLine);
 		kdeCommandLineOptions = KDECommandLineOptions.parseOptions(commandLine);
 		return runJob();

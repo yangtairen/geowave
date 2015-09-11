@@ -7,6 +7,7 @@ import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.slf4j.Logger;
@@ -183,6 +184,7 @@ public class BasicParameterHelper implements
 
 	@Override
 	public Object getValue(
+			final Options allOptions,
 			final CommandLine commandline ) {
 		if (baseClass.isAssignableFrom(Boolean.class)) {
 			return commandline.hasOption(options[0].getOpt());
