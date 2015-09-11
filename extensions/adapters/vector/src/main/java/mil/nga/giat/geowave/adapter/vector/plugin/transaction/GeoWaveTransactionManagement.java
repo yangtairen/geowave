@@ -235,6 +235,7 @@ public class GeoWaveTransactionManagement implements
 
 			@Override
 			public SimpleFeature next() {
+				if (nextFeature == null) throw new NoSuchElementException();
 				final SimpleFeature result = nextFeature;
 				nextFeature = null;
 				return result;

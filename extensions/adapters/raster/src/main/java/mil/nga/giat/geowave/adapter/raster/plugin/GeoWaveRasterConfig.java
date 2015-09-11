@@ -135,14 +135,17 @@ public class GeoWaveRasterConfig
 						child.getNodeValue());
 			}
 		}
-		result.geowaveNamespace = readValueString(
-				dom,
-				ConfigParameter.NAMESPACE.getConfigName());
-		result.storeConfigObj = ConfigUtils.valuesFromStrings(storeConfig);
-		result.dataStoreFactory = GeoWaveStoreFinder.findDataStoreFactory(result.storeConfigObj);
-		result.indexStoreFactory = GeoWaveStoreFinder.findIndexStoreFactory(result.storeConfigObj);
-		result.adapterStoreFactory = GeoWaveStoreFinder.findAdapterStoreFactory(result.storeConfigObj);
-		result.dataStatisticsStoreFactory = GeoWaveStoreFinder.findDataStatisticsStoreFactory(result.storeConfigObj);
+		// findbugs complaint requires this synchronization
+		synchronized (result) {
+			result.geowaveNamespace = readValueString(
+					dom,
+					ConfigParameter.NAMESPACE.getConfigName());
+			result.storeConfigObj = ConfigUtils.valuesFromStrings(storeConfig);
+			result.dataStoreFactory = GeoWaveStoreFinder.findDataStoreFactory(result.storeConfigObj);
+			result.indexStoreFactory = GeoWaveStoreFinder.findIndexStoreFactory(result.storeConfigObj);
+			result.adapterStoreFactory = GeoWaveStoreFinder.findAdapterStoreFactory(result.storeConfigObj);
+			result.dataStatisticsStoreFactory = GeoWaveStoreFinder.findDataStatisticsStoreFactory(result.storeConfigObj);
+		}
 		final String equalizeHistogram = readValueString(
 				dom,
 				ConfigParameter.EQUALIZE_HISTOGRAM.getConfigName());

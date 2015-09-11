@@ -8,7 +8,7 @@ import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
  * persistence encoding. Client-side filters will be given an
  * AdapterPersistenceEncoding but distributable filters will be given a generic
  * PersistenceEncoding.
- *
+ * 
  */
 public interface QueryFilter
 {

@@ -8,7 +8,7 @@ import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 /**
  * This class wraps a list of filters into a single filter such that if any one
  * filter fails this class will fail acceptance.
- *
+ * 
  * @param <T>
  */
 public class FilterList<T extends QueryFilter> implements

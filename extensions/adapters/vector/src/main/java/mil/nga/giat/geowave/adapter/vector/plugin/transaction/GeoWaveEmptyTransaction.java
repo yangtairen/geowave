@@ -154,7 +154,7 @@ public class GeoWaveEmptyTransaction implements
 	@Override
 	public Iterator<SimpleFeature> query(
 			Query query ) {
-		return Collections.<SimpleFeature>emptyList().iterator();
+		return Collections.<SimpleFeature> emptyList().iterator();
 	}
 
 }

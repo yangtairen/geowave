@@ -51,7 +51,7 @@ public class PersistenceEncoding
 	/**
 	 * Return the data that has been persisted but not identified by a field
 	 * reader
-	 *
+	 * 
 	 * @return the unknown data that is yet to be identified by a field reader
 	 */
 	public PersistentDataset<byte[]> getUnknownData() {
@@ -60,7 +60,7 @@ public class PersistenceEncoding
 
 	/**
 	 * Return the common index data that has been persisted
-	 *
+	 * 
 	 * @return the common index data
 	 */
 	public PersistentDataset<? extends CommonIndexValue> getCommonData() {
@@ -69,7 +69,7 @@ public class PersistenceEncoding
 
 	/**
 	 * Return the data adapter ID
-	 *
+	 * 
 	 * @return the adapter ID
 	 */
 	public ByteArrayId getAdapterId() {
@@ -78,7 +78,7 @@ public class PersistenceEncoding
 
 	/**
 	 * Return the data ID, data ID's should be unique per adapter
-	 *
+	 * 
 	 * @return the data ID
 	 */
 	public ByteArrayId getDataId() {
@@ -89,7 +89,7 @@ public class PersistenceEncoding
 	 * Given an ordered set of dimensions, convert this persistent encoding
 	 * common index data into a MultiDimensionalNumericData object that can then
 	 * be used by the Index
-	 *
+	 * 
 	 * @param dimensions
 	 * @return
 	 */
@@ -187,7 +187,7 @@ public class PersistenceEncoding
 	/**
 	 * Given an index, convert this persistent encoding to a set of insertion
 	 * IDs for that index
-	 *
+	 * 
 	 * @param index
 	 *            the index
 	 * @return The insertions IDs for this object in the index
@@ -231,7 +231,7 @@ public class PersistenceEncoding
 	/**
 	 * Tool can be used custom index strategies to check if the tiles actual
 	 * intersect with the provided bounding box.
-	 *
+	 * 
 	 * @param boxRangeData
 	 * @param innerTile
 	 * @return

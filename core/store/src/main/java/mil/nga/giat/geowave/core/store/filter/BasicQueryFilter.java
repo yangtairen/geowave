@@ -21,7 +21,7 @@ import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
  * This filter can perform fine-grained acceptance testing on generic
  * dimensions, but is limited to only using MBR (min-max in a single dimension,
  * hyper-cubes in multi-dimensional space)
- *
+ * 
  */
 public class BasicQueryFilter implements
 		DistributableQueryFilter

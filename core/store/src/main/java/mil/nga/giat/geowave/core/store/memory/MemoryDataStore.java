@@ -684,14 +684,14 @@ public class MemoryDataStore implements
 			final Integer limit,
 			final ScanCallback<?> scanCallback,
 			final String... additionalAuthorizations ) {
-		final Iterator<EntryRow> rowIt = ((query == null) || query.isSupported(index)) ? ((TreeSet<EntryRow>)getRowsForIndex(
-				index.getId()).clone()).iterator() : Collections.<EntryRow> emptyIterator();
+		final TreeSet<EntryRow> set = (TreeSet<EntryRow>) getRowsForIndex(index.getId());
+		final Iterator<EntryRow> rowIt = ((query == null) || query.isSupported(index)) ? ((TreeSet<EntryRow>)set.clone()).iterator() : Collections.<EntryRow> emptyIterator();
 
 		final List<QueryFilter> filters = (query == null) ? new ArrayList<QueryFilter>() : query.createFilters(index.getIndexModel());
 		return new CloseableIterator<T>() {
 			int count = 0;
 			EntryRow nextRow = null;
-
+			EntryRow currentRow = null;
 			private boolean getNext() {
 				while ((nextRow == null) && rowIt.hasNext()) {
 					final EntryRow row = rowIt.next();
@@ -723,7 +723,7 @@ public class MemoryDataStore implements
 
 			@Override
 			public T next() {
-				final EntryRow currentRow = nextRow;
+				currentRow = nextRow;
 				((ScanCallback<T>) scanCallback).entryScanned(
 						currentRow.getInfo(),
 						(T) currentRow.entry);
@@ -733,7 +733,8 @@ public class MemoryDataStore implements
 
 			@Override
 			public void remove() {
-				rowIt.remove();
+				if (currentRow != null)
+				  set.remove(currentRow);
 			}
 
 			@Override

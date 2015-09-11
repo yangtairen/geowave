@@ -266,7 +266,6 @@ public class AccumuloOptionsTest
 
 		final Index index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 		final WritableDataAdapter<TestGeometry> adapter = new TestGeometryAdapter();
-
 		accumuloOptions.setPersistAdapter(false);
 
 		final ByteArrayId rowId1 = mockDataStore.ingest(
@@ -290,6 +289,7 @@ public class AccumuloOptionsTest
 
 		final CloseableIterator<TestGeometry> geomItr = mockDataStore.query(
 				adapter,
+				index,
 				null);
 
 		geom1 = geomItr.next();
