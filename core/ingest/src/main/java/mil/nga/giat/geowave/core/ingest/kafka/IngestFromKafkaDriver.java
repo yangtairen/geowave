@@ -15,6 +15,7 @@ import kafka.consumer.ConsumerIterator;
 import kafka.consumer.ConsumerTimeoutException;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
+import mil.nga.giat.geowave.core.cli.CommandLineResult;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.ingest.AbstractIngestCommandLineDriver;
 import mil.nga.giat.geowave.core.ingest.IngestCommandLineOptions;
@@ -35,7 +36,7 @@ import org.apache.log4j.Logger;
 /**
  * This class executes the ingestion of intermediate data from a Kafka topic
  * into GeoWave.
- * 
+ *
  */
 public class IngestFromKafkaDriver extends
 		AbstractIngestCommandLineDriver
@@ -297,9 +298,15 @@ public class IngestFromKafkaDriver extends
 
 	@Override
 	protected void parseOptionsInternal(
-			final CommandLine commandLine )
+			CommandLine commandLine )
 			throws ParseException {
-		dataStoreOptions = DataStoreCommandLineOptions.parseOptions(commandLine);
+		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
+				null,
+				commandLine);
+		dataStoreOptions = dataStoreOptionsResult.getResult();
+		if (dataStoreOptionsResult.isCommandLineChange()) {
+			commandLine = dataStoreOptionsResult.getCommandLine();
+		}
 		ingestOptions = IngestCommandLineOptions.parseOptions(commandLine);
 		kafkaOptions = KafkaConsumerCommandLineOptions.parseOptions(commandLine);
 	}

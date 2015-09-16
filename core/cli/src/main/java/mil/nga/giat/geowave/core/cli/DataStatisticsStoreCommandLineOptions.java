@@ -42,28 +42,29 @@ public class DataStatisticsStoreCommandLineOptions extends
 				new DataStatisticsStoreCommandLineHelper());
 	}
 
-	public static DataStatisticsStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<DataStatisticsStoreCommandLineOptions> parseOptions(
 			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
 		return parseOptions(
 				null,
+				options,
 				commandLine);
 	}
 
-	public static DataStatisticsStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<DataStatisticsStoreCommandLineOptions> parseOptions(
 			final String prefix,
 			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
-		return (DataStatisticsStoreCommandLineOptions) parseOptions(
+		return (CommandLineResult) parseOptions(
 				prefix,
 				options,
 				commandLine,
 				new DataStatisticsStoreCommandLineHelper());
 	}
 
-	public static DataStatisticsStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<DataStatisticsStoreCommandLineOptions> parseOptions(
 			final Options options,
 			final CommandLineOptions commandLine )
 			throws ParseException {
@@ -73,12 +74,12 @@ public class DataStatisticsStoreCommandLineOptions extends
 				commandLine);
 	}
 
-	public static DataStatisticsStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<DataStatisticsStoreCommandLineOptions> parseOptions(
 			final String prefix,
 			final Options options,
 			final CommandLineOptions commandLine )
 			throws ParseException {
-		return (DataStatisticsStoreCommandLineOptions) parseOptions(
+		return (CommandLineResult) parseOptions(
 				prefix,
 				options,
 				commandLine,

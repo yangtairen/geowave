@@ -9,7 +9,6 @@ import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputFormat;
 import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputKey;
 
-import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.hadoop.conf.Configuration;
@@ -221,18 +220,22 @@ public class ComparisonStatsJobRunner extends
 	}
 
 	@Override
-	public int run(
-			final String[] args )
-			throws Exception {
-		final Options allOptions = new Options();
+	protected void applyOptions(
+			final Options allOptions ) {
+		super.applyOptions(allOptions);
 		ComparisonCommandLineOptions.applyOptions(allOptions);
-		final BasicParser basicParser = new BasicParser();
-		final CommandLine commandLine = basicParser.parse(
-				allOptions,
+	}
+
+	@Override
+	protected CommandLine parseOptions(
+			final String[] args,
+			final Options allOptions )
+			throws Exception {
+		final CommandLine commandLine = super.parseOptions(
 				args,
-				true);
+				allOptions);
 		final ComparisonCommandLineOptions comparisonOptions = ComparisonCommandLineOptions.parseOptions(commandLine);
 		timeAttribute = comparisonOptions.getTimeAttribute();
-		return super.run(args);
+		return commandLine;
 	}
 }

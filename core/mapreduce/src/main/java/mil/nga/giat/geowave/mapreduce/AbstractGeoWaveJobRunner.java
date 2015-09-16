@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
+import mil.nga.giat.geowave.core.cli.CommandLineResult;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.store.DataStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
@@ -179,7 +180,10 @@ public abstract class AbstractGeoWaveJobRunner extends
 				allOptions,
 				args,
 				true);
-		final DataStoreCommandLineOptions dataStoreOptions = DataStoreCommandLineOptions.parseOptions(commandLine);
+		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
+				allOptions,
+				commandLine);
+		final DataStoreCommandLineOptions dataStoreOptions = dataStoreOptionsResult.getResult();
 		dataStoreFactory = (DataStoreFactorySpi) dataStoreOptions.getFactory();
 		configOptions = dataStoreOptions.getConfigOptions();
 		namespace = dataStoreOptions.getNamespace();

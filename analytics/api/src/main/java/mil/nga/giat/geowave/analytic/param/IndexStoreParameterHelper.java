@@ -4,6 +4,7 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.store.PersistableIndexStore;
+import mil.nga.giat.geowave.core.cli.CommandLineResult;
 import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
@@ -40,14 +41,18 @@ public class IndexStoreParameterHelper implements
 	}
 
 	@Override
-	public PersistableIndexStore getValue(
+	public CommandLineResult<PersistableIndexStore> getValue(
 			final Options allOptions,
 			final CommandLine commandLine )
 			throws ParseException {
-		return new PersistableIndexStore(
-				IndexStoreCommandLineOptions.parseOptions(
-						allOptions,
-						commandLine));
+		final CommandLineResult<IndexStoreCommandLineOptions> retVal = IndexStoreCommandLineOptions.parseOptions(
+				allOptions,
+				commandLine);
+		return new CommandLineResult<PersistableIndexStore>(
+				new PersistableIndexStore(
+						retVal.getResult()),
+				retVal.isCommandLineChange(),
+				retVal.getCommandLine());
 	}
 
 	@Override

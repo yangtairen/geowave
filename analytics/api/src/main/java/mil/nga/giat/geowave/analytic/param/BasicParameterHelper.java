@@ -2,6 +2,7 @@ package mil.nga.giat.geowave.analytic.param;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
+import mil.nga.giat.geowave.core.cli.CommandLineResult;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 
@@ -183,7 +184,16 @@ public class BasicParameterHelper implements
 	}
 
 	@Override
-	public Object getValue(
+	public CommandLineResult<Object> getValue(
+			final Options allOptions,
+			final CommandLine commandline ) {
+		return new CommandLineResult<Object>(
+				getValueInternal(
+						allOptions,
+						commandline));
+	}
+
+	private Object getValueInternal(
 			final Options allOptions,
 			final CommandLine commandline ) {
 		if (baseClass.isAssignableFrom(Boolean.class)) {

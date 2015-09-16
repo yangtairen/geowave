@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
+import mil.nga.giat.geowave.core.cli.CommandLineResult;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -51,34 +52,70 @@ public class AnalyticCLIOperationDriver implements
 		}
 
 		final BasicParser parser = new BasicParser();
-		final CommandLine commandLine = parser.parse(
-				options,
-				args,
-				true);
-		if (commandLine.hasOption("h")) {
-			printHelp(options);
+
+		Exception exception = null;
+		CommandLine commandLine = null;
+		try {
+			commandLine = parser.parse(
+					options,
+					args,
+					true);
+		}
+		catch (final Exception e) {
+			exception = e;
+		}
+		try {
+			final PropertyManagement properties = new PropertyManagement();
+			// if the command-line changes on the first parameter, we do not
+			// need to reparse
+			boolean first = true;
+			boolean newCommandLine = false;
+			do {
+				if (commandLine != null && commandLine.hasOption("h")) {
+					printHelp(options);
+					return;
+				}
+				if (!params.isEmpty()) {
+					newCommandLine = false;
+					exception = null;
+					first = true;
+					for (final ParameterEnum<?> param : params) {
+						CommandLineResult value = null;
+						try {
+							value = param.getHelper().getValue(
+									options,
+									commandLine);
+						}
+						catch (final Exception e) {
+							exception = e;
+						}
+						if ((value != null) && value.isCommandLineChange()) {
+							commandLine = value.getCommandLine();
+							if (!first) {
+								newCommandLine = true;
+								break;
+							}
+						}
+						first = false;
+						((ParameterEnum<Object>) param).getHelper().setValue(
+								properties,
+								value.getResult());
+					}
+				}
+			}
+			while (newCommandLine);
+			if (exception != null) {
+				throw exception;
+			}
+			jobRunner.run(properties);
+		}
+		catch (final Exception e) {
+			LOGGER.error(
+					"Unable to run analytic job",
+					e);
 			return;
 		}
-		else {
-			try {
-				final PropertyManagement properties = new PropertyManagement();
-				for (final ParameterEnum<?> param : params) {
-					final Object value = param.getHelper().getValue(
-							options,
-							commandLine);
-					((ParameterEnum<Object>) param).getHelper().setValue(
-							properties,
-							value);
-				}
-				jobRunner.run(properties);
-			}
-			catch (final Exception e) {
-				LOGGER.error(
-						"Unable to run analytic job",
-						e);
-				return;
-			}
-		}
+
 	}
 
 	private static void printHelp(

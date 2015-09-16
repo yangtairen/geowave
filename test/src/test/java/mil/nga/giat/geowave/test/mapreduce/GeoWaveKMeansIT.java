@@ -26,6 +26,7 @@ import mil.nga.giat.geowave.analytic.store.PersistableDataStore;
 import mil.nga.giat.geowave.analytic.store.PersistableIndexStore;
 import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.CommandLineOptions.OptionMapWrapper;
+import mil.nga.giat.geowave.core.cli.CommandLineResult;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
@@ -39,6 +40,7 @@ import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.apache.commons.cli.Options;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -136,20 +138,26 @@ public class GeoWaveKMeansIT extends
 		options.put(
 				GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
 				TEST_NAMESPACE);
-		final DataStoreCommandLineOptions dataStoreOptions = DataStoreCommandLineOptions.parseOptions(new OptionMapWrapper(
-				options));
-		final IndexStoreCommandLineOptions indexStoreOptions = IndexStoreCommandLineOptions.parseOptions(new OptionMapWrapper(
-				options));
-		final AdapterStoreCommandLineOptions adapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(new OptionMapWrapper(
-				options));
-		testIngest(dataStoreOptions.createStore());
+		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOptions = DataStoreCommandLineOptions.parseOptions(
+				new Options(),
+				new OptionMapWrapper(
+						options));
+		final CommandLineResult<IndexStoreCommandLineOptions> indexStoreOptions = IndexStoreCommandLineOptions.parseOptions(
+				new Options(),
+				new OptionMapWrapper(
+						options));
+		final CommandLineResult<AdapterStoreCommandLineOptions> adapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(
+				new Options(),
+				new OptionMapWrapper(
+						options));
+		testIngest(dataStoreOptions.getResult().createStore());
 
 		runKPlusPlus(
 				new SpatialQuery(
 						dataGenerator.getBoundingRegion()),
-				dataStoreOptions,
-				indexStoreOptions,
-				adapterStoreOptions);
+				dataStoreOptions.getResult(),
+				indexStoreOptions.getResult(),
+				adapterStoreOptions.getResult());
 		// runKJumpPlusPlus(new SpatialQuery(
 		// dataGenerator.getBoundingRegion()));
 		// GeoWaveTestEnvironment.accumuloOperations.deleteAll();

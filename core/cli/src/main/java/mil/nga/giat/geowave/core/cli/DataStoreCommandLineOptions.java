@@ -42,7 +42,7 @@ public class DataStoreCommandLineOptions extends
 				new DataStoreCommandLineHelper());
 	}
 
-	public static DataStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<DataStoreCommandLineOptions> parseOptions(
 			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
@@ -52,19 +52,19 @@ public class DataStoreCommandLineOptions extends
 				commandLine);
 	}
 
-	public static DataStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<DataStoreCommandLineOptions> parseOptions(
 			final String prefix,
 			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
-		return (DataStoreCommandLineOptions) parseOptions(
+		return (CommandLineResult) parseOptions(
 				prefix,
 				options,
 				commandLine,
 				new DataStoreCommandLineHelper());
 	}
 
-	public static DataStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<DataStoreCommandLineOptions> parseOptions(
 			final Options options,
 			final CommandLineOptions commandLine )
 			throws ParseException {
@@ -74,12 +74,12 @@ public class DataStoreCommandLineOptions extends
 				commandLine);
 	}
 
-	public static DataStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<DataStoreCommandLineOptions> parseOptions(
 			final String prefix,
 			final Options options,
 			final CommandLineOptions commandLine )
 			throws ParseException {
-		return (DataStoreCommandLineOptions) parseOptions(
+		return (CommandLineResult) parseOptions(
 				prefix,
 				options,
 				commandLine,

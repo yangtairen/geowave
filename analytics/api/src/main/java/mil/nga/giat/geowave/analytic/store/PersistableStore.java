@@ -71,6 +71,7 @@ abstract public class PersistableStore<T> implements
 		for (final byte[] strOption : strOptionsBinary) {
 			buf.put(strOption);
 		}
+
 		return buf.array();
 	}
 

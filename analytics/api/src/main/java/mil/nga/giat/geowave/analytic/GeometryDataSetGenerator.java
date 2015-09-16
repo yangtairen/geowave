@@ -11,16 +11,16 @@ import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.distance.CoordinateCircleDistanceFn;
 import mil.nga.giat.geowave.analytic.distance.DistanceFn;
 import mil.nga.giat.geowave.analytic.distance.FeatureCentroidDistanceFn;
+import mil.nga.giat.geowave.core.cli.CommandLineResult;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.index.Index;
 
-import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.Parser;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -498,16 +498,19 @@ public class GeometryDataSetGenerator
 				"a name for the feature type (required)");
 		typeNameOption.setRequired(true);
 		allOptions.addOption(typeNameOption);
-		final Parser parser = new BasicParser();
-		final CommandLine commandLine = parser.parse(
-				allOptions,
-				args,
-				true);
+		CommandLine commandLine = null;
 
-		final DataStoreCommandLineOptions dataStoreOption = DataStoreCommandLineOptions.parseOptions(
+		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOption = DataStoreCommandLineOptions.parseOptions(
 				allOptions,
 				commandLine);
-		final DataStore dataStore = dataStoreOption.createStore();
+		if (dataStoreOption.isCommandLineChange()) {
+			commandLine = dataStoreOption.getCommandLine();
+		}
+		else {
+			throw new ParseException(
+					"Unable to parse data store from command line");
+		}
+		final DataStore dataStore = dataStoreOption.getResult().createStore();
 		final String typeName = commandLine.getOptionValue("typename");
 		final GeometryDataSetGenerator dataGenerator = new GeometryDataSetGenerator(
 				new FeatureCentroidDistanceFn(),

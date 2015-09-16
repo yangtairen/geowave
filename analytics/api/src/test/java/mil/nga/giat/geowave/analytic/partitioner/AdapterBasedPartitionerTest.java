@@ -107,8 +107,10 @@ public class AdapterBasedPartitionerTest
 				new MemoryAdapterStoreFactory().getName());
 
 		final PersistableAdapterStore adapterStore = new PersistableAdapterStore(
-				AdapterStoreCommandLineOptions.parseOptions(null, new OptionMapWrapper(
-						memoryAdapterStoreOptions)));
+				AdapterStoreCommandLineOptions.parseOptions(
+						null,
+						new OptionMapWrapper(
+								memoryAdapterStoreOptions)).getResult());
 		adapterStore.getCliOptions().createStore().addAdapter(
 				new FeatureDataAdapter(
 						ftype));

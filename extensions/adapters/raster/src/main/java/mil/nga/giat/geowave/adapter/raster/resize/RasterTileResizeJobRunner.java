@@ -5,6 +5,7 @@ import java.io.IOException;
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter;
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.nodata.NoDataMergeStrategy;
 import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.CommandLineResult;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -203,24 +204,80 @@ public class RasterTileResizeJobRunner extends
 
 		RasterTileResizeCommandLineOptions.applyOptions(allOptions);
 		final BasicParser parser = new BasicParser();
-		final CommandLine commandLine = parser.parse(
-				allOptions,
-				args,
-				true);
-		inputDataStoreOptions = DataStoreCommandLineOptions.parseOptions(
-				"input_",
-				commandLine);
-		outputDataStoreOptions = DataStoreCommandLineOptions.parseOptions(
-				"output_",
-				commandLine);
-		inputAdapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(
-				"input_",
-				commandLine);
-		inputIndexStoreOptions = IndexStoreCommandLineOptions.parseOptions(
-				"input_",
-				commandLine);
-		rasterResizeOptions = RasterTileResizeCommandLineOptions.parseOptions(commandLine);
+		Exception exception = null;
+		CommandLine commandLine = null;
+		CommandLineResult<DataStoreCommandLineOptions> inputDataStoreOptionsResult = null;
+		CommandLineResult<DataStoreCommandLineOptions> outputDataStoreOptionsResult = null;
+		CommandLineResult<AdapterStoreCommandLineOptions> inputAdapterStoreOptionsResult = null;
+		CommandLineResult<IndexStoreCommandLineOptions> inputIndexStoreOptionsResult = null;
+		boolean newCommandLine = false;
+		do {
+			newCommandLine = false;
+			inputDataStoreOptionsResult = null;
+			outputDataStoreOptionsResult = null;
+			inputAdapterStoreOptionsResult = null;
+			inputIndexStoreOptionsResult = null;
+			exception = null;
+			try {
+				inputDataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
+						"input_",
+						allOptions,
+						commandLine);
+			}
+			catch (final Exception e) {
+				exception = e;
+			}
+			if ((inputDataStoreOptionsResult != null) && inputDataStoreOptionsResult.isCommandLineChange()) {
+				commandLine = inputDataStoreOptionsResult.getCommandLine();
+			}
+			try {
+				outputDataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
+						"output_",
+						allOptions,
+						commandLine);
+			}
+			catch (final Exception e) {
+				exception = e;
+			}
+			if ((outputDataStoreOptionsResult != null) && outputDataStoreOptionsResult.isCommandLineChange()) {
+				commandLine = outputDataStoreOptionsResult.getCommandLine();
+				newCommandLine = true;
+				continue;
+			}
+			try {
+				inputAdapterStoreOptionsResult = AdapterStoreCommandLineOptions.parseOptions(
+						"input_",
+						allOptions,
+						commandLine);
+			}
+			catch (final Exception e) {
+				exception = e;
+			}
+			if ((inputAdapterStoreOptionsResult != null) && inputAdapterStoreOptionsResult.isCommandLineChange()) {
+				commandLine = inputAdapterStoreOptionsResult.getCommandLine();
+				newCommandLine = true;
+				continue;
+			}
+			try {
+				inputIndexStoreOptionsResult = IndexStoreCommandLineOptions.parseOptions(
+						"input_",
+						allOptions,
+						commandLine);
+			}
+			catch (final Exception e) {
+				exception = e;
+			}
+			if ((inputIndexStoreOptionsResult != null) && inputIndexStoreOptionsResult.isCommandLineChange()) {
+				commandLine = inputIndexStoreOptionsResult.getCommandLine();
+				newCommandLine = true;
+				continue;
+			}
+			rasterResizeOptions = RasterTileResizeCommandLineOptions.parseOptions(commandLine);
+		}
+		while (newCommandLine);
+		if (exception != null) {
+			throw exception;
+		}
 		return runJob();
 	}
-
 }

@@ -42,7 +42,7 @@ public class IndexStoreCommandLineOptions extends
 				new IndexStoreCommandLineHelper());
 	}
 
-	public static IndexStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<IndexStoreCommandLineOptions> parseOptions(
 			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
@@ -52,19 +52,19 @@ public class IndexStoreCommandLineOptions extends
 				commandLine);
 	}
 
-	public static IndexStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<IndexStoreCommandLineOptions> parseOptions(
 			final String prefix,
 			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
-		return (IndexStoreCommandLineOptions) parseOptions(
+		return (CommandLineResult) parseOptions(
 				prefix,
 				options,
 				commandLine,
 				new IndexStoreCommandLineHelper());
 	}
 
-	public static IndexStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<IndexStoreCommandLineOptions> parseOptions(
 			final Options options,
 			final CommandLineOptions commandLine )
 			throws ParseException {
@@ -74,12 +74,12 @@ public class IndexStoreCommandLineOptions extends
 				commandLine);
 	}
 
-	public static IndexStoreCommandLineOptions parseOptions(
+	public static CommandLineResult<IndexStoreCommandLineOptions> parseOptions(
 			final String prefix,
 			final Options options,
 			final CommandLineOptions commandLine )
 			throws ParseException {
-		return (IndexStoreCommandLineOptions) parseOptions(
+		return (CommandLineResult) parseOptions(
 				prefix,
 				options,
 				commandLine,

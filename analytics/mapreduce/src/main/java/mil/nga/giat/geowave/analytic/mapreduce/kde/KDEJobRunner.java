@@ -5,6 +5,7 @@ import java.io.IOException;
 import mil.nga.giat.geowave.adapter.raster.RasterUtils;
 import mil.nga.giat.geowave.adapter.vector.plugin.ExtractGeometryFilterVisitor;
 import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.CommandLineResult;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.GeometryUtils;
 import mil.nga.giat.geowave.core.geotime.IndexType;
@@ -335,11 +336,8 @@ public class KDEJobRunner extends
 		System.exit(res);
 	}
 
-	@Override
-	public int run(
-			final String[] args )
-			throws Exception {
-		final Options allOptions = new Options();
+	protected void applyOptions(
+			final Options allOptions ) {
 		DataStoreCommandLineOptions.applyOptions(
 				"input_",
 				allOptions);
@@ -351,24 +349,94 @@ public class KDEJobRunner extends
 				"input_",
 				allOptions);
 		KDECommandLineOptions.applyOptions(allOptions);
+	}
+
+	protected CommandLine parseOptions(
+			final String[] args,
+			final Options allOptions )
+			throws Exception {
 		final BasicParser parser = new BasicParser();
-		final CommandLine commandLine = parser.parse(
-				allOptions,
+		CommandLine commandLine = parser.parse(
+				new Options(),
 				args,
 				true);
-		inputDataStoreOptions = DataStoreCommandLineOptions.parseOptions(
-				"input_",
-				allOptions,
-				commandLine);
-		outputDataStoreOptions = DataStoreCommandLineOptions.parseOptions(
-				"output_",
-				allOptions,
-				commandLine);
-		inputAdapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(
-				"input_",
-				allOptions,
-				commandLine);
-		kdeCommandLineOptions = KDECommandLineOptions.parseOptions(commandLine);
+		boolean newCommandLine = false;
+		CommandLineResult<DataStoreCommandLineOptions> inputDataStoreOptionsResult = null;
+		CommandLineResult<DataStoreCommandLineOptions> outputDataStoreOptionsResult = null;
+		CommandLineResult<AdapterStoreCommandLineOptions> inputAdapterStoreOptionsResult = null;
+		Exception parseException = null;
+		do {
+			inputDataStoreOptionsResult = null;
+			outputDataStoreOptionsResult = null;
+			inputAdapterStoreOptionsResult = null;
+			parseException = null;
+			newCommandLine = false;
+			try {
+				inputDataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
+						"input_",
+						allOptions,
+						commandLine);
+			}
+			catch (final Exception e) {
+				parseException = e;
+			}
+			if ((inputDataStoreOptionsResult != null) && inputDataStoreOptionsResult.isCommandLineChange()) {
+				commandLine = inputDataStoreOptionsResult.getCommandLine();
+			}
+			try {
+				outputDataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
+						"output_",
+						allOptions,
+						commandLine);
+			}
+			catch (final Exception e) {
+				parseException = e;
+			}
+			if ((outputDataStoreOptionsResult != null) && outputDataStoreOptionsResult.isCommandLineChange()) {
+				commandLine = outputDataStoreOptionsResult.getCommandLine();
+				newCommandLine = true;
+				continue;
+			}
+			try {
+				inputAdapterStoreOptionsResult = AdapterStoreCommandLineOptions.parseOptions(
+						"input_",
+						allOptions,
+						commandLine);
+			}
+			catch (final Exception e) {
+				parseException = e;
+			}
+			if ((inputAdapterStoreOptionsResult != null) && inputAdapterStoreOptionsResult.isCommandLineChange()) {
+				commandLine = inputAdapterStoreOptionsResult.getCommandLine();
+				newCommandLine = true;
+				continue;
+			}
+			try {
+				kdeCommandLineOptions = KDECommandLineOptions.parseOptions(commandLine);
+			}
+			catch (final Exception e) {
+				parseException = e;
+			}
+		}
+		while (newCommandLine);
+		if (parseException != null) {
+			throw parseException;
+		}
+		inputDataStoreOptions = inputDataStoreOptionsResult.getResult();
+		outputDataStoreOptions = outputDataStoreOptionsResult.getResult();
+		inputAdapterStoreOptions = inputAdapterStoreOptionsResult.getResult();
+		return commandLine;
+	}
+
+	@Override
+	public int run(
+			final String[] args )
+			throws Exception {
+		final Options allOptions = new Options();
+		applyOptions(allOptions);
+		parseOptions(
+				args,
+				allOptions);
 		return runJob();
 	}
 }

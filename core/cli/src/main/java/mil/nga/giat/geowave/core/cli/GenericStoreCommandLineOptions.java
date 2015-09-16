@@ -1,5 +1,7 @@
 package mil.nga.giat.geowave.core.cli;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +18,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +29,6 @@ import com.google.common.collect.Lists;
 abstract public class GenericStoreCommandLineOptions<T>
 {
 	private final static Logger LOGGER = LoggerFactory.getLogger(GenericStoreCommandLineOptions.class);
-
 	protected final GenericStoreFactory<T> factory;
 	protected final Map<String, Object> configOptions;
 	protected final String namespace;
@@ -63,22 +65,26 @@ abstract public class GenericStoreCommandLineOptions<T>
 	}
 
 	private static Options storeOptionsToCliOptions(
+			final String prefix,
 			final AbstractConfigOption<?>[] storeOptions ) {
 		final Options cliOptions = new Options();
 		for (final AbstractConfigOption<?> storeOption : storeOptions) {
-			cliOptions.addOption(storeOptionToCliOption(storeOption));
+			cliOptions.addOption(storeOptionToCliOption(
+					prefix,
+					storeOption));
 		}
 		return cliOptions;
 	}
 
 	protected static Option storeOptionToCliOption(
+			final String prefix,
 			final AbstractConfigOption<?> storeOption ) {
 		final Class<?> cls = GenericTypeResolver.resolveTypeArgument(
 				storeOption.getClass(),
 				AbstractConfigOption.class);
 		final boolean isBoolean = Boolean.class.isAssignableFrom(cls);
 		final Option cliOption = new Option(
-				ConfigUtils.cleanOptionName(storeOption.getName()),
+				ConfigUtils.cleanOptionName(prefix != null ? prefix + storeOption.getName() : storeOption.getName()),
 				!isBoolean,
 				storeOption.getDescription());
 		cliOption.setRequired(!storeOption.isOptional() && !isBoolean);
@@ -86,38 +92,57 @@ abstract public class GenericStoreCommandLineOptions<T>
 	}
 
 	protected static Pair<Map<String, Object>, CommandLine> getConfigOptionsForStoreFactory(
-			final String[] additionalArgs,
+			final String prefix,
+			final Options currentOptions,
+			final CommandLineOptions currentCommandLine,
 			final GenericStoreFactory<?> genericStoreFactory )
 			throws Exception {
 		final AbstractConfigOption<?>[] storeOptions = genericStoreFactory.getOptions();
-		final Options cliOptions = storeOptionsToCliOptions(storeOptions);
-
+		final Options cliOptions = storeOptionsToCliOptions(
+				prefix,
+				storeOptions);
+		final Collection<Option> options = currentOptions.getOptions();
+		for (final Option o : options) {
+			cliOptions.addOption((Option) o.clone());
+		}
 		final BasicParser parser = new BasicParser();
 		// parse the datastore options
-		final CommandLine dataStoreCommandLine = parser.parse(
+		final CommandLine commandLineWithStoreOptions = parser.parse(
 				cliOptions,
-				additionalArgs);
+				currentCommandLine.getArgs());
 		final Map<String, Object> configOptions = new HashMap<String, Object>();
 		for (final AbstractConfigOption<?> option : storeOptions) {
-			final String cliOptionName = ConfigUtils.cleanOptionName(option.getName());
+			final String cliOptionName = ConfigUtils.cleanOptionName(prefix != null ? prefix + option.getName() : option.getName());
 			final Class<?> cls = GenericTypeResolver.resolveTypeArgument(
 					option.getClass(),
 					AbstractConfigOption.class);
 			final boolean isBoolean = Boolean.class.isAssignableFrom(cls);
-			final boolean hasOption = dataStoreCommandLine.hasOption(cliOptionName);
+			final boolean hasOption = commandLineWithStoreOptions.hasOption(cliOptionName);
 			if (isBoolean) {
 				configOptions.put(
 						option.getName(),
 						option.valueFromString(hasOption ? "true" : "false"));
 			}
 			else if (hasOption) {
-				final String optionValueStr = dataStoreCommandLine.getOptionValue(cliOptionName);
+				final String optionValueStr = commandLineWithStoreOptions.getOptionValue(cliOptionName);
 				configOptions.put(
 						option.getName(),
 						option.valueFromString(optionValueStr));
 			}
 		}
-		return configOptions;
+		final Option[] newOptions = commandLineWithStoreOptions.getOptions();
+		final Option[] prevOptions = currentCommandLine.getOptions();
+
+		final String[] newArgs = commandLineWithStoreOptions.getArgs();
+		final String[] prevArgs = currentCommandLine.getArgs();
+		final boolean unchanged = Arrays.equals(
+				newArgs,
+				prevArgs) && Arrays.equals(
+				newOptions,
+				prevOptions);
+		return new ImmutablePair<Map<String, Object>, CommandLine>(
+				configOptions,
+				unchanged ? null : commandLineWithStoreOptions);
 	}
 
 	//@formatter:off
@@ -341,28 +366,29 @@ abstract public class GenericStoreCommandLineOptions<T>
 			}
 
 			try {
-				final String[] args = commandLine.getArgs();
-				final String[] newArgs;
-				if ((prefix != null) && !prefix.isEmpty()) {
-					newArgs = new String[args.length];
-					int i = 0;
-					final String hyphenPrefix = "-" + prefix;
-					for (final String a : args) {
-						if (a.startsWith(hyphenPrefix)) {
-							newArgs[i] = "-" + a.substring(hyphenPrefix.length());
-						}
-						else {
-							newArgs[i] = a;
-						}
-						i++;
-					}
-				}
-				else {
-					newArgs = args;
-				}
+				// final String[] newArgs;
+				// if ((prefix != null) && !prefix.isEmpty()) {
+				// newArgs = new String[args.length];
+				// int i = 0;
+				// final String hyphenPrefix = "-" + prefix;
+				// for (final String a : args) {
+				// if (a.startsWith(hyphenPrefix)) {
+				// newArgs[i] = "-" + a.substring(hyphenPrefix.length());
+				// }
+				// else {
+				// newArgs[i] = a;
+				// }
+				// i++;
+				// }
+				// }
+				// else {
+				// newArgs = args;
+				// }
 
 				final Pair<Map<String, Object>, CommandLine> configOptionsCmdLinePair = getConfigOptionsForStoreFactory(
-						newArgs,
+						prefix,
+						options,
+						commandLine,
 						selectedStoreFactory);
 
 				return new CommandLineResult<GenericStoreCommandLineOptions<T>>(
@@ -400,7 +426,9 @@ abstract public class GenericStoreCommandLineOptions<T>
 		for (final Entry<String, F> factoryEntry : factories.entrySet()) {
 			try {
 				final Pair<Map<String, Object>, CommandLine> configOptionsCmdLinePair = getConfigOptionsForStoreFactory(
-						additionalArgs,
+						prefix,
+						options,
+						commandLine,
 						factoryEntry.getValue());
 				final GenericStoreCommandLineOptions<T> commandLineOptions = helper.createCommandLineOptions(
 						factoryEntry.getValue(),
@@ -460,7 +488,9 @@ abstract public class GenericStoreCommandLineOptions<T>
 		@Override
 		public Option apply(
 				final AbstractConfigOption<?> input ) {
-			return GenericStoreCommandLineOptions.storeOptionToCliOption(input);
+			return GenericStoreCommandLineOptions.storeOptionToCliOption(
+					null,
+					input);
 		}
 	}
 }

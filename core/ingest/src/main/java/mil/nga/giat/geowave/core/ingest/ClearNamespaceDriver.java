@@ -2,6 +2,7 @@ package mil.nga.giat.geowave.core.ingest;
 
 import java.util.List;
 
+import mil.nga.giat.geowave.core.cli.CommandLineResult;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 
 import org.apache.commons.cli.CommandLine;
@@ -28,9 +29,15 @@ public class ClearNamespaceDriver extends
 
 	@Override
 	public void parseOptionsInternal(
-			final CommandLine commandLine )
+			CommandLine commandLine )
 			throws ParseException {
-		dataStoreOptions = DataStoreCommandLineOptions.parseOptions(commandLine);
+		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
+				null,
+				commandLine);
+		dataStoreOptions = dataStoreOptionsResult.getResult();
+		if (dataStoreOptionsResult.isCommandLineChange()) {
+			commandLine = dataStoreOptionsResult.getCommandLine();
+		}
 		ingest = IngestCommandLineOptions.parseOptions(commandLine);
 	}
 
