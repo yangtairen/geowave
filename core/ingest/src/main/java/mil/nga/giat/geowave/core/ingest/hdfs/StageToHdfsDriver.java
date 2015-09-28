@@ -37,10 +37,13 @@ public class StageToHdfsDriver extends
 
 	@Override
 	protected void parseOptionsInternal(
+			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
 		hdfsOptions = HdfsCommandLineOptions.parseOptions(commandLine);
-		super.parseOptionsInternal(commandLine);
+		super.parseOptionsInternal(
+				options,
+				commandLine);
 	}
 
 	@Override

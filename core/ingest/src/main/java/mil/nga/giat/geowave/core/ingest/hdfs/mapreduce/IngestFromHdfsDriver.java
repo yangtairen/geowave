@@ -219,10 +219,11 @@ public class IngestFromHdfsDriver extends
 
 	@Override
 	protected void parseOptionsInternal(
+			final Options options,
 			CommandLine commandLine )
 			throws ParseException {
 		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
-				null,
+				options,
 				commandLine);
 		dataStoreOptions = dataStoreOptionsResult.getResult();
 		if (dataStoreOptionsResult.isCommandLineChange()) {

@@ -136,9 +136,6 @@ public class RasterDataAdapter implements
 	static {
 		SourceThresholdFixMosaicDescriptor.register(false);
 	}
-	// these priorities are fairly arbitrary at the moment
-	private static final int RASTER_TILE_COMBINER_PRIORITY = 4;
-	private static final int RASTER_TILE_VISIBILITY_COMBINER_PRIORITY = 6;
 	private final static Logger LOGGER = Logger.getLogger(RasterDataAdapter.class);
 	private final static ByteArrayId DATA_FIELD_ID = new ByteArrayId(
 			"image");

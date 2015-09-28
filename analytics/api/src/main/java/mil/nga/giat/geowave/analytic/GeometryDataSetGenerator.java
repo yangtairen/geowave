@@ -17,6 +17,7 @@ import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.index.Index;
 
+import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -498,7 +499,9 @@ public class GeometryDataSetGenerator
 				"a name for the feature type (required)");
 		typeNameOption.setRequired(true);
 		allOptions.addOption(typeNameOption);
-		CommandLine commandLine = null;
+		CommandLine commandLine = new BasicParser().parse(
+				allOptions,
+				args);
 
 		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOption = DataStoreCommandLineOptions.parseOptions(
 				allOptions,

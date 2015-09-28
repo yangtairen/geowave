@@ -6,8 +6,10 @@ import java.util.Properties;
 
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServerStartable;
+import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.GeoWaveMain;
 import mil.nga.giat.geowave.core.geotime.IndexType;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStoreFactory;
 import mil.nga.giat.geowave.test.GeoWaveTestEnvironment;
 
 import org.apache.commons.lang.StringUtils;
@@ -52,7 +54,7 @@ abstract public class KafkaTestEnvironment<I> extends
 			final String ingestFilePath ) {
 		LOGGER.warn("Ingesting '" + ingestFilePath + "' - this may take several minutes...");
 		final String[] args = StringUtils.split(
-				"-kafkaingest -f gpx -consumerTimeoutMs 5000 -reconnectOnTimeout -groupId testGroup -autoOffsetReset smallest -fetchMessageMaxBytes " + MAX_MESSAGE_BYTES + " -zookeeperConnect " + zookeeper + " -z " + zookeeper + " -i " + accumuloInstance + " -u " + accumuloUser + " -p " + accumuloPassword + " -n " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
+				"-kafkaingest -datastore " + new AccumuloDataStoreFactory().getName() + " -f gpx -consumerTimeoutMs 5000 -reconnectOnTimeout -groupId testGroup -autoOffsetReset smallest -fetchMessageMaxBytes " + MAX_MESSAGE_BYTES + " -zookeeperConnect " + zookeeper + " -z " + zookeeper + " -i " + accumuloInstance + " -u " + accumuloUser + " -p " + accumuloPassword + " -" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY + " " + TEST_NAMESPACE +  " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
 				' ');
 		GeoWaveMain.main(args);
 	}

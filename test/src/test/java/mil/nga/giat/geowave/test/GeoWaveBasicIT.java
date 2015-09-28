@@ -730,18 +730,6 @@ public class GeoWaveBasicIT extends
 		return (T[]) o;
 	}
 
-	private void testIngest(
-			final IndexType indexType,
-			final String ingestFilePath ) {
-		// ingest a shapefile (geotools type) directly into GeoWave using the
-		// ingest framework's main method and pre-defined commandline arguments
-		LOGGER.warn("Ingesting '" + ingestFilePath + "' - this may take several minutes...");
-		final String[] args = StringUtils.split(
-				"-localingest -f geotools-vector -b " + ingestFilePath + " -z " + zookeeper + " -i " + accumuloInstance + " -u " + accumuloUser + " -p " + accumuloPassword + " -n " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
-				' ');
-		GeoWaveMain.main(args);
-	}
-
 	private void testQuery(
 			final URL savedFilterResource,
 			final URL[] expectedResultsResources,

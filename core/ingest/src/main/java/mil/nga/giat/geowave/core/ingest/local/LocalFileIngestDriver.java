@@ -40,17 +40,20 @@ public class LocalFileIngestDriver extends
 
 	@Override
 	protected void parseOptionsInternal(
+			final Options options,
 			CommandLine commandLine )
 			throws ParseException {
 		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
-				null,
+				options,
 				commandLine);
 		dataStoreOptions = dataStoreOptionsResult.getResult();
 		if (dataStoreOptionsResult.isCommandLineChange()) {
 			commandLine = dataStoreOptionsResult.getCommandLine();
 		}
 		ingestOptions = IngestCommandLineOptions.parseOptions(commandLine);
-		super.parseOptionsInternal(commandLine);
+		super.parseOptionsInternal(
+				options,
+				commandLine);
 	}
 
 	@Override

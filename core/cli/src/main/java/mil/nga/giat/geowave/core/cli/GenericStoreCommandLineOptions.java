@@ -15,6 +15,7 @@ import mil.nga.giat.geowave.core.store.filter.GenericTypeResolver;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineUtils;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -110,6 +111,7 @@ abstract public class GenericStoreCommandLineOptions<T>
 		final CommandLine commandLineWithStoreOptions = parser.parse(
 				cliOptions,
 				currentCommandLine.getArgs());
+		CommandLineUtils.addOptions(commandLineWithStoreOptions, currentCommandLine.getOptions());
 		final Map<String, Object> configOptions = new HashMap<String, Object>();
 		for (final AbstractConfigOption<?> option : storeOptions) {
 			final String cliOptionName = ConfigUtils.cleanOptionName(prefix != null ? prefix + option.getName() : option.getName());

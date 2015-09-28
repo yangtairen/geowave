@@ -65,10 +65,10 @@ abstract public class GeoWaveTestEnvironment
 	protected static final String HADOOP_WINDOWS_UTIL = "winutils.exe";
 	protected static final Object MUTEX = new Object();
 	protected static AccumuloOperations accumuloOperations;
-	protected static String zookeeper="z";
-	protected static String accumuloInstance="i";
-	protected static String accumuloUser="u";
-	protected static String accumuloPassword="p";
+	protected static String zookeeper = "z";
+	protected static String accumuloInstance = "i";
+	protected static String accumuloUser = "u";
+	protected static String accumuloPassword = "p";
 	protected static MiniAccumuloCluster miniAccumulo;
 	protected static File TEMP_DIR = new File(
 			"./target/accumulo_temp"); // breaks on windows if temp directory
@@ -88,11 +88,11 @@ abstract public class GeoWaveTestEnvironment
 			final String ingestFilePath ) {
 		// ingest a shapefile (geotools type) directly into GeoWave using the
 		// ingest framework's main method and pre-defined commandline arguments
-//		LOGGER.warn("Ingesting '" + ingestFilePath + "' - this may take several minutes...");
-//		final String[] args = StringUtils.split(
-//				"-localingest -datastore " + new AccumuloDataStoreFactory().getName() + " -f geotools-vector -b " + ingestFilePath + " -" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME + " " + zookeeper + " -" + BasicAccumuloOperations.INSTANCE_CONFIG_NAME + " " + accumuloInstance + " -" + BasicAccumuloOperations.USER_CONFIG_NAME + " " + accumuloUser + " -" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME + " " + accumuloPassword + " -" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY + " " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
-//				' ');
-//		GeoWaveMain.main(args);
+		LOGGER.warn("Ingesting '" + ingestFilePath + "' - this may take several minutes...");
+		final String[] args = StringUtils.split(
+				"-localingest -datastore " + new AccumuloDataStoreFactory().getName() + " -f geotools-vector -b " + ingestFilePath + " -" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY + " " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal") + " -" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME + " " + zookeeper + " -" + BasicAccumuloOperations.INSTANCE_CONFIG_NAME + " " + accumuloInstance + " -" + BasicAccumuloOperations.USER_CONFIG_NAME + " " + accumuloUser + " -" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME + " " + accumuloPassword,
+				' ');
+		GeoWaveMain.main(args);
 		verifyStats();
 	}
 
@@ -100,11 +100,11 @@ abstract public class GeoWaveTestEnvironment
 		GeoWaveMain.main(new String[] {
 			"-statsdump",
 			"-datastore",
-		    new AccumuloDataStoreFactory().getName(),
-			"-" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
-			zookeeper,
 			"-" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
 			TEST_NAMESPACE,
+			new AccumuloDataStoreFactory().getName(),
+			"-" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
+			zookeeper,
 			"-" + BasicAccumuloOperations.USER_CONFIG_NAME,
 			accumuloUser,
 			"-" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME,
@@ -114,7 +114,7 @@ abstract public class GeoWaveTestEnvironment
 		});
 	}
 
-//	@BeforeClass
+	@BeforeClass
 	public static void setup()
 			throws IOException {
 		synchronized (MUTEX) {

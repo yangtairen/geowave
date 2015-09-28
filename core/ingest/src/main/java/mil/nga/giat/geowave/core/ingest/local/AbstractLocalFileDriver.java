@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
  * This class can be sub-classed to handle recursing over a local directory
  * structure and passing along the plugin specific handling of any supported
  * file for a discovered plugin.
- * 
+ *
  * @param <P>
  *            The type of the plugin this driver supports.
  * @param <R>
@@ -75,6 +75,7 @@ abstract public class AbstractLocalFileDriver<P extends LocalPluginBase, R> exte
 
 	@Override
 	protected void parseOptionsInternal(
+			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
 		localInput = LocalInputCommandLineOptions.parseOptions(commandLine);

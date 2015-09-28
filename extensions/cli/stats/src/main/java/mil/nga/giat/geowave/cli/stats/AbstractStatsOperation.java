@@ -57,7 +57,7 @@ abstract public class AbstractStatsOperation implements
 		DataStatisticsStoreCommandLineOptions.applyOptions(allOptions);
 		StatsCommandLineOptions.applyOptions(allOptions);
 		try {
-			CommandLine commandLine = null;
+			CommandLine commandLine = new BasicParser().parse(allOptions, args);
 			CommandLineResult<DataStoreCommandLineOptions> dataStoreCli = null;
 			CommandLineResult<AdapterStoreCommandLineOptions> adapterStoreCli = null;
 			CommandLineResult<IndexStoreCommandLineOptions> indexStoreCli = null;

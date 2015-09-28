@@ -182,7 +182,9 @@ abstract public class AbstractIngestCommandLineDriver implements
 					}
 				}
 			}
-			parseOptionsInternal(commandLine);
+			parseOptionsInternal(
+					options,
+					commandLine);
 		}
 		catch (final ParseException e) {
 			LOGGER.fatal(
@@ -207,13 +209,13 @@ abstract public class AbstractIngestCommandLineDriver implements
 				optionProvider.applyOptions(options);
 			}
 		}
-		final DataStoreFactorySpi dataStoreFactory = DataStoreCommandLineOptions.getSelectedStore(new CommandLineWrapper(
-				commandLine));
-		if (dataStoreFactory != null) {
-			GenericStoreCommandLineOptions.applyStoreOptions(
-					dataStoreFactory,
-					options);
-		}
+//		final DataStoreFactorySpi dataStoreFactory = DataStoreCommandLineOptions.getSelectedStore(new CommandLineWrapper(
+//				commandLine));
+//		if (dataStoreFactory != null) {
+//			GenericStoreCommandLineOptions.applyStoreOptions(
+//					dataStoreFactory,
+//					options);
+//		}
 	}
 
 	private List<IngestFormatPluginProviderSpi<?, ?>> getPluginProviders(
@@ -249,6 +251,7 @@ abstract public class AbstractIngestCommandLineDriver implements
 	}
 
 	abstract protected void parseOptionsInternal(
+			Options options,
 			final CommandLine commandLine )
 			throws ParseException;
 

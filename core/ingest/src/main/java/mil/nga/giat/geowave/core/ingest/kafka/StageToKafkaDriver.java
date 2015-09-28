@@ -36,10 +36,13 @@ public class StageToKafkaDriver<T extends SpecificRecordBase> extends
 
 	@Override
 	protected void parseOptionsInternal(
+			final Options options,
 			final CommandLine commandLine )
 			throws ParseException {
 		kafkaOptions = KafkaProducerCommandLineOptions.parseOptions(commandLine);
-		super.parseOptionsInternal(commandLine);
+		super.parseOptionsInternal(
+				options,
+				commandLine);
 	}
 
 	@Override
