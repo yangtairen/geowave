@@ -35,7 +35,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * of ingest format plugins and using them to drive an ingestion process. The
  * class is sub-classed to perform the specific ingestion required based on the
  * operation set by the user.
- *
+ * 
  */
 abstract public class AbstractIngestCommandLineDriver implements
 		CLIOperationDriver
@@ -209,13 +209,14 @@ abstract public class AbstractIngestCommandLineDriver implements
 				optionProvider.applyOptions(options);
 			}
 		}
-//		final DataStoreFactorySpi dataStoreFactory = DataStoreCommandLineOptions.getSelectedStore(new CommandLineWrapper(
-//				commandLine));
-//		if (dataStoreFactory != null) {
-//			GenericStoreCommandLineOptions.applyStoreOptions(
-//					dataStoreFactory,
-//					options);
-//		}
+		// final DataStoreFactorySpi dataStoreFactory =
+		// DataStoreCommandLineOptions.getSelectedStore(new CommandLineWrapper(
+		// commandLine));
+		// if (dataStoreFactory != null) {
+		// GenericStoreCommandLineOptions.applyStoreOptions(
+		// dataStoreFactory,
+		// options);
+		// }
 	}
 
 	private List<IngestFormatPluginProviderSpi<?, ?>> getPluginProviders(

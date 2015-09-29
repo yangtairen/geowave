@@ -169,10 +169,9 @@ public abstract class GeoWaveAnalyticJobRunner extends
 		OutputParameters.Output.REDUCER_COUNT.getHelper().setValue(
 				configuration,
 				getScope(),
-				new Integer(
-						runTimeProperties.getPropertyAsInt(
-								OutputParameters.Output.REDUCER_COUNT,
-								reducerCount)));
+				runTimeProperties.getPropertyAsInt(
+						OutputParameters.Output.REDUCER_COUNT,
+						reducerCount));
 		return mapReduceIntegrater.submit(
 				configuration,
 				runTimeProperties,

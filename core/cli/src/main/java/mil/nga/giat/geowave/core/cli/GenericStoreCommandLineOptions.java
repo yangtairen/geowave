@@ -111,7 +111,9 @@ abstract public class GenericStoreCommandLineOptions<T>
 		final CommandLine commandLineWithStoreOptions = parser.parse(
 				cliOptions,
 				currentCommandLine.getArgs());
-		CommandLineUtils.addOptions(commandLineWithStoreOptions, currentCommandLine.getOptions());
+		CommandLineUtils.addOptions(
+				commandLineWithStoreOptions,
+				currentCommandLine.getOptions());
 		final Map<String, Object> configOptions = new HashMap<String, Object>();
 		for (final AbstractConfigOption<?> option : storeOptions) {
 			final String cliOptionName = ConfigUtils.cleanOptionName(prefix != null ? prefix + option.getName() : option.getName());
@@ -412,7 +414,6 @@ abstract public class GenericStoreCommandLineOptions<T>
 		// if data store is not given, go through all available data stores
 		// until one matches the config options
 		final Map<String, F> factories = helper.getRegisteredFactories();
-		final String[] additionalArgs = commandLine.getArgs();
 		final Map<String, Exception> exceptionsPerDataStoreFactory = new HashMap<String, Exception>();
 		int matchingCommandLineOptionCount = -1;
 		CommandLineResult<GenericStoreCommandLineOptions<T>> matchingCommandLineOptions = null;

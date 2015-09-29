@@ -86,7 +86,7 @@ import org.apache.log4j.Logger;
  * A set of convenience methods for common operations on Accumulo within
  * GeoWave, such as conversions between GeoWave objects and corresponding
  * Accumulo objects.
- *
+ * 
  */
 public class AccumuloUtils
 {
@@ -546,7 +546,7 @@ public class AccumuloUtils
 	}
 
 	/**
-	 *
+	 * 
 	 * @param dataWriter
 	 * @param index
 	 * @param entry
@@ -740,7 +740,7 @@ public class AccumuloUtils
 
 	/**
 	 * Get Namespaces
-	 *
+	 * 
 	 * @param connector
 	 */
 	public static List<String> getNamespaces(
@@ -760,7 +760,7 @@ public class AccumuloUtils
 
 	/**
 	 * Get list of data adapters associated with the given namespace
-	 *
+	 * 
 	 * @param connector
 	 * @param namespace
 	 */
@@ -785,7 +785,7 @@ public class AccumuloUtils
 
 	/**
 	 * Get list of indices associated with the given namespace
-	 *
+	 * 
 	 * @param connector
 	 * @param namespace
 	 */
@@ -811,7 +811,7 @@ public class AccumuloUtils
 	/**
 	 * Set splits on a table based on quantile distribution and fixed number of
 	 * splits
-	 *
+	 * 
 	 * @param namespace
 	 * @param index
 	 * @param quantile
@@ -893,7 +893,7 @@ public class AccumuloUtils
 	/**
 	 * Set splits on table based on equal interval distribution and fixed number
 	 * of splits.
-	 *
+	 * 
 	 * @param namespace
 	 * @param index
 	 * @param numberSplits
@@ -955,7 +955,7 @@ public class AccumuloUtils
 
 	/**
 	 * Set splits on table based on fixed number of rows per split.
-	 *
+	 * 
 	 * @param namespace
 	 * @param index
 	 * @param numberRows
@@ -1011,7 +1011,7 @@ public class AccumuloUtils
 
 	/**
 	 * Check if locality group is set.
-	 *
+	 * 
 	 * @param namespace
 	 * @param index
 	 * @param adapter
@@ -1042,7 +1042,7 @@ public class AccumuloUtils
 
 	/**
 	 * Set locality group.
-	 *
+	 * 
 	 * @param namespace
 	 * @param index
 	 * @param adapter
@@ -1072,7 +1072,7 @@ public class AccumuloUtils
 
 	/**
 	 * Get number of entries for a data adapter in an index.
-	 *
+	 * 
 	 * @param namespace
 	 * @param index
 	 * @param adapter
@@ -1119,7 +1119,7 @@ public class AccumuloUtils
 
 	/**
 	 * Get number of entries per index.
-	 *
+	 * 
 	 * @param namespace
 	 * @param index
 	 * @return
@@ -1159,7 +1159,7 @@ public class AccumuloUtils
 
 	/**
 	 * Get number of entries per namespace.
-	 *
+	 * 
 	 * @param namespace
 	 * @return
 	 * @throws AccumuloException

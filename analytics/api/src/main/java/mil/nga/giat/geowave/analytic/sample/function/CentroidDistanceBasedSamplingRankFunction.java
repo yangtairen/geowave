@@ -32,38 +32,38 @@ import org.slf4j.LoggerFactory;
  * centroids. The specific rank is determined by the probability of the point
  * meeting being a centroid, modeled in the implementation of
  * {@link SampleProbabilityFn}.
- *
+ * 
  * The farther the distance, the higher the rank.
- *
+ * 
  * @formatter:off Properties:
- *
+ * 
  *                "CentroidDistanceBasedSamplingRankFunction.KMeansConfig.data_store_configuration"
  *                - The class used to determine the prefix class name for te
  *                GeoWave Data Store parameters for a connection to collect the
  *                starting set of centroids. Defaults to
  *                {@link CentroidDistanceBasedSamplingRankFunction}.
- *
- *
+ * 
+ * 
  *                "CentroidDistanceBasedSamplingRankFunction.KMeansConfig.probability_function"
  *                - implementation of {@link SampleProbabilityFn}
- *
+ * 
  *                "CentroidDistanceBasedSamplingRankFunction.KMeansConfig.distance_function"
  *                - {@link DistanceFn}
- *
+ * 
  *                "CentroidDistanceBasedSamplingRankFunction.KMeansConfig.centroid_factory"
  *                - {@link AnalyticItemWrapperFactory} to wrap the centroid data
  *                with the appropriate centroid wrapper
  *                {@link AnalyticItemWrapper}
- *
+ * 
  * @ee CentroidManagerGeoWave
- *
- *
+ * 
+ * 
  * @formatter:on
- *
+ * 
  *               See {@link GeoWaveConfiguratorBase} for information for
  *               configuration GeoWave Data Store for consumption of starting
  *               set of centroids.
- *
+ * 
  * @param <T>
  *            The data type for the object being sampled
  */

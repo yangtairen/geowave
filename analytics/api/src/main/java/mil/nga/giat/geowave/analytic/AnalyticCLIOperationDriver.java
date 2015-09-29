@@ -97,9 +97,11 @@ public class AnalyticCLIOperationDriver implements
 							}
 						}
 						first = false;
-						((ParameterEnum<Object>) param).getHelper().setValue(
-								properties,
-								value.getResult());
+						if (value != null) {
+							((ParameterEnum<Object>) param).getHelper().setValue(
+									properties,
+									value.getResult());
+						}
 					}
 				}
 			}

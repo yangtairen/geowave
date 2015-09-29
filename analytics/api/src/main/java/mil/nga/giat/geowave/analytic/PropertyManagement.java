@@ -36,20 +36,20 @@ import com.vividsolutions.jts.io.WKTReader;
  * Manage properties used by the Map Reduce environment that are provided
  * through the API (e.g. command). Allow these arguments to be placed an 'args'
  * list for 'main' executables (e.g. ToolRunner).
- *
+ * 
  * The class supports some basic conversions.
- *
+ * 
  * Non-serializable objects: {@link Persistable} instances are converted to and
  * from byte formats. {@link DistributableQuery} is a special case, supporting
  * WKT String. {@link Path} are converted to a from string representation of the
  * their URI.
- *
+ * 
  * Serializable objects: {@link NumericRange} supports min,max in string
  * representation (e.g. "1.0,2.0")
- *
- *
+ * 
+ * 
  * NOTE: ConfigutationWrapper implementation is scopeless.
- *
+ * 
  * EXPECTED FUTURE WORK: I am bit unsatisfied with the duality of the parameters
  * base class. In one case, in is treated a description for a class value and,
  * in the other case, it is treated as a description for the type of a property
@@ -59,7 +59,7 @@ import com.vividsolutions.jts.io.WKTReader;
  * goal is to uniformly provide feedback to parameters from command line
  * arguments and property files on submission to the manager rather than on
  * extraction from the manager.
- *
+ * 
  */
 public class PropertyManagement implements
 		Serializable
@@ -169,7 +169,7 @@ public class PropertyManagement implements
 
 	/**
 	 * Does not work for non-serializable data (e.g. Path or Persistable)
-	 *
+	 * 
 	 */
 
 	public synchronized Serializable storeIfEmpty(
@@ -293,7 +293,7 @@ public class PropertyManagement implements
 	/**
 	 * Returns the value as, without conversion from the properties. Throws an
 	 * exception if a conversion is required to a specific type
-	 *
+	 * 
 	 * @param property
 	 * @return
 	 * @throws Exception
@@ -321,7 +321,7 @@ public class PropertyManagement implements
 	/**
 	 * Returns the value after conversion. Throws an exception if a conversion
 	 * fails.
-	 *
+	 * 
 	 * @param property
 	 * @return
 	 * @throws Exception
@@ -646,11 +646,11 @@ public class PropertyManagement implements
 	/**
 	 * Add to the set of converters used to take a String representation of a
 	 * value and convert it into another serializable form.
-	 *
+	 * 
 	 * This is done if the preferred internal representation does not match that
 	 * of a string. For example, a query is maintained as bytes even though it
 	 * can be provided as a query
-	 *
+	 * 
 	 * @param converter
 	 */
 	public synchronized void addConverter(

@@ -78,6 +78,7 @@ public class UpdateCentroidCostJobRunner extends
 		job.setOutputKeyClass(GeoWaveOutputKey.class);
 		job.setOutputValueClass(SimpleFeature.class);
 	}
+
 	@Override
 	protected String getJobName() {
 		return "Update Centroid Cost";

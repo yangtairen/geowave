@@ -29,10 +29,10 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Reducer;
 
 /**
- *
+ * 
  * Assign group IDs to input items based on centroids.
- *
- *
+ * 
+ * 
  */
 public class GroupAssigmentJobRunner extends
 		GeoWaveAnalyticJobRunner

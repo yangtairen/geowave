@@ -28,25 +28,25 @@ import org.slf4j.LoggerFactory;
 /**
  * Update the SINGLE cost of the clustering as a measure of distance from all
  * points to their closest center.
- *
+ * 
  * As an FYI: During the clustering algorithm, the cost should be monotonic
  * decreasing.
- *
+ * 
  * @formatter:off
- *
+ * 
  *                Context configuration parameters include:
- *
+ * 
  *                "UpdateCentroidCostMapReduce.Common.DistanceFunctionClass" ->
  *                Used to determine distance to centroid
- *
+ * 
  *                "UpdateCentroidCostMapReduce.Centroid.WrapperFactoryClass" ->
  *                {@link AnalyticItemWrapperFactory} to extract wrap spatial
  *                objects with Centroid management functions
- *
+ * 
  * @see CentroidManagerGeoWave
- *
+ * 
  * @formatter:on
- *
+ * 
  */
 
 public class UpdateCentroidCostMapReduce

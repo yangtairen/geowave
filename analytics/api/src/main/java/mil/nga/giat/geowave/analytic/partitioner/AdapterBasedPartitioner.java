@@ -35,17 +35,17 @@ import org.slf4j.LoggerFactory;
  * {@link OrthodromicDistancePartitioner}, handling different types of data
  * entries, the assumption is that each object decode by the adapter provides
  * the fields required according to the supplied model.
- *
+ * 
  * The user provides the distances per dimension. It us up to the user to
  * convert geographic distance into distance in degrees per longitude and
  * latitude.
- *
+ * 
  * This class depends on an AdapterStore. Since an AdapterStore is not
  * Serializable, the dependency is transient requiring initialization after
  * serialization
  * {@link AdapterBasedPartitioner#initialize(ConfigurationWrapper)
- *
- *
+ * 
+ * 
  */
 public class AdapterBasedPartitioner extends
 		AbstractPartitioner<AdapterDataEntry> implements
