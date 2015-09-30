@@ -1,5 +1,8 @@
 package mil.nga.giat.geowave.analytic.clustering;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,21 +31,22 @@ import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.NullIndex;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Find the max change in distortion between some k and k-1, picking the value k
  * associated with that change.
- * 
+ *
  * In a multi-group setting, each group may have a different optimal k. Thus,
  * the optimal batch may be different for each group. Each batch is associated
  * with a different value k.
- * 
+ *
  * Choose the appropriate batch for each group. Then change the batch identifier
  * for group centroids to a final provided single batch identifier ( parent
  * batch ).
- * 
+ *
  */
 public class DistortionGroupManagement
 {
@@ -52,7 +56,7 @@ public class DistortionGroupManagement
 			"DISTORTIONS");
 
 	/**
-	 * 
+	 *
 	 * @param ops
 	 * @param distortationTableName
 	 *            the name of the table holding the distortions
@@ -130,11 +134,14 @@ public class DistortionGroupManagement
 		return 0;
 	}
 
-	public static class DistortionEntry
+	public static class DistortionEntry implements
+			Writable
 	{
-		private final String groupId;
-		private final Integer clusterCount;
-		private final Double distortionValue;
+		private String groupId;
+		private Integer clusterCount;
+		private Double distortionValue;
+
+		public DistortionEntry() {}
 
 		public DistortionEntry(
 				final String groupId,
@@ -170,6 +177,24 @@ public class DistortionGroupManagement
 		private ByteArrayId getDataId() {
 			return new ByteArrayId(
 					groupId + "/" + clusterCount);
+		}
+
+		@Override
+		public void write(
+				final DataOutput out )
+				throws IOException {
+			out.writeUTF(groupId);
+			out.writeInt(clusterCount);
+			out.writeDouble(distortionValue);
+		}
+
+		@Override
+		public void readFields(
+				final DataInput in )
+				throws IOException {
+			groupId = in.readUTF();
+			clusterCount = in.readInt();
+			distortionValue = in.readDouble();
 		}
 	}
 

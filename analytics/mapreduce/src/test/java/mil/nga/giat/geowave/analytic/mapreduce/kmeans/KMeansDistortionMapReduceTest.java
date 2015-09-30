@@ -26,12 +26,18 @@ import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
+import mil.nga.giat.geowave.analytic.store.PersistableAdapterStore;
 import mil.nga.giat.geowave.analytic.store.PersistableDataStore;
+import mil.nga.giat.geowave.analytic.store.PersistableIndexStore;
+import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
+import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStoreFactory;
 import mil.nga.giat.geowave.core.store.memory.MemoryDataStoreFactory;
+import mil.nga.giat.geowave.core.store.memory.MemoryIndexStoreFactory;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
@@ -123,6 +129,20 @@ public class KMeansDistortionMapReduceTest
 				new PersistableDataStore(
 						new DataStoreCommandLineOptions(
 								new MemoryDataStoreFactory(),
+								new HashMap<String, Object>(),
+								TEST_NAMESPACE)));
+		propManagement.store(
+				StoreParam.INDEX_STORE,
+				new PersistableIndexStore(
+						new IndexStoreCommandLineOptions(
+								new MemoryIndexStoreFactory(),
+								new HashMap<String, Object>(),
+								TEST_NAMESPACE)));
+		propManagement.store(
+				StoreParam.ADAPTER_STORE,
+				new PersistableAdapterStore(
+						new AdapterStoreCommandLineOptions(
+								new MemoryAdapterStoreFactory(),
 								new HashMap<String, Object>(),
 								TEST_NAMESPACE)));
 		NestedGroupCentroidAssignment.setParameters(
@@ -282,7 +302,7 @@ public class KMeansDistortionMapReduceTest
 
 		assertTrue(results.get(
 				0).getSecond().getGroupId().equals(
-				"dt"));
+				"g1"));
 		assertTrue(results.get(
 				0).getSecond().getClusterCount().equals(
 				1));

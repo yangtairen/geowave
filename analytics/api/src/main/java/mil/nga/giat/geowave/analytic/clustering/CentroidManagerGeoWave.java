@@ -116,6 +116,8 @@ public class CentroidManagerGeoWave<T> implements
 	final static Logger LOGGER = LoggerFactory.getLogger(CentroidManagerGeoWave.class);
 	private static final ParameterEnum<?>[] MY_PARAMS = new ParameterEnum[] {
 		StoreParameters.StoreParam.DATA_STORE,
+		StoreParameters.StoreParam.INDEX_STORE,
+		StoreParameters.StoreParam.ADAPTER_STORE,
 		GlobalParameters.Global.BATCH_ID,
 		CentroidParameters.Centroid.DATA_TYPE_ID,
 		CentroidParameters.Centroid.DATA_NAMESPACE_URI,
