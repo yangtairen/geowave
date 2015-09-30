@@ -34,12 +34,18 @@ public class StatsOperation extends
 		statsStore.removeAllStatistics(
 				adapter.getAdapterId(),
 				authorizations);
-		try (StatsCompositionTool<?> statsTool = new StatsCompositionTool(
-				adapter,
-				statsStore)) {
-			try (CloseableIterator<Index> indexit = indexStore.getIndices()) {
-				while (indexit.hasNext()) {
-					final Index index = indexit.next();
+
+		try (CloseableIterator<Index> indexit = indexStore.getIndices()) {
+			while (indexit.hasNext()) {
+				final Index index = indexit.next();
+				statsStore.deleteObjects(
+						index.getId(),
+						authorizations);
+				try (StatsCompositionTool<?> statsTool = new StatsCompositionTool(
+						new DataAdapterStatsWrapper(
+								index,
+								adapter),
+						statsStore)) {
 					try (CloseableIterator<?> entryIt = dataStore.query(
 							adapter,
 							index,
@@ -62,5 +68,4 @@ public class StatsOperation extends
 		}
 		return true;
 	}
-
 }

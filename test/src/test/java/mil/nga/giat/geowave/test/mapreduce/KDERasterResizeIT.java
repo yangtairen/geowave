@@ -34,6 +34,7 @@ public class KDERasterResizeIT extends
 {
 	private static final String TEST_COVERAGE_NAME_PREFIX = "TEST_COVERAGE";
 	private static final String TEST_RESIZE_COVERAGE_NAME_PREFIX = "TEST_RESIZE";
+	private static final String TEST_COVERAGE_NAMESPACE = "mil_nga_giat_geowave_test_coverage";
 	protected static final String TEST_DATA_ZIP_RESOURCE_PATH = TEST_RESOURCE_PACKAGE + "kde-testdata.zip";
 	protected static final String KDE_INPUT_DIR = TEST_CASE_BASE + "kde_test_case/";
 	private static final String KDE_SHAPEFILE_FILE = KDE_INPUT_DIR + "kde-test.shp";
@@ -108,7 +109,7 @@ public class KDERasterResizeIT extends
 						tileSizeCoverageName,
 						hdfs,
 						jobtracker,
-						TEST_NAMESPACE,
+						TEST_COVERAGE_NAMESPACE,
 						new Integer(
 								(int) Math.pow(
 										2,
@@ -138,7 +139,7 @@ public class KDERasterResizeIT extends
 				accumuloUser,
 				accumuloPassword);
 		conn.tableOperations().compact(
-				TEST_NAMESPACE + "_" + IndexType.SPATIAL_RASTER.createDefaultIndex().getId().getString(),
+				TEST_COVERAGE_NAMESPACE + "_" + IndexType.SPATIAL_RASTER.createDefaultIndex().getId().getString(),
 				null,
 				null,
 				true,
@@ -167,7 +168,7 @@ public class KDERasterResizeIT extends
 						accumuloInstance,
 						accumuloUser,
 						accumuloPassword,
-						TEST_NAMESPACE,
+						TEST_COVERAGE_NAMESPACE,
 						originalTileSizeCoverageName,
 						new Integer(
 								MIN_INPUT_SPLITS).toString(),
@@ -176,7 +177,7 @@ public class KDERasterResizeIT extends
 						hdfs,
 						jobtracker,
 						resizeTileSizeCoverageName,
-						TEST_NAMESPACE,
+						TEST_COVERAGE_NAMESPACE,
 						new Integer(
 								(int) Math.pow(
 										2,
@@ -200,7 +201,7 @@ public class KDERasterResizeIT extends
 		}
 
 		conn.tableOperations().compact(
-				TEST_NAMESPACE + "_" + IndexType.SPATIAL_RASTER.createDefaultIndex().getId().getString(),
+				TEST_COVERAGE_NAMESPACE + "_" + IndexType.SPATIAL_RASTER.createDefaultIndex().getId().getString(),
 				null,
 				null,
 				true,
@@ -235,7 +236,7 @@ public class KDERasterResizeIT extends
 		final GeoWaveRasterReader reader = new GeoWaveRasterReader(
 				GeoWaveRasterConfig.createConfig(
 						options,
-						TEST_NAMESPACE,
+						TEST_COVERAGE_NAMESPACE,
 						false,
 						Interpolation.INTERP_NEAREST));
 

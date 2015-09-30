@@ -30,6 +30,7 @@ import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
+import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatisticalDataAdapter;
 import mil.nga.giat.geowave.core.store.data.visibility.GlobalVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
@@ -100,6 +101,7 @@ public class GeoWaveBasicIT extends
 
 	@Test
 	public void testIngestAndQuerySpatialPointsAndLines() {
+		System.getProperties().put("AccumuloIndexWriter.skipFlush", "true");
 		final Index spatialIndex = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 		// ingest both lines and points
 		testLocalIngest(
@@ -327,7 +329,8 @@ public class GeoWaveBasicIT extends
 				try (CloseableIterator<DataStatistics<?>> statsIterator = statsStore.getDataStatistics(adapter.getAdapterId())) {
 					int statsCount = 0;
 					while (statsIterator.hasNext()) {
-						statsIterator.next();
+						DataStatistics<?> nextStats = statsIterator.next();
+						if (nextStats instanceof RowRangeHistogramStatistics) continue;
 						statsCount++;
 					}
 					Assert.assertEquals(
@@ -344,6 +347,7 @@ public class GeoWaveBasicIT extends
 					// if the stats are the same, their binary serialization
 					// should be the same
 					Assert.assertArrayEquals(
+							actualStats.toString() + " = " + expectedStat.toString(),
 							expectedStat.toBinary(),
 							actualStats.toBinary());
 				}
@@ -392,6 +396,7 @@ public class GeoWaveBasicIT extends
 
 	@Test
 	public void testIngestAndQuerySpatialTemporalPointsAndLines() {
+		System.getProperties().put("AccumuloIndexWriter.skipFlush", "true");
 		final Index spatialTemporalIndex = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 		// ingest both lines and points
 		testLocalIngest(

@@ -17,11 +17,15 @@ public class PartitionParameters
 				"pp",
 				"Partition Precision",
 				true),
+		PARTITION_DECREASE_RATE(
+				Double.class),
 		MAX_MEMBER_SELECTION(
 				Integer.class,
 				"pms",
 				"Maximum number of members selected from a partition",
 				true),
+		SECONDARY_PARTITIONER_CLASS(
+				Partitioner.class),
 		PARTITIONER_CLASS(
 				Partitioner.class,
 				"pc",

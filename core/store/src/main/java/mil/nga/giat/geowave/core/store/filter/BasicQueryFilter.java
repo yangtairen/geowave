@@ -26,10 +26,46 @@ import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 public class BasicQueryFilter implements
 		DistributableQueryFilter
 {
+
+	protected interface BasicQueryCompareOp
+	{
+		public boolean compare(
+				double dataMin,
+				double dataMax,
+				double queryMin,
+				double queryMax );
+	}
+
+	public enum BasicQueryCompareOperation
+			implements
+			BasicQueryCompareOp {
+		CONTAINS {
+			@Override
+			public boolean compare(
+					double dataMin,
+					double dataMax,
+					double queryMin,
+					double queryMax ) {
+				return !((dataMin < queryMin) || (dataMax > queryMax));
+			}
+		},
+		OVERLAPS {
+			@Override
+			public boolean compare(
+					double dataMin,
+					double dataMax,
+					double queryMin,
+					double queryMax ) {
+				return !((dataMax < queryMin) || (dataMin > queryMax));
+			}
+		}
+	};
+
 	protected Map<ByteArrayId, List<MultiDimensionalNumericData>> binnedConstraints;
 	protected DimensionField<?>[] dimensionFields;
 	// this is referenced for serialization purposes only
 	protected MultiDimensionalNumericData constraints;
+	protected BasicQueryCompareOperation compareOp = BasicQueryCompareOperation.OVERLAPS;
 
 	protected BasicQueryFilter() {}
 
@@ -39,6 +75,16 @@ public class BasicQueryFilter implements
 		init(
 				constraints,
 				dimensionFields);
+	}
+
+	public BasicQueryFilter(
+			final MultiDimensionalNumericData constraints,
+			final DimensionField<?>[] dimensionFields,
+			final BasicQueryCompareOperation compareOp ) {
+		init(
+				constraints,
+				dimensionFields);
+		this.compareOp = compareOp;
 	}
 
 	private void init(
@@ -65,18 +111,22 @@ public class BasicQueryFilter implements
 		}
 	}
 
-	protected boolean overlaps(
+	protected boolean validateConstraints(
+			final BasicQueryCompareOp op,
 			final MultiDimensionalNumericData queryRange,
 			final MultiDimensionalNumericData dataRange ) {
 		final NumericData[] queryRangePerDimension = queryRange.getDataPerDimension();
 		final double[] minPerDimension = dataRange.getMinValuesPerDimension();
 		final double[] maxPerDimension = dataRange.getMaxValuesPerDimension();
-		for (int d = 0; d < dimensionFields.length; d++) {
-			if ((maxPerDimension[d] < queryRangePerDimension[d].getMin()) || (minPerDimension[d] > queryRangePerDimension[d].getMax())) {
-				return false;
-			}
+		boolean ok = true;
+		for (int d = 0; d < dimensionFields.length && ok; d++) {
+			ok &= op.compare(
+					minPerDimension[d],
+					maxPerDimension[d],
+					queryRangePerDimension[d].getMin(),
+					queryRangePerDimension[d].getMax());
 		}
-		return true;
+		return ok;
 	}
 
 	@Override
@@ -92,7 +142,8 @@ public class BasicQueryFilter implements
 					dataRange.getBinId()));
 			if (queries != null) {
 				for (final MultiDimensionalNumericData query : queries) {
-					if ((query != null) && overlaps(
+					if ((query != null) && validateConstraints(
+							compareOp,
 							query,
 							dataRange)) {
 						return true;

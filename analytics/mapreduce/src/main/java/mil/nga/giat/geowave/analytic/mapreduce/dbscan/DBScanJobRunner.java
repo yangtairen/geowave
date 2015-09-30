@@ -41,7 +41,7 @@ public class DBScanJobRunner extends
 
 	private static final String[] CodecsRank = new String[] {
 		"BZip2",
-		"Gzip",
+		// "Gzip",
 		"Lz4",
 		"Snappy",
 		"Lzo",
@@ -65,6 +65,9 @@ public class DBScanJobRunner extends
 		final Configuration conf = job.getConfiguration();
 		conf.set(
 				"mapreduce.map.java.opts",
+				"-Xmx" + memInMB + "m");
+		conf.set(
+				"mapreduce.reduce.java.opts",
 				"-Xmx" + memInMB + "m");
 		conf.setLong(
 				"mapred.task.timeout",

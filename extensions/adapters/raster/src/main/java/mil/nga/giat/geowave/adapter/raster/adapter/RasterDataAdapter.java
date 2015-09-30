@@ -139,8 +139,8 @@ public class RasterDataAdapter implements
 	private final static Logger LOGGER = Logger.getLogger(RasterDataAdapter.class);
 	private final static ByteArrayId DATA_FIELD_ID = new ByteArrayId(
 			"image");
-	private final static int DEFAULT_TILE_SIZE = 256;
-	private final static boolean DEFAULT_BUILD_PYRAMID = false;
+	public final static int DEFAULT_TILE_SIZE = 256;
+	public final static boolean DEFAULT_BUILD_PYRAMID = false;
 	private static Operations resampleOperations;
 
 	/**
@@ -181,6 +181,21 @@ public class RasterDataAdapter implements
 				originalGridCoverage,
 				DEFAULT_TILE_SIZE,
 				DEFAULT_BUILD_PYRAMID,
+				new NoDataMergeStrategy());
+	}
+
+	public RasterDataAdapter(
+			final String coverageName,
+			final Map<String, String> metadata,
+			final GridCoverage2D originalGridCoverage,
+			final int tileSize,
+			final boolean buildPyramid ) {
+		this(
+				coverageName,
+				metadata,
+				originalGridCoverage,
+				tileSize,
+				buildPyramid,
 				new NoDataMergeStrategy());
 	}
 

@@ -141,7 +141,9 @@ public class DBScanIT extends
 							MapReduceParameters.MRConfig.HDFS_BASE_DIR,
 							OutputParameters.Output.REDUCER_COUNT,
 							InputParameters.Input.INPUT_FORMAT,
-							GlobalParameters.Global.BATCH_ID
+							GlobalParameters.Global.BATCH_ID,
+							Partition.PARTITION_DECREASE_RATE,
+							Partition.PARTITION_PRECISION
 						},
 						new Object[] {
 							query,
@@ -161,7 +163,9 @@ public class DBScanIT extends
 							hdfsBaseDirectory + "/t1",
 							2,
 							GeoWaveInputFormatConfiguration.class,
-							"bx5"
+							"bx5",
+							0.15,
+							0.95
 						}));
 
 		Assert.assertEquals(

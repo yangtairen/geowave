@@ -1,7 +1,6 @@
 package mil.nga.giat.geowave.datastore.accumulo;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -14,10 +13,8 @@ import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.IndexDependentDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsBuilder;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
-import mil.nga.giat.geowave.core.store.adapter.statistics.StatisticalDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
@@ -50,7 +47,11 @@ public class AccumuloIndexWriter implements
 	protected String altIdxTableName;
 
 	protected boolean persistStats;
-	protected final Map<ByteArrayId, List<DataStatisticsBuilder>> statsMap = new HashMap<ByteArrayId, List<DataStatisticsBuilder>>();
+	protected int statsFlushCount = 0;
+	protected boolean skipFlush = false;
+	// just need a reasonable threshold.
+	public static final int FLUSH_STATS_THRESHOLD = 16384;
+	protected final Map<ByteArrayId, StatsCompositionTool<?>> statsMap = new HashMap<ByteArrayId, StatsCompositionTool<?>>();
 
 	public AccumuloIndexWriter(
 			final Index index,
@@ -94,6 +95,17 @@ public class AccumuloIndexWriter implements
 					LOGGER.warn("Deleting current alternate index table [" + altIdxTableName + "] as main table does not yet exist.");
 				}
 			}
+		}
+
+		try {
+			Object v = System.getProperty("AccumuloIndexWriter.skipFlush");
+			skipFlush = (v != null && v.toString().equalsIgnoreCase(
+					"true"));
+		}
+		catch (Exception ex) {
+			LOGGER.error(
+					"Unable to determine property AccumuloIndexWriter.skipFlush",
+					ex);
 		}
 	}
 
@@ -217,40 +229,11 @@ public class AccumuloIndexWriter implements
 						altIdxWriter);
 			}
 			if (persistStats) {
-				List<DataStatisticsBuilder> stats;
-				if (statsMap.containsKey(adapterIdObj)) {
-					stats = statsMap.get(adapterIdObj);
-				}
-				else {
-					if (writableAdapter instanceof StatisticalDataAdapter) {
-						final ByteArrayId[] statisticsIds = ((StatisticalDataAdapter<T>) writableAdapter).getSupportedStatisticsIds();
-						stats = new ArrayList<DataStatisticsBuilder>(
-								statisticsIds.length);
-						for (final ByteArrayId id : statisticsIds) {
-							stats.add(new DataStatisticsBuilder<T>(
-									(StatisticalDataAdapter) writableAdapter,
-									id));
-						}
-						if ((stats != null) && stats.isEmpty()) {
-							// if its an empty list, for simplicity just set it
-							// to null
-							stats = null;
-						}
-					}
-					else {
-						stats = null;
-					}
-					statsMap.put(
-							adapterIdObj,
-							stats);
-				}
-				if (stats != null) {
-					for (final DataStatisticsBuilder<T> s : stats) {
-						s.entryIngested(
-								entryInfo,
-								entry);
-					}
-				}
+				recordStats(
+						adapterIdObj,
+						entryInfo,
+						writableAdapter,
+						entry);
 			}
 		}
 		return entryInfo.getRowIds();
@@ -262,29 +245,7 @@ public class AccumuloIndexWriter implements
 		closeInternal();
 
 		// write the statistics and clear it
-		if (persistStats) {
-			final List<DataStatistics> accumulatedStats = new ArrayList<DataStatistics>();
-			synchronized (this) {
-				for (final List<DataStatisticsBuilder> builders : statsMap.values()) {
-					if ((builders != null) && !builders.isEmpty()) {
-						for (final DataStatisticsBuilder builder : builders) {
-							final Collection<DataStatistics> s = builder.getStatistics();
-							if ((s != null) && !s.isEmpty()) {
-								accumulatedStats.addAll(s);
-							}
-						}
-					}
-				}
-				if (!accumulatedStats.isEmpty()) {
-					final DataStatisticsStore statsStore = new AccumuloDataStatisticsStore(
-							accumuloOperations);
-					for (final DataStatistics s : accumulatedStats) {
-						statsStore.incorporateStatistics(s);
-					}
-				}
-				statsMap.clear();
-			}
-		}
+		flushStats();
 	}
 
 	@Override
@@ -330,30 +291,46 @@ public class AccumuloIndexWriter implements
 		if (useAltIndex && (altIdxWriter != null)) {
 			altIdxWriter.flush();
 		}
+		flushStats();
 
+	}
+
+	private synchronized void flushStats() {
 		// write the statistics and clear it
 		if (persistStats) {
-			final List<DataStatistics> accumulatedStats = new ArrayList<DataStatistics>();
-			synchronized (this) {
-				for (final List<DataStatisticsBuilder> builders : statsMap.values()) {
-					if ((builders != null) && !builders.isEmpty()) {
-						for (final DataStatisticsBuilder builder : builders) {
-							final Collection<DataStatistics> s = builder.getStatistics();
-							if ((s != null) && !s.isEmpty()) {
-								accumulatedStats.addAll(s);
-							}
-						}
-					}
-				}
-				if (!accumulatedStats.isEmpty()) {
-					final DataStatisticsStore statsStore = new AccumuloDataStatisticsStore(
-							accumuloOperations);
-					for (final DataStatistics s : accumulatedStats) {
-						statsStore.incorporateStatistics(s);
-					}
-				}
-				statsMap.clear();
+			final DataStatisticsStore statsStore = new AccumuloDataStatisticsStore(
+					accumuloOperations);
+			for (StatsCompositionTool<?> tool : this.statsMap.values()) {
+				tool.setStatisticsStore(statsStore);
+				tool.flush();
 			}
+			statsMap.clear();
+		}
+	}
+
+	private synchronized <T> void recordStats(
+			final ByteArrayId adapterIdObj,
+			final DataStoreEntryInfo entryInfo,
+			final WritableDataAdapter<T> writableAdapter,
+			final T entry ) {
+
+		StatsCompositionTool<T> tool = (StatsCompositionTool<T>) statsMap.get(adapterIdObj);
+		if (tool == null) {
+			tool = new StatsCompositionTool<T>(
+					new DataAdapterStatsWrapper<T>(
+							index,
+							writableAdapter));
+			statsMap.put(
+					adapterIdObj,
+					tool);
+		}
+		tool.entryIngested(
+				entryInfo,
+				entry);
+		statsFlushCount++;
+		if (!skipFlush && statsFlushCount > FLUSH_STATS_THRESHOLD) {
+			statsFlushCount = 0;
+			flushStats();
 		}
 	}
 }
