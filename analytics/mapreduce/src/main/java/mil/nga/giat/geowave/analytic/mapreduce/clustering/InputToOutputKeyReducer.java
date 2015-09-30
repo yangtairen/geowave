@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Copy data from an GeoWave Input to a index using the same adapter.
- *
+ * 
  */
 
 public class InputToOutputKeyReducer extends

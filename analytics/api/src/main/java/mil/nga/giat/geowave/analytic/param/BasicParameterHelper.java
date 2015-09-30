@@ -149,10 +149,9 @@ public class BasicParameterHelper implements
 				context.getConfiguration(),
 				scope);
 		if (baseClass.isAssignableFrom(Integer.class)) {
-			return new Integer(
-					scopedConfig.getInt(
-							parent.self(),
-							((Integer) defaultValue).intValue()));
+			return Integer.valueOf(scopedConfig.getInt(
+					parent.self(),
+					((Integer) defaultValue).intValue()));
 		}
 		else if (baseClass.isAssignableFrom(String.class)) {
 			return scopedConfig.getString(

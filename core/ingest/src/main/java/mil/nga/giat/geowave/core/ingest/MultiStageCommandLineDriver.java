@@ -36,11 +36,14 @@ public class MultiStageCommandLineDriver extends
 	}
 
 	@Override
-	public void parseOptionsInternal(Options options,
+	public void parseOptionsInternal(
+			Options options,
 			final CommandLine commandLine )
 			throws ParseException {
 		for (final AbstractIngestCommandLineDriver stage : orderedStages) {
-			stage.parseOptionsInternal(options, commandLine);
+			stage.parseOptionsInternal(
+					options,
+					commandLine);
 		}
 	}
 

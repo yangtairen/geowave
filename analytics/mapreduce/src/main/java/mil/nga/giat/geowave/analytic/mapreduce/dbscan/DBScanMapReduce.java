@@ -46,13 +46,13 @@ import com.vividsolutions.jts.geom.Geometry;
  * The approach differs from the approach commonly documented (e.g.
  * https://en.wikipedia.org/wiki/DBSCAN). This approach does not maintain a
  * queue of viable neighbors to navigate.
- *
+ * 
  * Each cluster is a centroid with its neighbors. Clusters are merged if they
  * share neighbors in common and both clusters meet the minimum size
  * constraints.
- *
+ * 
  * Clusters may be made up of points or geometries.
- *
+ * 
  */
 public class DBScanMapReduce
 {

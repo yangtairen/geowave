@@ -208,9 +208,6 @@ public class GeoWaveIngestGeoserverIT extends
 			String outputFormat )
 			throws IOException,
 			URISyntaxException {
-		final List<BasicNameValuePair> params = new ArrayList<>(
-				4);
-
 		URIBuilder builder = new URIBuilder();
 		builder.setScheme(
 				"http").setHost(

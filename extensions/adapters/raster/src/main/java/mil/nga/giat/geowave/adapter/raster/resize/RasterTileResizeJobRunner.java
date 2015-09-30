@@ -203,7 +203,6 @@ public class RasterTileResizeJobRunner extends
 				allOptions);
 
 		RasterTileResizeCommandLineOptions.applyOptions(allOptions);
-		final BasicParser parser = new BasicParser();
 		Exception exception = null;
 		CommandLine commandLine = null;
 		CommandLineResult<DataStoreCommandLineOptions> inputDataStoreOptionsResult = null;
