@@ -376,7 +376,7 @@ public class PropertyManagementTest
 					pm,
 					param.getHelper().getValue(
 							options,
-							commandLine));
+							commandLine).getResult());
 		}
 
 		assertTrue(pm.getPropertyAsBoolean(

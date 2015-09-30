@@ -102,16 +102,20 @@ abstract public class GenericStoreCommandLineOptions<T>
 		final Options cliOptions = storeOptionsToCliOptions(
 				prefix,
 				storeOptions);
-		final Collection<Option> options = currentOptions.getOptions();
-		for (final Option o : options) {
-			cliOptions.addOption((Option) o.clone());
+		if (currentOptions != null) {
+			final Collection<Option> options = currentOptions.getOptions();
+			for (final Option o : options) {
+				cliOptions.addOption((Option) o.clone());
+			}
 		}
 		final BasicParser parser = new BasicParser();
 		// parse the datastore options
 		final CommandLine commandLineWithStoreOptions = parser.parse(
 				cliOptions,
 				currentCommandLine.getArgs());
-		CommandLineUtils.addOptions(commandLineWithStoreOptions, currentCommandLine.getOptions());
+		CommandLineUtils.addOptions(
+				commandLineWithStoreOptions,
+				currentCommandLine.getOptions());
 		final Map<String, Object> configOptions = new HashMap<String, Object>();
 		for (final AbstractConfigOption<?> option : storeOptions) {
 			final String cliOptionName = ConfigUtils.cleanOptionName(prefix != null ? prefix + option.getName() : option.getName());
