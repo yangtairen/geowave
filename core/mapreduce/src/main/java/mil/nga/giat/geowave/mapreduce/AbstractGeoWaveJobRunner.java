@@ -157,12 +157,11 @@ public abstract class AbstractGeoWaveJobRunner extends
 	public int run(
 			final String[] args )
 			throws Exception {
-		runOperation(args);
-		return 0;
+		return runOperation(args) ? 0 : -1;
 	}
 
 	@Override
-	public void runOperation(
+	public boolean runOperation(
 			final String[] args )
 			throws ParseException {
 		final Options allOptions = new Options();
@@ -189,12 +188,12 @@ public abstract class AbstractGeoWaveJobRunner extends
 		namespace = dataStoreOptions.getNamespace();
 		if (commandLine.hasOption("h")) {
 			printHelp(allOptions);
-			return;
+			return true;
 		}
 		else {
 
 			try {
-				runJob();
+				return runJob() == 0 ? true : false;
 			}
 			catch (final Exception e) {
 				LOGGER.error(

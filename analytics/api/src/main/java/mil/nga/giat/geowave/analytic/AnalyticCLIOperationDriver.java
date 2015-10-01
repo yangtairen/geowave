@@ -29,7 +29,7 @@ public class AnalyticCLIOperationDriver implements
 	}
 
 	@Override
-	public void runOperation(
+	public boolean runOperation(
 			final String[] args )
 			throws ParseException {
 		final Options options = new Options();
@@ -73,7 +73,7 @@ public class AnalyticCLIOperationDriver implements
 			do {
 				if (commandLine != null && commandLine.hasOption("h")) {
 					printHelp(options);
-					return;
+					return true;
 				}
 				if (!params.isEmpty()) {
 					newCommandLine = false;
@@ -109,13 +109,13 @@ public class AnalyticCLIOperationDriver implements
 			if (exception != null) {
 				throw exception;
 			}
-			jobRunner.run(properties);
+			return jobRunner.run(properties) >= 0;
 		}
 		catch (final Exception e) {
 			LOGGER.error(
 					"Unable to run analytic job",
 					e);
-			return;
+			return false;
 		}
 
 	}

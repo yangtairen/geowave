@@ -26,16 +26,11 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloRowId;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.format.stanag4676.Stanag4676IngestPlugin;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChip;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChipDataAdapter;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChipUtils;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.log4j.Logger;
 
 import com.google.common.io.Files;

@@ -18,12 +18,12 @@ import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveInputFormatConfiguration;
 import mil.nga.giat.geowave.analytic.mapreduce.dbscan.DBScanIterationsJobRunner;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
 import mil.nga.giat.geowave.analytic.param.ExtractParameters;
+import mil.nga.giat.geowave.analytic.param.PartitionParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.InputParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.OutputParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
-import mil.nga.giat.geowave.analytic.param.PartitionParameters;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
 import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
 import mil.nga.giat.geowave.analytic.store.PersistableAdapterStore;
@@ -99,12 +99,18 @@ public class DBScanIT extends
 		options.put(
 				GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
 				TEST_NAMESPACE);
-		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOptions = DataStoreCommandLineOptions.parseOptions(new Options(), new OptionMapWrapper(
-				options));
-		final CommandLineResult<IndexStoreCommandLineOptions> indexStoreOptions = IndexStoreCommandLineOptions.parseOptions(new Options(), new OptionMapWrapper(
-				options));
-		final CommandLineResult<AdapterStoreCommandLineOptions> adapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(new Options(), new OptionMapWrapper(
-				options));
+		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOptions = DataStoreCommandLineOptions.parseOptions(
+				new Options(),
+				new OptionMapWrapper(
+						options));
+		final CommandLineResult<IndexStoreCommandLineOptions> indexStoreOptions = IndexStoreCommandLineOptions.parseOptions(
+				new Options(),
+				new OptionMapWrapper(
+						options));
+		final CommandLineResult<AdapterStoreCommandLineOptions> adapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(
+				new Options(),
+				new OptionMapWrapper(
+						options));
 		dataGenerator.setIncludePolygons(false);
 		ingest(dataStoreOptions.getResult().createStore());
 		runScan(
@@ -142,8 +148,8 @@ public class DBScanIT extends
 							OutputParameters.Output.REDUCER_COUNT,
 							InputParameters.Input.INPUT_FORMAT,
 							GlobalParameters.Global.BATCH_ID,
-							Partition.PARTITION_DECREASE_RATE,
-							Partition.PARTITION_PRECISION
+							PartitionParameters.Partition.PARTITION_DECREASE_RATE,
+							PartitionParameters.Partition.PARTITION_PRECISION
 						},
 						new Object[] {
 							query,

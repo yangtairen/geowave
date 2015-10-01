@@ -64,11 +64,11 @@ abstract public class AbstractIngestCommandLineDriver implements
 	}
 
 	@Override
-	public void runOperation(
+	public boolean runOperation(
 			final String[] args )
 			throws ParseException {
 		final List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders = applyArguments(args);
-		runInternal(
+		return runInternal(
 				args,
 				pluginProviders);
 	}
@@ -259,7 +259,7 @@ abstract public class AbstractIngestCommandLineDriver implements
 	abstract protected void applyOptionsInternal(
 			final Options allOptions );
 
-	abstract protected void runInternal(
+	abstract protected boolean runInternal(
 			String[] args,
 			List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders );
 }
