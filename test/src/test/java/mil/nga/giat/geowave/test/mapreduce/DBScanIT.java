@@ -99,12 +99,18 @@ public class DBScanIT extends
 		options.put(
 				GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
 				TEST_NAMESPACE);
-		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOptions = DataStoreCommandLineOptions.parseOptions(new Options(), new OptionMapWrapper(
-				options));
-		final CommandLineResult<IndexStoreCommandLineOptions> indexStoreOptions = IndexStoreCommandLineOptions.parseOptions(new Options(), new OptionMapWrapper(
-				options));
-		final CommandLineResult<AdapterStoreCommandLineOptions> adapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(new Options(), new OptionMapWrapper(
-				options));
+		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOptions = DataStoreCommandLineOptions.parseOptions(
+				new Options(),
+				new OptionMapWrapper(
+						options));
+		final CommandLineResult<IndexStoreCommandLineOptions> indexStoreOptions = IndexStoreCommandLineOptions.parseOptions(
+				new Options(),
+				new OptionMapWrapper(
+						options));
+		final CommandLineResult<AdapterStoreCommandLineOptions> adapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(
+				new Options(),
+				new OptionMapWrapper(
+						options));
 		dataGenerator.setIncludePolygons(false);
 		ingest(dataStoreOptions.getResult().createStore());
 		runScan(

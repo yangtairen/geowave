@@ -53,7 +53,7 @@ public class IngestFromHdfsDriver extends
 	}
 
 	@Override
-	protected void runInternal(
+	protected boolean runInternal(
 			final String[] args,
 			final List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders ) {
 
@@ -68,7 +68,7 @@ public class IngestFromHdfsDriver extends
 			final FileSystem fs = FileSystem.get(conf);
 			if (!fs.exists(hdfsBaseDirectory)) {
 				LOGGER.fatal("HDFS base directory " + hdfsBaseDirectory + " does not exist");
-				return;
+				return false;
 			}
 			for (final IngestFormatPluginProviderSpi<?, ?> pluginProvider : pluginProviders) {
 				// if an appropriate sequence file does not exist, continue
@@ -161,6 +161,7 @@ public class IngestFromHdfsDriver extends
 						LOGGER.warn(
 								"Error running ingest job",
 								e);
+						return false;
 					}
 				}
 			}
@@ -169,8 +170,10 @@ public class IngestFromHdfsDriver extends
 			LOGGER.warn(
 					"Error in accessing HDFS file system",
 					e);
+			return false;
 		}
 		finally {
+
 			final ExecutorService executorService = getSingletonExecutorService();
 			executorService.shutdown();
 			// do we want to just exit once our jobs are submitted or wait?
@@ -187,6 +190,8 @@ public class IngestFromHdfsDriver extends
 						e);
 			}
 		}
+		// we really do not know if the service failed...bummer
+		return true;
 	}
 
 	private void runJob(

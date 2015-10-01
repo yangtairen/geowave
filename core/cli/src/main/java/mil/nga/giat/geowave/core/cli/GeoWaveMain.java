@@ -46,8 +46,8 @@ public class GeoWaveMain
 					operationsArgs,
 					true);
 			final OperationCommandLineOptions operationOption = OperationCommandLineOptions.parseOptions(operationCommandLine);
-			operationOption.getOperation().getDriver().runOperation(
-					optionsArgs);
+			System.exit(operationOption.getOperation().getDriver().runOperation(
+					optionsArgs) ? 0 : -1);
 		}
 		catch (final ParseException e) {
 			LOGGER.error(

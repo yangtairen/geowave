@@ -48,7 +48,7 @@ abstract public class AbstractStatsOperation implements
 	}
 
 	@Override
-	public void runOperation(
+	public boolean runOperation(
 			final String[] args )
 			throws ParseException {
 		final Options allOptions = new Options();
@@ -146,26 +146,27 @@ abstract public class AbstractStatsOperation implements
 							' ');
 				}
 				LOGGER.info("Available adapters: " + buffer.toString());
-				System.exit(-1);
+				return false;
 			}
-			System.exit(calculateStatistics(
+			return calculateStatistics(
 					dataStoreCli.getResult().createStore(),
 					indexStoreCli.getResult().createStore(),
 					statsStoreCli.getResult().createStore(),
 					adapter,
-					getAuthorizations(statsOperations.getAuthorizations())) ? 0 : -1);
+					getAuthorizations(statsOperations.getAuthorizations()));
 		}
 		catch (final ParseException e) {
 			LOGGER.error(
 					"Unable to parse stats tool arguments",
 					e);
+			return false;
 		}
 		catch (final IOException e) {
 			LOGGER.error(
 					"Unable to parse stats tool arguments",
 					e);
+			return false;
 		}
 
 	}
-
 }

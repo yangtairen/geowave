@@ -15,9 +15,9 @@ import mil.nga.giat.geowave.core.store.query.Query;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * 
  * Simple command line tool to recalculate statistics for an adapter.
- *
+ * 
  */
 public class StatsOperation extends
 		AbstractStatsOperation

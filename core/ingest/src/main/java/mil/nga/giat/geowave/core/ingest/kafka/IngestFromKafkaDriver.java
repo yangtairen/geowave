@@ -54,7 +54,7 @@ public class IngestFromKafkaDriver extends
 	}
 
 	@Override
-	protected void runInternal(
+	protected boolean runInternal(
 			final String[] args,
 			final List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders ) {
 		final DataStore dataStore = dataStoreOptions.createStore();
@@ -96,7 +96,9 @@ public class IngestFromKafkaDriver extends
 			for (final String formatPluginName : queue) {
 				LOGGER.warn("\t[" + formatPluginName + "]");
 			}
+			return false;
 		}
+		return true;
 	}
 
 	private void addPluginsToQueue(

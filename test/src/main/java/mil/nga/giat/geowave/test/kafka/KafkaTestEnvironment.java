@@ -54,7 +54,7 @@ abstract public class KafkaTestEnvironment<I> extends
 			final String ingestFilePath ) {
 		LOGGER.warn("Ingesting '" + ingestFilePath + "' - this may take several minutes...");
 		final String[] args = StringUtils.split(
-				"-kafkaingest -datastore " + new AccumuloDataStoreFactory().getName() + " -f gpx -consumerTimeoutMs 5000 -reconnectOnTimeout -groupId testGroup -autoOffsetReset smallest -fetchMessageMaxBytes " + MAX_MESSAGE_BYTES + " -zookeeperConnect " + zookeeper + " -z " + zookeeper + " -i " + accumuloInstance + " -u " + accumuloUser + " -p " + accumuloPassword + " -" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY + " " + TEST_NAMESPACE +  " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
+				"-kafkaingest -datastore " + new AccumuloDataStoreFactory().getName() + " -f gpx -consumerTimeoutMs 5000 -reconnectOnTimeout -groupId testGroup -autoOffsetReset smallest -fetchMessageMaxBytes " + MAX_MESSAGE_BYTES + " -zookeeperConnect " + zookeeper + " -z " + zookeeper + " -i " + accumuloInstance + " -u " + accumuloUser + " -p " + accumuloPassword + " -" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY + " " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
 				' ');
 		GeoWaveMain.main(args);
 	}

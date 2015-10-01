@@ -65,7 +65,7 @@ public class LocalFileIngestDriver extends
 	}
 
 	@Override
-	protected void runInternal(
+	protected boolean runInternal(
 			final String[] args,
 			final List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders ) {
 		// first collect the local file ingest plugins
@@ -110,7 +110,9 @@ public class LocalFileIngestDriver extends
 			LOGGER.fatal(
 					"Unexpected I/O exception when reading input files",
 					e);
+			return false;
 		}
+		return true;
 	}
 
 	@Override

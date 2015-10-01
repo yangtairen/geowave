@@ -78,7 +78,7 @@ public class StageToHdfsDriver extends
 	}
 
 	@Override
-	protected void runInternal(
+	protected boolean runInternal(
 			final String[] args,
 			final List<IngestFormatPluginProviderSpi<?, ?>> pluginProviders ) {
 
@@ -127,17 +127,20 @@ public class StageToHdfsDriver extends
 						stageToHdfsPlugins,
 						runData);
 				runData.close();
+				return true;
 			}
 			catch (final IOException e) {
 				LOGGER.fatal(
 						"Unexpected I/O exception when reading input files",
 						e);
+				return false;
 			}
 		}
 		catch (final IOException e) {
 			LOGGER.fatal(
 					"Unable to create remote HDFS directory",
 					e);
+			return false;
 		}
 	}
 }
