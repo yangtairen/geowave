@@ -66,7 +66,7 @@ public class DBScanMapReduceTest
 
 		mapDriver.getConfiguration().set(
 				GeoWaveConfiguratorBase.enumToConfKey(
-						OrthodromicDistancePartitioner.class,
+						NNMapReduce.class,
 						ClusteringParameters.Clustering.DISTANCE_THRESHOLDS),
 				"10,10");
 
