@@ -18,14 +18,20 @@ public class PartitionParameters
 				"Partition Precision",
 				true),
 		PARTITION_DECREASE_RATE(
-				Double.class),
+				Double.class,
+				"pdr",
+				"Rate of decrease for precision(within (0,1])",
+				true),
 		MAX_MEMBER_SELECTION(
 				Integer.class,
 				"pms",
 				"Maximum number of members selected from a partition",
 				true),
 		SECONDARY_PARTITIONER_CLASS(
-				Partitioner.class),
+				Partitioner.class,
+				"psp",
+				"Perform secondary partitioning with the provided class",
+				false),
 		PARTITIONER_CLASS(
 				Partitioner.class,
 				"pc",

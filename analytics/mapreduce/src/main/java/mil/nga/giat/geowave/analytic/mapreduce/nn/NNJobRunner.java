@@ -53,23 +53,23 @@ public class NNJobRunner extends
 				Partitioner.class,
 				OrthodromicDistancePartitioner.class);
 
-		Partitioner<?> secondaryPartitioner = runTimeProperties.getClassInstance(
+		final Partitioner<?> secondaryPartitioner = runTimeProperties.getClassInstance(
 				Partition.SECONDARY_PARTITIONER_CLASS,
 				Partitioner.class,
 				PassthruPartitioner.class);
 
 		partitioner.setup(
 				runTimeProperties,
-				config);
-
-		if (secondaryPartitioner.getClass() != partitioner.getClass()) secondaryPartitioner.setup(
-				runTimeProperties,
-				config);
-
-		RunnerUtils.setParameter(
-				config,
 				getScope(),
 				config);
+
+		if (secondaryPartitioner.getClass() != partitioner.getClass()) {
+			secondaryPartitioner.setup(
+					runTimeProperties,
+					getScope(),
+					config);
+		}
+
 		runTimeProperties.setConfig(
 				new ParameterEnum[] {
 					Partition.PARTITIONER_CLASS,

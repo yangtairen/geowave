@@ -12,9 +12,8 @@ import java.util.Set;
 
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.RangeLocationPair;
 
-import org.apache.accumulo.core.data.Range;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputSplit;
 

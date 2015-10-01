@@ -16,16 +16,20 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
+import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
-import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.AccumuloMRUtils.IntermediateSplitInfo.RangeLocationPair;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
+import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
+import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -45,8 +49,10 @@ import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.master.state.tables.TableState;
 import org.apache.accumulo.core.security.Credentials;
 import org.apache.accumulo.core.util.UtilWaitThread;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.log4j.Logger;
 
 //@formatter:off
@@ -63,332 +69,19 @@ public class AccumuloMRUtils
 	private final static Logger LOGGER = Logger.getLogger(AccumuloMRUtils.class);
 
 	/**
-	 * Configures a {@link AccumuloOperations} for this job.
-	 * 
-	 * @param config
-	 *            the Hadoop configuration instance
-	 * @param zooKeepers
-	 *            a comma-separated list of zookeeper servers
-	 * @param instanceName
-	 *            the Accumulo instance name
-	 * @param userName
-	 *            the Accumulo user name
-	 * @param password
-	 *            the Accumulo password
-	 * @param geowaveTableNamespace
-	 *            the GeoWave table namespace
-	 */
-	public static void setAccumuloOperationsInfo(
-			final Configuration config,
-			final String zooKeepers,
-			final String instanceName,
-			final String userName,
-			final String password,
-			final String geowaveTableNamespace ) {
-		GeoWaveConfiguratorBase.setAccumuloOperationsInfo(
-				CLASS,
-				config,
-				zooKeepers,
-				instanceName,
-				userName,
-				password,
-				geowaveTableNamespace);
-	}
-
-	/**
-	 * Configures a {@link AccumuloOperations} for this job.
-	 * 
-	 * @param job
-	 *            the Hadoop job instance to be configured
-	 * @param zooKeepers
-	 *            a comma-separated list of zookeeper servers
-	 * @param instanceName
-	 *            the Accumulo instance name
-	 * @param userName
-	 *            the Accumulo user name
-	 * @param password
-	 *            the Accumulo password
-	 * @param geowaveTableNamespace
-	 *            the GeoWave table namespace
-	 */
-	public static void setAccumuloOperationsInfo(
-			final Job job,
-			final String zooKeepers,
-			final String instanceName,
-			final String userName,
-			final String password,
-			final String geowaveTableNamespace ) {
-		setAccumuloOperationsInfo(
-				job.getConfiguration(),
-				zooKeepers,
-				instanceName,
-				userName,
-				password,
-				geowaveTableNamespace);
-	}
-
-	/**
-	 * Add an adapter specific to the input format
-	 * 
-	 * @param job
-	 * @param adapter
-	 */
-	public static void addDataAdapter(
-			final Configuration config,
-			final DataAdapter<?> adapter ) {
-
-		// Also store for use the mapper and reducers
-		JobContextAdapterStore.addDataAdapter(
-				config,
-				adapter);
-		GeoWaveConfiguratorBase.addDataAdapter(
-				CLASS,
-				config,
-				adapter);
-	}
-
-	public static void addIndex(
-			final Configuration config,
-			final Index index ) {
-		JobContextIndexStore.addIndex(
-				config,
-				index);
-	}
-
-	public static void setMinimumSplitCount(
-			final Configuration config,
-			final Integer minSplits ) {
-		GeoWaveInputConfigurator.setMinimumSplitCount(
-				CLASS,
-				config,
-				minSplits);
-	}
-
-	public static void setMaximumSplitCount(
-			final Configuration config,
-			final Integer maxSplits ) {
-		GeoWaveInputConfigurator.setMaximumSplitCount(
-				CLASS,
-				config,
-				maxSplits);
-	}
-
-	public static void setIsOutputWritable(
-			final Configuration config,
-			final Boolean isOutputWritable ) {
-		config.setBoolean(
-				GeoWaveConfiguratorBase.enumToConfKey(
-						CLASS,
-						InputConfig.OUTPUT_WRITABLE),
-				isOutputWritable);
-	}
-
-	public static void setQuery(
-			final Configuration config,
-			final DistributableQuery query ) {
-		GeoWaveInputConfigurator.setQuery(
-				CLASS,
-				config,
-				query);
-	}
-
-	protected static DistributableQuery getQuery(
-			final JobContext context ) {
-		return GeoWaveInputConfigurator.getQuery(
-				CLASS,
-				context);
-	}
-
-	public static void setQueryOptions(
-			final Configuration config,
-			final QueryOptions queryOptions ) {
-		GeoWaveInputConfigurator.setQueryOptions(
-				CLASS,
-				config,
-				queryOptions);
-	}
-
-	protected static QueryOptions getQueryOptions(
-			final JobContext context ) {
-		return GeoWaveInputConfigurator.getQueryOptions(
-				CLASS,
-				context);
-	}
-
-	protected static Index[] getIndices(
-			final JobContext context ) {
-		return GeoWaveInputConfigurator.searchForIndices(
-				CLASS,
-				context);
-	}
-
-	protected static String getTableNamespace(
-			final JobContext context ) {
-		return GeoWaveConfiguratorBase.getTableNamespace(
-				CLASS,
-				context);
-	}
-
-	protected static String getUserName(
-			final JobContext context ) {
-		return GeoWaveConfiguratorBase.getUserName(
-				CLASS,
-				context);
-	}
-
-	protected static String getPassword(
-			final JobContext context ) {
-		return GeoWaveConfiguratorBase.getPassword(
-				CLASS,
-				context);
-	}
-
-	protected static Boolean isOutputWritable(
-			final JobContext context ) {
-		return GeoWaveConfiguratorBase.getConfiguration(
-				context).getBoolean(
-				GeoWaveConfiguratorBase.enumToConfKey(
-						CLASS,
-						InputConfig.OUTPUT_WRITABLE),
-				false);
-	}
-
-	/**
-	 * Initializes an Accumulo {@link TabletLocator} based on the configuration.
-	 * 
-	 * @param instance
-	 *            the accumulo instance
-	 * @param tableName
-	 *            the accumulo table name
-	 * @return an Accumulo tablet locator
-	 * @throws TableNotFoundException
-	 *             if the table name set on the configuration doesn't exist
-	 * @since 1.5.0
-	 */
-	protected static TabletLocator getTabletLocator(
-			final Instance instance,
-			final String tableName,
-			final String tableId )
-			throws TableNotFoundException {
-		TabletLocator tabletLocator;
-		// @formatter:off
-		/*if[ACCUMULO_1.5.2]
-		tabletLocator = TabletLocator.getInstance(
-				instance,
-				new Text(
-						Tables.getTableId(
-								instance,
-								tableName)));
-
-  		else[ACCUMULO_1.5.2]*/
-		tabletLocator = TabletLocator.getLocator(
-				instance,
-				new Text(
-						tableId));
-		/*end[ACCUMULO_1.5.2]*/
-		// @formatter:on
-		return tabletLocator;
-	}
-
-	protected static boolean binRanges(
-			final List<Range> rangeList,
-			final String userName,
-			final String password,
-			final Map<String, Map<KeyExtent, List<Range>>> tserverBinnedRanges,
-			final TabletLocator tabletLocator,
-			final String instanceId )
-			throws AccumuloException,
-			AccumuloSecurityException,
-			TableNotFoundException,
-			IOException {
-		// @formatter:off
-		/*if[ACCUMULO_1.5.2]
-		final ByteArrayOutputStream backingByteArray = new ByteArrayOutputStream();
-		final DataOutputStream output = new DataOutputStream(
-			backingByteArray);
-		new PasswordToken(
-			password).write(output);
-		output.close();
-		final ByteBuffer buffer = ByteBuffer.wrap(backingByteArray.toByteArray());
-		final TCredentials credentials = new TCredentials(
-			    userName,
-				PasswordToken.class.getCanonicalName(),
-				buffer,
-				instanceId);
-		return tabletLocator.binRanges(
-				rangeList,
-				tserverBinnedRanges,
-				credentials).isEmpty();
-		else[ACCUMULO_1.5.2]*/
-		return tabletLocator.binRanges(
-				new Credentials(
-						userName,
-						new PasswordToken(
-								password)),
-				rangeList,
-				tserverBinnedRanges).isEmpty();
- 		/*end[ACCUMULO_1.5.2]*/
-		// @formatter:on
-	}
-
-	protected static String getInstanceName(
-			final JobContext context ) {
-		return GeoWaveConfiguratorBase.getInstanceName(
-				CLASS,
-				context);
-	}
-
-	protected static Integer getMinimumSplitCount(
-			final JobContext context ) {
-		return GeoWaveInputConfigurator.getMinimumSplitCount(
-				CLASS,
-				context);
-	}
-
-	protected static Integer getMaximumSplitCount(
-			final JobContext context ) {
-		return GeoWaveInputConfigurator.getMaximumSplitCount(
-				CLASS,
-				context);
-	}
-
-	protected static Instance getInstance(
-			final JobContext context ) {
-		return GeoWaveInputConfigurator.getInstance(
-				CLASS,
-				context);
-	}
-
-	/**
 	 * Read the metadata table to get tablets and match up ranges to them.
 	 */
 	@Override
 	public List<InputSplit> getSplits(
-			final JobContext context )
+			final AccumuloOperations operations,
+			AdapterStore adapterStore,
+			DataStatisticsStore statsStore,
+			final Index[] indices,
+			final DistributableQuery query,
+			final Integer minSplits,
+			final Integer maxSplits )
 			throws IOException,
 			InterruptedException {
-		LOGGER.setLevel(getLogLevel(context));
-		validateOptions(context);
-		final Integer minSplits = getMinimumSplitCount(context);
-		final Integer maxSplits = getMaximumSplitCount(context);
-
-		AccumuloDataStatisticsStore statsStore;
-		AdapterStore adapterStore;
-		try {
-			final Pair<AccumuloDataStatisticsStore, JobContextAdapterStore> pair = getStores(context);
-			statsStore = pair.getLeft();
-			adapterStore = pair.getRight();
-		}
-		catch (final AccumuloException e1) {
-			throw new IOException(
-					"Cannot connect to statistics store",
-					e1);
-		}
-		catch (final AccumuloSecurityException e1) {
-			throw new IOException(
-					"Cannot connect to statistics store",
-					e1);
-		}
 
 		final Map<Index, RowRangeHistogramStatistics<?>> statsCache = new HashMap<Index, RowRangeHistogramStatistics<?>>();
 
@@ -448,15 +141,13 @@ public class AccumuloMRUtils
 			"1");
 
 	private Pair<AccumuloDataStatisticsStore, JobContextAdapterStore> getStores(
-			final JobContext context )
+			final JobContext context,
+			final AccumuloOperations operations )
 			throws AccumuloException,
 			AccumuloSecurityException {
-		final AccumuloOperations operations = GeoWaveInputFormat.getAccumuloOperations(context);
 		final AccumuloDataStatisticsStore statsStore = new AccumuloDataStatisticsStore(
 				operations);
-		final JobContextAdapterStore adapterStore = GeoWaveInputFormat.getDataAdapterStore(
-				context,
-				operations);
+		final JobContextAdapterStore adapterStore = GeoWaveInputFormat.getJobContextAdapterStore(context);
 		return Pair.of(
 				statsStore,
 				adapterStore);
@@ -762,7 +453,9 @@ public class AccumuloMRUtils
 					final double currentCardinality,
 					final double targetCardinality ) {
 
-				if (stats == null) return null;
+				if (stats == null) {
+					return null;
+				}
 
 				final double thisCardinalty = rangeLocationPair.getCardinality();
 				final double fraction = (targetCardinality - currentCardinality) / thisCardinalty;
@@ -849,9 +542,9 @@ public class AccumuloMRUtils
 
 		/**
 		 * Side effect: Break up this split.
-		 * 
+		 *
 		 * Split the ranges into two
-		 * 
+		 *
 		 * @return the new split.
 		 */
 		private synchronized IntermediateSplitInfo split(
@@ -878,7 +571,7 @@ public class AccumuloMRUtils
 							ranges.getKey()));
 				}
 			}
-			final double targetCardinality = this.getTotalRangeAtCardinality() / 2;
+			final double targetCardinality = getTotalRangeAtCardinality() / 2;
 			double currentCardinality = 0.0;
 			final Map<Index, List<RangeLocationPair>> otherSplitInfo = new HashMap<Index, List<RangeLocationPair>>();
 
@@ -1119,7 +812,7 @@ public class AccumuloMRUtils
 
 	/**
 	 * Initializes an Accumulo {@link TabletLocator} based on the configuration.
-	 * 
+	 *
 	 * @param instance
 	 *            the accumulo instance
 	 * @param tableName
@@ -1216,6 +909,7 @@ public class AccumuloMRUtils
 		return new BigInteger(
 				endBytes);
 	}
+
 	protected static double getRangeLength(
 			final Range range ) {
 		final ByteSequence start = range.getStartKey().getRowData();

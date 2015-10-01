@@ -5,6 +5,7 @@ import java.io.IOException;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataAdapterStatsWrapper;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
 import mil.nga.giat.geowave.core.store.index.Index;
@@ -38,9 +39,6 @@ public class StatsOperation extends
 		try (CloseableIterator<Index> indexit = indexStore.getIndices()) {
 			while (indexit.hasNext()) {
 				final Index index = indexit.next();
-				statsStore.deleteObjects(
-						index.getId(),
-						authorizations);
 				try (StatsCompositionTool<?> statsTool = new StatsCompositionTool(
 						new DataAdapterStatsWrapper(
 								index,

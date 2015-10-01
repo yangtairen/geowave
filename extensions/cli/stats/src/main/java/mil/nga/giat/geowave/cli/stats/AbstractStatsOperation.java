@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.cli.stats;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
@@ -57,7 +58,9 @@ abstract public class AbstractStatsOperation implements
 		DataStatisticsStoreCommandLineOptions.applyOptions(allOptions);
 		StatsCommandLineOptions.applyOptions(allOptions);
 		try {
-			CommandLine commandLine = new BasicParser().parse(allOptions, args);
+			CommandLine commandLine = new BasicParser().parse(
+					allOptions,
+					args);
 			CommandLineResult<DataStoreCommandLineOptions> dataStoreCli = null;
 			CommandLineResult<AdapterStoreCommandLineOptions> adapterStoreCli = null;
 			CommandLineResult<IndexStoreCommandLineOptions> indexStoreCli = null;
@@ -131,9 +134,18 @@ abstract public class AbstractStatsOperation implements
 			final ByteArrayId adapterId = new ByteArrayId(
 					statsOperations.getTypeName());
 			final AdapterStore adapterStore = adapterStoreCli.getResult().createStore();
-			final DataAdapter<?> adapter = adapterStore.getAdapter(adapterId);
+			DataAdapter<?> adapter = adapterStore.getAdapter(adapterId);
 			if (adapter == null) {
 				LOGGER.error("Unknown adapter " + adapterId);
+				final Iterator<DataAdapter<?>> it = adapterStore.getAdapters();
+				final StringBuffer buffer = new StringBuffer();
+				while (it.hasNext()) {
+					adapter = it.next();
+					buffer.append(
+							adapter.getAdapterId().getString()).append(
+							' ');
+				}
+				LOGGER.info("Available adapters: " + buffer.toString());
 				System.exit(-1);
 			}
 			System.exit(calculateStatistics(

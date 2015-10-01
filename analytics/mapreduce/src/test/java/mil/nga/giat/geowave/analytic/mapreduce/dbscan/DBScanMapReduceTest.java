@@ -34,14 +34,11 @@ import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.junit.Before;
 import org.junit.Test;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.slf4j.impl.Log4jLoggerAdapter;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -324,13 +321,13 @@ public class DBScanMapReduceTest
 		/*
 		 * assertEquals( feature3.getID(), find( reduceResults,
 		 * feature1.getID()).toString());
-		 * 
+		 *
 		 * assertEquals( feature1.getID(), find( reduceResults,
 		 * feature3.getID()).toString());
-		 * 
+		 *
 		 * assertEquals( feature4.getID(), find( reduceResults,
 		 * feature2.getID()).toString());
-		 * 
+		 *
 		 * assertEquals( feature2.getID(), find( reduceResults,
 		 * feature4.getID()).toString());
 		 */
@@ -385,13 +382,11 @@ public class DBScanMapReduceTest
 
 	@Test
 	public void test8With4()
-			throws IOException,
-			AccumuloException,
-			AccumuloSecurityException {
+			throws IOException {
 
 		final ByteArrayId adapterId = new ByteArrayId(
 				ftype.getTypeName());
-		Random r = new Random(
+		final Random r = new Random(
 				3434);
 		for (int i = 0; i < 8; i++) {
 			final SimpleFeature feature = createTestFeature(

@@ -13,6 +13,7 @@ import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.IndexDependentDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataAdapterStatsWrapper;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
 import mil.nga.giat.geowave.core.store.index.Index;
@@ -29,7 +30,7 @@ import org.apache.log4j.Logger;
  * This class can write many entries for a single index by retaining a single
  * open writer. The first entry that is written will open a writer and it is the
  * responsibility of the caller to close this writer when complete.
- * 
+ *
  */
 public class AccumuloIndexWriter implements
 		IndexWriter
@@ -98,11 +99,11 @@ public class AccumuloIndexWriter implements
 		}
 
 		try {
-			Object v = System.getProperty("AccumuloIndexWriter.skipFlush");
-			skipFlush = (v != null && v.toString().equalsIgnoreCase(
+			final Object v = System.getProperty("AccumuloIndexWriter.skipFlush");
+			skipFlush = ((v != null) && v.toString().equalsIgnoreCase(
 					"true"));
 		}
-		catch (Exception ex) {
+		catch (final Exception ex) {
 			LOGGER.error(
 					"Unable to determine property AccumuloIndexWriter.skipFlush",
 					ex);
@@ -300,7 +301,7 @@ public class AccumuloIndexWriter implements
 		if (persistStats) {
 			final DataStatisticsStore statsStore = new AccumuloDataStatisticsStore(
 					accumuloOperations);
-			for (StatsCompositionTool<?> tool : this.statsMap.values()) {
+			for (final StatsCompositionTool<?> tool : statsMap.values()) {
 				tool.setStatisticsStore(statsStore);
 				tool.flush();
 			}
@@ -328,7 +329,7 @@ public class AccumuloIndexWriter implements
 				entryInfo,
 				entry);
 		statsFlushCount++;
-		if (!skipFlush && statsFlushCount > FLUSH_STATS_THRESHOLD) {
+		if (!skipFlush && (statsFlushCount > FLUSH_STATS_THRESHOLD)) {
 			statsFlushCount = 0;
 			flushStats();
 		}

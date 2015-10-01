@@ -107,7 +107,6 @@ public class NNJobRunnerTest
 
 					final Partitioner<?> secondary = configWrapper.getInstance(
 							Partition.SECONDARY_PARTITIONER_CLASS,
-							NNMapReduce.class,
 							Partitioner.class,
 							null);
 

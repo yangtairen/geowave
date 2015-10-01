@@ -25,10 +25,8 @@ import mil.nga.giat.geowave.analytic.param.HullParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.OutputParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
-import mil.nga.giat.geowave.analytic.param.ParameterHelper;
 import mil.nga.giat.geowave.analytic.param.PartitionParameters;
 import mil.nga.giat.geowave.analytic.param.PartitionParameters.Partition;
-import mil.nga.giat.geowave.analytic.partitioner.AbstractPartitioner;
 import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner;
 
@@ -46,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * set of points and produces small clusters (nearest neighbors). Each
  * subsequent iteration merges clusters within a given distance from each other.
  * This process can continue no new clusters are created (merges do not occur).
- * 
+ *
  * The first iteration places a constraint on the minimum number of neighbors.
  * Subsequent iterations do not have a minimum, since each of the clusters is
  * already vetted out by the first iteration.
@@ -134,7 +132,7 @@ public class DBScanIterationsJobRunner implements
 		final boolean overrideSecondary = runTimeProperties.hasProperty(Partition.SECONDARY_PARTITIONER_CLASS);
 
 		if (!overrideSecondary) {
-			Serializable distances = runTimeProperties.get(ClusteringParameters.Clustering.DISTANCE_THRESHOLDS);
+			final Serializable distances = runTimeProperties.get(ClusteringParameters.Clustering.DISTANCE_THRESHOLDS);
 			String dstStr;
 			if (distances == null) {
 				dstStr = "0.000001";
@@ -152,7 +150,7 @@ public class DBScanIterationsJobRunner implements
 			}
 			boolean secondary = precisionFactor < 1.0;
 			double total = 1.0;
-			for (double dist : distancePerDimension) {
+			for (final double dist : distancePerDimension) {
 				total *= dist;
 			}
 			secondary |= (total >= (Math.pow(
@@ -165,9 +163,9 @@ public class DBScanIterationsJobRunner implements
 			}
 		}
 
-		runTimeProperties.store(
+		runTimeProperties.storeIfEmpty(
 				Clustering.DISTANCE_THRESHOLDS,
-				maxDistance);
+				Double.toString(maxDistance));
 
 		jobRunner.setInputFormatConfiguration(inputFormatConfiguration);
 		jobRunner.setOutputFormatConfiguration(new SequenceFileOutputFormatConfiguration(
@@ -175,9 +173,7 @@ public class DBScanIterationsJobRunner implements
 
 		LOGGER.info(
 				"Running with partition distance {}",
-				runTimeProperties.getPropertyAsDouble(
-						Partition.PARTITION_DISTANCE,
-						10.0));
+				maxDistance);
 		final int initialStatus = jobRunner.run(
 				config,
 				runTimeProperties);
@@ -195,7 +191,7 @@ public class DBScanIterationsJobRunner implements
 		int iteration = 2;
 		long lastRecordCount = 0;
 
-		while (maxIterationCount > 0 && precisionFactor > 0) {
+		while ((maxIterationCount > 0) && (precisionFactor > 0)) {
 
 			// context does not mater in this case
 
@@ -233,7 +229,7 @@ public class DBScanIterationsJobRunner implements
 			 * distances. However, looking up the partition dimension space or
 			 * assuming only two dimensions were both undesirable.
 			 */
-			if (precisionFactor <= 0.9 && !overrideSecondary) {
+			if ((precisionFactor <= 0.9) && !overrideSecondary) {
 				localScopeProperties.store(
 						Partition.SECONDARY_PARTITIONER_CLASS,
 						PassthruPartitioner.class);
@@ -343,4 +339,3 @@ public class DBScanIterationsJobRunner implements
 	}
 
 }
-

@@ -1,5 +1,8 @@
 package mil.nga.giat.geowave.adapter.vector.query.cql;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
@@ -13,8 +16,12 @@ import mil.nga.giat.geowave.core.store.data.field.FieldReader;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.spi.SPIServiceRegistry;
 
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.impl.VFSClassLoader;
 import org.apache.log4j.Logger;
+import org.geotools.factory.GeoTools;
 import org.geotools.filter.text.ecql.ECQL;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
@@ -23,6 +30,8 @@ public class CQLQueryFilter implements
 		DistributableQueryFilter
 {
 	private final static Logger LOGGER = Logger.getLogger(CQLQueryFilter.class);
+	private static final Object MUTEX = new Object();
+	private static boolean classLoaderInitialized = false;
 	private FeatureDataAdapter adapter;
 	private Filter filter;
 
@@ -83,6 +92,41 @@ public class CQLQueryFilter implements
 		return true;
 	}
 
+	public static void initClassLoader(
+			@SuppressWarnings("rawtypes")
+			final Class cls )
+			throws MalformedURLException {
+		synchronized (MUTEX) {
+			if (classLoaderInitialized) {
+				return;
+			}
+			LOGGER.info("Generating patched classloader");
+			if (cls.getClassLoader() instanceof VFSClassLoader) {
+				final VFSClassLoader cl = (VFSClassLoader) cls.getClassLoader();
+				final FileObject[] fileObjs = cl.getFileObjects();
+				final URL[] fileUrls = new URL[fileObjs.length];
+				for (int i = 0; i < fileObjs.length; i++) {
+					fileUrls[i] = new URL(
+							fileObjs[i].toString());
+				}
+				final ClassLoader urlCL = java.security.AccessController.doPrivileged(new java.security.PrivilegedAction<URLClassLoader>() {
+					@Override
+					public URLClassLoader run() {
+						final URLClassLoader ucl = new URLClassLoader(
+								fileUrls,
+								cl);
+						return ucl;
+					}
+				});
+				GeoTools.addClassLoader(urlCL);
+				SPIServiceRegistry.registerClassLoader(urlCL);
+
+			}
+			classLoaderInitialized = true;
+		}
+
+	}
+
 	@Override
 	public byte[] toBinary() {
 		byte[] filterBytes;
@@ -111,6 +155,14 @@ public class CQLQueryFilter implements
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
+		try {
+			initClassLoader(CQLQueryFilter.class);
+		}
+		catch (final MalformedURLException e) {
+			LOGGER.error(
+					"Unable to initialize GeoTools class loader",
+					e);
+		}
 		final ByteBuffer buf = ByteBuffer.wrap(bytes);
 		final int filterBytesLength = buf.getInt();
 		final int adapterBytesLength = bytes.length - filterBytesLength - 4;

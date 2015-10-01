@@ -24,7 +24,6 @@ import mil.nga.giat.geowave.analytic.mapreduce.dbscan.SingleItemClusterList.Sing
 import mil.nga.giat.geowave.analytic.mapreduce.nn.NNMapReduce;
 import mil.nga.giat.geowave.analytic.mapreduce.nn.NNMapReduce.NNReducer;
 import mil.nga.giat.geowave.analytic.mapreduce.nn.NNMapReduce.PartitionDataWritable;
-import mil.nga.giat.geowave.analytic.nn.DistanceProfileGenerateFn;
 import mil.nga.giat.geowave.analytic.nn.NNProcessor;
 import mil.nga.giat.geowave.analytic.nn.NNProcessor.CompleteNotifier;
 import mil.nga.giat.geowave.analytic.nn.NeighborList;
@@ -49,20 +48,20 @@ import org.slf4j.LoggerFactory;
  * The approach differs from the approach commonly documented (e.g.
  * https://en.wikipedia.org/wiki/DBSCAN). This approach does not maintain a
  * queue of viable neighbors to navigate.
- * 
+ *
  * Clusters are merged if they share neighbors in common and both clusters meet
  * the minimum size constraints.
- * 
+ *
  * Clusters may be made up of points or geometries. When processing geometries,
  * the closest two points are included in the cluster, not the entire geometry.
  * The reason for this is that geometries may span large areas. This technique
  * has a disadvantage of mis-representing dense segments as a dense set of
  * points.
- * 
+ *
  * The design uses two level partitioning, working within the confines of @{link
  * NNProcessor}. Performance gains and memory constraints are accomplished
  * through a pre-processing step.
- * 
+ *
  * Pre-processing first finds dense clusters, replacing each dense cluster with
  * a concave polygon. Although not very scientific, the condensing process the
  * minimum condensed cluster size is between 50 and 200, depending on the
@@ -72,14 +71,14 @@ import org.slf4j.LoggerFactory;
  * fairly small cluster, which does not contribute to a performance concern.
  * Override 'calculateCondensingMinimum ()' to come up with a different
  * approach.
- * 
+ *
  * Pre-processing also finds cluster centers that have less than the minimum and
  * tosses those centers. There is a caution here. Clusters of this type can fall
  * on the 'edge' of dense clusters, thus 'tightening' the dense regions. It does
  * effectively remove outliers. Alter the approach by over-riding
  * 'calculateTossMinimum()' (e.g. make it a smaller number like 0 or 1).
- * 
- * 
+ *
+ *
  */
 public class DBScanMapReduce
 {
@@ -113,8 +112,10 @@ public class DBScanMapReduce
 			if (neighbors == null) {
 				return;
 			}
-			Cluster cluster = ((ClusterNeighborList) neighbors).getCluster();
-			if (cluster == null) return;
+			final Cluster cluster = ((ClusterNeighborList) neighbors).getCluster();
+			if (cluster == null) {
+				return;
+			}
 			if (cluster.size() < minOwners) {
 				LOGGER.trace(
 						"Invalidate {} ",
@@ -122,29 +123,7 @@ public class DBScanMapReduce
 				cluster.invalidate();
 				return;
 			}
-
-			final Iterator<Cluster<VALUEIN>> linkedClusterIt = ((Cluster<VALUEIN>) neighbors).getLinkedClusters();
-
-			Cluster<VALUEIN> first = null;
-			while (linkedClusterIt.hasNext()) {
-				final Cluster<VALUEIN> cluster = linkedClusterIt.next();
-				if (first == null) {
-					first = cluster;
-				}
-				first.merge(cluster);
-				// transfer these clustered IDs the one merged cluster
-				final Iterator<ByteArrayId> ids = cluster.clusteredIds();
-				while (ids.hasNext()) {
-					summary.put(
-							ids.next(),
-							first);
-				}
-				// for gc
-				if (first != cluster) {
-					cluster.clear();
-				}
-			}
-
+			cluster.finish();
 		}
 
 		@Override
@@ -223,7 +202,7 @@ public class DBScanMapReduce
 		/**
 		 * Find the large clusters and condense them down. Find the points that
 		 * are not reachable to viable clusters and remove them.
-		 * 
+		 *
 		 * @throws InterruptedException
 		 * @throws IOException
 		 */
@@ -234,13 +213,17 @@ public class DBScanMapReduce
 				final Map<ByteArrayId, Cluster> index )
 				throws IOException,
 				InterruptedException {
-			if (!this.firstIteration) return;
+			if (!firstIteration) {
+				return;
+			}
 
 			processor.trimSmallPartitions(calculateTossMinimum());
 			// 2.0 times minimum compression size.
 			// if compression is not likely to increase
 			// performance, then pre-processing does not buy much performance
-			if (processor.size() < calculateCondensingMinimum() * 2.0) return;
+			if (processor.size() < (calculateCondensingMinimum() * 2.0)) {
+				return;
+			}
 
 			processor.process(
 					new ClusterNeighborListFactory(
@@ -254,10 +237,10 @@ public class DBScanMapReduce
 
 						@Override
 						public void complete(
-								ByteArrayId id,
-								ClusterItem value,
-								NeighborList<ClusterItem> list ) {
-							Cluster cluster = ((ClusterNeighborList) list).getCluster();
+								final ByteArrayId id,
+								final ClusterItem value,
+								final NeighborList<ClusterItem> list ) {
+							final Cluster cluster = ((ClusterNeighborList) list).getCluster();
 							// this basically excludes points that cannot
 							// contribute to extending the network.
 							// may be a BAD idea.
@@ -270,9 +253,9 @@ public class DBScanMapReduce
 								value.setGeometry(cluster.getGeometry());
 								value.setCount(list.size());
 								value.setCompressed();
-								Iterator<ByteArrayId> it = cluster.getLinkedClusters().iterator();
+								final Iterator<ByteArrayId> it = cluster.getLinkedClusters().iterator();
 								while (it.hasNext()) {
-									ByteArrayId idToRemove = it.next();
+									final ByteArrayId idToRemove = it.next();
 									processor.remove(idToRemove);
 									it.remove();
 								}
@@ -340,7 +323,7 @@ public class DBScanMapReduce
 
 		@Override
 		public NeighborListFactory<ClusterItem> createNeighborsListFactory(
-				Map<ByteArrayId, Cluster> summary ) {
+				final Map<ByteArrayId, Cluster> summary ) {
 			return new ClusterNeighborListFactory(
 					(firstIteration) ? new SingleItemClusterListFactory(
 							summary) : new ClusterUnionListFactory(
@@ -364,7 +347,7 @@ public class DBScanMapReduce
 
 			DBScanClusterList.getHullTool().setDistanceFnForCoordinate(
 					new CoordinateCircleDistanceFn());
-			DBScanClusterList.setMergeSize(this.minOwners);
+			DBScanClusterList.setMergeSize(minOwners);
 
 			batchID = config.getString(
 					GlobalParameters.Global.BATCH_ID,
