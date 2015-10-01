@@ -62,7 +62,7 @@ public class NNMapReduceTest
 
 		mapDriver.getConfiguration().set(
 				GeoWaveConfiguratorBase.enumToConfKey(
-						OrthodromicDistancePartitioner.class,
+						NNMapReduce.class,
 						ClusteringParameters.Clustering.DISTANCE_THRESHOLDS),
 				"0.0002,0.0002");
 

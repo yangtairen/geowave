@@ -22,6 +22,7 @@ import mil.nga.giat.geowave.core.store.ScanCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataAdapterStatsWrapper;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
 import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
@@ -185,7 +186,9 @@ public class MemoryDataStore implements
 		indexStore.addIndex(index);
 		final List<ByteArrayId> ids = new ArrayList<ByteArrayId>();
 		try (StatsCompositionTool<T> tool = new StatsCompositionTool<T>(
-				writableAdapter,
+				new DataAdapterStatsWrapper<T>(
+						index,
+						writableAdapter),
 				statsStore)) {
 			final IndexWriter writer = createWriter(
 					index,

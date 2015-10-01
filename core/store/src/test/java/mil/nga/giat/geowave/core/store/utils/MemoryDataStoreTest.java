@@ -29,6 +29,8 @@ import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.CountDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
+import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeDataStatistics;
+import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
 import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
@@ -120,7 +122,6 @@ public class MemoryDataStoreTest
 				new NumericRange(
 						25,
 						35)));
-		assertFalse(statsIt.hasNext());
 
 		dataStore.delete(new TestQuery(
 				23,
@@ -158,9 +159,16 @@ public class MemoryDataStoreTest
 		if (stat instanceof CountDataStatistics) {
 			return ((CountDataStatistics) stat).getCount() == count;
 		}
-		else {
+		else if (stat instanceof IntegerRangeDataStatistics) {
 			return (((IntegerRangeDataStatistics) stat).getMin() == range.getMin()) && (((IntegerRangeDataStatistics) stat).getMax() == range.getMax());
 		}
+		else if (stat instanceof RowRangeDataStatistics) {
+			return true;
+		}
+		else if (stat instanceof RowRangeHistogramStatistics) {
+			return true;
+		}
+		return false;
 	}
 
 	private class TestQueryFilter implements
