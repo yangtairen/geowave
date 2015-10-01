@@ -24,11 +24,12 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
+import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
+import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.RangeLocationPair;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
-import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 
 import org.apache.accumulo.core.client.AccumuloException;
@@ -49,10 +50,8 @@ import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.master.state.tables.TableState;
 import org.apache.accumulo.core.security.Credentials;
 import org.apache.accumulo.core.util.UtilWaitThread;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.log4j.Logger;
 
 //@formatter:off
@@ -71,13 +70,16 @@ public class AccumuloMRUtils
 	/**
 	 * Read the metadata table to get tablets and match up ranges to them.
 	 */
-	@Override
-	public List<InputSplit> getSplits(
+	public static List<InputSplit> getSplits(
 			final AccumuloOperations operations,
-			AdapterStore adapterStore,
-			DataStatisticsStore statsStore,
 			final Index[] indices,
+			final List<ByteArrayId> adapterIds,
 			final DistributableQuery query,
+			final QueryOptions queryOptions,
+			final AdapterStore adapterStore,
+			final DataStatisticsStore statsStore,
+			final IndexStore indexStore,
+			final String[] additionalAuthorizations,
 			final Integer minSplits,
 			final Integer maxSplits )
 			throws IOException,
@@ -86,11 +88,15 @@ public class AccumuloMRUtils
 		final Map<Index, RowRangeHistogramStatistics<?>> statsCache = new HashMap<Index, RowRangeHistogramStatistics<?>>();
 
 		final TreeSet<IntermediateSplitInfo> splits = getIntermediateSplits(
+				operations,
+				indices,
+				adapterIds,
 				statsCache,
-				context,
 				adapterStore,
 				statsStore,
-				maxSplits);
+				maxSplits,
+				query,
+				additionalAuthorizations);
 
 		// this is an incremental algorithm, it may be better use the target
 		// split count to drive it (ie. to get 3 splits this will split 1 large
@@ -140,36 +146,21 @@ public class AccumuloMRUtils
 	private static final BigInteger ONE = new BigInteger(
 			"1");
 
-	private Pair<AccumuloDataStatisticsStore, JobContextAdapterStore> getStores(
-			final JobContext context,
-			final AccumuloOperations operations )
-			throws AccumuloException,
-			AccumuloSecurityException {
-		final AccumuloDataStatisticsStore statsStore = new AccumuloDataStatisticsStore(
-				operations);
-		final JobContextAdapterStore adapterStore = GeoWaveInputFormat.getJobContextAdapterStore(context);
-		return Pair.of(
-				statsStore,
-				adapterStore);
-	}
-
-	private RowRangeHistogramStatistics<?> getRangeStats(
+	private static RowRangeHistogramStatistics<?> getRangeStats(
 			final Index index,
+			final List<ByteArrayId> adapterIds,
 			final AdapterStore adapterStore,
-			final AccumuloDataStatisticsStore store,
-			final JobContext context )
+			final DataStatisticsStore store,
+			final String[] authorizations )
 			throws AccumuloException,
 			AccumuloSecurityException,
 			IOException {
 		RowRangeHistogramStatistics<?> singleStats = null;
-		final List<ByteArrayId> adapterIds = GeoWaveInputFormat.getAdapterIds(
-				context,
-				adapterStore);
 		for (final ByteArrayId adapterId : adapterIds) {
 			final RowRangeHistogramStatistics<?> rowStat = (RowRangeHistogramStatistics<?>) store.getDataStatistics(
 					adapterId,
 					RowRangeHistogramStatistics.composeId(index.getId()),
-					GeoWaveInputFormat.getAuthorizations(context));
+					authorizations);
 			if (singleStats == null) {
 				singleStats = rowStat;
 			}
@@ -181,18 +172,18 @@ public class AccumuloMRUtils
 		return singleStats;
 	}
 
-	private Range getRangeMax(
+	private static Range getRangeMax(
 			final Index index,
 			final AdapterStore adapterStore,
-			final AccumuloDataStatisticsStore statsStore,
-			final JobContext context )
+			final DataStatisticsStore statsStore,
+			final String[] authorizations )
 			throws AccumuloException,
 			AccumuloSecurityException {
 
 		final RowRangeDataStatistics<?> stats = (RowRangeDataStatistics<?>) statsStore.getDataStatistics(
 				index.getId(),
 				RowRangeDataStatistics.getId(index.getId()),
-				GeoWaveInputFormat.getAuthorizations(context));
+				authorizations);
 		if (stats == null) {
 			LOGGER.warn("Could not determine range of data from 'RowRangeDataStatistics'.  Range will not be clipped. This may result in some splits being empty.");
 			return new Range();
@@ -218,12 +209,16 @@ public class AccumuloMRUtils
 				true);
 	}
 
-	private TreeSet<IntermediateSplitInfo> getIntermediateSplits(
+	private static TreeSet<IntermediateSplitInfo> getIntermediateSplits(
+			final AccumuloOperations operations,
+			final Index[] indices,
+			final List<ByteArrayId> adapterIds,
 			final Map<Index, RowRangeHistogramStatistics<?>> statsCache,
-			final JobContext context,
 			final AdapterStore adapterStore,
-			final AccumuloDataStatisticsStore statsStore,
-			final Integer maxSplits )
+			final DataStatisticsStore statsStore,
+			final Integer maxSplits,
+			final DistributableQuery query,
+			final String[] authorizations )
 			throws IOException {
 
 		final TreeSet<IntermediateSplitInfo> splits = new TreeSet<IntermediateSplitInfo>();
@@ -238,7 +233,7 @@ public class AccumuloMRUtils
 						index,
 						adapterStore,
 						statsStore,
-						context);
+						authorizations);
 			}
 			catch (final AccumuloException e) {
 				fullrange = new Range();
@@ -358,10 +353,11 @@ public class AccumuloMRUtils
 						final double cardinality = getCardinality(
 								getHistStats(
 										index,
+										adapterIds,
 										adapterStore,
 										statsStore,
 										statsCache,
-										context),
+										authorizations),
 								clippedRange);
 						if (!(fullrange.beforeStartKey(clippedRange.getEndKey()) || fullrange.afterEndKey(clippedRange.getStartKey()))) {
 							rangeList.add(new RangeLocationPair(
@@ -390,7 +386,7 @@ public class AccumuloMRUtils
 		return splits;
 	}
 
-	private double getCardinality(
+	private static double getCardinality(
 			final RowRangeHistogramStatistics<?> rangeStats,
 			final Range range ) {
 		return rangeStats == null ? getRangeLength(range) : rangeStats.cardinality(
@@ -398,12 +394,13 @@ public class AccumuloMRUtils
 				range.getEndKey().getRow().getBytes());
 	}
 
-	private RowRangeHistogramStatistics<?> getHistStats(
+	private static RowRangeHistogramStatistics<?> getHistStats(
 			final Index index,
+			final List<ByteArrayId> adapterIds,
 			final AdapterStore adapterStore,
-			final AccumuloDataStatisticsStore statsStore,
+			final DataStatisticsStore statsStore,
 			final Map<Index, RowRangeHistogramStatistics<?>> statsCache,
-			final JobContext context )
+			final String[] authorizations )
 			throws IOException {
 		RowRangeHistogramStatistics<?> rangeStats = statsCache.get(index);
 
@@ -412,9 +409,10 @@ public class AccumuloMRUtils
 
 				rangeStats = getRangeStats(
 						index,
+						adapterIds,
 						adapterStore,
 						statsStore,
-						context);
+						authorizations);
 			}
 			catch (final AccumuloException e) {
 				throw new IOException(
@@ -542,9 +540,9 @@ public class AccumuloMRUtils
 
 		/**
 		 * Side effect: Break up this split.
-		 *
+		 * 
 		 * Split the ranges into two
-		 *
+		 * 
 		 * @return the new split.
 		 */
 		private synchronized IntermediateSplitInfo split(
@@ -812,7 +810,7 @@ public class AccumuloMRUtils
 
 	/**
 	 * Initializes an Accumulo {@link TabletLocator} based on the configuration.
-	 *
+	 * 
 	 * @param instance
 	 *            the accumulo instance
 	 * @param tableName
@@ -919,11 +917,11 @@ public class AccumuloMRUtils
 				end.length(),
 				start.length());
 		final BigInteger startBI = new BigInteger(
-				GeoWaveInputFormat.extractBytes(
+				extractBytes(
 						start,
 						maxDepth));
 		final BigInteger endBI = new BigInteger(
-				GeoWaveInputFormat.extractBytes(
+				extractBytes(
 						end,
 						maxDepth));
 		return endBI.subtract(

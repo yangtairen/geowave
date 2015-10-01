@@ -218,7 +218,7 @@ public class GeoWaveConfiguratorBase
 			final Class<?> implementingClass,
 			final JobContext context ) {
 		// use adapter store name and if thats not set, use the data store name
-		String dataStatisticsStoreName = getAdapterStoreName(
+		String dataStatisticsStoreName = getDataStatisticsStoreName(
 				implementingClass,
 				context);
 		if ((dataStatisticsStoreName == null) || (dataStatisticsStoreName.isEmpty())) {

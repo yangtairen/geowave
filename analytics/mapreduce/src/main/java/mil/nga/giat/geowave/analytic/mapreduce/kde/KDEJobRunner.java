@@ -453,6 +453,7 @@ public class KDEJobRunner extends
 				allOptions);
 		return runJob();
 	}
+
 	protected void addJobClasspathDependencies(
 			final Job job,
 			final Configuration conf )

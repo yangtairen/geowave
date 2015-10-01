@@ -27,6 +27,8 @@ import mil.nga.giat.geowave.datastore.accumulo.query.InputFormatAccumuloRangeQue
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 
+import org.apache.accumulo.core.client.AccumuloException;
+import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.PartialKey;
@@ -117,64 +119,59 @@ public class GeoWaveAccumuloRecordReader<T> extends
 		split = (GeoWaveAccumuloInputSplit) inSplit;
 
 		numKeysRead = 0;
-		final Map<RangeIndexPair, CloseableIterator<?>> iteratorsPerRange = new LinkedHashMap<RangeIndexPair, CloseableIterator<?>>();
 
-			numKeysRead = 0;
-			final Map<RangeLocationPair, CloseableIterator<?>> iteratorsPerRange = new LinkedHashMap<RangeLocationPair, CloseableIterator<?>>();
+		final Map<RangeLocationPair, CloseableIterator<?>> iteratorsPerRange = new LinkedHashMap<RangeLocationPair, CloseableIterator<?>>();
 
-			final Set<Index> indices = split.getIndices();
-			BigDecimal sum = BigDecimal.ZERO;
+		final Set<Index> indices = split.getIndices();
+		BigDecimal sum = BigDecimal.ZERO;
 
-			final Map<RangeLocationPair, BigDecimal> incrementalRangeSums = new LinkedHashMap<RangeLocationPair, BigDecimal>();
+		final Map<RangeLocationPair, BigDecimal> incrementalRangeSums = new LinkedHashMap<RangeLocationPair, BigDecimal>();
 
-			for (final Index i : indices) {
-				final List<RangeLocationPair> ranges = split.getRanges(i);
-				List<QueryFilter> queryFilters = null;
-				if (query != null) {
-					queryFilters = query.createFilters(i.getIndexModel());
-				}
-				for (final RangeLocationPair r : ranges) {
-					iteratorsPerRange.put(
-							r,
-							new InputFormatAccumuloRangeQuery(
-									GeoWaveInputFormat.getAdapterIds(
-											attempt,
-											adapterStore),
-									i,
-									r.getRange(),
-									queryFilters,
-									isOutputWritable,
-									queryOptions,
-									additionalAuthorizations).query(
-									operations,
-									adapterStore,
-									null,
-									true));
-					incrementalRangeSums.put(
-							r,
-							sum);
-					sum = sum.add(BigDecimal.valueOf(r.getCardinality()));
-				}
+		for (final Index i : indices) {
+			final List<RangeLocationPair> ranges = split.getRanges(i);
+			List<QueryFilter> queryFilters = null;
+			if (query != null) {
+				queryFilters = query.createFilters(i.getIndexModel());
 			}
+			for (final RangeLocationPair r : ranges) {
+				iteratorsPerRange.put(
+						r,
+						new InputFormatAccumuloRangeQuery(
+								GeoWaveInputFormat.getAdapterIds(
+										attempt,
+										adapterStore),
+								i,
+								r.getRange(),
+								queryFilters,
+								isOutputWritable,
+								queryOptions,
+								additionalAuthorizations).query(
+								accumuloOperations,
+								adapterStore,
+								null,
+								true));
+				incrementalRangeSums.put(
+						r,
+						sum);
+				sum = sum.add(BigDecimal.valueOf(r.getCardinality()));
+			}
+		}
 
-			// finally we can compute percent progress
-			progressPerRange = new LinkedHashMap<RangeLocationPair, ProgressPerRange>();
-			RangeLocationPair prevRangeIndex = null;
-			float prevProgress = 0f;
-			for (final Entry<RangeLocationPair, BigDecimal> entry : incrementalRangeSums.entrySet()) {
-				final BigDecimal value = entry.getValue();
-				final float progress = value.divide(
-						sum,
-						RoundingMode.HALF_UP).floatValue();
-				if (prevRangeIndex != null) {
-					progressPerRange.put(
-							prevRangeIndex,
-							new ProgressPerRange(
-									prevProgress,
-									progress));
-				}
-				prevRangeIndex = entry.getKey();
-				prevProgress = progress;
+		// finally we can compute percent progress
+		progressPerRange = new LinkedHashMap<RangeLocationPair, ProgressPerRange>();
+		RangeLocationPair prevRangeIndex = null;
+		float prevProgress = 0f;
+		for (final Entry<RangeLocationPair, BigDecimal> entry : incrementalRangeSums.entrySet()) {
+			final BigDecimal value = entry.getValue();
+			final float progress = value.divide(
+					sum,
+					RoundingMode.HALF_UP).floatValue();
+			if (prevRangeIndex != null) {
+				progressPerRange.put(
+						prevRangeIndex,
+						new ProgressPerRange(
+								prevProgress,
+								progress));
 			}
 			prevRangeIndex = entry.getKey();
 			prevProgress = progress;
@@ -199,18 +196,13 @@ public class GeoWaveAccumuloRecordReader<T> extends
 						iteratorsPerRange.entrySet().iterator(),
 						new NextRangeCallback() {
 
-								@Override
-								public void setRange(
-										final RangeLocationPair indexPair ) {
-									currentGeoWaveRangeIndexPair = indexPair;
-								}
-							}));
-		}
-		catch (AccumuloException | AccumuloSecurityException e) {
-			LOGGER.error(
-					"Unable to query accumulo for range input split",
-					e);
-		}
+							@Override
+							public void setRange(
+									final RangeLocationPair indexPair ) {
+								currentGeoWaveRangeIndexPair = indexPair;
+							}
+						}));
+
 	}
 
 	@Override

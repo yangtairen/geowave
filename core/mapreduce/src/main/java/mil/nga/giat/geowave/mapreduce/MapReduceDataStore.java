@@ -1,5 +1,6 @@
 package mil.nga.giat.geowave.mapreduce;
 
+import java.io.IOException;
 import java.util.List;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -29,7 +30,9 @@ public interface MapReduceDataStore extends
 			IndexStore indexStore,
 			boolean isOutputWritable,
 			String[] additionalAuthorizations,
-			InputSplit inputSplit );
+			InputSplit inputSplit )
+			throws IOException,
+			InterruptedException;
 
 	public List<InputSplit> getSplits(
 			Index[] indices,
@@ -41,5 +44,7 @@ public interface MapReduceDataStore extends
 			IndexStore indexStore,
 			String[] additionalAuthorizations,
 			Integer minSplits,
-			Integer maxSplits );
+			Integer maxSplits )
+			throws IOException,
+			InterruptedException;
 }

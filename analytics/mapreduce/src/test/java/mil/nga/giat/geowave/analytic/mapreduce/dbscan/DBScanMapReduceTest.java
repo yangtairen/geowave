@@ -321,13 +321,13 @@ public class DBScanMapReduceTest
 		/*
 		 * assertEquals( feature3.getID(), find( reduceResults,
 		 * feature1.getID()).toString());
-		 *
+		 * 
 		 * assertEquals( feature1.getID(), find( reduceResults,
 		 * feature3.getID()).toString());
-		 *
+		 * 
 		 * assertEquals( feature4.getID(), find( reduceResults,
 		 * feature2.getID()).toString());
-		 *
+		 * 
 		 * assertEquals( feature2.getID(), find( reduceResults,
 		 * feature4.getID()).toString());
 		 */

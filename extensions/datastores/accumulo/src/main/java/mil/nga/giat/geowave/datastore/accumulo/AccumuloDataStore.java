@@ -29,6 +29,7 @@ import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexDependentDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataAdapterStatsWrapper;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
@@ -1477,29 +1478,41 @@ public class AccumuloDataStore implements
 			final DistributableQuery query,
 			final QueryOptions queryOptions,
 			final AdapterStore adapterStore,
+			DataStatisticsStore statsStore,
 			final IndexStore indexStore,
 			final String[] additionalAuthorizations,
 			final Integer minSplits,
-			final Integer maxSplits ) {
+			final Integer maxSplits )
+			throws IOException,
+			InterruptedException {
 		return AccumuloMRUtils.getSplits(
 				accumuloOperations,
 				indices,
+				adapterIds,
 				query,
+				queryOptions,
+				adapterStore,
+				statsStore,
+				indexStore,
+				additionalAuthorizations,
 				minSplits,
 				maxSplits);
 	}
 
 	@Override
 	public RecordReader<GeoWaveInputKey, ?> createRecordReader(
-			final Index[] indices,
-			final List<ByteArrayId> adapterIds,
-			final DistributableQuery query,
-			final QueryOptions queryOptions,
-			final AdapterStore adapterStore,
-			final IndexStore indexStore,
-			final boolean isOutputWritable,
-			final String[] additionalAuthorizations,
-			final InputSplit inputSplit ) {
+			Index[] indices,
+			List<ByteArrayId> adapterIds,
+			DistributableQuery query,
+			QueryOptions queryOptions,
+			AdapterStore adapterStore,
+			DataStatisticsStore statsStore,
+			IndexStore indexStore,
+			boolean isOutputWritable,
+			String[] additionalAuthorizations,
+			InputSplit inputSplit )
+			throws IOException,
+			InterruptedException {
 		return new GeoWaveAccumuloRecordReader(
 				query,
 				queryOptions,

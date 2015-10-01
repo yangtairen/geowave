@@ -10,6 +10,7 @@ import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
@@ -121,6 +122,13 @@ public class GeoWaveInputFormat<T> extends
 	public static AdapterStore getJobContextAdapterStore(
 			final JobContext context ) {
 		return GeoWaveConfiguratorBase.getJobContextAdapterStore(
+				CLASS,
+				context);
+	}
+
+	public static DataStatisticsStore getJobContextDataStatisticsStore(
+			final JobContext context ) {
+		return GeoWaveConfiguratorBase.getDataStatisticsStore(
 				CLASS,
 				context);
 	}
@@ -261,9 +269,10 @@ public class GeoWaveInputFormat<T> extends
 					getQuery(context),
 					getQueryOptions(context),
 					adapterStore,
-					getDataStatisticsStoreName(context),
+					getJobContextDataStatisticsStore(context),
 					getJobContextIndexStore(context),
-					isOutputWritable(context),
+					isOutputWritable(
+							context).booleanValue(),
 					getAuthorizations(context),
 					split);
 		}
@@ -433,7 +442,7 @@ public class GeoWaveInputFormat<T> extends
 					getQuery(context),
 					getQueryOptions(context),
 					adapterStore,
-					getDataStatisticsStoreName(context),
+					getJobContextDataStatisticsStore(context),
 					getJobContextIndexStore(context),
 					getAuthorizations(context),
 					getMinimumSplitCount(context),

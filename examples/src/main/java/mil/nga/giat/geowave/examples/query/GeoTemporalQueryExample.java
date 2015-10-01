@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.List;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
-import mil.nga.giat.geowave.adapter.vector.VectorDataStore;
 import mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveGTDataStore;
 import mil.nga.giat.geowave.adapter.vector.utils.DateUtilities;
 import mil.nga.giat.geowave.core.geotime.GeometryUtils;
@@ -17,6 +16,7 @@ import mil.nga.giat.geowave.core.geotime.store.filter.SpatialQueryFilter.Compare
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialTemporalQuery;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 
 import org.apache.accumulo.core.client.AccumuloException;
@@ -47,7 +47,7 @@ public class GeoTemporalQueryExample
 {
 	private static File tempAccumuloDir;
 	private static MiniAccumuloCluster accumulo;
-	private static VectorDataStore dataStore;
+	private static AccumuloDataStore dataStore;
 
 	private static final Index index = IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndex();
 
@@ -117,7 +117,7 @@ public class GeoTemporalQueryExample
 
 		accumulo.start();
 
-		dataStore = new VectorDataStore(
+		dataStore = new AccumuloDataStore(
 				new BasicAccumuloOperations(
 						accumulo.getZooKeepers(),
 						accumulo.getInstanceName(),
