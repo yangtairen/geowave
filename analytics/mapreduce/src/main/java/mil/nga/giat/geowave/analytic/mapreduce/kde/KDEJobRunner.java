@@ -412,8 +412,8 @@ public class KDEJobRunner extends
 			}
 			if ((inputAdapterStoreOptionsResult != null) && inputAdapterStoreOptionsResult.isCommandLineChange()) {
 				commandLine = inputAdapterStoreOptionsResult.getCommandLine();
-				newCommandLine = true;
-				continue;
+//				newCommandLine = true;
+//				continue;
 			}
 			
 			if ((inputDataStoreOptionsResult != null) && inputDataStoreOptionsResult.isCommandLineChange()) {
@@ -430,8 +430,8 @@ public class KDEJobRunner extends
 			}
 			if ((outputDataStoreOptionsResult != null) && outputDataStoreOptionsResult.isCommandLineChange()) {
 				commandLine = outputDataStoreOptionsResult.getCommandLine();
-				newCommandLine = true;
-				continue;
+//				newCommandLine = true;
+//				continue;
 			}
 			
 		

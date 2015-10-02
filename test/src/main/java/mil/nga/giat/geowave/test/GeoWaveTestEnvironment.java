@@ -99,9 +99,9 @@ abstract public class GeoWaveTestEnvironment
 	private void verifyStats() {
 		GeoWaveMain.run(new String[] {
 			"-statsdump",
-			"-datastore",
 			"-" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
 			TEST_NAMESPACE,
+			"-datastore",
 			new AccumuloDataStoreFactory().getName(),
 			"-" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
 			zookeeper,
@@ -477,7 +477,7 @@ abstract public class GeoWaveTestEnvironment
 	/**
 	 * Unzips the contents of a zip file to a target output directory, deleting
 	 * anything that existed beforehand
-	 * 
+	 *
 	 * @param zipInput
 	 *            input zip file
 	 * @param outputFolder
