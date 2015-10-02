@@ -26,6 +26,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
 import mil.nga.giat.geowave.format.stanag4676.Stanag4676IngestPlugin;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChip;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChipDataAdapter;
@@ -68,7 +69,7 @@ public class Stanag4676ImageryChipService
 			final int second,
 			@PathParam("millis")
 			final int millis,
-			@QueryParam("size")
+			@QueryPar("size")
 			@DefaultValue("-1")
 			final int targetPixelSize ) {
 		final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
@@ -252,6 +253,11 @@ public class Stanag4676ImageryChipService
 
 	private static synchronized DataStore getSingletonInstance() {
 		if (dataStore == null) {
+			GeoWaveStoreFinder.
+			String storeName = System.getProperty(GeoWaveStoreFinder.STORE_HINT_OPTION.getName());
+			if (storeName != null) {
+				
+			}
 			try {
 				dataStore = new AccumuloDataStore(
 						new BasicAccumuloOperations(

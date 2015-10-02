@@ -45,7 +45,7 @@ abstract public class MapReduceTestEnvironment extends
 					"-hdfsingest -f gpx -hdfs " + hdfs + " -hdfsbase " + hdfsBaseDirectory + " -jobtracker " + jobtracker + " -b " + ingestFilePath + " -z " + zookeeper + " -i " + accumuloInstance + " -u " + accumuloUser + " -p " + accumuloPassword + " -n " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal"),
 					' ');
 		}
-		GeoWaveMain.main(args);
+		GeoWaveMain.run(args);
 	}
 
 	@BeforeClass

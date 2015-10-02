@@ -92,12 +92,12 @@ abstract public class GeoWaveTestEnvironment
 		final String[] args = StringUtils.split(
 				"-localingest -datastore " + new AccumuloDataStoreFactory().getName() + " -f geotools-vector -b " + ingestFilePath + " -" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY + " " + TEST_NAMESPACE + " -dim " + (indexType.equals(IndexType.SPATIAL_VECTOR) ? "spatial" : "spatial-temporal") + " -" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME + " " + zookeeper + " -" + BasicAccumuloOperations.INSTANCE_CONFIG_NAME + " " + accumuloInstance + " -" + BasicAccumuloOperations.USER_CONFIG_NAME + " " + accumuloUser + " -" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME + " " + accumuloPassword,
 				' ');
-		GeoWaveMain.main(args);
+		GeoWaveMain.run(args);
 		verifyStats();
 	}
 
 	private void verifyStats() {
-		GeoWaveMain.main(new String[] {
+		GeoWaveMain.run(new String[] {
 			"-statsdump",
 			"-datastore",
 			"-" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,

@@ -20,6 +20,11 @@ public class GeoWaveMain
 
 	public static void main(
 			final String[] args ) {
+		System.exit(run(args));
+	}
+
+	public static int run(
+			final String[] args ) {
 		if (args.length < 1) {
 			OperationCommandLineOptions.printHelp();
 		}
@@ -46,14 +51,14 @@ public class GeoWaveMain
 					operationsArgs,
 					true);
 			final OperationCommandLineOptions operationOption = OperationCommandLineOptions.parseOptions(operationCommandLine);
-			System.exit(operationOption.getOperation().getDriver().runOperation(
+			return (operationOption.getOperation().getDriver().runOperation(
 					optionsArgs) ? 0 : -1);
 		}
 		catch (final ParseException e) {
 			LOGGER.error(
 					"Unable to parse operation",
 					e);
-			System.exit(-1);
+			return -1;
 		}
 	}
 }
