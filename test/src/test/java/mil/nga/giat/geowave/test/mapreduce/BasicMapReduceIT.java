@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
@@ -21,6 +22,7 @@ import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
+import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
@@ -264,11 +266,18 @@ public class BasicMapReduceIT extends
 				conf,
 				jobRunner,
 				new String[] {
-					zookeeper,
-					accumuloInstance,
-					accumuloUser,
-					accumuloPassword,
-					TEST_NAMESPACE
+						"-" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
+						TEST_NAMESPACE,
+						"-datastore",
+						"accumulo",
+						"-" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
+						zookeeper,
+						"-"  + BasicAccumuloOperations.INSTANCE_CONFIG_NAME,
+						accumuloInstance,
+						"-"  + BasicAccumuloOperations.USER_CONFIG_NAME,
+						accumuloUser,
+						"-"  + BasicAccumuloOperations.PASSWORD_CONFIG_NAME,
+						accumuloPassword
 				});
 		Assert.assertEquals(
 				0,

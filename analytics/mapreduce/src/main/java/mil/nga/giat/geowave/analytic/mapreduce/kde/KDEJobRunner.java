@@ -371,7 +371,7 @@ public class KDEJobRunner extends
 			throws Exception {
 		final BasicParser parser = new BasicParser();
 		CommandLine commandLine = parser.parse(
-				new Options(),
+				allOptions,
 				args,
 				true);
 		boolean newCommandLine = false;
@@ -386,6 +386,13 @@ public class KDEJobRunner extends
 			parseException = null;
 			newCommandLine = false;
 			try {
+				kdeCommandLineOptions = KDECommandLineOptions.parseOptions(commandLine);
+			}
+			catch (final Exception e) {
+				parseException = e;
+			}
+			
+			try {
 				inputDataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
 						"input_",
 						allOptions,
@@ -394,6 +401,21 @@ public class KDEJobRunner extends
 			catch (final Exception e) {
 				parseException = e;
 			}
+			try {
+				inputAdapterStoreOptionsResult = AdapterStoreCommandLineOptions.parseOptions(
+						"input_",
+						allOptions,
+						commandLine);
+			}
+			catch (final Exception e) {
+				parseException = e;
+			}
+			if ((inputAdapterStoreOptionsResult != null) && inputAdapterStoreOptionsResult.isCommandLineChange()) {
+				commandLine = inputAdapterStoreOptionsResult.getCommandLine();
+				newCommandLine = true;
+				continue;
+			}
+			
 			if ((inputDataStoreOptionsResult != null) && inputDataStoreOptionsResult.isCommandLineChange()) {
 				commandLine = inputDataStoreOptionsResult.getCommandLine();
 			}
@@ -411,26 +433,8 @@ public class KDEJobRunner extends
 				newCommandLine = true;
 				continue;
 			}
-			try {
-				inputAdapterStoreOptionsResult = AdapterStoreCommandLineOptions.parseOptions(
-						"input_",
-						allOptions,
-						commandLine);
-			}
-			catch (final Exception e) {
-				parseException = e;
-			}
-			if ((inputAdapterStoreOptionsResult != null) && inputAdapterStoreOptionsResult.isCommandLineChange()) {
-				commandLine = inputAdapterStoreOptionsResult.getCommandLine();
-				newCommandLine = true;
-				continue;
-			}
-			try {
-				kdeCommandLineOptions = KDECommandLineOptions.parseOptions(commandLine);
-			}
-			catch (final Exception e) {
-				parseException = e;
-			}
+			
+		
 		}
 		while (newCommandLine);
 		if (parseException != null) {

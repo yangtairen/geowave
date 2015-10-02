@@ -14,8 +14,12 @@ import mil.nga.giat.geowave.adapter.raster.plugin.GeoWaveGTRasterFormat;
 import mil.nga.giat.geowave.adapter.raster.plugin.GeoWaveRasterConfig;
 import mil.nga.giat.geowave.adapter.raster.plugin.GeoWaveRasterReader;
 import mil.nga.giat.geowave.adapter.raster.resize.RasterTileResizeJobRunner;
+import mil.nga.giat.geowave.analytic.mapreduce.kde.KDECommandLineOptions;
 import mil.nga.giat.geowave.analytic.mapreduce.kde.KDEJobRunner;
+import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.IndexType;
+import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.MapReduceCommandLineOptions;
+import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.util.ConnectorPool;
 import mil.nga.giat.geowave.test.GeoWaveTestEnvironment;
 
@@ -92,28 +96,57 @@ public class KDERasterResizeIT extends
 			ToolRunner.run(
 					new KDEJobRunner(),
 					new String[] {
-						zookeeper,
-						accumuloInstance,
-						accumuloUser,
-						accumuloPassword,
-						TEST_NAMESPACE,
+					
+						"-"+KDECommandLineOptions.FEATURE_TYPE_KEY,
 						KDE_FEATURE_TYPE_NAME,
+						"-"+KDECommandLineOptions.MIN_LEVEL_KEY,
 						new Integer(
 								BASE_MIN_LEVEL - i).toString(),
+						"-"+KDECommandLineOptions.MAX_LEVEL_KEY,
 						new Integer(
 								BASE_MAX_LEVEL - i).toString(),
+						"-"+KDECommandLineOptions.MIN_SPLITS_KEY,
 						new Integer(
 								MIN_INPUT_SPLITS).toString(),
+						"-"+KDECommandLineOptions.MAX_SPLITS_KEY,
 						new Integer(
 								MAX_INPUT_SPLITS).toString(),
+						"-"+KDECommandLineOptions.COVERAGE_NAME_KEY,								
 						tileSizeCoverageName,
+						"-"+KDECommandLineOptions.HDFS_HOST_PORT_KEY,
 						hdfs,
-						jobtracker,
-						TEST_COVERAGE_NAMESPACE,
+						"-"+KDECommandLineOptions.JOB_TRACKER_HOST_PORT_KEY,
+						jobtracker,						
+						"-"+KDECommandLineOptions.TILE_SIZE_KEY,
 						new Integer(
 								(int) Math.pow(
 										2,
-										i)).toString()
+										i)).toString(),
+						"-input_" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
+						TEST_NAMESPACE,
+						"-input_datastore",
+						"accumulo",
+						"-input_" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
+						zookeeper,
+						"-input_" + BasicAccumuloOperations.INSTANCE_CONFIG_NAME,
+						accumuloInstance,
+						"-input_" + BasicAccumuloOperations.USER_CONFIG_NAME,
+						accumuloUser,
+						"-input_" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME,
+						accumuloPassword,
+						"-output_datastore",
+						"accumulo",
+						"-output_" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
+						zookeeper,
+						"-output_" + BasicAccumuloOperations.INSTANCE_CONFIG_NAME,
+						accumuloInstance,
+						"-output_" + BasicAccumuloOperations.USER_CONFIG_NAME,
+						accumuloUser,
+						"-output_" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME,
+						accumuloPassword,
+						"-output_" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
+						TEST_COVERAGE_NAMESPACE,
+						
 					});
 		}
 		final int numLevels = (BASE_MAX_LEVEL - BASE_MIN_LEVEL) + 1;

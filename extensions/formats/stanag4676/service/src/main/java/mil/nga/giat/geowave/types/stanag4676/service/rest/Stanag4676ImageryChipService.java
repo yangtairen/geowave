@@ -7,6 +7,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Map.Entry;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
@@ -22,15 +27,20 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStoreFactorySpi;
+import mil.nga.giat.geowave.core.store.config.ConfigUtils;
+import mil.nga.giat.geowave.core.store.index.IndexStoreFactorySpi;
 import mil.nga.giat.geowave.format.stanag4676.Stanag4676IngestPlugin;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChip;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChipDataAdapter;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChipUtils;
+import mil.nga.giat.geowave.service.impl.ServiceUtils;
 
 import org.apache.log4j.Logger;
 
@@ -45,33 +55,25 @@ public class Stanag4676ImageryChipService
 	private static Logger LOGGER = Logger.getLogger(Stanag4676ImageryChipService.class);
 	@Context
 	ServletContext context;
-	private static DataStore dataStore;
+	private DataStore dataStore;
+	private IndexStoreFactorySpi indexStoreFactory;
+	private AdapterStoreFactorySpi adapterStoreFactory;
+	private Map<String, Object> configOptions;
 
 	@GET
 	@Path("image/{mission}/{track}/{year}-{month}-{day}T{hour}:{minute}:{second}.{millis}.jpg")
 	@Produces("image/jpeg")
 	public Response getImage(
-			final @PathParam("mission")
-			String mission,
-			final @PathParam("track")
-			String track,
-			@PathParam("year")
-			final int year,
-			@PathParam("month")
-			final int month,
-			@PathParam("day")
-			final int day,
-			@PathParam("hour")
-			final int hour,
-			@PathParam("minute")
-			final int minute,
-			@PathParam("second")
-			final int second,
-			@PathParam("millis")
-			final int millis,
-			@QueryPar("size")
-			@DefaultValue("-1")
-			final int targetPixelSize ) {
+			final @PathParam("mission") String mission,
+			final @PathParam("track") String track,
+			@PathParam("year") final int year,
+			@PathParam("month") final int month,
+			@PathParam("day") final int day,
+			@PathParam("hour") final int hour,
+			@PathParam("minute") final int minute,
+			@PathParam("second") final int second,
+			@PathParam("millis") final int millis,
+			@QueryParam("size") @DefaultValue("-1") final int targetPixelSize ) {
 		final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
 		cal.set(
 				year,
@@ -86,15 +88,11 @@ public class Stanag4676ImageryChipService
 		final DataStore dataStore = getSingletonInstance();
 		final Object imageChip = dataStore.getEntry(
 				Stanag4676IngestPlugin.IMAGE_CHIP_INDEX,
-				new ByteArrayId(
-						new AccumuloRowId(
-								new byte[] {},
-								ImageChipUtils.getDataId(
-										mission,
-										track,
-										cal.getTimeInMillis()).getBytes(),
-								ImageChipDataAdapter.ADAPTER_ID.getBytes(),
-								0).getRowId()));
+				ImageChipUtils.getDataId(
+						mission,
+						track,
+						cal.getTimeInMillis()),
+				ImageChipDataAdapter.ADAPTER_ID);
 		if ((imageChip != null) && (imageChip instanceof ImageChip)) {
 			if (targetPixelSize <= 0) {
 				final byte[] imageData = ((ImageChip) imageChip).getImageBinary();
@@ -132,16 +130,10 @@ public class Stanag4676ImageryChipService
 	@Path("video/{mission}/{track}.webm")
 	@Produces("video/webm")
 	public Response getVideo(
-			final @PathParam("mission")
-			String mission,
-			final @PathParam("track")
-			String track,
-			@QueryParam("size")
-			@DefaultValue("-1")
-			final int targetPixelSize,
-			@QueryParam("speed")
-			@DefaultValue("1")
-			final double speed ) {
+			final @PathParam("mission") String mission,
+			final @PathParam("track") String track,
+			@QueryParam("size") @DefaultValue("-1") final int targetPixelSize,
+			@QueryParam("speed") @DefaultValue("1") final double speed ) {
 		final DataStore dataStore = getSingletonInstance();
 		final CloseableIterator<Object> imageChipIt = dataStore.getEntriesByPrefix(
 				Stanag4676IngestPlugin.IMAGE_CHIP_INDEX,
@@ -251,28 +243,29 @@ public class Stanag4676ImageryChipService
 		return videoFile;
 	}
 
-	private static synchronized DataStore getSingletonInstance() {
-		if (dataStore == null) {
-			GeoWaveStoreFinder.
-			String storeName = System.getProperty(GeoWaveStoreFinder.STORE_HINT_OPTION.getName());
-			if (storeName != null) {
-				
-			}
-			try {
-				dataStore = new AccumuloDataStore(
-						new BasicAccumuloOperations(
-								System.getProperty("zookeeperUrl"),
-								System.getProperty("instance"),
-								System.getProperty("username"),
-								System.getProperty("password"),
-								System.getProperty("namespace")));
-			}
-			catch (AccumuloException | AccumuloSecurityException e) {
-				LOGGER.warn(
-						"Unable to connect to GeoWave data store",
-						e);
-			}
+	private synchronized DataStore getSingletonInstance() {
+		if (dataStore != null) return dataStore;
+
+		final Properties props = ServiceUtils.loadProperties(context.getResourceAsStream(context.getInitParameter("config.properties")));
+		final Map<String, String> strMap = new HashMap<String, String>();
+
+		final Set<Object> keySet = props.keySet();
+		final Iterator<Object> it = keySet.iterator();
+		while (it.hasNext()) {
+			final String key = it.next().toString();
+			strMap.put(
+					key,
+					ServiceUtils.getProperty(
+							props,
+							key));
 		}
+		configOptions = ConfigUtils.valuesFromStrings(strMap);
+
+		String namespace = (String) configOptions.get(GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY);
+		dataStore = GeoWaveStoreFinder.findDataStoreFactory(
+				configOptions).createStore(
+				configOptions,
+				namespace);
 		return dataStore;
 	}
 }

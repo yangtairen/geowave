@@ -112,7 +112,8 @@ abstract public class GenericStoreCommandLineOptions<T>
 		// parse the datastore options
 		final CommandLine commandLineWithStoreOptions = parser.parse(
 				cliOptions,
-				currentCommandLine.getArgs());
+				currentCommandLine.getArgs(),
+				true);
 		CommandLineUtils.addOptions(
 				commandLineWithStoreOptions,
 				currentCommandLine.getOptions());

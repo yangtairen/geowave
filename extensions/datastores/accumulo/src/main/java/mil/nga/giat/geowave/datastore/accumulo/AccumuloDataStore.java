@@ -925,13 +925,35 @@ public class AccumuloDataStore implements
 			final DataAdapter<T> adapter,
 			final Query query,
 			final String... additionalAuthorizations ) {
-		return query(
-				adapter,
-				null,
-				query,
-				null,
-				null,
-				additionalAuthorizations);
+		try (final CloseableIterator<Index> indices = indexStore.getIndices()) {
+			return (CloseableIterator<T>) query(
+					Arrays.asList(new ByteArrayId[] {
+						adapter.getAdapterId()
+					}),
+					query,
+					indices,
+					new MemoryAdapterStore(
+							new DataAdapter[] {
+								adapter
+							}),
+					null,
+					null,
+					null,
+					additionalAuthorizations);
+		}
+		catch (final IOException e) {
+			LOGGER.warn(
+					"unable to close index iterator for query",
+					e);
+		}
+		return (CloseableIterator<T>) new CloseableIteratorWrapper<Object>(
+				new Closeable() {
+					@Override
+					public void close()
+							throws IOException {}
+				},
+				new ArrayList<Object>().iterator());
+
 	}
 
 	@Override
@@ -976,7 +998,8 @@ public class AccumuloDataStore implements
 				query,
 				adapterStore,
 				limit,
-				null);
+				null,
+				additionalAuthorizations);
 	}
 
 	@Override
