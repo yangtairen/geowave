@@ -105,7 +105,9 @@ abstract public class GenericStoreCommandLineOptions<T>
 		if (currentOptions != null) {
 			final Collection<Option> options = currentOptions.getOptions();
 			for (final Option o : options) {
-				cliOptions.addOption((Option) o.clone());
+				Option opt = (Option) o.clone();
+				opt.setRequired(false);
+				cliOptions.addOption(opt);
 			}
 		}
 		final BasicParser parser = new BasicParser();

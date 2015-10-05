@@ -99,9 +99,9 @@ abstract public class GeoWaveTestEnvironment
 	private void verifyStats() {
 		GeoWaveMain.run(new String[] {
 			"-statsdump",
-			"-datastore",
 			"-" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
 			TEST_NAMESPACE,
+			"-datastore",
 			new AccumuloDataStoreFactory().getName(),
 			"-" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
 			zookeeper,

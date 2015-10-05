@@ -111,6 +111,7 @@ public class ConvexHullMapReduce
 			outputKey.setAdapterId(key.getAdapterId());
 			outputKey.setDataId(new ByteArrayId(
 					StringUtils.stringToBinary(nestedGroupCentroidAssigner.getGroupForLevel(wrapper))));
+			outputKey.setInsertionId(key.getInsertionId());
 			context.write(
 					outputKey,
 					currentValue);

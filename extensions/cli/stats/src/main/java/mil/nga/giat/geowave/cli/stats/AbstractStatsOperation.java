@@ -60,7 +60,7 @@ abstract public class AbstractStatsOperation implements
 		try {
 			CommandLine commandLine = new BasicParser().parse(
 					allOptions,
-					args);
+					args, true);
 			CommandLineResult<DataStoreCommandLineOptions> dataStoreCli = null;
 			CommandLineResult<AdapterStoreCommandLineOptions> adapterStoreCli = null;
 			CommandLineResult<IndexStoreCommandLineOptions> indexStoreCli = null;
