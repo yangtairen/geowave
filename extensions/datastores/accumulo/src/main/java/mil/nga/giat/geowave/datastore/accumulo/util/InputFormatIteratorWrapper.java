@@ -5,6 +5,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
+import org.apache.accumulo.core.data.Key;
+import org.apache.accumulo.core.data.Value;
+import org.apache.commons.lang.ArrayUtils;
+
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
@@ -13,10 +17,6 @@ import mil.nga.giat.geowave.datastore.accumulo.AccumuloRowId;
 import mil.nga.giat.geowave.mapreduce.HadoopWritableSerializationTool;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Value;
-import org.apache.commons.lang.ArrayUtils;
-
 /**
  * This is used internally to translate Accumulo rows into native objects (using
  * the appropriate data adapter). It also performs any client-side filtering. It
@@ -24,7 +24,7 @@ import org.apache.commons.lang.ArrayUtils;
  * reference to the next value. It maintains the adapter ID, data ID, and
  * original accumulo key in the GeoWaveInputKey for use by the
  * GeoWaveInputFormat.
- * 
+ *
  * @param <T>
  *            The type for the entry
  */
@@ -87,7 +87,8 @@ public class InputFormatIteratorWrapper<T> implements
 				rowId.getAdapterId());
 		final T result = (T) (isOutputWritable ? serializationTool.getHadoopWritableSerializerForAdapter(
 				adapterId).toWritable(
-				value) : value);
+						value)
+				: value);
 		final GeoWaveInputKey key = new GeoWaveInputKey(
 				adapterId,
 				new ByteArrayId(
@@ -100,6 +101,9 @@ public class InputFormatIteratorWrapper<T> implements
 										index.getId().getBytes(),
 										rowId.getInsertionId()),
 								rowId.getDataId())));
+		key.setInsertionId(
+				new ByteArrayId(
+						row.getKey().getRow().getBytes()));
 		return new GeoWaveInputFormatEntry(
 				key,
 				result);

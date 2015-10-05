@@ -10,6 +10,11 @@ import javax.media.jai.Interpolation;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.DataStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
@@ -20,11 +25,6 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStoreFac
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.IndexStoreFactorySpi;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 public class GeoWaveRasterConfig
 {
@@ -88,13 +88,25 @@ public class GeoWaveRasterConfig
 		final GeoWaveRasterConfig result = new GeoWaveRasterConfig();
 		result.equalizeHistogramOverride = equalizeHistogramOverride;
 		result.interpolationOverride = interpolationOverride;
+		result.geowaveNamespace = geowaveNamespace;
+		result.storeConfigObj = ConfigUtils.valuesFromStrings(
+				dataStoreConfig);
+		result.dataStoreFactory = GeoWaveStoreFinder.findDataStoreFactory(
+				result.storeConfigObj);
+		result.indexStoreFactory = GeoWaveStoreFinder.findIndexStoreFactory(
+				result.storeConfigObj);
+		result.adapterStoreFactory = GeoWaveStoreFinder.findAdapterStoreFactory(
+				result.storeConfigObj);
+		result.dataStatisticsStoreFactory = GeoWaveStoreFinder.findDataStatisticsStoreFactory(
+				result.storeConfigObj);
 		return result;
 	}
 
 	public static GeoWaveRasterConfig readFrom(
 			final URL xmlURL )
-			throws Exception {
-		GeoWaveRasterConfig result = CONFIG_CACHE.get(xmlURL.toString());
+					throws Exception {
+		GeoWaveRasterConfig result = CONFIG_CACHE.get(
+				xmlURL.toString());
 
 		if (result != null) {
 			return result;
@@ -105,13 +117,16 @@ public class GeoWaveRasterConfig
 				xmlURL.toString());
 
 		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		dbf.setIgnoringElementContentWhitespace(true);
-		dbf.setIgnoringComments(true);
+		dbf.setIgnoringElementContentWhitespace(
+				true);
+		dbf.setIgnoringComments(
+				true);
 
 		final DocumentBuilder db = dbf.newDocumentBuilder();
 
 		// db.setEntityResolver(new ConfigEntityResolver(xmlURL));
-		final Document dom = db.parse(input);
+		final Document dom = db.parse(
+				input);
 		in.close();
 
 		result = new GeoWaveRasterConfig();
@@ -120,7 +135,8 @@ public class GeoWaveRasterConfig
 		final NodeList children = dom.getChildNodes();
 		final Map<String, String> storeConfig = new HashMap<String, String>();
 		for (int i = 0; i < children.getLength(); i++) {
-			final Node child = children.item(i);
+			final Node child = children.item(
+					i);
 			boolean isConfigParameter = false;
 			for (final ConfigParameter p : ConfigParameter.values()) {
 				if (child.getNodeName().equalsIgnoreCase(
@@ -140,11 +156,16 @@ public class GeoWaveRasterConfig
 			result.geowaveNamespace = readValueString(
 					dom,
 					ConfigParameter.NAMESPACE.getConfigName());
-			result.storeConfigObj = ConfigUtils.valuesFromStrings(storeConfig);
-			result.dataStoreFactory = GeoWaveStoreFinder.findDataStoreFactory(result.storeConfigObj);
-			result.indexStoreFactory = GeoWaveStoreFinder.findIndexStoreFactory(result.storeConfigObj);
-			result.adapterStoreFactory = GeoWaveStoreFinder.findAdapterStoreFactory(result.storeConfigObj);
-			result.dataStatisticsStoreFactory = GeoWaveStoreFinder.findDataStatisticsStoreFactory(result.storeConfigObj);
+			result.storeConfigObj = ConfigUtils.valuesFromStrings(
+					storeConfig);
+			result.dataStoreFactory = GeoWaveStoreFinder.findDataStoreFactory(
+					result.storeConfigObj);
+			result.indexStoreFactory = GeoWaveStoreFinder.findIndexStoreFactory(
+					result.storeConfigObj);
+			result.adapterStoreFactory = GeoWaveStoreFinder.findAdapterStoreFactory(
+					result.storeConfigObj);
+			result.dataStatisticsStoreFactory = GeoWaveStoreFinder.findDataStatisticsStoreFactory(
+					result.storeConfigObj);
 		}
 		final String equalizeHistogram = readValueString(
 				dom,
@@ -218,7 +239,8 @@ public class GeoWaveRasterConfig
 					"Interpolation Override is not set for this config");
 		}
 
-		return Interpolation.getInstance(interpolationOverride);
+		return Interpolation.getInstance(
+				interpolationOverride);
 	}
 
 	public boolean isEqualizeHistogramOverrideSet() {
@@ -258,14 +280,17 @@ public class GeoWaveRasterConfig
 			return null;
 		}
 
-		return Integer.valueOf(n.getTextContent());
+		return Integer.valueOf(
+				n.getTextContent());
 	}
 
 	static private Node getNodeByName(
 			final Document dom,
 			final String elemName ) {
-		final NodeList list = dom.getElementsByTagName(elemName);
-		final Node n = list.item(0);
+		final NodeList list = dom.getElementsByTagName(
+				elemName);
+		final Node n = list.item(
+				0);
 
 		return n;
 	}
