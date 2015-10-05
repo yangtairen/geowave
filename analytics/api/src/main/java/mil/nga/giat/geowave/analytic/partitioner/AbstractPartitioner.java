@@ -227,7 +227,8 @@ public abstract class AbstractPartitioner<T> implements
 			final Configuration configuration ) {
 		final ParameterEnum[] params = new ParameterEnum[] {
 			CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS,
-			ClusteringParameters.Clustering.DISTANCE_THRESHOLDS
+			ClusteringParameters.Clustering.DISTANCE_THRESHOLDS,
+			Partition.PARTITION_PRECISION
 		};
 		runTimeProperties.setConfig(
 				params,
@@ -280,7 +281,8 @@ public abstract class AbstractPartitioner<T> implements
 	public Collection<ParameterEnum<?>> getParameters() {
 		return Arrays.asList(new ParameterEnum<?>[] {
 			CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS,
-			ClusteringParameters.Clustering.DISTANCE_THRESHOLDS
+			ClusteringParameters.Clustering.DISTANCE_THRESHOLDS,
+			Partition.PARTITION_PRECISION
 		});
 
 	}

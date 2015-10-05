@@ -168,13 +168,13 @@ public class CQLQueryFilter implements
 		final int adapterBytesLength = bytes.length - filterBytesLength - 4;
 		if (filterBytesLength > 0) {
 			final byte[] filterBytes = new byte[filterBytesLength];
-
-			try {
-				final String cql = StringUtils.stringFromBinary(filterBytes);
+			buf.get(filterBytes);
+			final String cql = StringUtils.stringFromBinary(filterBytes);
+			try {			
 				filter = ECQL.toFilter(cql);
 			}
 			catch (final Exception e) {
-				throw new IllegalArgumentException(
+				throw new IllegalArgumentException(cql,
 						e);
 			}
 		}

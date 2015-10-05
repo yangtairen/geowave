@@ -80,6 +80,7 @@ public class PropertyManagement implements
 		converters.add(new QueryOptionsConverter());
 		converters.add(new PathConverter());
 		converters.add(new PersistableConverter());
+		converters.add(new DoubleConverter());
 	}
 
 	public PropertyManagement(
@@ -90,6 +91,7 @@ public class PropertyManagement implements
 		this.converters.add(new QueryOptionsConverter());
 		this.converters.add(new PathConverter());
 		this.converters.add(new PersistableConverter());
+		this.converters.add(new DoubleConverter());
 		for (final PropertyConverter<?> converter : converters) {
 			addConverter(converter);
 		}
@@ -105,6 +107,7 @@ public class PropertyManagement implements
 		converters.add(new QueryOptionsConverter());
 		converters.add(new PathConverter());
 		converters.add(new PersistableConverter());
+		converters.add(new DoubleConverter());
 		store(
 				names,
 				values);
@@ -175,7 +178,7 @@ public class PropertyManagement implements
 	public synchronized Serializable storeIfEmpty(
 			final ParameterEnum<?> propertyEnum,
 			final Serializable value ) {
-		if (!containsPropertyValue(propertyEnum)) {
+		if (!containsPropertyValue(propertyEnum) && value != null) {
 			LOGGER.info(
 					"Setting parameter : {} to {}",
 					propertyEnum.toString(),
@@ -873,6 +876,33 @@ public class PropertyManagement implements
 		@Override
 		public Class<Path> baseClass() {
 			return Path.class;
+		}
+	}
+
+	public static class DoubleConverter implements
+			PropertyConverter<Double>
+	{
+		/**
+ *
+ */
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Serializable convert(
+				final Double ob ) {
+			return ob;
+		}
+
+		@Override
+		public Double convert(
+				final Serializable ob )
+				throws Exception {
+			return Double.parseDouble(ob.toString());
+		}
+
+		@Override
+		public Class<Double> baseClass() {
+			return Double.class;
 		}
 	}
 

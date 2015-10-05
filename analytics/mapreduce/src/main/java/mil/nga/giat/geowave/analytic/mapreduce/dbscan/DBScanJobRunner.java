@@ -173,7 +173,8 @@ public class DBScanJobRunner extends
 					HullParameters.Hull.ITERATION,
 					HullParameters.Hull.DATA_TYPE_ID,
 					HullParameters.Hull.DATA_NAMESPACE_URI,
-					ClusteringParameters.Clustering.MINIMUM_SIZE
+					ClusteringParameters.Clustering.MINIMUM_SIZE,
+					Partition.MAX_MEMBER_SELECTION
 				},
 				config,
 				getScope());

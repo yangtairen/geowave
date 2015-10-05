@@ -115,7 +115,7 @@ abstract public class GenericStoreCommandLineOptions<T>
 		final CommandLine commandLineWithStoreOptions = parser.parse(
 				cliOptions,
 				currentCommandLine.getArgs(),
-				true);
+				false);
 		CommandLineUtils.addOptions(
 				commandLineWithStoreOptions,
 				currentCommandLine.getOptions());
