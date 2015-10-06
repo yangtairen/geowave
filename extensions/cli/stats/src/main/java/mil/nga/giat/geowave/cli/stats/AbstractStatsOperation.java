@@ -10,6 +10,7 @@ import mil.nga.giat.geowave.core.cli.DataStatisticsStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
@@ -60,12 +61,13 @@ abstract public class AbstractStatsOperation implements
 		try {
 			CommandLine commandLine = new BasicParser().parse(
 					allOptions,
-					args, true);
+					args,
+					true);
 			CommandLineResult<DataStoreCommandLineOptions> dataStoreCli = null;
 			CommandLineResult<AdapterStoreCommandLineOptions> adapterStoreCli = null;
 			CommandLineResult<IndexStoreCommandLineOptions> indexStoreCli = null;
 			CommandLineResult<DataStatisticsStoreCommandLineOptions> statsStoreCli = null;
-			StatsCommandLineOptions statsOperations = null;
+			StatsCommandLineOptions statsOptions = null;
 			ParseException parseException = null;
 			boolean newCommandLine = false;
 			do {
@@ -125,35 +127,63 @@ abstract public class AbstractStatsOperation implements
 					newCommandLine = true;
 					continue;
 				}
-				statsOperations = StatsCommandLineOptions.parseOptions(commandLine);
+				statsOptions = StatsCommandLineOptions.parseOptions(commandLine);
 			}
 			while (newCommandLine);
 			if (parseException != null) {
 				throw parseException;
 			}
-			final ByteArrayId adapterId = new ByteArrayId(
-					statsOperations.getTypeName());
+
+			final String[] authorizations = getAuthorizations(statsOptions.getAuthorizations());
 			final AdapterStore adapterStore = adapterStoreCli.getResult().createStore();
-			DataAdapter<?> adapter = adapterStore.getAdapter(adapterId);
-			if (adapter == null) {
-				LOGGER.error("Unknown adapter " + adapterId);
-				final Iterator<DataAdapter<?>> it = adapterStore.getAdapters();
-				final StringBuffer buffer = new StringBuffer();
-				while (it.hasNext()) {
-					adapter = it.next();
-					buffer.append(
-							adapter.getAdapterId().getString()).append(
-							' ');
+			final DataStore dataStore = dataStoreCli.getResult().createStore();
+			final IndexStore indexStore = indexStoreCli.getResult().createStore();
+			final DataStatisticsStore statsStore = statsStoreCli.getResult().createStore();
+			if (statsOptions.getAdapterId() != null) {
+				final ByteArrayId adapterId = new ByteArrayId(
+						statsOptions.getAdapterId());
+				DataAdapter<?> adapter = adapterStore.getAdapter(adapterId);
+				if (adapter == null) {
+					LOGGER.error("Unknown adapter " + adapterId);
+					final Iterator<DataAdapter<?>> it = adapterStore.getAdapters();
+					final StringBuffer buffer = new StringBuffer();
+					while (it.hasNext()) {
+						adapter = it.next();
+						buffer.append(
+								adapter.getAdapterId().getString()).append(
+								' ');
+					}
+					LOGGER.info("Available adapters: " + buffer.toString());
+					return false;
 				}
-				LOGGER.info("Available adapters: " + buffer.toString());
-				return false;
+				return calculateStatistics(
+						dataStore,
+						indexStore,
+						statsStore,
+						adapter,
+						authorizations);
 			}
-			return calculateStatistics(
-					dataStoreCli.getResult().createStore(),
-					indexStoreCli.getResult().createStore(),
-					statsStoreCli.getResult().createStore(),
-					adapter,
-					getAuthorizations(statsOperations.getAuthorizations()));
+			else {
+				boolean success = false;
+				try (CloseableIterator<DataAdapter<?>> adapterIt = adapterStore.getAdapters()) {
+					if (adapterIt.hasNext()) {
+						success = true;
+					}
+					while (adapterIt.hasNext()) {
+						final DataAdapter<?> adapter = adapterIt.next();
+						if (!calculateStatistics(
+								dataStore,
+								indexStore,
+								statsStore,
+								adapter,
+								authorizations)) {
+							success = false;
+							LOGGER.info("Unable to calculate statistics for adapter: " + adapter.getAdapterId().getString());
+						}
+					}
+				}
+				return success;
+			}
 		}
 		catch (final ParseException e) {
 			LOGGER.error(
@@ -169,4 +199,13 @@ abstract public class AbstractStatsOperation implements
 		}
 
 	}
+
+	// protected static boolean runForAdapter(
+	// final DataAdapt adapterId,
+	// final AdapterStore adapterStore,
+	// final DataStore dataStore,
+	// final IndexStore indexStore,
+	// final DataStatisticsStore statsStore,
+	// final String[] authorizations ) {
+	// }
 }

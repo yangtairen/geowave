@@ -24,18 +24,14 @@ public class RasterTileResizeMapper extends
 			final GeoWaveInputKey key,
 			final GridCoverage value,
 			final MapContext<GeoWaveInputKey, GridCoverage, GeoWaveInputKey, Object> context )
-					throws IOException,
-					InterruptedException {
-		if (helper.isOriginalCoverage(
-				key.getAdapterId())) {
-			final DataAdapter<?> adapter = super.serializationTool.getAdapter(
-					key.getAdapterId());
+			throws IOException,
+			InterruptedException {
+		if (helper.isOriginalCoverage(key.getAdapterId())) {
+			final DataAdapter<?> adapter = super.serializationTool.getAdapter(key.getAdapterId());
 			if ((adapter != null) && (adapter instanceof RasterDataAdapter)) {
-				final Iterator<GridCoverage> coverages = helper.getCoveragesForIndex(
-						value);
+				final Iterator<GridCoverage> coverages = helper.getCoveragesForIndex(value);
 				if (coverages == null) {
-					LOGGER.error(
-							"Couldn't get coverages instance, getCoveragesForIndex returned null");
+					LOGGER.error("Couldn't get coverages instance, getCoveragesForIndex returned null");
 					throw new IOException(
 							"Couldn't get coverages instance, getCoveragesForIndex returned null");
 				}
@@ -47,8 +43,7 @@ public class RasterTileResizeMapper extends
 						final GeoWaveInputKey inputKey = new GeoWaveInputKey(
 								helper.getNewCoverageId(),
 								((FitToIndexGridCoverage) c).getInsertionId());
-						inputKey.setInsertionId(
-								((FitToIndexGridCoverage) c).getInsertionId());
+						inputKey.setInsertionId(((FitToIndexGridCoverage) c).getInsertionId());
 						context.write(
 								inputKey,
 								c);
@@ -61,10 +56,9 @@ public class RasterTileResizeMapper extends
 	@Override
 	protected void setup(
 			final Mapper<GeoWaveInputKey, GridCoverage, GeoWaveInputKey, ObjectWritable>.Context context )
-					throws IOException,
-					InterruptedException {
-		super.setup(
-				context);
+			throws IOException,
+			InterruptedException {
+		super.setup(context);
 		helper = new RasterTileResizeHelper(
 				context);
 	}
