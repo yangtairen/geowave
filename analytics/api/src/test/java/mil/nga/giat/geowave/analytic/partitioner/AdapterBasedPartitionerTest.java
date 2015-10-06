@@ -26,6 +26,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStoreFactory;
 
+import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
@@ -105,10 +106,11 @@ public class AdapterBasedPartitionerTest
 		memoryAdapterStoreOptions.put(
 				AdapterStoreCommandLineOptions.ADAPTER_STORE_NAME_KEY,
 				new MemoryAdapterStoreFactory().getName());
-
+		final Options options = new Options();
+		AdapterStoreCommandLineOptions.applyOptions(options);
 		final PersistableAdapterStore adapterStore = new PersistableAdapterStore(
 				AdapterStoreCommandLineOptions.parseOptions(
-						null,
+						options,
 						new OptionMapWrapper(
 								memoryAdapterStoreOptions)).getResult());
 		adapterStore.getCliOptions().createStore().addAdapter(

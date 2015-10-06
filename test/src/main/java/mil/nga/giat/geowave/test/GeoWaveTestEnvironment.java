@@ -99,8 +99,6 @@ abstract public class GeoWaveTestEnvironment
 	private void verifyStats() {
 		GeoWaveMain.run(new String[] {
 			"-statsdump",
-//			"-type",
-//			"",
 			"-" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
 			TEST_NAMESPACE,
 			"-datastore",
