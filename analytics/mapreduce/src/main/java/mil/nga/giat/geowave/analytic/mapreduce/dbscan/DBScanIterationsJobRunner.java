@@ -123,12 +123,10 @@ public class DBScanIterationsJobRunner implements
 				Partition.PARTITION_PRECISION,
 				1.0);
 
-		if (!runTimeProperties.hasProperty(Clustering.DISTANCE_THRESHOLDS)) {
-			runTimeProperties.copy(
-					Partition.PARTITION_DISTANCE,
-					Clustering.DISTANCE_THRESHOLDS);
-		}
-
+		runTimeProperties.storeIfEmpty(
+				Clustering.DISTANCE_THRESHOLDS,
+				Double.toString(maxDistance));
+		
 		final boolean overrideSecondary = runTimeProperties.hasProperty(Partition.SECONDARY_PARTITIONER_CLASS);
 
 		if (!overrideSecondary) {
@@ -162,10 +160,6 @@ public class DBScanIterationsJobRunner implements
 						Partition.SECONDARY_PARTITIONER_CLASS);
 			}
 		}
-
-		runTimeProperties.storeIfEmpty(
-				Clustering.DISTANCE_THRESHOLDS,
-				Double.toString(maxDistance));
 
 		jobRunner.setInputFormatConfiguration(inputFormatConfiguration);
 		jobRunner.setOutputFormatConfiguration(new SequenceFileOutputFormatConfiguration(

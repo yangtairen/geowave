@@ -239,6 +239,10 @@ public class NNMapReduce
 					distanceProfileFn,
 					maxDistance,
 					key.partitionData);
+		
+			processor.setUpperBoundPerPartition(maxNeighbors);
+
+			
 			final PARTITION_SUMMARY summary = createSummary();
 
 			for (final AdapterWithObjectWritable inputValue : values) {
@@ -389,6 +393,7 @@ public class NNMapReduce
 						NNMapReduce.class,
 						new Double(
 								1.0));
+				partitioner.initialize(context, NNMapReduce.class);
 			}
 			catch (final Exception e1) {
 				throw new IOException(
@@ -397,7 +402,7 @@ public class NNMapReduce
 
 			maxNeighbors = config.getInt(
 					PartitionParameters.Partition.MAX_MEMBER_SELECTION,
-					Integer.MAX_VALUE);
+					NNProcessor.DEFAULT_UPPER_BOUND_PARTIION_SIZE);
 
 			LOGGER.info(
 					"Maximum Neighbors = {}",

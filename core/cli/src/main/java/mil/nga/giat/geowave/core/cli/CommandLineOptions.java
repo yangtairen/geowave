@@ -97,8 +97,13 @@ public interface CommandLineOptions
 
 		@Override
 		public String[] getArgs() {
-			return optionMap.keySet().toArray(
-					new String[] {});
+			final String[] args = new String[optionMap.size() * 2];
+			int i = 0;
+			for (Map.Entry<String, String> entry : optionMap.entrySet()) {
+				args[i++] = "-"+entry.getKey();
+				args[i++] = entry.getValue();
+			}
+			return args;
 		}
 
 		@Override
