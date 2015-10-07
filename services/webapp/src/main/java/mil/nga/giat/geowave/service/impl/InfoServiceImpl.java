@@ -26,6 +26,7 @@ import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStoreFactorySpi;
 import mil.nga.giat.geowave.service.InfoService;
+import mil.nga.giat.geowave.service.ServiceUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 

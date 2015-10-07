@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.service.impl;
+package mil.nga.giat.geowave.service;
 
 import java.io.IOException;
 import java.io.InputStream;

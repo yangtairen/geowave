@@ -25,6 +25,7 @@ import javax.ws.rs.core.Response.Status;
 
 import mil.nga.giat.geowave.core.cli.GeoWaveMain;
 import mil.nga.giat.geowave.service.IngestService;
+import mil.nga.giat.geowave.service.ServiceUtils;
 
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
