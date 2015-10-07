@@ -40,7 +40,7 @@ import mil.nga.giat.geowave.format.stanag4676.Stanag4676IngestPlugin;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChip;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChipDataAdapter;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChipUtils;
-import mil.nga.giat.geowave.service.impl.ServiceUtils;
+import mil.nga.giat.geowave.service.ServiceUtils;
 
 import org.apache.log4j.Logger;
 
