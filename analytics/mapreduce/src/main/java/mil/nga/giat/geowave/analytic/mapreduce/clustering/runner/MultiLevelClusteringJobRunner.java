@@ -147,20 +147,12 @@ public abstract class MultiLevelClusteringJobRunner extends
 				HullParameters.Hull.INDEX_ID,
 				IndexType.SPATIAL_VECTOR.getDefaultId());
 
-		final FileSystem fs = FileSystem.get(config);
-
-		final Path extractPath = jobExtractRunner.getHdfsOutputPath();
-
-		if (fs.exists(extractPath)) {
-			fs.delete(
-					extractPath,
-					true);
-		}
-
 		// first. extract data
 		int status = jobExtractRunner.run(
 				config,
-				propertyManagement);
+				propertyManagement);	
+
+		final Path extractPath = jobExtractRunner.getHdfsOutputPath();
 
 		groupAssignmentRunner.setInputFormatConfiguration(new SequenceFileInputFormatConfiguration(
 				extractPath));
@@ -173,6 +165,8 @@ public abstract class MultiLevelClusteringJobRunner extends
 				Clustering.RETAIN_GROUP_ASSIGNMENTS,
 				false);
 
+		final FileSystem fs = FileSystem.get(config);
+		
 		// run clustering for each level
 		final String outputBaseDir = propertyManagement.getPropertyAsString(
 				MapReduceParameters.MRConfig.HDFS_BASE_DIR,

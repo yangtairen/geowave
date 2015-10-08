@@ -160,7 +160,6 @@ public class CentroidManagerGeoWave<T> implements
 				StringUtils.stringToBinary(centroidDataTypeId)));
 	}
 
-	@SuppressWarnings("unchecked")
 	public CentroidManagerGeoWave(
 			final PropertyManagement properties )
 			throws IOException {
@@ -175,7 +174,6 @@ public class CentroidManagerGeoWave<T> implements
 				LOGGER);
 	}
 
-	@SuppressWarnings("unchecked")
 	public CentroidManagerGeoWave(
 			final JobContext context,
 			final Class<?> scope )
@@ -186,7 +184,6 @@ public class CentroidManagerGeoWave<T> implements
 				LOGGER);
 	}
 
-	@SuppressWarnings("unchecked")
 	public CentroidManagerGeoWave(
 			final JobContext context,
 			final Class<?> scope,

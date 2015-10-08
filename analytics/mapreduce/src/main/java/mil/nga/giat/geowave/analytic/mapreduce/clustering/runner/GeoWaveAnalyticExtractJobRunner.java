@@ -28,13 +28,17 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.DataStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.dedupe.GeoWaveDedupeJobRunner;
+import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputFormat;
 
+import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -59,15 +63,6 @@ public class GeoWaveAnalyticExtractJobRunner extends
 	public GeoWaveAnalyticExtractJobRunner() {}
 
 	@Override
-	public int run(
-			final String[] args )
-			throws Exception {
-		new AnalyticCLIOperationDriver(
-				this).runOperation(args);
-		return 0;
-	}
-
-	@Override
 	protected int getNumReduceTasks() {
 		return reducerCount;
 	}
@@ -89,7 +84,7 @@ public class GeoWaveAnalyticExtractJobRunner extends
 		reducerCount = Math.max(
 				configWrapper.getInt(
 						ExtractParameters.Extract.REDUCER_COUNT,
-						1),
+						8),
 				1);
 
 		outputBaseDir = configWrapper.getString(
@@ -129,8 +124,7 @@ public class GeoWaveAnalyticExtractJobRunner extends
 	private FeatureDataAdapter createAdapter(
 			final String outputDataTypeID,
 			final String namespaceURI,
-			@SuppressWarnings("rawtypes")
-			final Class<? extends DimensionExtractor> dimensionExtractorClass )
+			@SuppressWarnings("rawtypes") final Class<? extends DimensionExtractor> dimensionExtractorClass )
 			throws Exception {
 		final DimensionExtractor<?> extractor = dimensionExtractorClass.newInstance();
 		return AnalyticFeature.createGeometryFeatureAdapter(
@@ -161,6 +155,7 @@ public class GeoWaveAnalyticExtractJobRunner extends
 		runTimeProperties.storeIfEmpty(
 				ExtractParameters.Extract.OUTPUT_DATA_TYPE_ID,
 				"centroid");
+
 		runTimeProperties.setConfig(
 				new ParameterEnum[] {
 					MapReduceParameters.MRConfig.HDFS_BASE_DIR,
@@ -191,13 +186,28 @@ public class GeoWaveAnalyticExtractJobRunner extends
 		if (myQuery == null) {
 			myQuery = runTimeProperties.getPropertyAsQuery(ExtractParameters.Extract.QUERY);
 		}
-		setQuery(myQuery);
 		setMinInputSplits(runTimeProperties.getPropertyAsInt(
 				ExtractParameters.Extract.MIN_INPUT_SPLIT,
 				1));
 		setMaxInputSplits(runTimeProperties.getPropertyAsInt(
 				ExtractParameters.Extract.MAX_INPUT_SPLIT,
 				10000));
+		if (myQuery != null) {
+			GeoWaveInputFormat.setQuery(
+					config,
+					query);
+		}
+		if (minInputSplits != null) {
+			GeoWaveInputFormat.setMinimumSplitCount(
+					config,
+					minInputSplits);
+		}
+		if (maxInputSplits != null) {
+			GeoWaveInputFormat.setMaximumSplitCount(
+					config,
+					maxInputSplits);
+		}
+
 		setConf(config);
 
 		config.setClass(
@@ -217,7 +227,8 @@ public class GeoWaveAnalyticExtractJobRunner extends
 
 		@SuppressWarnings("rawtypes")
 		final DataAdapter[] adapters = ClusteringUtils.getAdapters(runTimeProperties);
-		dataStoreFactory = (DataStoreFactorySpi) ((PersistableDataStore) runTimeProperties.getProperty(StoreParam.DATA_STORE)).getCliOptions().getFactory();
+		final PersistableDataStore store = ((PersistableDataStore) runTimeProperties.getProperty(StoreParam.DATA_STORE));
+		dataStoreFactory = (DataStoreFactorySpi) store.getCliOptions().getFactory();
 		if (adapterId != null) {
 			final ByteArrayId byteId = new ByteArrayId(
 					StringUtils.stringToBinary(adapterId));
@@ -239,6 +250,40 @@ public class GeoWaveAnalyticExtractJobRunner extends
 			}
 		}
 
+		namespace = store.getCliOptions().getNamespace();
+		configOptions = store.getCliOptions().getConfigOptions();
+		GeoWaveInputFormat.setDataStoreName(
+				config,
+				dataStoreFactory.getName());
+		GeoWaveInputFormat.setStoreConfigOptions(
+				config,
+				ConfigUtils.valuesToStrings(
+						configOptions,
+						dataStoreFactory.getOptions()));
+		GeoWaveInputFormat.setGeoWaveNamespace(
+				config,
+				store.getCliOptions().getNamespace());
+
+		GeoWaveOutputFormat.setDataStoreName(
+				config,
+				dataStoreFactory.getName());
+		GeoWaveOutputFormat.setStoreConfigOptions(
+				config,
+				ConfigUtils.valuesToStrings(
+						configOptions,
+						dataStoreFactory.getOptions()));
+		GeoWaveOutputFormat.setGeoWaveNamespace(
+				config,
+				store.getCliOptions().getNamespace());
+
+		final FileSystem fs = FileSystem.get(config);
+		
+		if (fs.exists(this.getHdfsOutputPath())) {
+			fs.delete(
+					getHdfsOutputPath(),
+					true);
+		}
+		
 		return ToolRunner.run(
 				config,
 				this,
@@ -273,6 +318,27 @@ public class GeoWaveAnalyticExtractJobRunner extends
 		return this.run(
 				MapReduceJobController.getConfiguration(runTimeProperties),
 				runTimeProperties);
+	}
+
+	@Override
+	public boolean runOperation(
+			final String[] args )
+			throws ParseException {
+
+		try {
+			final Job job = new Job(
+					super.getConf());
+			job.setJarByClass(this.getClass());
+			configure(job);
+			return job.waitForCompletion(true);
+		}
+		catch (final Exception e) {
+			LOGGER.error(
+					"Unable to run job",
+					e);
+			throw new ParseException(
+					e.getMessage());
+		}
 	}
 
 }
