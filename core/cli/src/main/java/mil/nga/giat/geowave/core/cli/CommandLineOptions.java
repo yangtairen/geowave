@@ -100,7 +100,7 @@ public interface CommandLineOptions
 			final String[] args = new String[optionMap.size() * 2];
 			int i = 0;
 			for (Map.Entry<String, String> entry : optionMap.entrySet()) {
-				args[i++] = "-"+entry.getKey();
+				args[i++] = "-" + entry.getKey();
 				args[i++] = entry.getValue();
 			}
 			return args;

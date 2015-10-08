@@ -126,7 +126,7 @@ public class DBScanIterationsJobRunner implements
 		runTimeProperties.storeIfEmpty(
 				Clustering.DISTANCE_THRESHOLDS,
 				Double.toString(maxDistance));
-		
+
 		final boolean overrideSecondary = runTimeProperties.hasProperty(Partition.SECONDARY_PARTITIONER_CLASS);
 
 		if (!overrideSecondary) {

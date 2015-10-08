@@ -170,11 +170,12 @@ public class CQLQueryFilter implements
 			final byte[] filterBytes = new byte[filterBytesLength];
 			buf.get(filterBytes);
 			final String cql = StringUtils.stringFromBinary(filterBytes);
-			try {			
+			try {
 				filter = ECQL.toFilter(cql);
 			}
 			catch (final Exception e) {
-				throw new IllegalArgumentException(cql,
+				throw new IllegalArgumentException(
+						cql,
 						e);
 			}
 		}

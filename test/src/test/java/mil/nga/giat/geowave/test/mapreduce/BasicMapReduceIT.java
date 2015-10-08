@@ -266,18 +266,18 @@ public class BasicMapReduceIT extends
 				conf,
 				jobRunner,
 				new String[] {
-						"-" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
-						TEST_NAMESPACE,
-						"-datastore",
-						"accumulo",
-						"-" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
-						zookeeper,
-						"-"  + BasicAccumuloOperations.INSTANCE_CONFIG_NAME,
-						accumuloInstance,
-						"-"  + BasicAccumuloOperations.USER_CONFIG_NAME,
-						accumuloUser,
-						"-"  + BasicAccumuloOperations.PASSWORD_CONFIG_NAME,
-						accumuloPassword
+					"-" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
+					TEST_NAMESPACE,
+					"-datastore",
+					"accumulo",
+					"-" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
+					zookeeper,
+					"-" + BasicAccumuloOperations.INSTANCE_CONFIG_NAME,
+					accumuloInstance,
+					"-" + BasicAccumuloOperations.USER_CONFIG_NAME,
+					accumuloUser,
+					"-" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME,
+					accumuloPassword
 				});
 		Assert.assertEquals(
 				0,

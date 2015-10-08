@@ -239,10 +239,9 @@ public class NNMapReduce
 					distanceProfileFn,
 					maxDistance,
 					key.partitionData);
-		
+
 			processor.setUpperBoundPerPartition(maxNeighbors);
 
-			
 			final PARTITION_SUMMARY summary = createSummary();
 
 			for (final AdapterWithObjectWritable inputValue : values) {
@@ -393,7 +392,9 @@ public class NNMapReduce
 						NNMapReduce.class,
 						new Double(
 								1.0));
-				partitioner.initialize(context, NNMapReduce.class);
+				partitioner.initialize(
+						context,
+						NNMapReduce.class);
 			}
 			catch (final Exception e1) {
 				throw new IOException(

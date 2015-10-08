@@ -391,7 +391,7 @@ public class KDEJobRunner extends
 			catch (final Exception e) {
 				parseException = e;
 			}
-			
+
 			try {
 				inputDataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
 						"input_",
@@ -412,10 +412,10 @@ public class KDEJobRunner extends
 			}
 			if ((inputAdapterStoreOptionsResult != null) && inputAdapterStoreOptionsResult.isCommandLineChange()) {
 				commandLine = inputAdapterStoreOptionsResult.getCommandLine();
-//				newCommandLine = true;
-//				continue;
+				// newCommandLine = true;
+				// continue;
 			}
-			
+
 			if ((inputDataStoreOptionsResult != null) && inputDataStoreOptionsResult.isCommandLineChange()) {
 				commandLine = inputDataStoreOptionsResult.getCommandLine();
 			}
@@ -430,11 +430,10 @@ public class KDEJobRunner extends
 			}
 			if ((outputDataStoreOptionsResult != null) && outputDataStoreOptionsResult.isCommandLineChange()) {
 				commandLine = outputDataStoreOptionsResult.getCommandLine();
-//				newCommandLine = true;
-//				continue;
+				// newCommandLine = true;
+				// continue;
 			}
-			
-		
+
 		}
 		while (newCommandLine);
 		if (parseException != null) {
