@@ -62,7 +62,6 @@ public class GeoWaveFeatureReader implements
 	private final GeoWaveDataStoreComponents components;
 	private final GeoWaveFeatureCollection featureCollection;
 	private final GeoWaveTransaction transaction;
-	private final Iterator<SimpleFeature> pendingWritesIterator;
 
 	public GeoWaveFeatureReader(
 			final Query query,
@@ -74,7 +73,6 @@ public class GeoWaveFeatureReader implements
 		featureCollection = new GeoWaveFeatureCollection(
 				this,
 				query);
-		pendingWritesIterator = transaction.query(query);
 	}
 
 	public GeoWaveTransaction getTransaction() {
@@ -104,7 +102,6 @@ public class GeoWaveFeatureReader implements
 	@Override
 	public boolean hasNext()
 			throws IOException {
-		if (pendingWritesIterator.hasNext()) return true;
 		Iterator<SimpleFeature> it = featureCollection.getOpenIterator();
 		if (it != null) {
 			return it.hasNext();
@@ -118,7 +115,6 @@ public class GeoWaveFeatureReader implements
 			throws IOException,
 			IllegalArgumentException,
 			NoSuchElementException {
-		if (pendingWritesIterator.hasNext()) return pendingWritesIterator.next();
 		Iterator<SimpleFeature> it = featureCollection.getOpenIterator();
 		if (it != null) {
 			return it.next();
@@ -199,17 +195,21 @@ public class GeoWaveFeatureReader implements
 					"unable to close index iterator for query",
 					e);
 		}
-		return interweaveTransaction(new CloseableIteratorWrapper<SimpleFeature>(
-				new Closeable() {
-					@Override
-					public void close()
-							throws IOException {
-						for (final CloseableIterator<SimpleFeature> result : results) {
-							result.close();
-						}
-					}
-				},
-				Iterators.concat(results.iterator())));
+		return interweaveTransaction(
+				issuer.getLimit(),
+				issuer.getFilter(),
+				new CloseableIteratorWrapper<SimpleFeature>(
+
+						new Closeable() {
+							@Override
+							public void close()
+									throws IOException {
+								for (final CloseableIterator<SimpleFeature> result : results) {
+									result.close();
+								}
+							}
+						},
+						Iterators.concat(results.iterator())));
 	}
 
 	private class BaseIssuer implements
@@ -253,6 +253,14 @@ public class GeoWaveFeatureReader implements
 								components.getAdapter()),
 						transaction.composeAuthorizations());
 			}
+		}
+
+		public Filter getFilter() {
+			return filter;
+		}
+
+		public Integer getLimit() {
+			return limit;
 		}
 	}
 
@@ -465,8 +473,13 @@ public class GeoWaveFeatureReader implements
 	}
 
 	private CloseableIterator<SimpleFeature> interweaveTransaction(
+			final Integer limit,
+			final Filter filter,
 			final CloseableIterator<SimpleFeature> it ) {
-		return transaction.interweaveTransaction(it);
+		return transaction.interweaveTransaction(
+				limit,
+				filter,
+				it);
 
 	}
 

@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.query.BasicQuery;
 
 import org.geotools.data.Query;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.filter.Filter;
 
 /**
  * Represent the Writer's pluggable strategy of a transaction
@@ -53,20 +55,12 @@ public interface GeoWaveTransaction
 			SimpleFeature feature )
 			throws IOException;
 
-	/**
-	 * Query pending additions
-	 * 
-	 * @param query
-	 * @return
-	 */
-
-	public Iterator<SimpleFeature> query(
-			Query query );
-
 	public String[] composeAuthorizations();
 
 	public String composeVisibility();
 
 	public CloseableIterator<SimpleFeature> interweaveTransaction(
-			CloseableIterator<SimpleFeature> it );
+			final Integer limit,
+			final Filter filter,
+			final CloseableIterator<SimpleFeature> it );
 }

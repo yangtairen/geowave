@@ -12,6 +12,7 @@ import org.geotools.data.Transaction;
 import org.geotools.factory.Hints;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.filter.Filter;
 
 /**
  * Commit changes immediately
@@ -136,7 +137,9 @@ public class GeoWaveEmptyTransaction implements
 	}
 
 	public CloseableIterator<SimpleFeature> interweaveTransaction(
-			CloseableIterator<SimpleFeature> it ) {
+			final Integer limit,
+			final Filter filter,
+			final CloseableIterator<SimpleFeature> it ) {
 		return it;
 	}
 
@@ -149,12 +152,6 @@ public class GeoWaveEmptyTransaction implements
 	@Override
 	public String composeVisibility() {
 		return "";
-	}
-
-	@Override
-	public Iterator<SimpleFeature> query(
-			Query query ) {
-		return Collections.<SimpleFeature> emptyList().iterator();
 	}
 
 }
