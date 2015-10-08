@@ -1,14 +1,15 @@
-package mil.nga.giat.geowave.service.impl;
+package mil.nga.giat.geowave.service;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServiceUtils
 {
-	private final static Logger log = Logger.getLogger(ServiceUtils.class);
+	private final static Logger log = LoggerFactory.getLogger(ServiceUtils.class);
 
 	public static Properties loadProperties(
 			final InputStream is ) {

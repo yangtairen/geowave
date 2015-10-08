@@ -10,16 +10,6 @@ import java.util.Map;
 
 import javax.media.jai.Interpolation;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.hadoop.util.ToolRunner;
-import org.geotools.geometry.GeneralEnvelope;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.opengis.coverage.grid.GridCoverage;
-
 import mil.nga.giat.geowave.adapter.raster.plugin.GeoWaveGTRasterFormat;
 import mil.nga.giat.geowave.adapter.raster.plugin.GeoWaveRasterConfig;
 import mil.nga.giat.geowave.adapter.raster.plugin.GeoWaveRasterReader;
@@ -32,6 +22,16 @@ import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.util.ConnectorPool;
 import mil.nga.giat.geowave.test.GeoWaveTestEnvironment;
+
+import org.apache.accumulo.core.client.AccumuloException;
+import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.apache.accumulo.core.client.Connector;
+import org.apache.hadoop.util.ToolRunner;
+import org.geotools.geometry.GeneralEnvelope;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.opengis.coverage.grid.GridCoverage;
 
 public class KDERasterResizeIT extends
 		MapReduceTestEnvironment
@@ -74,32 +74,28 @@ public class KDERasterResizeIT extends
 		final double decimalDegreesPerCellMinLevel = 180.0 / Math.pow(
 				2,
 				BASE_MIN_LEVEL);
-		final double cellOriginXMinLevel = Math.round(
-				TARGET_MIN_LON / decimalDegreesPerCellMinLevel);
-		final double cellOriginYMinLevel = Math.round(
-				TARGET_MIN_LAT / decimalDegreesPerCellMinLevel);
-		final double numCellsMinLevel = Math.round(
-				TARGET_DECIMAL_DEGREES_SIZE / decimalDegreesPerCellMinLevel);
+		final double cellOriginXMinLevel = Math.round(TARGET_MIN_LON / decimalDegreesPerCellMinLevel);
+		final double cellOriginYMinLevel = Math.round(TARGET_MIN_LAT / decimalDegreesPerCellMinLevel);
+		final double numCellsMinLevel = Math.round(TARGET_DECIMAL_DEGREES_SIZE / decimalDegreesPerCellMinLevel);
 		final GeneralEnvelope queryEnvelope = new GeneralEnvelope(
 				new double[] {
 					// this is exactly on a tile boundary, so there will be no
 					// scaling on the tile composition/rendering
 					decimalDegreesPerCellMinLevel * cellOriginXMinLevel,
 					decimalDegreesPerCellMinLevel * cellOriginYMinLevel
-		},
+				},
 				new double[] {
 					// these values are also on a tile boundary, to avoid
 					// scaling
 					decimalDegreesPerCellMinLevel * (cellOriginXMinLevel + numCellsMinLevel),
 					decimalDegreesPerCellMinLevel * (cellOriginYMinLevel + numCellsMinLevel)
-		});
+				});
 
 		for (int i = MIN_TILE_SIZE_POWER_OF_2; i <= MAX_TILE_SIZE_POWER_OF_2; i += INCREMENT) {
 			final String tileSizeCoverageName = TEST_COVERAGE_NAME_PREFIX + i;
 			ToolRunner.run(
 					new KDEJobRunner(),
 					new String[] {
-
 						"-" + KDECommandLineOptions.FEATURE_TYPE_KEY,
 						KDE_FEATURE_TYPE_NAME,
 						"-" + KDECommandLineOptions.MIN_LEVEL_KEY,
@@ -137,6 +133,8 @@ public class KDERasterResizeIT extends
 						accumuloUser,
 						"-input_" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME,
 						accumuloPassword,
+						"-output_" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
+						TEST_COVERAGE_NAMESPACE,
 						"-output_datastore",
 						"accumulo",
 						"-output_" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
@@ -146,11 +144,9 @@ public class KDERasterResizeIT extends
 						"-output_" + BasicAccumuloOperations.USER_CONFIG_NAME,
 						accumuloUser,
 						"-output_" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME,
-						accumuloPassword,
-						"-output_" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
-						TEST_COVERAGE_NAMESPACE,
+						accumuloPassword
 
-			});
+					});
 		}
 		final int numLevels = (BASE_MAX_LEVEL - BASE_MIN_LEVEL) + 1;
 		final double[][][][] initialSampleValuesPerRequestSize = new double[numLevels][][][];
@@ -221,19 +217,31 @@ public class KDERasterResizeIT extends
 								(int) Math.pow(
 										2,
 										MAX_TILE_SIZE_POWER_OF_2 - i)).toString(),
-						"-datastore",
+						"-input_" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
+						TEST_COVERAGE_NAMESPACE,
+						"-input_datastore",
 						"accumulo",
-						"-" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
+						"-input_" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
 						zookeeper,
-						"-" + BasicAccumuloOperations.INSTANCE_CONFIG_NAME,
+						"-input_" + BasicAccumuloOperations.INSTANCE_CONFIG_NAME,
 						accumuloInstance,
-						"-" + BasicAccumuloOperations.USER_CONFIG_NAME,
+						"-input_" + BasicAccumuloOperations.USER_CONFIG_NAME,
 						accumuloUser,
-						"-" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME,
+						"-input_" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME,
 						accumuloPassword,
-						"-" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
-						TEST_COVERAGE_NAMESPACE
-			});
+						"-output_" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
+						TEST_COVERAGE_NAMESPACE,
+						"-output_datastore",
+						"accumulo",
+						"-output_" + BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME,
+						zookeeper,
+						"-output_" + BasicAccumuloOperations.INSTANCE_CONFIG_NAME,
+						accumuloInstance,
+						"-output_" + BasicAccumuloOperations.USER_CONFIG_NAME,
+						accumuloUser,
+						"-output_" + BasicAccumuloOperations.PASSWORD_CONFIG_NAME,
+						accumuloPassword,
+					});
 		}
 
 		for (int l = 0; l < numLevels; l++) {
@@ -279,9 +287,9 @@ public class KDERasterResizeIT extends
 			final GeneralEnvelope queryEnvelope,
 			final Rectangle pixelDimensions,
 			double[][][] expectedResults )
-					throws IOException,
-					AccumuloException,
-					AccumuloSecurityException {
+			throws IOException,
+			AccumuloException,
+			AccumuloSecurityException {
 		final Map<String, String> options = getAccumuloConfigOptions();
 
 		final GeoWaveRasterReader reader = new GeoWaveRasterReader(
@@ -291,8 +299,7 @@ public class KDERasterResizeIT extends
 						false,
 						Interpolation.INTERP_NEAREST));
 
-		queryEnvelope.setCoordinateReferenceSystem(
-				GeoWaveGTRasterFormat.DEFAULT_CRS);
+		queryEnvelope.setCoordinateReferenceSystem(GeoWaveGTRasterFormat.DEFAULT_CRS);
 		final Raster[] rasters = new Raster[numCoverages];
 		int coverageCount = 0;
 		for (int i = MIN_TILE_SIZE_POWER_OF_2; i <= MAX_TILE_SIZE_POWER_OF_2; i += INCREMENT) {

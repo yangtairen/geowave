@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import mil.nga.giat.geowave.service.GeoserverService;
+import mil.nga.giat.geowave.service.ServiceUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 

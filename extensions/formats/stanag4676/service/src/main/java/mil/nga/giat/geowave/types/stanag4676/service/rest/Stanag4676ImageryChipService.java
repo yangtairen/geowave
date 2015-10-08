@@ -6,10 +6,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Map.Entry;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
@@ -33,14 +33,12 @@ import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
-import mil.nga.giat.geowave.core.store.adapter.AdapterStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
-import mil.nga.giat.geowave.core.store.index.IndexStoreFactorySpi;
 import mil.nga.giat.geowave.format.stanag4676.Stanag4676IngestPlugin;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChip;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChipDataAdapter;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChipUtils;
-import mil.nga.giat.geowave.service.impl.ServiceUtils;
+import mil.nga.giat.geowave.service.ServiceUtils;
 
 import org.apache.log4j.Logger;
 
@@ -56,8 +54,6 @@ public class Stanag4676ImageryChipService
 	@Context
 	ServletContext context;
 	private DataStore dataStore;
-	private IndexStoreFactorySpi indexStoreFactory;
-	private AdapterStoreFactorySpi adapterStoreFactory;
 	private Map<String, Object> configOptions;
 
 	@GET
@@ -66,14 +62,23 @@ public class Stanag4676ImageryChipService
 	public Response getImage(
 			final @PathParam("mission") String mission,
 			final @PathParam("track") String track,
-			@PathParam("year") final int year,
-			@PathParam("month") final int month,
-			@PathParam("day") final int day,
-			@PathParam("hour") final int hour,
-			@PathParam("minute") final int minute,
-			@PathParam("second") final int second,
-			@PathParam("millis") final int millis,
-			@QueryParam("size") @DefaultValue("-1") final int targetPixelSize ) {
+			@PathParam("year")
+			final int year,
+			@PathParam("month")
+			final int month,
+			@PathParam("day")
+			final int day,
+			@PathParam("hour")
+			final int hour,
+			@PathParam("minute")
+			final int minute,
+			@PathParam("second")
+			final int second,
+			@PathParam("millis")
+			final int millis,
+			@QueryParam("size")
+			@DefaultValue("-1")
+			final int targetPixelSize ) {
 		final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
 		cal.set(
 				year,
@@ -132,8 +137,12 @@ public class Stanag4676ImageryChipService
 	public Response getVideo(
 			final @PathParam("mission") String mission,
 			final @PathParam("track") String track,
-			@QueryParam("size") @DefaultValue("-1") final int targetPixelSize,
-			@QueryParam("speed") @DefaultValue("1") final double speed ) {
+			@QueryParam("size")
+			@DefaultValue("-1")
+			final int targetPixelSize,
+			@QueryParam("speed")
+			@DefaultValue("1")
+			final double speed ) {
 		final DataStore dataStore = getSingletonInstance();
 		final CloseableIterator<Object> imageChipIt = dataStore.getEntriesByPrefix(
 				Stanag4676IngestPlugin.IMAGE_CHIP_INDEX,
@@ -244,7 +253,9 @@ public class Stanag4676ImageryChipService
 	}
 
 	private synchronized DataStore getSingletonInstance() {
-		if (dataStore != null) return dataStore;
+		if (dataStore != null) {
+			return dataStore;
+		}
 
 		final Properties props = ServiceUtils.loadProperties(context.getResourceAsStream(context.getInitParameter("config.properties")));
 		final Map<String, String> strMap = new HashMap<String, String>();
@@ -261,7 +272,7 @@ public class Stanag4676ImageryChipService
 		}
 		configOptions = ConfigUtils.valuesFromStrings(strMap);
 
-		String namespace = (String) configOptions.get(GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY);
+		final String namespace = (String) configOptions.get(GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY);
 		dataStore = GeoWaveStoreFinder.findDataStoreFactory(
 				configOptions).createStore(
 				configOptions,

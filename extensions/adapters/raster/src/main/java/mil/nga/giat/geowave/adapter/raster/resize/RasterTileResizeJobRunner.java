@@ -26,6 +26,7 @@ import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputKey;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -204,7 +205,11 @@ public class RasterTileResizeJobRunner extends
 
 		RasterTileResizeCommandLineOptions.applyOptions(allOptions);
 		Exception exception = null;
-		CommandLine commandLine = null;
+		final BasicParser parser = new BasicParser();
+		CommandLine commandLine = parser.parse(
+				allOptions,
+				args,
+				true);
 		CommandLineResult<DataStoreCommandLineOptions> inputDataStoreOptionsResult = null;
 		CommandLineResult<DataStoreCommandLineOptions> outputDataStoreOptionsResult = null;
 		CommandLineResult<AdapterStoreCommandLineOptions> inputAdapterStoreOptionsResult = null;
@@ -217,6 +222,7 @@ public class RasterTileResizeJobRunner extends
 			inputAdapterStoreOptionsResult = null;
 			inputIndexStoreOptionsResult = null;
 			exception = null;
+			rasterResizeOptions = RasterTileResizeCommandLineOptions.parseOptions(commandLine);
 			try {
 				inputDataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
 						"input_",
@@ -227,22 +233,14 @@ public class RasterTileResizeJobRunner extends
 				exception = e;
 			}
 			if ((inputDataStoreOptionsResult != null) && inputDataStoreOptionsResult.isCommandLineChange()) {
-				commandLine = inputDataStoreOptionsResult.getCommandLine();
+				// commandLine = inputDataStoreOptionsResult.getCommandLine();
+				for (final Option o : commandLine.getOptions()) {
+					final Option optClone = ((Option) o.clone());
+					optClone.setRequired(false);
+					allOptions.addOption(optClone);
+				}
 			}
-			try {
-				outputDataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
-						"output_",
-						allOptions,
-						commandLine);
-			}
-			catch (final Exception e) {
-				exception = e;
-			}
-			if ((outputDataStoreOptionsResult != null) && outputDataStoreOptionsResult.isCommandLineChange()) {
-				commandLine = outputDataStoreOptionsResult.getCommandLine();
-				newCommandLine = true;
-				continue;
-			}
+
 			try {
 				inputAdapterStoreOptionsResult = AdapterStoreCommandLineOptions.parseOptions(
 						"input_",
@@ -253,9 +251,15 @@ public class RasterTileResizeJobRunner extends
 				exception = e;
 			}
 			if ((inputAdapterStoreOptionsResult != null) && inputAdapterStoreOptionsResult.isCommandLineChange()) {
-				commandLine = inputAdapterStoreOptionsResult.getCommandLine();
-				newCommandLine = true;
-				continue;
+				// commandLine =
+				// inputAdapterStoreOptionsResult.getCommandLine();
+				for (final Option o : commandLine.getOptions()) {
+					final Option optClone = ((Option) o.clone());
+					optClone.setRequired(false);
+					allOptions.addOption(optClone);
+				}
+				// newCommandLine = true;
+				// continue;
 			}
 			try {
 				inputIndexStoreOptionsResult = IndexStoreCommandLineOptions.parseOptions(
@@ -268,15 +272,42 @@ public class RasterTileResizeJobRunner extends
 			}
 			if ((inputIndexStoreOptionsResult != null) && inputIndexStoreOptionsResult.isCommandLineChange()) {
 				commandLine = inputIndexStoreOptionsResult.getCommandLine();
-				newCommandLine = true;
-				continue;
+				for (final Option o : commandLine.getOptions()) {
+					final Option optClone = ((Option) o.clone());
+					optClone.setRequired(false);
+					allOptions.addOption(optClone);
+				}
+				// newCommandLine = true;
+				// continue;
 			}
-			rasterResizeOptions = RasterTileResizeCommandLineOptions.parseOptions(commandLine);
+			try {
+				outputDataStoreOptionsResult = DataStoreCommandLineOptions.parseOptions(
+						"output_",
+						allOptions,
+						commandLine);
+			}
+			catch (final Exception e) {
+				exception = e;
+			}
+			if ((outputDataStoreOptionsResult != null) && outputDataStoreOptionsResult.isCommandLineChange()) {
+				// commandLine = outputDataStoreOptionsResult.getCommandLine();
+				for (final Option o : commandLine.getOptions()) {
+					final Option optClone = ((Option) o.clone());
+					optClone.setRequired(false);
+					allOptions.addOption(optClone);
+				}
+				// newCommandLine = true;
+				// continue;
+			}
 		}
 		while (newCommandLine);
 		if (exception != null) {
 			throw exception;
 		}
+		inputDataStoreOptions = inputDataStoreOptionsResult.getResult();
+		inputAdapterStoreOptions = inputAdapterStoreOptionsResult.getResult();
+		inputIndexStoreOptions = inputIndexStoreOptionsResult.getResult();
+		outputDataStoreOptions = outputDataStoreOptionsResult.getResult();
 		return runJob();
 	}
 }
