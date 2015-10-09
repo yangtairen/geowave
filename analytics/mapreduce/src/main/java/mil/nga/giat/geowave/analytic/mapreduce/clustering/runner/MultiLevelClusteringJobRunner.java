@@ -150,7 +150,7 @@ public abstract class MultiLevelClusteringJobRunner extends
 		// first. extract data
 		int status = jobExtractRunner.run(
 				config,
-				propertyManagement);	
+				propertyManagement);
 
 		final Path extractPath = jobExtractRunner.getHdfsOutputPath();
 
@@ -166,7 +166,7 @@ public abstract class MultiLevelClusteringJobRunner extends
 				false);
 
 		final FileSystem fs = FileSystem.get(config);
-		
+
 		// run clustering for each level
 		final String outputBaseDir = propertyManagement.getPropertyAsString(
 				MapReduceParameters.MRConfig.HDFS_BASE_DIR,

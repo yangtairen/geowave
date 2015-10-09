@@ -67,7 +67,7 @@ public class NNProcessor<PARTITION_VALUE, STORE_VALUE>
 	protected final double maxDistance;
 	protected final PartitionData parentPartition;
 	private int upperBoundPerPartition = DEFAULT_UPPER_BOUND_PARTIION_SIZE;
-	
+
 	public static final int DEFAULT_UPPER_BOUND_PARTIION_SIZE = 75000;
 
 	/**

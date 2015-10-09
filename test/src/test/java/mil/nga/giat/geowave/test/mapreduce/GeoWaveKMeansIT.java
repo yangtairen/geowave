@@ -138,16 +138,18 @@ public class GeoWaveKMeansIT extends
 		options.put(
 				GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
 				TEST_NAMESPACE);
+		final Options nsOptions = new Options();
+		DataStoreCommandLineOptions.applyOptions(nsOptions);
 		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOptions = DataStoreCommandLineOptions.parseOptions(
-				new Options(),
+				nsOptions,
 				new OptionMapWrapper(
 						options));
 		final CommandLineResult<IndexStoreCommandLineOptions> indexStoreOptions = IndexStoreCommandLineOptions.parseOptions(
-				new Options(),
+				nsOptions,
 				new OptionMapWrapper(
 						options));
 		final CommandLineResult<AdapterStoreCommandLineOptions> adapterStoreOptions = AdapterStoreCommandLineOptions.parseOptions(
-				new Options(),
+				nsOptions,
 				new OptionMapWrapper(
 						options));
 		testIngest(dataStoreOptions.getResult().createStore());
@@ -192,9 +194,9 @@ public class GeoWaveKMeansIT extends
 						},
 						new Object[] {
 							query,
-							Integer.toString(MIN_INPUT_SPLITS),
-							Integer.toString(MAX_INPUT_SPLITS),
-							"2",
+							MIN_INPUT_SPLITS,
+							MAX_INPUT_SPLITS,
+							2,
 							2,
 							false,
 							"centroid",

@@ -60,8 +60,10 @@ public class Stanag4676ImageryChipService
 	@Path("image/{mission}/{track}/{year}-{month}-{day}T{hour}:{minute}:{second}.{millis}.jpg")
 	@Produces("image/jpeg")
 	public Response getImage(
-			final @PathParam("mission") String mission,
-			final @PathParam("track") String track,
+			final @PathParam("mission")
+			String mission,
+			final @PathParam("track")
+			String track,
 			@PathParam("year")
 			final int year,
 			@PathParam("month")
@@ -135,8 +137,10 @@ public class Stanag4676ImageryChipService
 	@Path("video/{mission}/{track}.webm")
 	@Produces("video/webm")
 	public Response getVideo(
-			final @PathParam("mission") String mission,
-			final @PathParam("track") String track,
+			final @PathParam("mission")
+			String mission,
+			final @PathParam("track")
+			String track,
 			@QueryParam("size")
 			@DefaultValue("-1")
 			final int targetPixelSize,

@@ -106,15 +106,20 @@ public class QueryFilterIterator extends
 				final ByteArrayId fieldId = new ByteArrayId(
 						key.getColumnQualifierData().getBackingArray());
 				final FieldReader<? extends CommonIndexValue> reader = model.getReader(fieldId);
-				if (reader == null) {
-					continue;
+				if (reader != null) {
+					final CommonIndexValue fieldValue = reader.readField(values.get(
+							i).get());
+					fieldValue.setVisibility(key.getColumnVisibilityData().getBackingArray());
+					commonData.addValue(new PersistentValue<CommonIndexValue>(
+							fieldId,
+							fieldValue));
 				}
-				final CommonIndexValue fieldValue = reader.readField(values.get(
-						i).get());
-				fieldValue.setVisibility(key.getColumnVisibilityData().getBackingArray());
-				commonData.addValue(new PersistentValue<CommonIndexValue>(
-						fieldId,
-						fieldValue));
+				else {
+					unknownData.addValue(new PersistentValue(
+							fieldId,
+							values.get(
+									i).get()));
+				}
 			}
 			final IndexedPersistenceEncoding encoding = new IndexedPersistenceEncoding(
 					new ByteArrayId(

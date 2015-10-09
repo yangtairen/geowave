@@ -24,7 +24,7 @@ import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
  * reference to the next value. It maintains the adapter ID, data ID, and
  * original accumulo key in the GeoWaveInputKey for use by the
  * GeoWaveInputFormat.
- *
+ * 
  * @param <T>
  *            The type for the entry
  */
@@ -87,8 +87,7 @@ public class InputFormatIteratorWrapper<T> implements
 				rowId.getAdapterId());
 		final T result = (T) (isOutputWritable ? serializationTool.getHadoopWritableSerializerForAdapter(
 				adapterId).toWritable(
-						value)
-				: value);
+				value) : value);
 		final GeoWaveInputKey key = new GeoWaveInputKey(
 				adapterId,
 				new ByteArrayId(
@@ -101,9 +100,8 @@ public class InputFormatIteratorWrapper<T> implements
 										index.getId().getBytes(),
 										rowId.getInsertionId()),
 								rowId.getDataId())));
-		key.setInsertionId(
-				new ByteArrayId(
-						row.getKey().getRow().getBytes()));
+		key.setInsertionId(new ByteArrayId(
+				row.getKey().getRow().getBytes()));
 		return new GeoWaveInputFormatEntry(
 				key,
 				result);

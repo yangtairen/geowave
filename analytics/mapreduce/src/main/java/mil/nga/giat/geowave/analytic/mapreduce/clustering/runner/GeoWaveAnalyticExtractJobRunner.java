@@ -124,7 +124,8 @@ public class GeoWaveAnalyticExtractJobRunner extends
 	private FeatureDataAdapter createAdapter(
 			final String outputDataTypeID,
 			final String namespaceURI,
-			@SuppressWarnings("rawtypes") final Class<? extends DimensionExtractor> dimensionExtractorClass )
+			@SuppressWarnings("rawtypes")
+			final Class<? extends DimensionExtractor> dimensionExtractorClass )
 			throws Exception {
 		final DimensionExtractor<?> extractor = dimensionExtractorClass.newInstance();
 		return AnalyticFeature.createGeometryFeatureAdapter(
@@ -277,13 +278,13 @@ public class GeoWaveAnalyticExtractJobRunner extends
 				store.getCliOptions().getNamespace());
 
 		final FileSystem fs = FileSystem.get(config);
-		
+
 		if (fs.exists(this.getHdfsOutputPath())) {
 			fs.delete(
 					getHdfsOutputPath(),
 					true);
 		}
-		
+
 		return ToolRunner.run(
 				config,
 				this,

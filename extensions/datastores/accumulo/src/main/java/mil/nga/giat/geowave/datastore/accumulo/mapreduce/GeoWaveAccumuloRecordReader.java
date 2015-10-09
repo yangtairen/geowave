@@ -44,7 +44,7 @@ import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 /**
  * This class is used by the GeoWaveInputFormat to read data from an Accumulo
  * data store.
- *
+ * 
  * @param <T>
  *            The native type for the reader
  */
@@ -70,8 +70,7 @@ public class GeoWaveAccumuloRecordReader<T> extends
 		}
 	}
 
-	protected static final Logger LOGGER = Logger.getLogger(
-			GeoWaveAccumuloRecordReader.class);
+	protected static final Logger LOGGER = Logger.getLogger(GeoWaveAccumuloRecordReader.class);
 	protected long numKeysRead;
 	protected CloseableIterator<?> iterator;
 	protected Key currentAccumuloKey = null;
@@ -113,7 +112,7 @@ public class GeoWaveAccumuloRecordReader<T> extends
 	public void initialize(
 			final InputSplit inSplit,
 			final TaskAttemptContext attempt )
-					throws IOException {
+			throws IOException {
 		split = (GeoWaveAccumuloInputSplit) inSplit;
 
 		numKeysRead = 0;
@@ -126,12 +125,10 @@ public class GeoWaveAccumuloRecordReader<T> extends
 		final Map<RangeLocationPair, BigDecimal> incrementalRangeSums = new LinkedHashMap<RangeLocationPair, BigDecimal>();
 
 		for (final Index i : indices) {
-			final List<RangeLocationPair> ranges = split.getRanges(
-					i);
+			final List<RangeLocationPair> ranges = split.getRanges(i);
 			List<QueryFilter> queryFilters = null;
 			if (query != null) {
-				queryFilters = query.createFilters(
-						i.getIndexModel());
+				queryFilters = query.createFilters(i.getIndexModel());
 			}
 			for (final RangeLocationPair r : ranges) {
 				iteratorsPerRange.put(
@@ -146,16 +143,14 @@ public class GeoWaveAccumuloRecordReader<T> extends
 								isOutputWritable,
 								queryOptions,
 								additionalAuthorizations).query(
-										accumuloOperations,
-										adapterStore,
-										null,
-										true));
+								accumuloOperations,
+								adapterStore,
+								null,
+								true));
 				incrementalRangeSums.put(
 						r,
 						sum);
-				sum = sum.add(
-						BigDecimal.valueOf(
-								r.getCardinality()));
+				sum = sum.add(BigDecimal.valueOf(r.getCardinality()));
 			}
 		}
 
@@ -258,8 +253,7 @@ public class GeoWaveAccumuloRecordReader<T> extends
 		if (currentGeoWaveRangeIndexPair == null) {
 			return 0.0f;
 		}
-		final ProgressPerRange progress = progressPerRange.get(
-				currentGeoWaveRangeIndexPair);
+		final ProgressPerRange progress = progressPerRange.get(currentGeoWaveRangeIndexPair);
 		if (progress == null) {
 			return getProgressForRange(
 					currentGeoWaveRangeIndexPair.getRange(),
@@ -278,8 +272,7 @@ public class GeoWaveAccumuloRecordReader<T> extends
 		final float rangeProgress = getProgressForRange(
 				range,
 				currentKey);
-		return progress.getOverallProgress(
-				rangeProgress);
+		return progress.getOverallProgress(rangeProgress);
 	}
 
 	private static float getProgressForRange(
@@ -304,9 +297,8 @@ public class GeoWaveAccumuloRecordReader<T> extends
 						position,
 						maxDepth));
 		return (float) (positionBI.subtract(
-				startBI).doubleValue()
-				/ endBI.subtract(
-						startBI).doubleValue());
+				startBI).doubleValue() / endBI.subtract(
+				startBI).doubleValue());
 	}
 
 	private static float getProgressForRange(
@@ -375,8 +367,7 @@ public class GeoWaveAccumuloRecordReader<T> extends
 	private static Iterator<Object> concatenateWithCallback(
 			final Iterator<Entry<RangeLocationPair, CloseableIterator<?>>> inputs,
 			final NextRangeCallback nextRangeCallback ) {
-		Preconditions.checkNotNull(
-				inputs);
+		Preconditions.checkNotNull(inputs);
 		return new Iterator<Object>() {
 			Iterator<?> currentIterator = Iterators.emptyIterator();
 			Iterator<?> removeFrom;
@@ -387,8 +378,7 @@ public class GeoWaveAccumuloRecordReader<T> extends
 				while (!(currentHasNext = Preconditions.checkNotNull(
 						currentIterator).hasNext()) && inputs.hasNext()) {
 					final Entry<RangeLocationPair, CloseableIterator<?>> entry = inputs.next();
-					nextRangeCallback.setRange(
-							entry.getKey());
+					nextRangeCallback.setRange(entry.getKey());
 					currentIterator = entry.getValue();
 				}
 				return currentHasNext;

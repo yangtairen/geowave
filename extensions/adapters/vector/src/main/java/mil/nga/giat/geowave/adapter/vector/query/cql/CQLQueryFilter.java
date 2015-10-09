@@ -93,8 +93,7 @@ public class CQLQueryFilter implements
 	}
 
 	public static void initClassLoader(
-			@SuppressWarnings("rawtypes")
-			final Class cls )
+			@SuppressWarnings("rawtypes") final Class cls )
 			throws MalformedURLException {
 		synchronized (MUTEX) {
 			if (classLoaderInitialized) {
@@ -170,11 +169,12 @@ public class CQLQueryFilter implements
 			final byte[] filterBytes = new byte[filterBytesLength];
 			buf.get(filterBytes);
 			final String cql = StringUtils.stringFromBinary(filterBytes);
-			try {			
+			try {
 				filter = ECQL.toFilter(cql);
 			}
 			catch (final Exception e) {
-				throw new IllegalArgumentException(cql,
+				throw new IllegalArgumentException(
+						cql,
 						e);
 			}
 		}
@@ -182,8 +182,10 @@ public class CQLQueryFilter implements
 			LOGGER.warn("CQL filter is empty bytes");
 			filter = null;
 		}
+
 		if (adapterBytesLength > 0) {
 			final byte[] adapterBytes = new byte[adapterBytesLength];
+			buf.get(adapterBytes);
 
 			try {
 				adapter = PersistenceUtils.fromBinary(

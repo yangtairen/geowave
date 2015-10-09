@@ -119,6 +119,23 @@ public class DataStoreUtils
 				ingestInfo);
 	}
 
+	public static List<IndexedPersistenceEncoding> getEncodings(
+			final Index index,
+			final AdapterPersistenceEncoding encoding ) {
+		final List<ByteArrayId> ids = encoding.getInsertionIds(index);
+		final ArrayList<IndexedPersistenceEncoding> encodings = new ArrayList<IndexedPersistenceEncoding>();
+		for (ByteArrayId id : ids) {
+			encodings.add(new IndexedPersistenceEncoding(
+					encoding.getAdapterId(),
+					encoding.getDataId(),
+					id,
+					ids.size(),
+					encoding.getCommonData(),
+					encoding.getUnknownData()));
+		}
+		return encodings;
+	}
+
 	protected static IndexedPersistenceEncoding getEncoding(
 			final CommonIndexModel model,
 			final EntryRow row ) {
