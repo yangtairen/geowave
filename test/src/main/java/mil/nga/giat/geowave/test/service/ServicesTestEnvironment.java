@@ -55,10 +55,11 @@ abstract public class ServicesTestEnvironment extends
 			final PrintWriter writer = new PrintWriter(
 					configFile,
 					StringUtils.UTF8_CHAR_SET.toString());
-			writer.println("zookeeper.url=" + zookeeper);
-			writer.println("zookeeper.instance=" + accumuloInstance);
-			writer.println("zookeeper.username=" + accumuloUser);
-			writer.println("zookeeper.password=" + accumuloPassword);
+			writer.println("datastore=accumulo");
+			writer.println("zookeeper=" + zookeeper);
+			writer.println("instance=" + accumuloInstance);
+			writer.println("user=" + accumuloUser);
+			writer.println("password=" + accumuloPassword);
 			writer.println("geoserver.url=" + JETTY_BASE_URL);
 			writer.println("geoserver.username=" + GEOSERVER_USER);
 			writer.println("geoserver.password=" + GEOSERVER_PASS);
