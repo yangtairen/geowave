@@ -53,8 +53,16 @@ public class CQLQueryFilter implements
 		if ((filter != null) && (indexModel != null) && (adapter != null)) {
 			if (adapter.getAdapterId().equals(
 					persistenceEncoding.getAdapterId())) {
-				final PersistentDataset<byte[]> stillUnknownValues = new PersistentDataset<byte[]>();
 				final PersistentDataset<Object> adapterExtendedValues = new PersistentDataset<Object>();
+				if (persistenceEncoding instanceof IndexedAdapterPersistenceEncoding) {
+					final PersistentDataset<Object> existingExtValues = ((IndexedAdapterPersistenceEncoding) persistenceEncoding).getAdapterExtendedData();
+					if (existingExtValues != null) {
+						for (final PersistentValue<Object> val : existingExtValues.getValues()) {
+							adapterExtendedValues.addValue(val);
+						}
+					}
+				}
+				final PersistentDataset<byte[]> stillUnknownValues = new PersistentDataset<byte[]>();
 				for (final PersistentValue<byte[]> v : persistenceEncoding.getUnknownData().getValues()) {
 					final FieldReader<Object> reader = adapter.getReader(v.getId());
 					final Object value = reader.readField(v.getValue());
@@ -93,7 +101,8 @@ public class CQLQueryFilter implements
 	}
 
 	public static void initClassLoader(
-			@SuppressWarnings("rawtypes") final Class cls )
+			@SuppressWarnings("rawtypes")
+			final Class cls )
 			throws MalformedURLException {
 		synchronized (MUTEX) {
 			if (classLoaderInitialized) {

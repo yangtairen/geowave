@@ -17,6 +17,7 @@ import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.IngestCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.data.DataWriter;
 import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
@@ -124,14 +125,15 @@ public class DataStoreUtils
 			final AdapterPersistenceEncoding encoding ) {
 		final List<ByteArrayId> ids = encoding.getInsertionIds(index);
 		final ArrayList<IndexedPersistenceEncoding> encodings = new ArrayList<IndexedPersistenceEncoding>();
-		for (ByteArrayId id : ids) {
-			encodings.add(new IndexedPersistenceEncoding(
+		for (final ByteArrayId id : ids) {
+			encodings.add(new IndexedAdapterPersistenceEncoding(
 					encoding.getAdapterId(),
 					encoding.getDataId(),
 					id,
 					ids.size(),
 					encoding.getCommonData(),
-					encoding.getUnknownData()));
+					encoding.getUnknownData(),
+					encoding.getAdapterExtendedData()));
 		}
 		return encodings;
 	}
@@ -179,7 +181,7 @@ public class DataStoreUtils
 	}
 
 	/**
-	 * 
+	 *
 	 * @param dataWriter
 	 * @param index
 	 * @param entry
