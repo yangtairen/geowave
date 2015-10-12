@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
@@ -167,6 +168,11 @@ public class GeoserverServiceClient
 			multiPart.field(
 					"workspace",
 					workspace);
+		}
+		for (final Entry<String, String> e : dataStoreConfig.entrySet()) {
+			multiPart.field(
+					e.getKey(),
+					e.getValue());
 		}
 
 		final Response resp = geoserverService.publishDatastore(multiPart);
