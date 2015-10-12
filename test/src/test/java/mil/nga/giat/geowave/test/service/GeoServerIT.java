@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import javax.ws.rs.core.Response.Status;
 
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreFactoryFamily;
 import mil.nga.giat.geowave.service.client.GeoserverServiceClient;
 
 import org.apache.accumulo.core.client.AccumuloException;
@@ -112,18 +113,11 @@ public class GeoServerIT extends
 		// enable wfs & wms
 		success &= enableWfs();
 		success &= enableWms();
-
 		// create the datastore
 		success &= geoserverServiceClient.publishDatastore(
-				zookeeper,
-				accumuloUser,
-				accumuloPassword,
-				accumuloInstance,
-				TEST_NAMESPACE,
-				null,
-				null,
-				null,
-				TEST_WORKSPACE);
+				new AccumuloStoreFactoryFamily().getName(),
+				getAccumuloConfigOptions(),
+				TEST_NAMESPACE);
 
 		// make sure the datastore exists
 		success &= (null != geoserverServiceClient.getDatastore(

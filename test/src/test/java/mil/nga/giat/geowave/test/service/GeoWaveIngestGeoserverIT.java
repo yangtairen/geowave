@@ -1,8 +1,18 @@
 package mil.nga.giat.geowave.test.service;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.util.List;
+
+import javax.imageio.ImageIO;
+
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreFactoryFamily;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.examples.ingest.SimpleIngest;
 import mil.nga.giat.geowave.service.client.GeoserverServiceClient;
@@ -20,26 +30,14 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.log4j.Logger;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.resources.image.ImageUtilities;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-
-import javax.imageio.ImageIO;
-
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class GeoWaveIngestGeoserverIT extends
 		ServicesTestEnvironment
@@ -87,20 +85,20 @@ public class GeoWaveIngestGeoserverIT extends
 					accumuloPassword,
 					NAMESPACE);
 		}
-		catch (AccumuloException e) {
+		catch (final AccumuloException e) {
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
 		}
-		catch (AccumuloSecurityException e) {
+		catch (final AccumuloSecurityException e) {
 			e.printStackTrace();
 			Assert.fail(e.getMessage());
 		}
-		AccumuloDataStore ds = new AccumuloDataStore(
+		final AccumuloDataStore ds = new AccumuloDataStore(
 				bao);
-		SimpleFeatureType sft = SimpleIngest.createPointFeatureType();
-		Index idx = SimpleIngest.createSpatialIndex();
-		FeatureDataAdapter fda = SimpleIngest.createDataAdapter(sft);
-		List<SimpleFeature> features = SimpleIngest.getGriddedFeatures(
+		final SimpleFeatureType sft = SimpleIngest.createPointFeatureType();
+		final Index idx = SimpleIngest.createSpatialIndex();
+		final FeatureDataAdapter fda = SimpleIngest.createDataAdapter(sft);
+		final List<SimpleFeature> features = SimpleIngest.getGriddedFeatures(
 				new SimpleFeatureBuilder(
 						sft),
 				8675309);
@@ -108,14 +106,14 @@ public class GeoWaveIngestGeoserverIT extends
 				"Beginning to ingest a uniform grid of %d features",
 				features.size()));
 		int ingestedFeatures = 0;
-		int featuresPer5Percent = features.size() / 20;
-		for (SimpleFeature feat : features) {
+		final int featuresPer5Percent = features.size() / 20;
+		for (final SimpleFeature feat : features) {
 			ds.ingest(
 					fda,
 					idx,
 					feat);
 			ingestedFeatures++;
-			if (ingestedFeatures % featuresPer5Percent == 0) {
+			if ((ingestedFeatures % featuresPer5Percent) == 0) {
 				LOGGER.info(String.format(
 						"Ingested %d percent of features",
 						(ingestedFeatures / featuresPer5Percent) * 5));
@@ -124,10 +122,8 @@ public class GeoWaveIngestGeoserverIT extends
 
 		Assert.assertTrue(geoserverServiceClient.createWorkspace(WORKSPACE));
 		Assert.assertTrue(geoserverServiceClient.publishDatastore(
-				zookeeper,
-				accumuloUser,
-				accumuloPassword,
-				accumuloInstance,
+				new AccumuloStoreFactoryFamily().getName(),
+				getAccumuloConfig(),
 				NAMESPACE,
 				null,
 				null,
@@ -139,7 +135,7 @@ public class GeoWaveIngestGeoserverIT extends
 				SimpleIngest.FEATURE_NAME,
 				WORKSPACE));
 
-		BufferedImage bi = getWMSSingleTile(
+		final BufferedImage bi = getWMSSingleTile(
 				-180,
 				180,
 				-90,
@@ -152,7 +148,7 @@ public class GeoWaveIngestGeoserverIT extends
 
 		BufferedImage ref = null;
 
-		String geoserverVersion = System.getProperty("geoserver.version");
+		final String geoserverVersion = System.getProperty("geoserver.version");
 
 		Assert.assertNotNull(geoserverVersion);
 
@@ -197,18 +193,18 @@ public class GeoWaveIngestGeoserverIT extends
 	}
 
 	private static BufferedImage getWMSSingleTile(
-			double minlon,
-			double maxlon,
-			double minlat,
-			double maxlat,
-			String layer,
-			String style,
-			int width,
-			int height,
-			String outputFormat )
+			final double minlon,
+			final double maxlon,
+			final double minlat,
+			final double maxlat,
+			final String layer,
+			final String style,
+			final int width,
+			final int height,
+			final String outputFormat )
 			throws IOException,
 			URISyntaxException {
-		URIBuilder builder = new URIBuilder();
+		final URIBuilder builder = new URIBuilder();
 		builder.setScheme(
 				"http").setHost(
 				"localhost").setPort(
@@ -247,7 +243,7 @@ public class GeoWaveIngestGeoserverIT extends
 		final HttpResponse resp = httpClient.execute(command);
 		try (InputStream is = resp.getEntity().getContent()) {
 
-			BufferedImage image = ImageIO.read(is);
+			final BufferedImage image = ImageIO.read(is);
 
 			Assert.assertNotNull(image);
 			Assert.assertTrue(image.getWidth() == width);

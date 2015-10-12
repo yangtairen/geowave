@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import mil.nga.giat.geowave.core.geotime.IndexType;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreFactoryFamily;
 import mil.nga.giat.geowave.format.gpx.GpxUtils;
 import mil.nga.giat.geowave.service.client.GeoserverServiceClient;
 import mil.nga.giat.geowave.service.client.InfoServiceClient;
@@ -235,10 +236,8 @@ public class GeoWaveServicesIT extends
 		// verify that we can publish a datastore
 		LOGGER.info("Verify that we can publish a datastore.");
 		assertTrue(geoserverServiceClient.publishDatastore(
-				zookeeper,
-				accumuloUser,
-				accumuloPassword,
-				accumuloInstance,
+				new AccumuloStoreFactoryFamily().getName(),
+				getAccumuloConfig(),
 				TEST_NAMESPACE,
 				null,
 				null,

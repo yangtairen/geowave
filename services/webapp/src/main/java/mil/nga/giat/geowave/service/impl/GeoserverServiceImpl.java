@@ -2,7 +2,13 @@ package mil.nga.giat.geowave.service.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +32,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveGTDataStoreFactory;
+import mil.nga.giat.geowave.adapter.vector.plugin.GeoWavePluginConfig;
 import mil.nga.giat.geowave.service.GeoserverService;
 import mil.nga.giat.geowave.service.ServiceUtils;
 import net.sf.json.JSONArray;
@@ -268,7 +276,7 @@ public class GeoserverServiceImpl implements
 	public Response publishStyle(
 			final FormDataMultiPart multiPart ) {
 
-		Collection<FormDataBodyPart> fileFields = multiPart.getFields("file");
+		final Collection<FormDataBodyPart> fileFields = multiPart.getFields("file");
 		if (fileFields == null) {
 			return Response.noContent().build();
 		}
@@ -333,9 +341,7 @@ public class GeoserverServiceImpl implements
 	@Path("/datastores")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getDatastores(
-			@DefaultValue("")
-			@QueryParam("workspace")
-			String customWorkspace ) {
+			@DefaultValue("") @QueryParam("workspace") String customWorkspace ) {
 
 		customWorkspace = (customWorkspace.equals("")) ? defaultWorkspace : customWorkspace;
 
@@ -372,7 +378,7 @@ public class GeoserverServiceImpl implements
 
 				// only process the GeoWave datastores
 				if ((dsObj != null) && dsObj.containsKey("type") && dsObj.getString(
-						"type").equals(
+						"type").startsWith(
 						"GeoWave Datastore")) {
 
 					final JSONObject datastore = new JSONObject();
@@ -398,29 +404,15 @@ public class GeoserverServiceImpl implements
 						log.error("entry Array was null; didn't find a valid connectionParameters datastore object of type JSONObject or JSONArray");
 					}
 					else {
-						// report zookeeper servers, instance name and namespace
-						// for
-						// each datastore
+						// report connection params for each data store
 						for (int j = 0; j < entryArray.size(); j++) {
 							final JSONObject entry = entryArray.getJSONObject(j);
 							final String key = entry.getString("@key");
 							final String value = entry.getString("$");
 
-							if (key.equals("ZookeeperServers")) {
-								datastore.put(
-										"ZookeeperServers",
-										value);
-							}
-							else if (key.equals("InstanceName")) {
-								datastore.put(
-										"InstanceName",
-										value);
-							}
-							else if (key.equals("Namespace")) {
-								datastore.put(
-										"Namespace",
-										value);
-							}
+							datastore.put(
+									key,
+									value);
 						}
 					}
 					datastores.add(datastore);
@@ -446,9 +438,7 @@ public class GeoserverServiceImpl implements
 	public Response getDatastore(
 			@PathParam("datastoreName")
 			final String datastoreName,
-			@DefaultValue("")
-			@QueryParam("workspace")
-			String customWorkspace ) {
+			@DefaultValue("") @QueryParam("workspace") String customWorkspace ) {
 
 		customWorkspace = (customWorkspace.equals("")) ? defaultWorkspace : customWorkspace;
 
@@ -488,33 +478,55 @@ public class GeoserverServiceImpl implements
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response publishDatastore(
 			final FormDataMultiPart multiPart ) {
+		final Map<String, List<FormDataBodyPart>> fieldMap = multiPart.getFields();
 
-		final String zookeeperUrl = multiPart.getField(
-				"zookeeperUrl").getValue();
-
-		final String username = multiPart.getField(
-				"username").getValue();
-
-		final String password = multiPart.getField(
-				"password").getValue();
-
-		final String instance = multiPart.getField(
-				"instance").getValue();
-
-		final String namespace = multiPart.getField(
-				"namespace").getValue();
-
-		final String lockMgmt = (multiPart.getField("lockMgmt") != null) ? multiPart.getField(
-				"lockMgmt").getValue() : "memory";
-
-		final String authMgmtPrvdr = (multiPart.getField("authMgmtPrvdr") != null) ? multiPart.getField(
-				"authMgmtPrvdr").getValue() : "empty";
-
-		final String authDataUrl = (multiPart.getField("authDataUrl") != null) ? multiPart.getField(
-				"authDataUrl").getValue() : "";
-
-		final String customWorkspace = (multiPart.getField("workspace") != null) ? multiPart.getField(
-				"workspace").getValue() : defaultWorkspace;
+		String lockMgmt = "memory";
+		String authMgmtPrvdr = "empty";
+		String authDataUrl = "";
+		String customWorkspace = defaultWorkspace;
+		String geowaveStoreType = "memory";
+		String name = "geowave";
+		final Map<String, String> geowaveStoreConfig = new HashMap<String, String>();
+		for (final Entry<String, List<FormDataBodyPart>> e : fieldMap.entrySet()) {
+			if ((e.getValue() != null) && !e.getValue().isEmpty()) {
+				if (e.getKey().equals(
+						"lockMgmt")) {
+					lockMgmt = e.getValue().get(
+							0).getValue();
+				}
+				else if (e.getKey().equals(
+						"authMgmtPrvdr")) {
+					authMgmtPrvdr = e.getValue().get(
+							0).getValue();
+				}
+				else if (e.getKey().equals(
+						"authDataUrl")) {
+					authDataUrl = e.getValue().get(
+							0).getValue();
+				}
+				else if (e.getKey().equals(
+						"workspace")) {
+					customWorkspace = e.getValue().get(
+							0).getValue();
+				}
+				else if (e.getKey().equals(
+						"name")) {
+					name = e.getValue().get(
+							0).getValue();
+				}
+				else if (e.getKey().equals(
+						"geowaveStoreType")) {
+					geowaveStoreType = e.getValue().get(
+							0).getValue();
+				}
+				else {
+					geowaveStoreConfig.put(
+							e.getKey(),
+							e.getValue().get(
+									0).getValue());
+				}
+			}
+		}
 
 		final Client client = ClientBuilder.newClient().register(
 				HttpAuthenticationFeature.basic(
@@ -524,11 +536,9 @@ public class GeoserverServiceImpl implements
 		final WebTarget target = client.target(geoserverUrl);
 
 		final String dataStoreJson = createDatastoreJson(
-				zookeeperUrl,
-				username,
-				password,
-				instance,
-				namespace,
+				geowaveStoreType,
+				geowaveStoreConfig,
+				name,
 				lockMgmt,
 				authMgmtPrvdr,
 				authDataUrl,
@@ -554,9 +564,7 @@ public class GeoserverServiceImpl implements
 	public Response deleteDatastore(
 			@PathParam("datastoreName")
 			final String datastoreName,
-			@DefaultValue("")
-			@QueryParam("workspace")
-			String customWorkspace ) {
+			@DefaultValue("") @QueryParam("workspace") String customWorkspace ) {
 
 		customWorkspace = (customWorkspace.equals("")) ? defaultWorkspace : customWorkspace;
 
@@ -573,43 +581,30 @@ public class GeoserverServiceImpl implements
 	}
 
 	private String createDatastoreJson(
-			final String zookeeperUrl,
-			final String username,
-			final String password,
-			final String instance,
-			final String namespace,
+			final String geowaveStoreType,
+			final Map<String, String> geowaveStoreConfig,
+			final String name,
 			final String lockMgmt,
 			final String authMgmtProvider,
 			final String authDataUrl,
 			final boolean enabled ) {
-
 		final JSONObject dataStore = new JSONObject();
 		dataStore.put(
 				"name",
-				namespace);
+				name);
 		dataStore.put(
 				"type",
-				"GeoWave Datastore");
+				GeoWaveGTDataStoreFactory.DISPLAY_NAME_PREFIX + geowaveStoreType);
 		dataStore.put(
 				"enabled",
 				Boolean.toString(enabled));
 
 		final JSONObject connParams = new JSONObject();
-		connParams.put(
-				"ZookeeperServers",
-				zookeeperUrl);
-		connParams.put(
-				"UserName",
-				username);
-		connParams.put(
-				"Password",
-				password);
-		connParams.put(
-				"InstanceName",
-				instance);
-		connParams.put(
-				"Namespace",
-				namespace);
+		for (final Entry<String, String> e : geowaveStoreConfig.entrySet()) {
+			connParams.put(
+					e.getKey(),
+					e.getValue());
+		}
 		connParams.put(
 				"Lock Management",
 				lockMgmt);
@@ -690,7 +685,7 @@ public class GeoserverServiceImpl implements
 
 					// only process GeoWave layers
 					if ((datastore != null) && datastore.containsKey("type") && datastore.getString(
-							"type").equals(
+							"type").startsWith(
 							"GeoWave Datastore")) {
 
 						JSONArray entryArray = null;
@@ -716,7 +711,7 @@ public class GeoserverServiceImpl implements
 								final String key = entry.getString("@key");
 								final String value = entry.getString("$");
 
-								if (key.equals("Namespace")) {
+								if (key.startsWith(GeoWavePluginConfig.GEOWAVE_NAMESPACE_KEY)) {
 									if (namespaceLayersMap.containsKey(value)) {
 										namespaceLayersMap.get(
 												value).add(

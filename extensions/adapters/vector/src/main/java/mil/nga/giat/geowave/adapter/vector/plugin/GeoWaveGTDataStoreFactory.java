@@ -28,7 +28,7 @@ import com.google.common.collect.Iterators;
  * GeoWave as a DataStore to GeoTools. It should be defined within a file
  * META-INF/services/org.geotools.data.DataStoreFactorySpi to inject this into
  * GeoTools.
- * 
+ *
  */
 public class GeoWaveGTDataStoreFactory implements
 		DataStoreFactorySpi
@@ -46,6 +46,7 @@ public class GeoWaveGTDataStoreFactory implements
 		}
 	}
 
+	public final static String DISPLAY_NAME_PREFIX = "GeoWave Datastore - ";
 	private static final Logger LOGGER = Logger.getLogger(GeoWaveGTDataStoreFactory.class);
 	private final List<DataStoreCacheEntry> dataStoreCache = new ArrayList<DataStoreCacheEntry>();
 	private final StoreFactoryFamilySpi geowaveStoreFactoryFamily;
@@ -141,7 +142,7 @@ public class GeoWaveGTDataStoreFactory implements
 
 	@Override
 	public String getDisplayName() {
-		return "GeoWave Datastore - " + geowaveStoreFactoryFamily.getName();
+		return DISPLAY_NAME_PREFIX + geowaveStoreFactoryFamily.getName();
 	}
 
 	@Override
@@ -246,8 +247,8 @@ public class GeoWaveGTDataStoreFactory implements
 	 * re-use instances of the same class, so each individual geowave data store
 	 * must be registered as a different class (the alternative is dynamic
 	 * compilation of classes to add to the classloader).
-	 * 
-	 * 
+	 *
+	 *
 	 */
 	private static class GeoWaveStoreToGeoToolsDataStore implements
 			Function<StoreFactoryFamilySpi, DataStoreFactorySpi>

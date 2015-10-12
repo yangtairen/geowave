@@ -47,7 +47,7 @@ public class GeoWavePluginConfig
 {
 	private final static Logger LOGGER = Logger.getLogger(GeoWavePluginConfig.class);
 
-	protected static final String GEOWAVE_NAMESPACE_KEY = "gwNamespace";
+	public static final String GEOWAVE_NAMESPACE_KEY = "gwNamespace";
 	// name matches the workspace parameter provided to the factory
 	protected static final String FEATURE_NAMESPACE_KEY = "namespace";
 	protected static final String LOCK_MGT_KEY = "Lock Management";
