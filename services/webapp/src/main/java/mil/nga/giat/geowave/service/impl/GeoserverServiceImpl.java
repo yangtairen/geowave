@@ -341,7 +341,9 @@ public class GeoserverServiceImpl implements
 	@Path("/datastores")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getDatastores(
-			@DefaultValue("") @QueryParam("workspace") String customWorkspace ) {
+			@DefaultValue("")
+			@QueryParam("workspace")
+			String customWorkspace ) {
 
 		customWorkspace = (customWorkspace.equals("")) ? defaultWorkspace : customWorkspace;
 
@@ -438,7 +440,9 @@ public class GeoserverServiceImpl implements
 	public Response getDatastore(
 			@PathParam("datastoreName")
 			final String datastoreName,
-			@DefaultValue("") @QueryParam("workspace") String customWorkspace ) {
+			@DefaultValue("")
+			@QueryParam("workspace")
+			String customWorkspace ) {
 
 		customWorkspace = (customWorkspace.equals("")) ? defaultWorkspace : customWorkspace;
 
@@ -564,7 +568,9 @@ public class GeoserverServiceImpl implements
 	public Response deleteDatastore(
 			@PathParam("datastoreName")
 			final String datastoreName,
-			@DefaultValue("") @QueryParam("workspace") String customWorkspace ) {
+			@DefaultValue("")
+			@QueryParam("workspace")
+			String customWorkspace ) {
 
 		customWorkspace = (customWorkspace.equals("")) ? defaultWorkspace : customWorkspace;
 

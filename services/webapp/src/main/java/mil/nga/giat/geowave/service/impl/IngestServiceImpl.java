@@ -23,6 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.GeoWaveMain;
 import mil.nga.giat.geowave.service.IngestService;
 import mil.nga.giat.geowave.service.ServiceUtils;
@@ -62,9 +63,16 @@ public class IngestServiceImpl implements
 		additionalParams = new HashMap<String, String>();
 		// TODO what about getting values from system properties?
 		for (final Entry<Object, Object> e : props.entrySet()) {
-			additionalParams.put(
-					e.getKey().toString(),
-					e.getValue().toString());
+			if (!(e.getKey().equals(
+					"hdfs") || e.getKey().equals(
+					"hdfsBase") || e.getKey().equals(
+					"jobTracker") || e.getKey().toString().startsWith(
+					"geoserver."))) {
+				additionalParams.put(
+						e.getKey().toString(),
+						e.getValue().toString());
+
+			}
 		}
 	}
 
@@ -186,7 +194,7 @@ public class IngestServiceImpl implements
 		args.add(ingestType);
 		args.add("-b");
 		args.add(baseDir.getAbsolutePath());
-		args.add("-n");
+		args.add("-" + GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY);
 		args.add(namespace);
 		args.add("-dim");
 		args.add(dimType);
