@@ -14,7 +14,7 @@ import mil.nga.giat.geowave.core.geotime.store.dimension.Time.TimeRange;
 import mil.nga.giat.geowave.core.geotime.store.dimension.TimeField;
 import mil.nga.giat.geowave.core.geotime.store.filter.SpatialQueryFilter.CompareOperation;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.data.CommonIndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
@@ -62,7 +62,7 @@ public class SpatialTemporalQueryTest
 				query.getQueryGeometry());
 	}
 
-	private IndexedPersistenceEncoding createData(
+	private CommonIndexedPersistenceEncoding createData(
 			final Date start,
 			final Date end,
 			final Coordinate[] coordinates ) {
@@ -81,7 +81,7 @@ public class SpatialTemporalQueryTest
 						end.getTime(),
 						new byte[0])));
 
-		return new IndexedPersistenceEncoding(
+		return new CommonIndexedPersistenceEncoding(
 				new ByteArrayId(
 						"1"),
 				new ByteArrayId(
@@ -122,7 +122,7 @@ public class SpatialTemporalQueryTest
 		final SpatialQuery queryCopy = new SpatialQuery();
 		queryCopy.fromBinary(query.toBinary());
 
-		final IndexedPersistenceEncoding[] data = new IndexedPersistenceEncoding[] {
+		final CommonIndexedPersistenceEncoding[] data = new CommonIndexedPersistenceEncoding[] {
 			createData(
 					df.parse("2005-05-17T19:32:56GMT-00:00"),
 					df.parse("2005-05-17T22:32:56GMT-00:00"),
@@ -181,7 +181,7 @@ public class SpatialTemporalQueryTest
 		};
 		final CommonIndexModel model = IndexType.SPATIAL_TEMPORAL_VECTOR.getDefaultIndexModel();
 		int pos = 0;
-		for (final IndexedPersistenceEncoding dataItem : data) {
+		for (final CommonIndexedPersistenceEncoding  dataItem : data) {
 			for (final QueryFilter filter : queryCopy.createFilters(model)) {
 				assertEquals(
 						"result: " + (pos + 1),
@@ -190,6 +190,7 @@ public class SpatialTemporalQueryTest
 								model,
 								dataItem));
 			}
+		}
 		}
 	}
 

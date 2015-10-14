@@ -26,7 +26,7 @@ public class FilterList<T extends QueryFilter> implements
 	@Override
 	public boolean accept(
 			final CommonIndexModel indexModel,
-			final IndexedPersistenceEncoding entry ) {
+			final IndexedPersistenceEncoding<?> entry ) {
 		for (final QueryFilter filter : filters) {
 			if (!filter.accept(
 					indexModel,

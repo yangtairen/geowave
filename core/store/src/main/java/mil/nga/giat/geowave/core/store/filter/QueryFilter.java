@@ -14,5 +14,5 @@ public interface QueryFilter
 {
 	public boolean accept(
 			CommonIndexModel indexModel,
-			IndexedPersistenceEncoding persistenceEncoding );
+			IndexedPersistenceEncoding<?> persistenceEncoding );
 }

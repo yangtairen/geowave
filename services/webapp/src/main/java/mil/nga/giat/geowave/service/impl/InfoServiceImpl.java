@@ -99,13 +99,13 @@ public class InfoServiceImpl implements
 	public Response getIndices(
 			@PathParam("namespace")
 			final String namespace ) {
-		try (CloseableIterator<Index> indices = indexStoreFactory.createStore(
+		try (CloseableIterator<Index<?, ?>> indices = indexStoreFactory.createStore(
 				configOptions,
 				namespace).getIndices()) {
 
 			final JSONArray indexNames = new JSONArray();
 			while (indices.hasNext()) {
-				final Index index = indices.next();
+				final Index<?, ?> index = indices.next();
 				if ((index != null) && (index.getId() != null)) {
 					final JSONObject indexObj = new JSONObject();
 					indexObj.put(

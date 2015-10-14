@@ -4,7 +4,7 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
-import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
@@ -238,18 +238,18 @@ public class GeoWaveInputConfigurator extends
 		return new String[] {};
 	}
 
-	public static Index[] searchForIndices(
+	public static PrimaryIndex[] searchForIndices(
 			final Class<?> implementingClass,
 			final JobContext context ) {
-		final Index[] userIndices = JobContextIndexStore.getIndices(context);
+		final PrimaryIndex[] userIndices = JobContextIndexStore.getIndices(context);
 		if ((userIndices == null) || (userIndices.length <= 0)) {
 			// if there are no indices, assume we are searching all indices
 			// in the metadata store
-			return (Index[]) IteratorUtils.toArray(
+			return (PrimaryIndex[]) IteratorUtils.toArray(
 					getIndexStore(
 							implementingClass,
 							context).getIndices(),
-					Index.class);
+						PrimaryIndex.class);
 		}
 		return userIndices;
 	}

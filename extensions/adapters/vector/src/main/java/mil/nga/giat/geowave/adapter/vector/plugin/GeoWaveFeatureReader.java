@@ -32,6 +32,7 @@ import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.BasicQuery;
 import mil.nga.giat.geowave.core.store.query.BasicQuery.Constraints;
 
@@ -135,9 +136,9 @@ public class GeoWaveFeatureReader implements
 		final List<CloseableIterator<SimpleFeature>> results = new ArrayList<CloseableIterator<SimpleFeature>>();
 		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = components.getDataStatistics(transaction);
 
-		try (CloseableIterator<Index> indexIt = getComponents().getIndexStore().getIndices()) {
+		try (CloseableIterator<Index<?, ?>> indexIt = getComponents().getIndexStore().getIndices()) {
 			while (indexIt.hasNext()) {
-				final Index index = indexIt.next();
+				final PrimaryIndex index = (PrimaryIndex) indexIt.next();
 
 				final Constraints timeConstraints = QueryIndexHelper.composeTimeBoundedConstraints(
 						components.getAdapter().getType(),
@@ -230,7 +231,7 @@ public class GeoWaveFeatureReader implements
 
 		@Override
 		public CloseableIterator<SimpleFeature> query(
-				final Index index,
+				final PrimaryIndex index,
 				final mil.nga.giat.geowave.core.store.query.Query query ) {
 			if ((limit != null) && (limit >= 0)) {
 				return components.getDataStore().query(
@@ -292,7 +293,7 @@ public class GeoWaveFeatureReader implements
 
 		@Override
 		public CloseableIterator<SimpleFeature> query(
-				final Index index,
+				final PrimaryIndex index,
 				final mil.nga.giat.geowave.core.store.query.Query query ) {
 			if (components.getDataStore() instanceof VectorDataStore) {
 				return ((VectorDataStore) components.getDataStore()).query(
@@ -332,7 +333,7 @@ public class GeoWaveFeatureReader implements
 
 		@Override
 		public CloseableIterator<SimpleFeature> query(
-				final Index index,
+				final PrimaryIndex index,
 				final mil.nga.giat.geowave.core.store.query.Query query ) {
 			if (components.getDataStore() instanceof VectorDataStore) {
 				return ((VectorDataStore) components.getDataStore()).query(
@@ -368,7 +369,7 @@ public class GeoWaveFeatureReader implements
 		@SuppressWarnings("unchecked")
 		@Override
 		public CloseableIterator<SimpleFeature> query(
-				final Index index,
+				final PrimaryIndex index,
 				final mil.nga.giat.geowave.core.store.query.Query query ) {
 
 			return (CloseableIterator<SimpleFeature>) components.getDataStore().query(

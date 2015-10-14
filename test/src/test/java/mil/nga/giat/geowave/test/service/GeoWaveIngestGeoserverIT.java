@@ -10,7 +10,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
-import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreFactoryFamily;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
@@ -96,7 +96,7 @@ public class GeoWaveIngestGeoserverIT extends
 		final AccumuloDataStore ds = new AccumuloDataStore(
 				bao);
 		final SimpleFeatureType sft = SimpleIngest.createPointFeatureType();
-		final Index idx = SimpleIngest.createSpatialIndex();
+		PrimaryIndex idx = SimpleIngest.createSpatialIndex();
 		final FeatureDataAdapter fda = SimpleIngest.createDataAdapter(sft);
 		final List<SimpleFeature> features = SimpleIngest.getGriddedFeatures(
 				new SimpleFeatureBuilder(

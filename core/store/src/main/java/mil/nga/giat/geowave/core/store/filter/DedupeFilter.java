@@ -27,7 +27,7 @@ public class DedupeFilter implements
 	@Override
 	public boolean accept(
 			final CommonIndexModel indexModel,
-			final IndexedPersistenceEncoding persistenceEncoding ) {
+			final IndexedPersistenceEncoding<?> persistenceEncoding ) {
 		if (!persistenceEncoding.isDeduplicationEnabled()) {
 			// certain types of data such as raster do not intend to be
 			// duplicated

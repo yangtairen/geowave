@@ -34,7 +34,7 @@ import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.IndexStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStoreFactory;
 import mil.nga.giat.geowave.core.store.memory.MemoryDataStoreFactory;
 import mil.nga.giat.geowave.core.store.memory.MemoryIndexStoreFactory;
@@ -76,7 +76,7 @@ public class KMeansDistortionMapReduceTest
 
 	private static final List<Object> capturedObjects = new ArrayList<Object>();
 
-	final Index index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
+	final PrimaryIndex index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 
 	final GeometryFactory factory = new GeometryFactory();
 	final String grp1 = "g1";

@@ -28,9 +28,10 @@ import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
-import mil.nga.giat.geowave.core.store.dimension.DimensionField;
+import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.AdapterIdQuery;
 
 import org.apache.log4j.Logger;
@@ -76,7 +77,8 @@ public class GeoWaveGTDataStore extends
 	protected IndexStore indexStore;
 	protected DataStatisticsStore dataStatisticsStore;
 	protected DataStore dataStore;
-	private final Map<String, Index> preferredIndexes = new ConcurrentHashMap<String, Index>();
+	private final Map<String, PrimaryIndex> preferredIndexes = new ConcurrentHashMap<String, PrimaryIndex>();
+
 	private final ColumnVisibilityManagement<SimpleFeature> visibilityManagement = VisibilityManagementHelper.loadVisibilityManagement();
 	private final AuthorizationSPI authorizationSPI;
 	private final URI featureNameSpaceURI;
@@ -130,7 +132,7 @@ public class GeoWaveGTDataStore extends
 		return dataStatisticsStore;
 	}
 
-	protected Index getIndex(
+	protected PrimaryIndex getIndex(
 			final FeatureDataAdapter adapter ) {
 		return getPreferredIndex(adapter);
 	}
@@ -295,26 +297,26 @@ public class GeoWaveGTDataStore extends
 		}
 	}
 
-	private Index getPreferredIndex(
+	private PrimaryIndex getPreferredIndex(
 			final FeatureDataAdapter adapter ) {
 
-		Index currentSelection = preferredIndexes.get(adapter.getType().getName().toString());
+		PrimaryIndex currentSelection = preferredIndexes.get(adapter.getType().getName().toString());
 		if (currentSelection != null) {
 			return currentSelection;
 		}
 
 		final boolean needTime = adapter.hasTemporalConstraints();
 
-		try (CloseableIterator<Index> indices = indexStore.getIndices()) {
+		try (CloseableIterator<Index<?, ?>> indices = indexStore.getIndices()) {
 			boolean currentSelectionHasTime = false;
 			while (indices.hasNext()) {
-				final Index index = indices.next();
+				final PrimaryIndex index = (PrimaryIndex) indices.next();
 				@SuppressWarnings("rawtypes")
-				final DimensionField[] dims = index.getIndexModel().getDimensions();
+				final NumericDimensionField[] dims = index.getIndexModel().getDimensions();
 				boolean hasLat = false;
 				boolean hasLong = false;
 				boolean hasTime = false;
-				for (final DimensionField<?> dim : dims) {
+				for (final NumericDimensionField<?> dim : dims) {
 					hasLat |= dim instanceof LatitudeField;
 					hasLong |= dim instanceof LongitudeField;
 					hasTime |= dim instanceof TimeField;

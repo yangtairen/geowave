@@ -36,7 +36,7 @@ import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 
@@ -136,7 +136,7 @@ public class CentroidManagerGeoWave<T> implements
 	private DataStore dataStore;
 	private IndexStore indexStore;
 	private AdapterStore adapterStore;
-	private Index index;
+	private PrimaryIndex index;
 
 	public CentroidManagerGeoWave(
 			final DataStore dataStore,
@@ -153,7 +153,7 @@ public class CentroidManagerGeoWave<T> implements
 		this.batchId = batchId;
 		this.dataStore = dataStore;
 		this.indexStore = indexStore;
-		index = indexStore.getIndex(new ByteArrayId(
+		index = (PrimaryIndex) indexStore.getIndex(new ByteArrayId(
 				StringUtils.stringToBinary(indexId)));
 		this.adapterStore = adapterStore;
 		adapter = adapterStore.getAdapter(new ByteArrayId(
@@ -247,7 +247,7 @@ public class CentroidManagerGeoWave<T> implements
 				context,
 				scope,
 				null)).getCliOptions().createStore();
-		index = indexStore.getIndex(new ByteArrayId(
+		index = (PrimaryIndex) indexStore.getIndex(new ByteArrayId(
 				StringUtils.stringToBinary(indexId)));
 		adapterStore = ((PersistableAdapterStore) StoreParameters.StoreParam.ADAPTER_STORE.getHelper().getValue(
 				context,

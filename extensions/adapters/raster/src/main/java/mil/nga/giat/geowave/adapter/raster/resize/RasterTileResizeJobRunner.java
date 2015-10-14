@@ -15,6 +15,7 @@ import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
@@ -128,15 +129,15 @@ public class RasterTileResizeJobRunner extends
 		JobContextAdapterStore.addDataAdapter(
 				job.getConfiguration(),
 				newAdapter);
-		Index index = null;
+		PrimaryIndex index = null;
 		final IndexStore indexStore = inputIndexStoreOptions.createStore();
 		if (rasterResizeOptions.getIndexId() != null) {
 			index = indexStore.getIndex(new ByteArrayId(
 					rasterResizeOptions.getIndexId()));
 		}
 		if (index == null) {
-			try (CloseableIterator<Index> indices = indexStore.getIndices()) {
-				index = indices.next();
+			try (CloseableIterator<Index<?, ?>> indices = indexStore.getIndices()) {
+				index = (PrimaryIndex) indices.next();
 			}
 			if (index == null) {
 				throw new IllegalArgumentException(

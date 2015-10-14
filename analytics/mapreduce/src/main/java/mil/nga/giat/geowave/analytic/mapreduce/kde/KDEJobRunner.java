@@ -17,7 +17,7 @@ import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
-import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputFormat;
@@ -296,7 +296,7 @@ public class KDEJobRunner extends
 			final Job statsReducer,
 			final String statsNamespace )
 			throws Exception {
-		final Index index = IndexType.SPATIAL_RASTER.createDefaultIndex();
+		final PrimaryIndex index = IndexType.SPATIAL_RASTER.createDefaultIndex();
 		final WritableDataAdapter<?> adapter = RasterUtils.createDataAdapterTypeDouble(
 				kdeCommandLineOptions.getCoverageName(),
 				AccumuloKDEReducer.NUM_BANDS,
@@ -315,7 +315,7 @@ public class KDEJobRunner extends
 			final Job job,
 			final String namespace,
 			final WritableDataAdapter<?> adapter,
-			final Index index )
+			final PrimaryIndex index )
 			throws Exception {
 		GeoWaveOutputFormat.setDataStoreName(
 				job.getConfiguration(),

@@ -23,7 +23,7 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
-import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
@@ -85,7 +85,7 @@ public class AccumuloMRUtils
 			throws IOException,
 			InterruptedException {
 
-		final Map<Index, RowRangeHistogramStatistics<?>> statsCache = new HashMap<Index, RowRangeHistogramStatistics<?>>();
+		final Map<PrimaryIndex, RowRangeHistogramStatistics<?>> statsCache = new HashMap<PrimaryIndex, RowRangeHistogramStatistics<?>>();
 
 		final TreeSet<IntermediateSplitInfo> splits = getIntermediateSplits(
 				operations,
@@ -147,7 +147,7 @@ public class AccumuloMRUtils
 			"1");
 
 	private static RowRangeHistogramStatistics<?> getRangeStats(
-			final Index index,
+			final PrimaryIndex index,
 			final List<ByteArrayId> adapterIds,
 			final AdapterStore adapterStore,
 			final DataStatisticsStore store,
@@ -173,7 +173,7 @@ public class AccumuloMRUtils
 	}
 
 	private static Range getRangeMax(
-			final Index index,
+			final PrimaryIndex index,
 			final AdapterStore adapterStore,
 			final DataStatisticsStore statsStore,
 			final String[] authorizations )
@@ -211,9 +211,8 @@ public class AccumuloMRUtils
 
 	private static TreeSet<IntermediateSplitInfo> getIntermediateSplits(
 			final AccumuloOperations operations,
-			final Index[] indices,
+			final PrimaryIndex[] indices,
 			final List<ByteArrayId> adapterIds,
-			final Map<Index, RowRangeHistogramStatistics<?>> statsCache,
 			final AdapterStore adapterStore,
 			final DataStatisticsStore statsStore,
 			final Integer maxSplits,
@@ -223,7 +222,7 @@ public class AccumuloMRUtils
 
 		final TreeSet<IntermediateSplitInfo> splits = new TreeSet<IntermediateSplitInfo>();
 
-		for (final Index index : indices) {
+		for (final PrimaryIndex index : indices) {
 			if ((query != null) && !query.isSupported(index)) {
 				continue;
 			}
@@ -345,7 +344,7 @@ public class AccumuloMRUtils
 				}
 				for (final Entry<KeyExtent, List<Range>> extentRanges : tserverBin.getValue().entrySet()) {
 					final Range keyExtent = extentRanges.getKey().toDataRange();
-					final Map<Index, List<RangeLocationPair>> splitInfo = new HashMap<Index, List<RangeLocationPair>>();
+					final Map<PrimaryIndex, List<RangeLocationPair>> splitInfo = new HashMap<PrimaryIndex, List<RangeLocationPair>>();
 					final List<RangeLocationPair> rangeList = new ArrayList<RangeLocationPair>();
 					for (final Range range : extentRanges.getValue()) {
 
@@ -395,11 +394,11 @@ public class AccumuloMRUtils
 	}
 
 	private static RowRangeHistogramStatistics<?> getHistStats(
-			final Index index,
+			final PrimaryIndex index,
 			final List<ByteArrayId> adapterIds,
 			final AdapterStore adapterStore,
 			final DataStatisticsStore statsStore,
-			final Map<Index, RowRangeHistogramStatistics<?>> statsCache,
+			final Map<PrimaryIndex, RowRangeHistogramStatistics<?>> statsCache,
 			final String[] authorizations )
 			throws IOException {
 		RowRangeHistogramStatistics<?> rangeStats = statsCache.get(index);
@@ -437,11 +436,11 @@ public class AccumuloMRUtils
 		protected static class IndexRangeLocation
 		{
 			private RangeLocationPair rangeLocationPair;
-			private final Index index;
+			private final PrimaryIndex index;
 
 			public IndexRangeLocation(
 					final RangeLocationPair rangeLocationPair,
-					final Index index ) {
+					final PrimaryIndex index ) {
 				this.rangeLocationPair = rangeLocationPair;
 				this.index = index;
 			}
@@ -517,16 +516,16 @@ public class AccumuloMRUtils
 			}
 		}
 
-		private final Map<Index, List<RangeLocationPair>> splitInfo;
+		private final Map<PrimaryIndex, List<RangeLocationPair>> splitInfo;
 
 		public IntermediateSplitInfo(
-				final Map<Index, List<RangeLocationPair>> splitInfo ) {
+				final Map<PrimaryIndex, List<RangeLocationPair>> splitInfo ) {
 			this.splitInfo = splitInfo;
 		}
 
 		private synchronized void merge(
 				final IntermediateSplitInfo split ) {
-			for (final Entry<Index, List<RangeLocationPair>> e : split.splitInfo.entrySet()) {
+			for (final Entry<PrimaryIndex, List<RangeLocationPair>> e : split.splitInfo.entrySet()) {
 				List<RangeLocationPair> thisList = splitInfo.get(e.getKey());
 				if (thisList == null) {
 					thisList = new ArrayList<RangeLocationPair>();
@@ -546,7 +545,7 @@ public class AccumuloMRUtils
 		 * @return the new split.
 		 */
 		private synchronized IntermediateSplitInfo split(
-				final Map<Index, RowRangeHistogramStatistics<?>> statsCache ) {
+				final Map<PrimaryIndex, RowRangeHistogramStatistics<?>> statsCache ) {
 			// generically you'd want the split to be as limiting to total
 			// locations as possible and then as limiting as possible to total
 			// indices, but in this case split() is only called when all ranges
@@ -562,7 +561,7 @@ public class AccumuloMRUtils
 							return (o1.rangeLocationPair.getCardinality() - o2.rangeLocationPair.getCardinality()) < 0 ? -1 : 1;
 						}
 					});
-			for (final Entry<Index, List<RangeLocationPair>> ranges : splitInfo.entrySet()) {
+			for (final Entry<PrimaryIndex, List<RangeLocationPair>> ranges : splitInfo.entrySet()) {
 				for (final RangeLocationPair p : ranges.getValue()) {
 					orderedSplits.add(new IndexRangeLocation(
 							p,
@@ -571,7 +570,7 @@ public class AccumuloMRUtils
 			}
 			final double targetCardinality = getTotalRangeAtCardinality() / 2;
 			double currentCardinality = 0.0;
-			final Map<Index, List<RangeLocationPair>> otherSplitInfo = new HashMap<Index, List<RangeLocationPair>>();
+			final Map<PrimaryIndex, List<RangeLocationPair>> otherSplitInfo = new HashMap<PrimaryIndex, List<RangeLocationPair>>();
 
 			splitInfo.clear();
 
@@ -630,8 +629,8 @@ public class AccumuloMRUtils
 			if (splitInfo.size() == 0) {
 				// First try to move a index set of ranges back.
 				if (otherSplitInfo.size() > 1) {
-					final Iterator<Entry<Index, List<RangeLocationPair>>> it = otherSplitInfo.entrySet().iterator();
-					final Entry<Index, List<RangeLocationPair>> entry = it.next();
+					final Iterator<Entry<PrimaryIndex, List<RangeLocationPair>>> it = otherSplitInfo.entrySet().iterator();
+					final Entry<PrimaryIndex, List<RangeLocationPair>> entry = it.next();
 					it.remove();
 					splitInfo.put(
 							entry.getKey(),
@@ -648,9 +647,9 @@ public class AccumuloMRUtils
 		}
 
 		private void addPairForIndex(
-				final Map<Index, List<RangeLocationPair>> otherSplitInfo,
+				final Map<PrimaryIndex, List<RangeLocationPair>> otherSplitInfo,
 				final RangeLocationPair pair,
-				final Index index ) {
+				final PrimaryIndex index ) {
 			List<RangeLocationPair> list = otherSplitInfo.get(index);
 			if (list == null) {
 				list = new ArrayList<RangeLocationPair>();
@@ -664,7 +663,7 @@ public class AccumuloMRUtils
 
 		private synchronized GeoWaveAccumuloInputSplit toFinalSplit() {
 			final Set<String> locations = new HashSet<String>();
-			for (final Entry<Index, List<RangeLocationPair>> entry : splitInfo.entrySet()) {
+			for (final Entry<PrimaryIndex, List<RangeLocationPair>> entry : splitInfo.entrySet()) {
 				for (final RangeLocationPair pair : entry.getValue()) {
 					locations.add(pair.getLocation());
 				}

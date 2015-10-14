@@ -22,6 +22,7 @@ import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.index.CustomIdIndex;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.slf4j.Logger;
@@ -36,7 +37,7 @@ public class ClusteringUtils
 
 	final static Logger LOGGER = LoggerFactory.getLogger(ClusteringUtils.class);
 
-	private static Index createIndex(
+	private static PrimaryIndex createIndex(
 			final String indexId,
 			final IndexStore indexStore )
 			throws Exception {
@@ -45,17 +46,17 @@ public class ClusteringUtils
 				indexId);
 		if (!indexStore.indexExists(dbId)) {
 			if (indexId.equals(IndexType.SPATIAL_VECTOR.getDefaultId())) {
-				final Index index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
+				final PrimaryIndex index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 				indexStore.addIndex(index);
 				return index;
 			}
 			else if (indexId.equals(IndexType.SPATIAL_TEMPORAL_VECTOR.getDefaultId())) {
-				final Index index = IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndex();
+				final PrimaryIndex index = IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndex();
 				indexStore.addIndex(index);
 				return index;
 			}
 			else {
-				final Index index = new CustomIdIndex(
+				final PrimaryIndex index = new CustomIdIndex(
 						IndexType.SPATIAL_VECTOR.createDefaultIndexStrategy(),
 						IndexType.SPATIAL_VECTOR.getDefaultIndexModel(),
 						new ByteArrayId(
@@ -65,7 +66,7 @@ public class ClusteringUtils
 			}
 		}
 		else {
-			return indexStore.getIndex(dbId);
+			return (PrimaryIndex) indexStore.getIndex(dbId);
 		}
 
 	}
@@ -112,19 +113,19 @@ public class ClusteringUtils
 		return result;
 	}
 
-	public static Index[] getIndices(
+	public static PrimaryIndex[] getIndices(
 			final PropertyManagement propertyManagement ) {
 
 		final IndexStore indexStore = ((PersistableIndexStore) StoreParameters.StoreParam.INDEX_STORE.getHelper().getValue(
 				propertyManagement)).getCliOptions().createStore();
 
-		final mil.nga.giat.geowave.core.store.CloseableIterator<Index> it = indexStore.getIndices();
-		final List<Index> indices = new LinkedList<Index>();
+		final mil.nga.giat.geowave.core.store.CloseableIterator<Index<?, ?>> it = indexStore.getIndices();
+		final List<PrimaryIndex> indices = new LinkedList<PrimaryIndex>();
 		while (it.hasNext()) {
-			indices.add(it.next());
+				indices.add((PrimaryIndex) it.next());
 		}
 
-		final Index[] result = new Index[indices.size()];
+			final PrimaryIndex[] result = new PrimaryIndex[indices.size()];
 		indices.toArray(result);
 		return result;
 	}
@@ -136,7 +137,7 @@ public class ClusteringUtils
 	protected static List<ByteArrayRange> getGeoWaveRangesForQuery(
 			final Polygon polygon ) {
 
-		final Index index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
+		final PrimaryIndex index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 		final List<ByteArrayRange> ranges = index.getIndexStrategy().getQueryRanges(
 				new SpatialQuery(
 						polygon).getIndexConstraints(index.getIndexStrategy()));
@@ -144,7 +145,7 @@ public class ClusteringUtils
 		return ranges;
 	}
 
-	public static Index createIndex(
+	public static PrimaryIndex createIndex(
 			final PropertyManagement propertyManagement )
 			throws Exception {
 

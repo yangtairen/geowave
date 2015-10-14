@@ -18,8 +18,8 @@ import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputKey;
 
@@ -89,12 +89,12 @@ public class KSamplerJobRunner extends
 						"sample")));
 	}
 
-	private Index getIndex(
+	private PrimaryIndex getIndex(
 			final PropertyManagement runTimeProperties )
 			throws Exception {
 		final IndexStore indexStore = super.getIndexStore(runTimeProperties);
 
-		return indexStore.getIndex(new ByteArrayId(
+		return (PrimaryIndex) indexStore.getIndex(new ByteArrayId(
 				runTimeProperties.getPropertyAsString(
 						SampleParameters.Sample.INDEX_ID,
 						"index")));

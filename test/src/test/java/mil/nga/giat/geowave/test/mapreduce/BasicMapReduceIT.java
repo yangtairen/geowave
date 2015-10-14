@@ -19,7 +19,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
@@ -213,7 +213,7 @@ public class BasicMapReduceIT extends
 					adapters[0],
 					adapters[1]
 				},
-				new Index[] {
+				new PrimaryIndex[] {
 					IndexType.SPATIAL_VECTOR.createDefaultIndex(),
 					IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndex()
 				});
@@ -224,7 +224,7 @@ public class BasicMapReduceIT extends
 				fullDataSetResults,
 				null,
 				adapters,
-				new Index[] {
+				new PrimaryIndex[] {
 					IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndex()
 				});
 
@@ -241,7 +241,7 @@ public class BasicMapReduceIT extends
 			final ExpectedResults expectedResults,
 			final DistributableQuery query,
 			final DataAdapter<?>[] adapters,
-			final Index[] indices )
+			final PrimaryIndex[] indices )
 			throws Exception {
 		final TestJobRunner jobRunner = new TestJobRunner(
 				expectedResults);
@@ -256,7 +256,7 @@ public class BasicMapReduceIT extends
 			}
 		}
 		if ((indices != null) && (indices.length > 0)) {
-			for (final Index index : indices) {
+			for (final PrimaryIndex index : indices) {
 				jobRunner.addIndex(index);
 			}
 		}

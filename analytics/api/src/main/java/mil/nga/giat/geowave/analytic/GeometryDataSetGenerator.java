@@ -15,7 +15,7 @@ import mil.nga.giat.geowave.core.cli.CommandLineResult;
 import mil.nga.giat.geowave.core.cli.DataStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.store.DataStore;
-import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -170,7 +170,7 @@ public class GeometryDataSetGenerator
 			final DataStore dataStore,
 			final List<SimpleFeature> featureData )
 			throws IOException {
-		final Index index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
+			final PrimaryIndex index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 		final FeatureDataAdapter adapter = new FeatureDataAdapter(
 				featureData.get(
 						0).getFeatureType());

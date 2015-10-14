@@ -10,6 +10,7 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.Query;
 
 import org.apache.log4j.Logger;
@@ -36,9 +37,9 @@ public class StatsOperation extends
 				adapter.getAdapterId(),
 				authorizations);
 
-		try (CloseableIterator<Index> indexit = indexStore.getIndices()) {
+		try (CloseableIterator<Index<?, ?>> indexit = indexStore.getIndices()) {
 			while (indexit.hasNext()) {
-				final Index index = indexit.next();
+				final PrimaryIndex index = (PrimaryIndex) indexit.next();
 				try (StatsCompositionTool<?> statsTool = new StatsCompositionTool(
 						new DataAdapterStatsWrapper(
 								index,

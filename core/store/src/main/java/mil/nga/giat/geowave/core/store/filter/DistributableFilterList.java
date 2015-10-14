@@ -61,4 +61,8 @@ public class DistributableFilterList extends
 		}
 	}
 
+	public List<DistributableQueryFilter> getFilters() {
+		return filters;
+	}
+
 }

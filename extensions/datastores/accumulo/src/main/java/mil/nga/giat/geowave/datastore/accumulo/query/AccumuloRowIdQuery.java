@@ -8,7 +8,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.ScanCallback;
-import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 
 import org.apache.log4j.Logger;
 
@@ -22,7 +22,7 @@ public class AccumuloRowIdQuery extends
 	private final static Logger LOGGER = Logger.getLogger(AccumuloRowIdQuery.class);
 
 	public AccumuloRowIdQuery(
-			final Index index,
+			final PrimaryIndex index,
 			final ByteArrayId row,
 			final String... authorizations ) {
 		super(
@@ -33,7 +33,7 @@ public class AccumuloRowIdQuery extends
 	}
 
 	public AccumuloRowIdQuery(
-			final Index index,
+			final PrimaryIndex index,
 			final ByteArrayId row,
 			final ScanCallback<Object> scanCallback,
 			final String... authorizations ) {

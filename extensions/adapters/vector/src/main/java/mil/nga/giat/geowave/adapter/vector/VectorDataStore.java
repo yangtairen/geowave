@@ -3,6 +3,7 @@ package mil.nga.giat.geowave.adapter.vector;
 import mil.nga.giat.geowave.adapter.vector.render.DistributableRenderer;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.Query;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -22,7 +23,7 @@ public interface VectorDataStore
 
 	public CloseableIterator<SimpleFeature> query(
 			final FeatureDataAdapter adapter,
-			final Index index,
+			final PrimaryIndex index,
 			final Query query,
 			final Filter filter,
 			final DistributableRenderer distributedRenderer,
@@ -31,7 +32,7 @@ public interface VectorDataStore
 	@SuppressWarnings("unchecked")
 	public CloseableIterator<SimpleFeature> query(
 			final FeatureDataAdapter adapter,
-			final Index index,
+			final PrimaryIndex index,
 			final Query query,
 			final int width,
 			final int height,
@@ -40,4 +41,5 @@ public interface VectorDataStore
 			final ReferencedEnvelope envelope,
 			final Integer limit,
 			final String... authorizations );
+
 }
