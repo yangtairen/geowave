@@ -19,6 +19,7 @@ import mil.nga.giat.geowave.core.store.IngestCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
+import mil.nga.giat.geowave.core.store.data.CommonIndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.DataWriter;
 import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
@@ -154,7 +155,7 @@ public class DataStoreUtils
 				commonData.addValue(column.getDataValue());
 			}
 		}
-		return new IndexedPersistenceEncoding(
+		return new CommonIndexedPersistenceEncoding(
 				new ByteArrayId(
 						row.getTableRowId().getAdapterId()),
 				new ByteArrayId(

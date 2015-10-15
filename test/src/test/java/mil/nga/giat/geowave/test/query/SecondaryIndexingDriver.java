@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.UUID;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
+import mil.nga.giat.geowave.adapter.vector.VectorDataStore;
 import mil.nga.giat.geowave.adapter.vector.index.NumericSecondaryIndexConfiguration;
 import mil.nga.giat.geowave.adapter.vector.index.TemporalSecondaryIndexConfiguration;
 import mil.nga.giat.geowave.adapter.vector.index.TextSecondaryIndexConfiguration;
