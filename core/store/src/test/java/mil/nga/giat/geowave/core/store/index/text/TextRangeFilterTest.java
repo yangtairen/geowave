@@ -50,8 +50,11 @@ public class TextRangeFilterTest
 								new ByteArrayId(
 										"myAttribute"),
 								new ByteArrayId(
-										StringUtils.stringToBinary("deke")))));
-		Assert.assertTrue(filter.accept(persistenceEncoding));
+										StringUtils.stringToBinary("deke")))),
+				null);
+		Assert.assertTrue(filter.accept(
+				null,
+				persistenceEncoding));
 
 		// should not match range
 		final IndexedPersistenceEncoding<ByteArrayId> persistenceEncoding2 = new IndexedPersistenceEncoding<ByteArrayId>(
@@ -64,8 +67,11 @@ public class TextRangeFilterTest
 								new ByteArrayId(
 										"myAttribute"),
 								new ByteArrayId(
-										StringUtils.stringToBinary("dez")))));
-		Assert.assertFalse(filter.accept(persistenceEncoding2));
+										StringUtils.stringToBinary("dez")))),
+				null);
+		Assert.assertFalse(filter.accept(
+				null,
+				persistenceEncoding2));
 
 		// should not match because of fieldId
 		final IndexedPersistenceEncoding<ByteArrayId> persistenceEncoding3 = new IndexedPersistenceEncoding<ByteArrayId>(
@@ -78,7 +84,10 @@ public class TextRangeFilterTest
 								new ByteArrayId(
 										"mismatch"),
 								new ByteArrayId(
-										StringUtils.stringToBinary("deke")))));
-		Assert.assertFalse(filter.accept(persistenceEncoding3));
+										StringUtils.stringToBinary("deke")))),
+				null);
+		Assert.assertFalse(filter.accept(
+				null,
+				persistenceEncoding3));
 	}
 }

@@ -249,7 +249,7 @@ public class GeoWaveInputConfigurator extends
 					getIndexStore(
 							implementingClass,
 							context).getIndices(),
-						PrimaryIndex.class);
+					PrimaryIndex.class);
 		}
 		return userIndices;
 	}

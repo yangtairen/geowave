@@ -15,6 +15,7 @@ import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.JobContextIndexStore;
@@ -141,7 +142,7 @@ public class GeoWaveOutputFormat extends
 
 	public static void addIndex(
 			final Configuration config,
-			final Index index ) {
+			final PrimaryIndex index ) {
 		JobContextIndexStore.addIndex(
 				config,
 				index);
@@ -329,7 +330,7 @@ public class GeoWaveOutputFormat extends
 		private synchronized IndexWriter getIndexWriter(
 				final ByteArrayId indexId ) {
 			if (!indexWriterCache.containsKey(indexId)) {
-				final Index index = indexStore.getIndex(indexId);
+				final PrimaryIndex index = (PrimaryIndex) indexStore.getIndex(indexId);
 				IndexWriter writer = null;
 				if (index != null) {
 					writer = dataStore.createIndexWriter(index);

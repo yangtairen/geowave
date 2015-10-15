@@ -22,7 +22,7 @@ public class IndexedPersistenceEncoding<T> extends
 			final ByteArrayId dataId,
 			final ByteArrayId indexId,
 			final int duplicateCount,
-			final PersistentDataset<T> commonData ) {
+			final PersistentDataset<T> commonData,
 			final PersistentDataset<byte[]> unknownData ) {
 		super(
 				adapterId,

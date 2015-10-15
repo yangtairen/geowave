@@ -28,7 +28,8 @@ public class FilterableLikeConstraintTest
 						new PersistentValue<ByteArrayId>(
 								fieldID,
 								new ByteArrayId(
-										StringUtils.stringToBinary(value)))));
+										StringUtils.stringToBinary(value)))),
+				null);
 	}
 
 	@Test
@@ -38,39 +39,71 @@ public class FilterableLikeConstraintTest
 				"fRed%dog",
 				true);
 		QueryFilter filter = constraint.getFilter();
-		assertTrue(filter.accept(create("fReddog")));
-		assertTrue(filter.accept(create("fRedfkfdog")));
-		assertFalse(filter.accept(create("fredddog")));
-		assertFalse(filter.accept(create("xRedddog")));
+		assertTrue(filter.accept(
+				null,
+				create("fReddog")));
+		assertTrue(filter.accept(
+				null,
+				create("fRedfkfdog")));
+		assertFalse(filter.accept(
+				null,
+				create("fredddog")));
+		assertFalse(filter.accept(
+				null,
+				create("xRedddog")));
 
 		constraint = new FilterableLikeConstraint(
 				fieldID,
 				"fRed%",
 				true);
 		filter = constraint.getFilter();
-		assertTrue(filter.accept(create("fReddog")));
-		assertTrue(filter.accept(create("fRedfkfdog")));
-		assertFalse(filter.accept(create("fredddog")));
-		assertFalse(filter.accept(create("xRedddog")));
+		assertTrue(filter.accept(
+				null,
+				create("fReddog")));
+		assertTrue(filter.accept(
+				null,
+				create("fRedfkfdog")));
+		assertFalse(filter.accept(
+				null,
+				create("fredddog")));
+		assertFalse(filter.accept(
+				null,
+				create("xRedddog")));
 
 		constraint = new FilterableLikeConstraint(
 				fieldID,
 				"fRed%dog",
 				false);
 		filter = constraint.getFilter();
-		assertTrue(filter.accept(create("fReddog")));
-		assertTrue(filter.accept(create("fRedfkfdog")));
-		assertTrue(filter.accept(create("freddDog")));
-		assertFalse(filter.accept(create("xRedddog")));
+		assertTrue(filter.accept(
+				null,
+				create("fReddog")));
+		assertTrue(filter.accept(
+				null,
+				create("fRedfkfdog")));
+		assertTrue(filter.accept(
+				null,
+				create("freddDog")));
+		assertFalse(filter.accept(
+				null,
+				create("xRedddog")));
 
 		constraint = new FilterableLikeConstraint(
 				fieldID,
 				"fRed%",
 				false);
 		filter = constraint.getFilter();
-		assertTrue(filter.accept(create("fReddog")));
-		assertTrue(filter.accept(create("fRedfkfdog")));
-		assertTrue(filter.accept(create("freddDog")));
-		assertFalse(filter.accept(create("xRedddog")));
+		assertTrue(filter.accept(
+				null,
+				create("fReddog")));
+		assertTrue(filter.accept(
+				null,
+				create("fRedfkfdog")));
+		assertTrue(filter.accept(
+				null,
+				create("freddDog")));
+		assertFalse(filter.accept(
+				null,
+				create("xRedddog")));
 	}
 }

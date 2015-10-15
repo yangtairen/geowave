@@ -544,6 +544,7 @@ public class GeoWaveConfiguratorBase
 						namespace));
 	}
 
+	private static PrimaryIndex[] getIndicesInternal(
 			final Class<?> implementingClass,
 			final Configuration configuration ) {
 		final Map<String, String> input = configuration.getValByRegex(enumToConfKey(

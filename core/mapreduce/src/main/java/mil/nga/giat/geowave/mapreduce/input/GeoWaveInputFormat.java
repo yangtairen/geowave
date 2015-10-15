@@ -14,6 +14,7 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
@@ -135,7 +136,7 @@ public class GeoWaveInputFormat<T> extends
 
 	public static void addIndex(
 			final Configuration config,
-			final Index index ) {
+			final PrimaryIndex index ) {
 		JobContextIndexStore.addIndex(
 				config,
 				index);
@@ -262,7 +263,7 @@ public class GeoWaveInputFormat<T> extends
 		final AdapterStore adapterStore = getJobContextAdapterStore(context);
 		if ((dataStore != null) && (dataStore instanceof MapReduceDataStore)) {
 			return (RecordReader<GeoWaveInputKey, T>) ((MapReduceDataStore) dataStore).createRecordReader(
-					getIndices(context),
+					(PrimaryIndex[]) getIndices(context),
 					getAdapterIds(
 							context,
 							adapterStore),
@@ -435,7 +436,7 @@ public class GeoWaveInputFormat<T> extends
 		final AdapterStore adapterStore = getJobContextAdapterStore(context);
 		if ((dataStore != null) && (dataStore instanceof MapReduceDataStore)) {
 			return ((MapReduceDataStore) dataStore).getSplits(
-					getIndices(context),
+					(PrimaryIndex[]) getIndices(context),
 					getAdapterIds(
 							context,
 							adapterStore),

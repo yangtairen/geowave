@@ -9,7 +9,6 @@ import java.util.Random;
 import java.util.UUID;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
-import mil.nga.giat.geowave.adapter.vector.VectorDataStore;
 import mil.nga.giat.geowave.adapter.vector.index.NumericSecondaryIndexConfiguration;
 import mil.nga.giat.geowave.adapter.vector.index.TemporalSecondaryIndexConfiguration;
 import mil.nga.giat.geowave.adapter.vector.index.TextSecondaryIndexConfiguration;
@@ -17,7 +16,12 @@ import mil.nga.giat.geowave.adapter.vector.utils.SimpleFeatureUserDataConfigurat
 import mil.nga.giat.geowave.adapter.vector.utils.SimpleFeatureUserDataConfigurationSet;
 import mil.nga.giat.geowave.core.geotime.GeometryUtils;
 import mil.nga.giat.geowave.core.geotime.IndexType;
+import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.test.GeoWaveTestEnvironment;
 
 import org.apache.accumulo.core.client.AccumuloException;
@@ -82,7 +86,13 @@ public class SecondaryIndexingDriver extends
 		final FeatureDataAdapter dataAdapter = new FeatureDataAdapter(
 				schema);
 
-		final VectorDataStore dataStore = new VectorDataStore(
+		final DataStore dataStore = new AccumuloDataStore(
+				new AccumuloIndexStore(
+						accumuloOperations),
+				new AccumuloAdapterStore(
+						accumuloOperations),
+				new AccumuloDataStatisticsStore(
+						accumuloOperations),
 				accumuloOperations);
 
 		final PrimaryIndex index = IndexType.SPATIAL_VECTOR.createDefaultIndex();

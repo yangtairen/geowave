@@ -2,15 +2,19 @@ package mil.nga.giat.geowave.adapter.vector.query.cql;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
+import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
+import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.SecondaryIndex;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
 
@@ -54,7 +58,7 @@ public class CQLQuery implements
 
 	@Override
 	public boolean isSupported(
-			final Index index ) {
+			final Index<?, ?> index ) {
 		if (baseQuery != null) {
 			return baseQuery.isSupported(index);
 		}
@@ -135,5 +139,19 @@ public class CQLQuery implements
 			// base query can be null, no reason to log a warning
 			baseQuery = null;
 		}
+	}
+
+	@Override
+	public List<ByteArrayRange> getSecondaryIndexConstraints(
+			SecondaryIndex<?> index ) {
+		// FIXME better way to handle this?
+		return Collections.<ByteArrayRange> emptyList();
+	}
+
+	@Override
+	public List<DistributableQueryFilter> getSecondaryQueryFilter(
+			SecondaryIndex<?> index ) {
+		// FIXME better way to handle this?
+		return Collections.<DistributableQueryFilter> emptyList();
 	}
 }

@@ -22,9 +22,8 @@ public class LikeFilterTest
 				expression,
 				new ByteArrayId(
 						StringUtils.stringToBinary("myAttribute")),
-						Pattern.compile(
-								expression.replace(
-										"%",
+				Pattern.compile(expression.replace(
+						"%",
 						".*")),
 				false);
 		final byte[] filterBytes = PersistenceUtils.toBinary(filter);
@@ -58,9 +57,12 @@ public class LikeFilterTest
 								new ByteArrayId(
 										"myAttribute"),
 								new ByteArrayId(
-										StringUtils.stringToBinary("I lost my wallet")))));
+										StringUtils.stringToBinary("I lost my wallet")))),
+				null);
 
-		Assert.assertTrue(filter.accept(persistenceEncoding));
+		Assert.assertTrue(filter.accept(
+				null,
+				persistenceEncoding));
 
 		// should not match expression
 		final IndexedPersistenceEncoding<ByteArrayId> persistenceEncoding2 = new IndexedPersistenceEncoding<ByteArrayId>(
@@ -73,9 +75,12 @@ public class LikeFilterTest
 								new ByteArrayId(
 										"myAttribute"),
 								new ByteArrayId(
-										StringUtils.stringToBinary("I lost his wallet")))));
+										StringUtils.stringToBinary("I lost his wallet")))),
+				null);
 
-		Assert.assertFalse(filter.accept(persistenceEncoding2));
+		Assert.assertFalse(filter.accept(
+				null,
+				persistenceEncoding2));
 
 		// should not match because of fieldId
 		final IndexedPersistenceEncoding<ByteArrayId> persistenceEncoding3 = new IndexedPersistenceEncoding<ByteArrayId>(
@@ -88,8 +93,11 @@ public class LikeFilterTest
 								new ByteArrayId(
 										"mismatch"),
 								new ByteArrayId(
-										StringUtils.stringToBinary("I lost my wallet")))));
+										StringUtils.stringToBinary("I lost my wallet")))),
+				null);
 
-		Assert.assertFalse(filter.accept(persistenceEncoding3));
+		Assert.assertFalse(filter.accept(
+				null,
+				persistenceEncoding3));
 	}
 }

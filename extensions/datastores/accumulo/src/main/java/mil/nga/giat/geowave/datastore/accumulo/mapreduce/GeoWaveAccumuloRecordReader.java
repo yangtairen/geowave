@@ -119,12 +119,12 @@ public class GeoWaveAccumuloRecordReader<T> extends
 
 		final Map<RangeLocationPair, CloseableIterator<?>> iteratorsPerRange = new LinkedHashMap<RangeLocationPair, CloseableIterator<?>>();
 
-			final Set<PrimaryIndex> indices = split.getIndices();
+		final Set<PrimaryIndex> indices = split.getIndices();
 		BigDecimal sum = BigDecimal.ZERO;
 
 		final Map<RangeLocationPair, BigDecimal> incrementalRangeSums = new LinkedHashMap<RangeLocationPair, BigDecimal>();
 
-			for (final PrimaryIndex i : indices) {
+		for (final PrimaryIndex i : indices) {
 			final List<RangeLocationPair> ranges = split.getRanges(i);
 			List<QueryFilter> queryFilters = null;
 			if (query != null) {

@@ -6,10 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang3.ArrayUtils;
-
-import com.google.common.math.DoubleMath;
-
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
@@ -17,6 +13,10 @@ import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+
+import org.apache.commons.lang3.ArrayUtils;
+
+import com.google.common.math.DoubleMath;
 
 /**
  * This class models all of the necessary information for persisting data in
@@ -36,13 +36,15 @@ public class CommonIndexedPersistenceEncoding extends
 			final ByteArrayId dataId,
 			final ByteArrayId indexId,
 			final int duplicateCount,
-			final PersistentDataset<CommonIndexValue> commonData ) {
+			final PersistentDataset<CommonIndexValue> commonData,
+			final PersistentDataset<byte[]> unknownData ) {
 		super(
 				adapterId,
 				dataId,
 				indexId,
 				duplicateCount,
-				commonData);
+				commonData,
+				unknownData);
 	}
 
 	/**

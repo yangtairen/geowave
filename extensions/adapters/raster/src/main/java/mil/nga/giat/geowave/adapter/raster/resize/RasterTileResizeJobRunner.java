@@ -15,8 +15,8 @@ import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
-import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.JobContextIndexStore;
@@ -132,7 +132,7 @@ public class RasterTileResizeJobRunner extends
 		PrimaryIndex index = null;
 		final IndexStore indexStore = inputIndexStoreOptions.createStore();
 		if (rasterResizeOptions.getIndexId() != null) {
-			index = indexStore.getIndex(new ByteArrayId(
+			index = (PrimaryIndex) indexStore.getIndex(new ByteArrayId(
 					rasterResizeOptions.getIndexId()));
 		}
 		if (index == null) {

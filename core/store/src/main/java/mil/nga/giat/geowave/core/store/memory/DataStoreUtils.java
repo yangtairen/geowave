@@ -31,7 +31,7 @@ import mil.nga.giat.geowave.core.store.data.visibility.UnconstrainedVisibilityHa
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
-import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 
 import org.apache.log4j.Logger;
 
@@ -102,7 +102,7 @@ public class DataStoreUtils
 
 	public static <T> List<EntryRow> entryToRows(
 			final WritableDataAdapter<T> dataWriter,
-			final Index index,
+			final PrimaryIndex index,
 			final T entry,
 			final IngestCallback<T> ingestCallback,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
@@ -121,7 +121,7 @@ public class DataStoreUtils
 	}
 
 	public static List<IndexedPersistenceEncoding> getEncodings(
-			final Index index,
+			final PrimaryIndex index,
 			final AdapterPersistenceEncoding encoding ) {
 		final List<ByteArrayId> ids = encoding.getInsertionIds(index);
 		final ArrayList<IndexedPersistenceEncoding> encodings = new ArrayList<IndexedPersistenceEncoding>();
@@ -189,7 +189,7 @@ public class DataStoreUtils
 	 */
 	public static <T> List<ByteArrayId> getRowIds(
 			final WritableDataAdapter<T> dataWriter,
-			final Index index,
+			final PrimaryIndex index,
 			final T entry ) {
 		final CommonIndexModel indexModel = index.getIndexModel();
 		final AdapterPersistenceEncoding encodedData = dataWriter.encode(
@@ -243,7 +243,7 @@ public class DataStoreUtils
 	})
 	public static <T> DataStoreEntryInfo getIngestInfo(
 			final WritableDataAdapter<T> dataWriter,
-			final Index index,
+			final PrimaryIndex index,
 			final T entry,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
 		final CommonIndexModel indexModel = index.getIndexModel();
@@ -259,7 +259,7 @@ public class DataStoreUtils
 		final List<PersistentValue> extendedValues = extendedData.getValues();
 		final List<PersistentValue> commonValues = indexedData.getValues();
 
-		final List<FieldInfo> fieldInfoList = new ArrayList<FieldInfo>();
+		final List<FieldInfo<?>> fieldInfoList = new ArrayList<FieldInfo<?>>();
 
 		if (!insertionIds.isEmpty()) {
 			addToRowIds(

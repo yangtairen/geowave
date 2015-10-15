@@ -31,10 +31,12 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
+import mil.nga.giat.geowave.core.store.data.CommonIndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.memory.MemoryStoreFactoryFamily;
 import mil.nga.giat.geowave.core.store.query.Query;
 
@@ -46,7 +48,7 @@ public class MemoryDataStoreTest
 	@Test
 	public void test()
 			throws IOException {
-		final Index index = new Index(
+		final PrimaryIndex index = new PrimaryIndex(
 				new MockComponents.MockIndexStrategy(),
 				new MockComponents.TestIndexModel());
 		final String namespace = "test_" + getClass().getName();
@@ -190,10 +192,10 @@ public class MemoryDataStoreTest
 		@Override
 		public boolean accept(
 				final CommonIndexModel indexModel,
-				final IndexedPersistenceEncoding persistenceEncoding ) {
-			final double min = persistenceEncoding.getNumericData(
+				final IndexedPersistenceEncoding<?> persistenceEncoding ) {
+			final double min = ((CommonIndexedPersistenceEncoding) persistenceEncoding).getNumericData(
 					indexModel.getDimensions()).getDataPerDimension()[0].getMin();
-			final double max = persistenceEncoding.getNumericData(
+			final double max = ((CommonIndexedPersistenceEncoding) persistenceEncoding).getNumericData(
 					indexModel.getDimensions()).getDataPerDimension()[0].getMax();
 			return !((this.max <= min) || (this.min > max));
 		}
@@ -225,8 +227,8 @@ public class MemoryDataStoreTest
 
 		@Override
 		public boolean isSupported(
-				final Index index ) {
-			return index.getIndexModel() instanceof TestIndexModel;
+				final Index<?, ?> index ) {
+			return ((PrimaryIndex) index).getIndexModel() instanceof TestIndexModel;
 		}
 
 		@Override

@@ -12,10 +12,10 @@ import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericValue;
+import mil.nga.giat.geowave.core.store.EntryVisibilityHandler;
 import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler.RowBuilder;
 import mil.nga.giat.geowave.core.store.adapter.statistics.CountDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsVisibilityHandler;
 import mil.nga.giat.geowave.core.store.adapter.statistics.FieldIdStatisticVisibility;
 import mil.nga.giat.geowave.core.store.adapter.statistics.NumericRangeDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatisticalDataAdapter;
@@ -23,7 +23,7 @@ import mil.nga.giat.geowave.core.store.data.PersistentValue;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
 import mil.nga.giat.geowave.core.store.data.field.FieldUtils;
 import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
-import mil.nga.giat.geowave.core.store.dimension.DimensionField;
+import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 
@@ -207,7 +207,7 @@ public class MockComponents
 		}
 
 		@Override
-		public DataStatisticsVisibilityHandler<Integer> getVisibilityHandler(
+		public EntryVisibilityHandler<Integer> getVisibilityHandler(
 				ByteArrayId statisticsId ) {
 			return new FieldIdStatisticVisibility<Integer>(
 					new TestDimensionField().fieldId);
@@ -267,7 +267,7 @@ public class MockComponents
 
 		@Override
 		public boolean overlaps(
-				final DimensionField[] dimensions,
+				final NumericDimensionField[] dimensions,
 				final NumericData[] rangeData ) {
 			return rangeData[0].getMin() <= indexValue && rangeData[0].getMax() >= indexValue;
 		}
@@ -440,7 +440,7 @@ public class MockComponents
 	//
 	// *************************************************************************
 	public static class TestDimensionField implements
-			DimensionField<TestIndexFieldType>
+			NumericDimensionField<TestIndexFieldType>
 	{
 		final ByteArrayId fieldId;
 

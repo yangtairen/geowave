@@ -72,8 +72,11 @@ public class SecondaryIndexQueryFilterIterator extends
 												new ByteArrayId(
 														key.getColumnQualifierData().getBackingArray()),
 												new ByteArrayId(
-														value.get()))));
-						if (filter.accept(persistenceEncoding)) {
+														value.get()))),
+								null);
+						if (filter.accept(
+								null,
+								persistenceEncoding)) {
 							// return true if any filter passes
 							return true;
 						}

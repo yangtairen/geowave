@@ -7,8 +7,8 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
-import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
@@ -21,7 +21,7 @@ public interface MapReduceDataStore extends
 {
 
 	public RecordReader<GeoWaveInputKey, ?> createRecordReader(
-			Index[] indices,
+			PrimaryIndex[] indices,
 			List<ByteArrayId> adapterIds,
 			DistributableQuery query,
 			QueryOptions queryOptions,
@@ -35,7 +35,7 @@ public interface MapReduceDataStore extends
 			InterruptedException;
 
 	public List<InputSplit> getSplits(
-			Index[] indices,
+			PrimaryIndex[] indices,
 			List<ByteArrayId> adapterIds,
 			DistributableQuery query,
 			QueryOptions queryOptions,

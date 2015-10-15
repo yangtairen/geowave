@@ -39,15 +39,15 @@ import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
 import mil.nga.giat.geowave.core.store.filter.MultiIndexDedupeFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
-import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStore;
-import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataAdapter;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataManager;
+import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStore;
+import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.AccumuloMRUtils;
 import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore;
+import mil.nga.giat.geowave.datastore.accumulo.mapreduce.AccumuloMRUtils;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.GeoWaveAccumuloRecordReader;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
@@ -962,7 +962,7 @@ public class AccumuloDataStore implements
 			final DataAdapter<T> adapter,
 			final Query query,
 			final String... additionalAuthorizations ) {
-		try (final CloseableIterator<Index> indices = indexStore.getIndices()) {
+		try (final CloseableIterator<Index<?, ?>> indices = indexStore.getIndices()) {
 			return (CloseableIterator<T>) query(
 					Arrays.asList(new ByteArrayId[] {
 						adapter.getAdapterId()
@@ -1429,7 +1429,7 @@ public class AccumuloDataStore implements
 
 	/**
 	 * Delete rows associated with a single entry
-	 *
+	 * 
 	 * @param tableName
 	 * @param rows
 	 * @param deleteRowObserver
@@ -1533,7 +1533,7 @@ public class AccumuloDataStore implements
 
 	@Override
 	public List<InputSplit> getSplits(
-			final Index[] indices,
+			final PrimaryIndex[] indices,
 			final List<ByteArrayId> adapterIds,
 			final DistributableQuery query,
 			final QueryOptions queryOptions,
@@ -1561,7 +1561,7 @@ public class AccumuloDataStore implements
 
 	@Override
 	public RecordReader<GeoWaveInputKey, ?> createRecordReader(
-			Index[] indices,
+			PrimaryIndex[] indices,
 			List<ByteArrayId> adapterIds,
 			DistributableQuery query,
 			QueryOptions queryOptions,

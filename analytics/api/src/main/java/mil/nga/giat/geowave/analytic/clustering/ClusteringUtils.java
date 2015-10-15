@@ -122,10 +122,10 @@ public class ClusteringUtils
 		final mil.nga.giat.geowave.core.store.CloseableIterator<Index<?, ?>> it = indexStore.getIndices();
 		final List<PrimaryIndex> indices = new LinkedList<PrimaryIndex>();
 		while (it.hasNext()) {
-				indices.add((PrimaryIndex) it.next());
+			indices.add((PrimaryIndex) it.next());
 		}
 
-			final PrimaryIndex[] result = new PrimaryIndex[indices.size()];
+		final PrimaryIndex[] result = new PrimaryIndex[indices.size()];
 		indices.toArray(result);
 		return result;
 	}
@@ -151,7 +151,7 @@ public class ClusteringUtils
 
 		final IndexStore indexStore = ((PersistableIndexStore) StoreParameters.StoreParam.INDEX_STORE.getHelper().getValue(
 				propertyManagement)).getCliOptions().createStore();
-		return indexStore.getIndex(new ByteArrayId(
+		return (PrimaryIndex) indexStore.getIndex(new ByteArrayId(
 				propertyManagement.getPropertyAsString(CentroidParameters.Centroid.INDEX_ID)));
 	}
 

@@ -47,8 +47,11 @@ public class GreaterThanOrEqualToFilterTest
 								new ByteArrayId(
 										"myAttribute"),
 								new ByteArrayId(
-										Lexicoders.DOUBLE.toByteArray(100d)))));
-		Assert.assertTrue(filter.accept(persistenceEncoding));
+										Lexicoders.DOUBLE.toByteArray(100d)))),
+				null);
+		Assert.assertTrue(filter.accept(
+				null,
+				persistenceEncoding));
 
 		// should pass because 10 >= 10
 		final IndexedPersistenceEncoding<ByteArrayId> persistenceEncoding2 = new IndexedPersistenceEncoding<ByteArrayId>(
@@ -61,8 +64,11 @@ public class GreaterThanOrEqualToFilterTest
 								new ByteArrayId(
 										"myAttribute"),
 								new ByteArrayId(
-										Lexicoders.DOUBLE.toByteArray(10d)))));
-		Assert.assertTrue(filter.accept(persistenceEncoding2));
+										Lexicoders.DOUBLE.toByteArray(10d)))),
+				null);
+		Assert.assertTrue(filter.accept(
+				null,
+				persistenceEncoding2));
 
 		// should not pass on 9 >= 10
 		final IndexedPersistenceEncoding<ByteArrayId> persistenceEncoding3 = new IndexedPersistenceEncoding<ByteArrayId>(
@@ -75,8 +81,11 @@ public class GreaterThanOrEqualToFilterTest
 								new ByteArrayId(
 										"myAttribute"),
 								new ByteArrayId(
-										Lexicoders.DOUBLE.toByteArray(9d)))));
-		Assert.assertFalse(filter.accept(persistenceEncoding3));
+										Lexicoders.DOUBLE.toByteArray(9d)))),
+				null);
+		Assert.assertFalse(filter.accept(
+				null,
+				persistenceEncoding3));
 
 		// should not pass because of fieldId mismatch
 		final IndexedPersistenceEncoding<ByteArrayId> persistenceEncoding4 = new IndexedPersistenceEncoding<ByteArrayId>(
@@ -89,7 +98,10 @@ public class GreaterThanOrEqualToFilterTest
 								new ByteArrayId(
 										"mismatch"),
 								new ByteArrayId(
-										Lexicoders.DOUBLE.toByteArray(100d)))));
-		Assert.assertFalse(filter.accept(persistenceEncoding4));
+										Lexicoders.DOUBLE.toByteArray(100d)))),
+				null);
+		Assert.assertFalse(filter.accept(
+				null,
+				persistenceEncoding4));
 	}
 }

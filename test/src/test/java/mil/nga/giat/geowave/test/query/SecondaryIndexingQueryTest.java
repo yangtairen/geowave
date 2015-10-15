@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
-import mil.nga.giat.geowave.adapter.vector.VectorDataStore;
 import mil.nga.giat.geowave.adapter.vector.index.NumericSecondaryIndexConfiguration;
 import mil.nga.giat.geowave.adapter.vector.index.TemporalSecondaryIndexConfiguration;
 import mil.nga.giat.geowave.adapter.vector.index.TextSecondaryIndexConfiguration;
@@ -26,6 +25,7 @@ import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.index.FilterableConstraints;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndex;
@@ -36,7 +36,11 @@ import mil.nga.giat.geowave.core.store.index.temporal.TemporalIndexStrategy;
 import mil.nga.giat.geowave.core.store.index.text.TextIndexStrategy;
 import mil.nga.giat.geowave.core.store.query.BasicQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.test.GeoWaveTestEnvironment;
 
 import org.geotools.data.DataUtilities;
@@ -59,7 +63,7 @@ public class SecondaryIndexingQueryTest extends
 	private static String TYPE_NAME = "stateCapitalData";
 	private static SimpleFeatureType schema;
 	private static FeatureDataAdapter dataAdapter;
-	private static VectorDataStore dataStore;
+	private static DataStore dataStore;
 	private static PrimaryIndex index;
 	private static Coordinate CHARLESTON = new Coordinate(
 			-79.9704779,
@@ -102,7 +106,13 @@ public class SecondaryIndexingQueryTest extends
 
 		dataAdapter = new FeatureDataAdapter(
 				schema);
-		dataStore = new VectorDataStore(
+		dataStore = new AccumuloDataStore(
+				new AccumuloIndexStore(
+						accumuloOperations),
+				new AccumuloAdapterStore(
+						accumuloOperations),
+				new AccumuloDataStatisticsStore(
+						accumuloOperations),
 				accumuloOperations);
 		index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 

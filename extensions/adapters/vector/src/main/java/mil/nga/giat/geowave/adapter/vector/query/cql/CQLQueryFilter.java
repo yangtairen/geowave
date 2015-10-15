@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
@@ -15,7 +16,7 @@ import mil.nga.giat.geowave.core.store.data.PersistentValue;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
-import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.spi.SPIServiceRegistry;
 
 import org.apache.commons.vfs2.FileObject;
@@ -63,7 +64,8 @@ public class CQLQueryFilter implements
 					}
 				}
 				final PersistentDataset<byte[]> stillUnknownValues = new PersistentDataset<byte[]>();
-				for (final PersistentValue<byte[]> v : persistenceEncoding.getUnknownData().getValues()) {
+				List<PersistentValue<byte[]>> unknownDataValues = persistenceEncoding.getUnknownData().getValues();
+				for (final PersistentValue<byte[]> v : unknownDataValues) {
 					final FieldReader<Object> reader = adapter.getReader(v.getId());
 					final Object value = reader.readField(v.getValue());
 					adapterExtendedValues.addValue(new PersistentValue<Object>(
@@ -81,7 +83,7 @@ public class CQLQueryFilter implements
 
 				final SimpleFeature feature = adapter.decode(
 						encoding,
-						new Index(
+						new PrimaryIndex(
 								null, // because we know the feature data
 										// adapter doesn't use the numeric index
 										// strategy and only the common index

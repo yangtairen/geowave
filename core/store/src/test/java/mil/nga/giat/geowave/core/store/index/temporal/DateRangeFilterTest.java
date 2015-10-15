@@ -61,9 +61,12 @@ public class DateRangeFilterTest
 								new ByteArrayId(
 										"myAttribute"),
 								new ByteArrayId(
-										TemporalIndexStrategy.toIndexByte(format.parse("06-01-2014 11:01:01"))))));
+										TemporalIndexStrategy.toIndexByte(format.parse("06-01-2014 11:01:01"))))),
+				null);
 
-		Assert.assertTrue(filter.accept(persistenceEncoding));
+		Assert.assertTrue(filter.accept(
+				null,
+				persistenceEncoding));
 
 		// should not match because date is out of range
 		final IndexedPersistenceEncoding<ByteArrayId> persistenceEncoding2 = new IndexedPersistenceEncoding<ByteArrayId>(
@@ -77,9 +80,12 @@ public class DateRangeFilterTest
 										"myAttribute"),
 								new ByteArrayId(
 										Lexicoders.LONG.toByteArray(format.parse(
-												"01-01-2015 11:01:01").getTime())))));
+												"01-01-2015 11:01:01").getTime())))),
+				null);
 
-		Assert.assertFalse(filter.accept(persistenceEncoding2));
+		Assert.assertFalse(filter.accept(
+				null,
+				persistenceEncoding2));
 
 		// should not match because of attribute mismatch
 		final IndexedPersistenceEncoding<ByteArrayId> persistenceEncoding3 = new IndexedPersistenceEncoding<ByteArrayId>(
@@ -93,8 +99,11 @@ public class DateRangeFilterTest
 										"mismatch"),
 								new ByteArrayId(
 										Lexicoders.LONG.toByteArray(format.parse(
-												"06-01-2014 11:01:01").getTime())))));
+												"06-01-2014 11:01:01").getTime())))),
+				null);
 
-		Assert.assertFalse(filter.accept(persistenceEncoding3));
+		Assert.assertFalse(filter.accept(
+				null,
+				persistenceEncoding3));
 	}
 }

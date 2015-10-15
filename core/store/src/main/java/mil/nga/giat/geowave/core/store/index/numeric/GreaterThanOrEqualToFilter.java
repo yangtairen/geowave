@@ -6,6 +6,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.lexicoder.Lexicoders;
 import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
+import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 
 public class GreaterThanOrEqualToFilter implements
 		DistributableQueryFilter
@@ -27,6 +28,7 @@ public class GreaterThanOrEqualToFilter implements
 
 	@Override
 	public boolean accept(
+			final CommonIndexModel indexModel,
 			final IndexedPersistenceEncoding<?> persistenceEncoding ) {
 		final ByteArrayId value = (ByteArrayId) persistenceEncoding.getCommonData().getValue(
 				fieldId);

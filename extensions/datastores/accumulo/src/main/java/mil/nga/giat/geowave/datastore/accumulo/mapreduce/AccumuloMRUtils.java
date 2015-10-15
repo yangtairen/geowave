@@ -23,14 +23,13 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
-import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.RangeLocationPair;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
-import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -72,7 +71,7 @@ public class AccumuloMRUtils
 	 */
 	public static List<InputSplit> getSplits(
 			final AccumuloOperations operations,
-			final Index[] indices,
+			final PrimaryIndex[] indices,
 			final List<ByteArrayId> adapterIds,
 			final DistributableQuery query,
 			final QueryOptions queryOptions,
@@ -213,6 +212,7 @@ public class AccumuloMRUtils
 			final AccumuloOperations operations,
 			final PrimaryIndex[] indices,
 			final List<ByteArrayId> adapterIds,
+			final Map<PrimaryIndex, RowRangeHistogramStatistics<?>> statsCache,
 			final AdapterStore adapterStore,
 			final DataStatisticsStore statsStore,
 			final Integer maxSplits,

@@ -28,7 +28,8 @@ public class FilterableTextRangeConstraintTest
 						new PersistentValue<ByteArrayId>(
 								fieldID,
 								new ByteArrayId(
-										StringUtils.stringToBinary(value)))));
+										StringUtils.stringToBinary(value)))),
+				null);
 	}
 
 	@Test
@@ -38,17 +39,27 @@ public class FilterableTextRangeConstraintTest
 				"RedDog",
 				true);
 		QueryFilter filter = constraint.getFilter();
-		assertFalse(filter.accept(create("fReddog")));
-		assertTrue(filter.accept(create("RedDog")));
+		assertFalse(filter.accept(
+				null,
+				create("fReddog")));
+		assertTrue(filter.accept(
+				null,
+				create("RedDog")));
 
 		constraint = new FilterableTextRangeConstraint(
 				fieldID,
 				"RedDog",
 				false);
 		filter = constraint.getFilter();
-		assertFalse(filter.accept(create("fReddog")));
-		assertTrue(filter.accept(create("RedDog")));
-		assertTrue(filter.accept(create("reddog")));
+		assertFalse(filter.accept(
+				null,
+				create("fReddog")));
+		assertTrue(filter.accept(
+				null,
+				create("RedDog")));
+		assertTrue(filter.accept(
+				null,
+				create("reddog")));
 	}
 
 	@Test
@@ -59,10 +70,18 @@ public class FilterableTextRangeConstraintTest
 				"SadDog",
 				true);
 		QueryFilter filter = constraint.getFilter();
-		assertFalse(filter.accept(create("fReddog")));
-		assertTrue(filter.accept(create("RedDog")));
-		assertTrue(filter.accept(create("RodDog")));
-		assertFalse(filter.accept(create("SidDog")));
+		assertFalse(filter.accept(
+				null,
+				create("fReddog")));
+		assertTrue(filter.accept(
+				null,
+				create("RedDog")));
+		assertTrue(filter.accept(
+				null,
+				create("RodDog")));
+		assertFalse(filter.accept(
+				null,
+				create("SidDog")));
 
 		constraint = new FilterableTextRangeConstraint(
 				fieldID,
@@ -70,10 +89,18 @@ public class FilterableTextRangeConstraintTest
 				"SadDog",
 				false);
 		filter = constraint.getFilter();
-		assertFalse(filter.accept(create("fReddog")));
-		assertTrue(filter.accept(create("RedDog")));
-		assertTrue(filter.accept(create("roddOg")));
-		assertTrue(filter.accept(create("ridDog")));
+		assertFalse(filter.accept(
+				null,
+				create("fReddog")));
+		assertTrue(filter.accept(
+				null,
+				create("RedDog")));
+		assertTrue(filter.accept(
+				null,
+				create("roddOg")));
+		assertTrue(filter.accept(
+				null,
+				create("ridDog")));
 	}
 
 }

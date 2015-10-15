@@ -30,6 +30,7 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 
@@ -63,7 +64,7 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> IndexWriter createIndexWriter(
-			final Index index ) {
+			final PrimaryIndex index ) {
 
 		return createWriter(
 				index,
@@ -83,7 +84,7 @@ public class MemoryDataStore implements
 	@Override
 	public <T> List<ByteArrayId> ingest(
 			final WritableDataAdapter<T> writableAdapter,
-			final Index index,
+			final PrimaryIndex index,
 			final T entry ) {
 		return ingestInternal(
 				writableAdapter,
@@ -105,7 +106,7 @@ public class MemoryDataStore implements
 	@Override
 	public <T> void ingest(
 			final WritableDataAdapter<T> writableAdapter,
-			final Index index,
+			final PrimaryIndex index,
 			final Iterator<T> entryIterator ) {
 		ingestInternal(
 				writableAdapter,
@@ -126,7 +127,7 @@ public class MemoryDataStore implements
 	@Override
 	public <T> List<ByteArrayId> ingest(
 			final WritableDataAdapter<T> writableAdapter,
-			final Index index,
+			final PrimaryIndex index,
 			final T entry,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
 		return ingestInternal(
@@ -150,7 +151,7 @@ public class MemoryDataStore implements
 	@Override
 	public <T> void ingest(
 			final WritableDataAdapter<T> writableAdapter,
-			final Index index,
+			final PrimaryIndex index,
 			final Iterator<T> entryIterator,
 			final IngestCallback<T> ingestCallback ) {
 		ingest(
@@ -164,7 +165,7 @@ public class MemoryDataStore implements
 	@Override
 	public <T> void ingest(
 			final WritableDataAdapter<T> writableAdapter,
-			final Index index,
+			final PrimaryIndex index,
 			final Iterator<T> entryIterator,
 			final IngestCallback<T> ingestCallback,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
@@ -178,7 +179,7 @@ public class MemoryDataStore implements
 
 	private <T> List<ByteArrayId> ingestInternal(
 			final WritableDataAdapter<T> writableAdapter,
-			final Index index,
+			final PrimaryIndex index,
 			final Iterator<T> entryIterator,
 			final IngestCallback<T> ingestCallback,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
@@ -224,7 +225,7 @@ public class MemoryDataStore implements
 	}
 
 	private <T> IndexWriter createWriter(
-			final Index index,
+			final PrimaryIndex index,
 			final WritableDataAdapter<T> writableAdapter,
 			final IngestCallback<T> ingestCallback,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
@@ -238,12 +239,12 @@ public class MemoryDataStore implements
 	private class MyIndexWriter<S> implements
 			IndexWriter
 	{
-		final Index index;
+		final PrimaryIndex index;
 		final IngestCallback<S> ingestCallback;
 		final VisibilityWriter<S> customFieldVisibilityWriter;
 
 		public MyIndexWriter(
-				final Index index,
+				final PrimaryIndex index,
 				final IngestCallback<S> ingestCallback,
 				final VisibilityWriter<S> customFieldVisibilityWriter ) {
 			super();
@@ -285,7 +286,7 @@ public class MemoryDataStore implements
 				final WritableDataAdapter<T> writableAdapter ) {}
 
 		@Override
-		public Index getIndex() {
+		public PrimaryIndex getIndex() {
 			return index;
 		}
 
@@ -326,7 +327,7 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> T getEntry(
-			final Index index,
+			final PrimaryIndex index,
 			final ByteArrayId rowId ) {
 		final Iterator<EntryRow> rowIt = getRowsForIndex(
 				index.getId()).iterator();
@@ -343,7 +344,7 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> T getEntry(
-			final Index index,
+			final PrimaryIndex index,
 			final ByteArrayId dataId,
 			final ByteArrayId adapterId,
 			final String... additionalAuthorizations ) {
@@ -366,7 +367,7 @@ public class MemoryDataStore implements
 
 	@Override
 	public boolean deleteEntry(
-			final Index index,
+			final PrimaryIndex index,
 			final ByteArrayId dataId,
 			final ByteArrayId adapterId,
 			final String... authorizations ) {
@@ -402,7 +403,7 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> CloseableIterator<T> getEntriesByPrefix(
-			final Index index,
+			final PrimaryIndex index,
 			final ByteArrayId rowPrefix,
 			final String... authorizations ) {
 
@@ -468,7 +469,7 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> CloseableIterator<T> query(
-			final Index index,
+			final PrimaryIndex index,
 			final Query query,
 			final String... additionalAuthorizations ) {
 		return query(
@@ -479,7 +480,7 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> CloseableIterator<T> query(
-			final Index index,
+			final PrimaryIndex index,
 			final Query query,
 			final QueryOptions queryOptions,
 			final String... additionalAuthorizations ) {
@@ -492,7 +493,7 @@ public class MemoryDataStore implements
 	@Override
 	public <T> CloseableIterator<T> query(
 			final DataAdapter<T> adapter,
-			final Index index,
+			final PrimaryIndex index,
 			final Query query,
 			final String... additionalAuthorizations ) {
 		return query(
@@ -559,7 +560,7 @@ public class MemoryDataStore implements
 
 	@Override
 	public <T> CloseableIterator<T> query(
-			final Index index,
+			final PrimaryIndex index,
 			final Query query,
 			final int limit,
 			final String... additionalAuthorizations ) {
@@ -586,10 +587,10 @@ public class MemoryDataStore implements
 			final Query query,
 			final int limit,
 			final String... additionalAuthorizations ) {
-		final CloseableIterator<Index> indexIt = indexStore.getIndices();
+		final CloseableIterator<Index<?, ?>> indexIt = indexStore.getIndices();
 		return new CloseableIterator<Object>() {
 			Iterator<ByteArrayId> adapterIt = adapterIds.iterator();
-			Index index = null;
+			PrimaryIndex index = null;
 			int count = 0;
 			CloseableIterator<Object> dataIt = null;
 
@@ -597,7 +598,7 @@ public class MemoryDataStore implements
 				while ((dataIt == null) || !dataIt.hasNext()) {
 					if (index == null) {
 						if (indexIt.hasNext()) {
-							index = indexIt.next();
+							index = (PrimaryIndex) indexIt.next();
 						}
 						else {
 							return false;
@@ -658,7 +659,7 @@ public class MemoryDataStore implements
 	@Override
 	public <T> CloseableIterator<T> query(
 			final DataAdapter<T> adapter,
-			final Index index,
+			final PrimaryIndex index,
 			final Query query,
 			final int limit,
 			final String... additionalAuthorizations ) {
@@ -682,7 +683,7 @@ public class MemoryDataStore implements
 	@Override
 	public <T> CloseableIterator<T> query(
 			final DataAdapter<T> adapter,
-			final Index index,
+			final PrimaryIndex index,
 			final Query query,
 			final Integer limit,
 			final ScanCallback<?> scanCallback,

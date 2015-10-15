@@ -181,7 +181,7 @@ public class SpatialTemporalQueryTest
 		};
 		final CommonIndexModel model = IndexType.SPATIAL_TEMPORAL_VECTOR.getDefaultIndexModel();
 		int pos = 0;
-		for (final CommonIndexedPersistenceEncoding  dataItem : data) {
+		for (final CommonIndexedPersistenceEncoding dataItem : data) {
 			for (final QueryFilter filter : queryCopy.createFilters(model)) {
 				assertEquals(
 						"result: " + (pos + 1),
@@ -190,7 +190,6 @@ public class SpatialTemporalQueryTest
 								model,
 								dataItem));
 			}
-		}
 		}
 	}
 

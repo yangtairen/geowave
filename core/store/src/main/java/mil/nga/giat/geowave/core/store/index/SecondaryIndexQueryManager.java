@@ -7,8 +7,8 @@ import mil.nga.giat.geowave.core.store.query.BasicQuery;
 /**
  * Manages query the secondary indices given a query. Eventually is replaced by
  * a CBO!
- *
- *
+ * 
+ * 
  * @param <T>
  *            The type of entity being indexed
  */
@@ -22,7 +22,7 @@ public class SecondaryIndexQueryManager
 	}
 
 	/**
-	 *
+	 * 
 	 * @param query
 	 * @param secondaryIndex
 	 * @param primaryIndex

@@ -6,6 +6,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
+import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 
 public class TextRangeFilter implements
 		DistributableQueryFilter
@@ -33,6 +34,7 @@ public class TextRangeFilter implements
 
 	@Override
 	public boolean accept(
+			final CommonIndexModel indexModel,
 			final IndexedPersistenceEncoding<?> persistenceEncoding ) {
 		final ByteArrayId stringBytes = (ByteArrayId) persistenceEncoding.getCommonData().getValue(
 				fieldId);

@@ -26,9 +26,9 @@ import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
-import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.NullIndex;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.io.Writable;
@@ -52,7 +52,7 @@ public class DistortionGroupManagement
 {
 
 	final static Logger LOGGER = LoggerFactory.getLogger(DistortionGroupManagement.class);
-	public final static Index DISTORTIONS_INDEX = new NullIndex(
+	public final static PrimaryIndex DISTORTIONS_INDEX = new NullIndex(
 			"DISTORTIONS");
 
 	/**
@@ -287,7 +287,7 @@ public class DistortionGroupManagement
 		@Override
 		public DistortionEntry decode(
 				final IndexedAdapterPersistenceEncoding data,
-				final Index index ) {
+				final PrimaryIndex index ) {
 			return new DistortionEntry(
 					data.getDataId(),
 					(Double) data.getAdapterExtendedData().getValue(

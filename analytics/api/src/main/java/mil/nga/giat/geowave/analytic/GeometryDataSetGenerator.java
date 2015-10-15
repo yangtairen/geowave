@@ -170,7 +170,7 @@ public class GeometryDataSetGenerator
 			final DataStore dataStore,
 			final List<SimpleFeature> featureData )
 			throws IOException {
-			final PrimaryIndex index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
+		final PrimaryIndex index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 		final FeatureDataAdapter adapter = new FeatureDataAdapter(
 				featureData.get(
 						0).getFeatureType());

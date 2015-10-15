@@ -25,7 +25,7 @@ public class PersistenceEncoding<T>
 	public PersistenceEncoding(
 			final ByteArrayId adapterId,
 			final ByteArrayId dataId,
-			final PersistentDataset<T> commonData ) {
+			final PersistentDataset<T> commonData,
 			final PersistentDataset<byte[]> unknownData ) {
 		this.adapterId = adapterId;
 		this.dataId = dataId;
