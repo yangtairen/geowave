@@ -64,9 +64,26 @@ public class GeoWaveGTDataStoreFactory implements
 		}
 		else {
 			final Iterator<StoreFactoryFamilySpi> it = dataStoreFactories.iterator();
-			geowaveStoreFactoryFamily = it.next();
-			if (it.hasNext()) {
-				GeoTools.addFactoryIteratorProvider(new GeoWaveGTDataStoreFactoryIteratorProvider());
+			StoreFactoryFamilySpi memoryFactoryFamily = null;
+			final List<StoreFactoryFamilySpi> allOtherFactoryFamilies = new ArrayList<>();
+			while (it.hasNext()) {
+				StoreFactoryFamilySpi currFactoryFamily = it.next();
+				if (currFactoryFamily.getName().equals(
+						"memory")) {
+					memoryFactoryFamily = currFactoryFamily;
+				}
+				else {
+					allOtherFactoryFamilies.add(currFactoryFamily);
+				}
+			}
+			if (!allOtherFactoryFamilies.isEmpty()) {
+				geowaveStoreFactoryFamily = allOtherFactoryFamilies.get(0);
+				if (allOtherFactoryFamilies.size() > 1) {
+					GeoTools.addFactoryIteratorProvider(new GeoWaveGTDataStoreFactoryIteratorProvider());
+				}
+			}
+			else {
+				geowaveStoreFactoryFamily = memoryFactoryFamily;
 			}
 		}
 	}
