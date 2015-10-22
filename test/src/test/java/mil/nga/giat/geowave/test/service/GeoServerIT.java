@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -113,10 +114,14 @@ public class GeoServerIT extends
 		// enable wfs & wms
 		success &= enableWfs();
 		success &= enableWms();
+		final Map<String, String> configOptions = getAccumuloConfigOptions();
+		configOptions.put(
+				"gwNamespace",
+				TEST_NAMESPACE);
 		// create the datastore
 		success &= geoserverServiceClient.publishDatastore(
 				new AccumuloStoreFactoryFamily().getName(),
-				getAccumuloConfigOptions(),
+				configOptions,
 				TEST_NAMESPACE);
 
 		// make sure the datastore exists

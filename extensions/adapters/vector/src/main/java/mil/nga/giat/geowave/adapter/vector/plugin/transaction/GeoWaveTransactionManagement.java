@@ -290,16 +290,7 @@ public class GeoWaveTransactionManagement implements
 
 	@Override
 	public String[] composeAuthorizations() {
-		final String[] initialAuths = components.getGTstore().getAuthorizationSPI().getAuthorizations();
-		final String[] newAuths = new String[initialAuths.length + 1];
-		System.arraycopy(
-				initialAuths,
-				0,
-				newAuths,
-				0,
-				initialAuths.length);
-		newAuths[initialAuths.length] = txID;
-		return newAuths;
+		return components.getGTstore().getAuthorizationSPI().getAuthorizations();
 	}
 
 	@Override
