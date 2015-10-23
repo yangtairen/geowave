@@ -7,7 +7,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.core.geotime.store.dimension.GeometryWrapper;
@@ -16,7 +18,10 @@ import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatist
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.EntryVisibilityHandler;
+import mil.nga.giat.geowave.core.store.IndexWriter;
+import mil.nga.giat.geowave.core.store.ScanCallback;
 import mil.nga.giat.geowave.core.store.adapter.AbstractDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler;
 import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler.RowBuilder;
@@ -35,6 +40,11 @@ import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.memory.DataStoreUtils;
+import mil.nga.giat.geowave.core.store.query.DataIdQuery;
+import mil.nga.giat.geowave.core.store.query.EverythingQuery;
+import mil.nga.giat.geowave.core.store.query.QueryOptions;
+import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
@@ -45,7 +55,6 @@ import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.log4j.Logger;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -71,6 +80,8 @@ public class AccumuloDataStoreStatsTest
 	AccumuloDataStatisticsStore statsStore;
 
 	AccumuloDataStore mockDataStore;
+
+	AccumuloSecondaryIndexDataStore secondaryIndexDataStore;
 
 	@Before
 	public void setUp() {
@@ -99,10 +110,14 @@ public class AccumuloDataStoreStatsTest
 		statsStore = new AccumuloDataStatisticsStore(
 				accumuloOperations);
 
+		secondaryIndexDataStore = new AccumuloSecondaryIndexDataStore(
+				accumuloOperations);
+
 		mockDataStore = new AccumuloDataStore(
 				indexStore,
 				adapterStore,
 				statsStore,
+				secondaryIndexDataStore,
 				accumuloOperations,
 				accumuloOptions);
 	}
@@ -146,7 +161,8 @@ public class AccumuloDataStoreStatsTest
 	};
 
 	@Test
-	public void testWithOutAltIndex() {
+	public void testWithOutAltIndex()
+			throws IOException {
 		accumuloOptions.setCreateTable(true);
 		accumuloOptions.setUseAltIndex(false);
 		accumuloOptions.setPersistDataStatistics(true);
@@ -154,14 +170,16 @@ public class AccumuloDataStoreStatsTest
 	}
 
 	@Test
-	public void testWithAltIndex() {
+	public void testWithAltIndex()
+			throws IOException {
 		accumuloOptions.setCreateTable(true);
 		accumuloOptions.setUseAltIndex(true);
 		accumuloOptions.setPersistDataStatistics(true);
 		runtest();
 	}
 
-	private void runtest() {
+	private void runtest()
+			throws IOException {
 
 		final PrimaryIndex index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 		final WritableDataAdapter<TestGeometry> adapter = new TestGeometryAdapter();
@@ -184,48 +202,54 @@ public class AccumuloDataStoreStatsTest
 					33)
 		});
 
-		final ByteArrayId rowId0 = mockDataStore.ingest(
-				adapter,
+		ByteArrayId rowId0, rowId1;
+		try (IndexWriter indexWriter = mockDataStore.createIndexWriter(
 				index,
-				new TestGeometry(
-						factory.createPoint(new Coordinate(
-								25,
-								32)),
-						"test_pt"),
-				visWriterAAA).get(
-				0);
-
-		final ByteArrayId rowId1 = mockDataStore.ingest(
-				adapter,
-				index,
-				new TestGeometry(
-						factory.createPoint(new Coordinate(
-								26,
-								32)),
-						"test_pt_1"),
-				visWriterAAA).get(
-				0);
-
-		mockDataStore.ingest(
-				adapter,
-				index,
-				new TestGeometry(
-						factory.createPoint(new Coordinate(
-								27,
-								32)),
-						"test_pt_2"),
-				visWriterBBB).get(
-				0);
+				DataStoreUtils.DEFAULT_VISIBILITY)) {
+			rowId0 = indexWriter.write(
+					adapter,
+					new TestGeometry(
+							factory.createPoint(new Coordinate(
+									25,
+									32)),
+							"test_pt"),
+					visWriterAAA).get(
+					0);
+			rowId1 = indexWriter.write(
+					adapter,
+					new TestGeometry(
+							factory.createPoint(new Coordinate(
+									26,
+									32)),
+							"test_pt_1"),
+					visWriterAAA).get(
+					0);
+			indexWriter.write(
+					adapter,
+					new TestGeometry(
+							factory.createPoint(new Coordinate(
+									27,
+									32)),
+							"test_pt_2"),
+					visWriterBBB).get(
+					0);
+		}
 
 		final SpatialQuery query = new SpatialQuery(
 				testGeoFilter);
+
 		CloseableIterator it1 = mockDataStore.query(
-				adapter,
-				index,
-				query,
-				-1,
-				"aaa",
-				"bbb");
+				new QueryOptions(
+						Collections.<String> emptyList(),
+						adapter,
+						index,
+						-1,
+						null,
+						new String[] {
+							"aaa",
+							"bbb"
+						}),
+				query);
 		int count = 0;
 		while (it1.hasNext()) {
 			it1.next();
@@ -279,20 +303,44 @@ public class AccumuloDataStoreStatsTest
 				"bbb");
 		assertTrue((bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32) && (bboxStats.getMaxY() == 32));
 
-		assertFalse(mockDataStore.deleteEntry(
-				index,
-				new ByteArrayId(
-						"test_pt_2".getBytes(StringUtils.UTF8_CHAR_SET)),
-				adapter.getAdapterId(),
-				"aaa"));
+		final AtomicBoolean found = new AtomicBoolean(
+				false);
+		mockDataStore.delete(
+				new QueryOptions(
+						Collections.<String> emptyList(),
+						adapter,
+						index,
+						-1,
+						new ScanCallback<TestGeometry>() {
+
+							@Override
+							public void entryScanned(
+									DataStoreEntryInfo entryInfo,
+									TestGeometry entry ) {
+								found.getAndSet(true);
+							}
+						},
+						new String[] {
+							"aaa"
+						}),
+				new DataIdQuery(
+						adapter.getAdapterId(),
+						new ByteArrayId(
+								"test_pt_2".getBytes(StringUtils.UTF8_CHAR_SET))));
+		assertFalse(found.get());
 
 		it1 = mockDataStore.query(
-				adapter,
-				index,
-				query,
-				-1,
-				"aaa",
-				"bbb");
+				new QueryOptions(
+						Collections.<String> emptyList(),
+						adapter,
+						index,
+						-1,
+						null,
+						new String[] {
+							"aaa",
+							"bbb"
+						}),
+				query);
 		count = 0;
 		while (it1.hasNext()) {
 			it1.next();
@@ -302,20 +350,33 @@ public class AccumuloDataStoreStatsTest
 				3,
 				count);
 
-		assertTrue(mockDataStore.deleteEntry(
-				index,
-				new ByteArrayId(
-						"test_pt".getBytes(StringUtils.UTF8_CHAR_SET)),
-				adapter.getAdapterId(),
-				"aaa"));
+		mockDataStore.delete(
+				new QueryOptions(
+						Collections.<String> emptyList(),
+						adapter,
+						index,
+						-1,
+						null,
+						new String[] {
+							"aaa"
+						}),
+				new DataIdQuery(
+						adapter.getAdapterId(),
+						new ByteArrayId(
+								"test_pt".getBytes(StringUtils.UTF8_CHAR_SET))));
 
 		it1 = mockDataStore.query(
-				adapter,
-				index,
-				query,
-				-1,
-				"aaa",
-				"bbb");
+				new QueryOptions(
+						Collections.<String> emptyList(),
+						adapter,
+						index,
+						-1,
+						null,
+						new String[] {
+							"aaa",
+							"bbb"
+						}),
+				query);
 		count = 0;
 		while (it1.hasNext()) {
 			it1.next();
@@ -360,23 +421,46 @@ public class AccumuloDataStoreStatsTest
 				"bbb");
 		assertTrue((bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32) && (bboxStats.getMaxY() == 32));
 
-		try {
-			mockDataStore.deleteEntries(
-					adapter,
-					index,
-					"aaa",
-					"bbb");
-		}
-		catch (final IOException e) {
-			Assert.fail("Couldn't delete entries");
+		found.set(false);
+
+		assertTrue(mockDataStore.delete(
+				new QueryOptions(
+						Collections.<String> emptyList(),
+						adapter,
+						index,
+						-1,
+						new ScanCallback<TestGeometry>() {
+
+							@Override
+							public void entryScanned(
+									DataStoreEntryInfo entryInfo,
+									TestGeometry entry ) {
+								found.getAndSet(true);
+							}
+						},
+						new String[] {
+							"aaa",
+							"bbb"
+						}),
+				new EverythingQuery()));
+
+		try (IndexWriter indexWriter = mockDataStore.createIndexWriter(
+				index,
+				DataStoreUtils.DEFAULT_VISIBILITY)) {
+
 		}
 		it1 = mockDataStore.query(
-				adapter,
-				index,
-				query,
-				-1,
-				"aaa",
-				"bbb");
+				new QueryOptions(
+						Collections.<String> emptyList(),
+						adapter,
+						index,
+						-1,
+						null,
+						new String[] {
+							"aaa",
+							"bbb"
+						}),
+				query);
 		count = 0;
 		while (it1.hasNext()) {
 			it1.next();
@@ -391,16 +475,18 @@ public class AccumuloDataStoreStatsTest
 				CountDataStatistics.STATS_ID);
 		assertNull(countStats);
 
-		mockDataStore.ingest(
-				adapter,
+		try (IndexWriter indexWriter = mockDataStore.createIndexWriter(
 				index,
-				new TestGeometry(
-						factory.createPoint(new Coordinate(
-								27,
-								32)),
-						"test_pt_2"),
-				visWriterBBB).get(
-				0);
+				visWriterBBB)) {
+			rowId0 = indexWriter.write(
+					adapter,
+					new TestGeometry(
+							factory.createPoint(new Coordinate(
+									25,
+									32)),
+							"test_pt_2")).get(
+					0);
+		}
 
 		countStats = (CountDataStatistics) statsStore.getDataStatistics(
 				adapter.getAdapterId(),

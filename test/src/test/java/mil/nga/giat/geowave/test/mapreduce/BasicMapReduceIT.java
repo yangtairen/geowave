@@ -21,8 +21,11 @@ import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
+import mil.nga.giat.geowave.core.store.query.EverythingQuery;
+import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
@@ -172,23 +175,31 @@ public class BasicMapReduceIT extends
 						accumuloOperations),
 				new AccumuloDataStatisticsStore(
 						accumuloOperations),
+				new AccumuloSecondaryIndexDataStore(
+						accumuloOperations),
 				accumuloOperations);
 		final Map<ByteArrayId, ExpectedResults> adapterIdToResultsMap = new HashMap<ByteArrayId, GeoWaveTestEnvironment.ExpectedResults>();
 		for (final WritableDataAdapter<SimpleFeature> adapter : adapters) {
 			adapterIdToResultsMap.put(
 					adapter.getAdapterId(),
 					getExpectedResults(geowaveStore.query(
-							adapter,
-							null)));
+							new QueryOptions(
+									adapter,
+									null),
+							new EverythingQuery())));
 		}
 
 		final List<ByteArrayId> firstTwoAdapters = new ArrayList<ByteArrayId>();
 		firstTwoAdapters.add(adapters[0].getAdapterId());
 		firstTwoAdapters.add(adapters[1].getAdapterId());
 		final ExpectedResults firstTwoAdaptersResults = getExpectedResults(geowaveStore.query(
-				firstTwoAdapters,
-				null));
-		final ExpectedResults fullDataSetResults = getExpectedResults(geowaveStore.query(null));
+				new QueryOptions(
+						firstTwoAdapters,
+						null),
+				new EverythingQuery()));
+		final ExpectedResults fullDataSetResults = getExpectedResults(geowaveStore.query(
+				new QueryOptions(),
+				new EverythingQuery()));
 		// just for sanity verify its greater than 0 (ie. that data was actually
 		// ingested in the first place)
 		Assert.assertTrue(

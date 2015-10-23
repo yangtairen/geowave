@@ -26,6 +26,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.index.FilterableConstraints;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndex;
@@ -34,8 +35,10 @@ import mil.nga.giat.geowave.core.store.index.numeric.FilterableGreaterThanOrEqua
 import mil.nga.giat.geowave.core.store.index.numeric.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.store.index.temporal.TemporalIndexStrategy;
 import mil.nga.giat.geowave.core.store.index.text.TextIndexStrategy;
+import mil.nga.giat.geowave.core.store.memory.DataStoreUtils;
 import mil.nga.giat.geowave.core.store.query.BasicQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
+import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
@@ -113,15 +116,22 @@ public class SecondaryIndexingQueryTest extends
 						accumuloOperations),
 				new AccumuloDataStatisticsStore(
 						accumuloOperations),
+				new AccumuloSecondaryIndexDataStore(
+						accumuloOperations),
 				accumuloOperations);
 		index = IndexType.SPATIAL_VECTOR.createDefaultIndex();
 
 		final List<SimpleFeature> features = loadStateCapitalData();
 
-		dataStore.ingest(
-				dataAdapter,
+		try (IndexWriter writer = dataStore.createIndexWriter(
 				index,
-				features.iterator());
+				DataStoreUtils.DEFAULT_VISIBILITY)) {
+			for (SimpleFeature aFeature : features) {
+				writer.write(
+						dataAdapter,
+						aFeature);
+			}
+		}
 
 		System.out.println("Data ingest complete.");
 	}
@@ -135,7 +145,8 @@ public class SecondaryIndexingQueryTest extends
 						MILWAUKEE)));
 		int numMatches = 0;
 		final CloseableIterator<SimpleFeature> matches = dataStore.query(
-				index,
+				new QueryOptions(
+						index),
 				query);
 		while (matches.hasNext()) {
 			final SimpleFeature currFeature = matches.next();

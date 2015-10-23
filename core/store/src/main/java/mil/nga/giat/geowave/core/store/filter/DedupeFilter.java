@@ -20,6 +20,8 @@ public class DedupeFilter implements
 {
 	private final Map<ByteArrayId, Set<ByteArrayId>> adapterIdToVisitedDataIdMap;
 
+	private boolean dedupAcrossIndices = false;
+
 	public DedupeFilter() {
 		adapterIdToVisitedDataIdMap = new HashMap<ByteArrayId, Set<ByteArrayId>>();
 	}
@@ -35,7 +37,7 @@ public class DedupeFilter implements
 			// deduplication
 			return true;
 		}
-		if (!supportsMultipleIndices() && !persistenceEncoding.isDuplicated()) {
+		if (!isDedupAcrossIndices() && !persistenceEncoding.isDuplicated()) {
 			// short circuit this check if the row is not duplicated anywhere
 			// and this is only intended to support a single index
 			return true;
@@ -56,8 +58,13 @@ public class DedupeFilter implements
 		return true;
 	}
 
-	protected boolean supportsMultipleIndices() {
-		return false;
+	public void setDedupAcrossIndices(
+			boolean dedupAcrossIndices ) {
+		this.dedupAcrossIndices = dedupAcrossIndices;
+	}
+
+	public boolean isDedupAcrossIndices() {
+		return dedupAcrossIndices;
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package mil.nga.giat.geowave.core.store.index;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,6 +19,7 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
  *            The type of entity being indexed
  */
 public class SecondaryIndexDataManager<T> implements
+		Closeable,
 		IngestCallback<T>/*
 						 * TODO , DeleteCallback<T>, ScanCallback<T>
 						 */
@@ -74,6 +77,12 @@ public class SecondaryIndexDataManager<T> implements
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public void close()
+			throws IOException {
+		secondaryIndexStore.flush();
 	}
 
 }

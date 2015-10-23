@@ -3,23 +3,23 @@ package mil.nga.giat.geowave.datastore.accumulo.util;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
-import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.StringUtils;
-import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
@@ -32,15 +32,13 @@ import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding
 import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter.RowTransform;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.core.store.data.DataWriter;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
-import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
-import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
 import mil.nga.giat.geowave.core.store.data.visibility.UnconstrainedVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
+import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
 import mil.nga.giat.geowave.core.store.filter.DedupeFilter;
 import mil.nga.giat.geowave.core.store.filter.FilterList;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
@@ -49,8 +47,7 @@ import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.core.store.query.Query;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
+import mil.nga.giat.geowave.core.store.memory.DataStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloRowId;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
@@ -141,33 +138,6 @@ public class AccumuloUtils
 			accumuloRanges.add(new Range());
 		}
 		return accumuloRanges;
-	}
-
-	public static List<ByteArrayRange> constraintsToByteArrayRanges(
-			final MultiDimensionalNumericData constraints,
-			final NumericIndexStrategy indexStrategy ) {
-		if ((constraints == null) || constraints.isEmpty()) {
-			return new ArrayList<ByteArrayRange>(); // implies in negative and
-			// positive infinity
-		}
-		else {
-			return indexStrategy.getQueryRanges(constraints);
-		}
-	}
-
-	public static List<ByteArrayRange> constraintsToByteArrayRanges(
-			final MultiDimensionalNumericData constraints,
-			final NumericIndexStrategy indexStrategy,
-			final int maxRanges ) {
-		if ((constraints == null) || constraints.isEmpty()) {
-			return new ArrayList<ByteArrayRange>(); // implies in negative and
-			// positive infinity
-		}
-		else {
-			return indexStrategy.getQueryRanges(
-					constraints,
-					maxRanges);
-		}
 	}
 
 	public static String getQualifiedTableName(
@@ -348,7 +318,7 @@ public class AccumuloUtils
 						fieldId,
 						indexValue);
 				indexData.addValue(val);
-				fieldInfoList.add(getFieldInfo(
+				fieldInfoList.add(DataStoreUtils.getFieldInfo(
 						val,
 						byteValue,
 						indexValue.getVisibility()));
@@ -371,7 +341,7 @@ public class AccumuloUtils
 						fieldId,
 						value);
 				extendedData.addValue(val);
-				fieldInfoList.add(getFieldInfo(
+				fieldInfoList.add(DataStoreUtils.getFieldInfo(
 						val,
 						byteValue,
 						entry.getKey().getColumnVisibility().getBytes()));
@@ -418,22 +388,9 @@ public class AccumuloUtils
 			final WritableDataAdapter<T> writableAdapter,
 			final PrimaryIndex index,
 			final T entry,
-			final Writer writer ) {
-		return AccumuloUtils.write(
-				writableAdapter,
-				index,
-				entry,
-				writer,
-				DEFAULT_VISIBILITY);
-	}
-
-	public static <T> DataStoreEntryInfo write(
-			final WritableDataAdapter<T> writableAdapter,
-			final PrimaryIndex index,
-			final T entry,
 			final Writer writer,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-		final DataStoreEntryInfo ingestInfo = getIngestInfo(
+		final DataStoreEntryInfo ingestInfo = DataStoreUtils.getIngestInfo(
 				writableAdapter,
 				index,
 				entry,
@@ -510,7 +467,7 @@ public class AccumuloUtils
 			final PrimaryIndex index,
 			final T entry,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-		final DataStoreEntryInfo ingestInfo = getIngestInfo(
+		final DataStoreEntryInfo ingestInfo = DataStoreUtils.getIngestInfo(
 				dataWriter,
 				index,
 				entry,
@@ -565,7 +522,7 @@ public class AccumuloUtils
 		final List<ByteArrayId> rowIds = new ArrayList<ByteArrayId>(
 				insertionIds.size());
 
-		addToRowIds(
+		DataStoreUtils.addToRowIds(
 				rowIds,
 				insertionIds,
 				dataWriter.getDataId(
@@ -574,169 +531,6 @@ public class AccumuloUtils
 				encodedData.isDeduplicationEnabled());
 
 		return rowIds;
-	}
-
-	private static <T> void addToRowIds(
-			final List<ByteArrayId> rowIds,
-			final List<ByteArrayId> insertionIds,
-			final byte[] dataId,
-			final byte[] adapterId,
-			final boolean enableDeduplication ) {
-
-		final int numberOfDuplicates = insertionIds.size() - 1;
-
-		for (final ByteArrayId insertionId : insertionIds) {
-			final byte[] indexId = insertionId.getBytes();
-			// because the combination of the adapter ID and data ID
-			// gaurantees uniqueness, we combine them in the row ID to
-			// disambiguate index values that are the same, also adding
-			// enough length values to be able to read the row ID again, we
-			// lastly add a number of duplicates which can be useful as
-			// metadata in our de-duplication
-			// step
-			rowIds.add(new ByteArrayId(
-					new AccumuloRowId(
-							indexId,
-							dataId,
-							adapterId,
-							enableDeduplication ? numberOfDuplicates : -1).getRowId()));
-		}
-	}
-
-	@SuppressWarnings({
-		"rawtypes",
-		"unchecked"
-	})
-	public static <T> DataStoreEntryInfo getIngestInfo(
-			final WritableDataAdapter<T> dataWriter,
-			final PrimaryIndex index,
-			final T entry,
-			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-		final CommonIndexModel indexModel = index.getIndexModel();
-
-		final AdapterPersistenceEncoding encodedData = dataWriter.encode(
-				entry,
-				indexModel);
-		final List<ByteArrayId> insertionIds = encodedData.getInsertionIds(index);
-		final List<ByteArrayId> rowIds = new ArrayList<ByteArrayId>(
-				insertionIds.size());
-		final PersistentDataset extendedData = encodedData.getAdapterExtendedData();
-		final PersistentDataset indexedData = encodedData.getCommonData();
-		final List<PersistentValue> extendedValues = extendedData.getValues();
-		final List<PersistentValue> commonValues = indexedData.getValues();
-
-		final List<FieldInfo<?>> fieldInfoList = new ArrayList<FieldInfo<?>>();
-
-		if (!insertionIds.isEmpty()) {
-			addToRowIds(
-					rowIds,
-					insertionIds,
-					dataWriter.getDataId(
-							entry).getBytes(),
-					dataWriter.getAdapterId().getBytes(),
-					encodedData.isDeduplicationEnabled());
-
-			for (final PersistentValue fieldValue : commonValues) {
-				final FieldInfo<T> fieldInfo = getFieldInfo(
-						indexModel,
-						fieldValue,
-						entry,
-						customFieldVisibilityWriter);
-				if (fieldInfo != null) {
-					fieldInfoList.add(fieldInfo);
-				}
-			}
-			for (final PersistentValue fieldValue : extendedValues) {
-				if (fieldValue.getValue() != null) {
-					final FieldInfo<T> fieldInfo = getFieldInfo(
-							dataWriter,
-							fieldValue,
-							entry,
-							customFieldVisibilityWriter);
-					if (fieldInfo != null) {
-						fieldInfoList.add(fieldInfo);
-					}
-				}
-			}
-			return new DataStoreEntryInfo(
-					rowIds,
-					fieldInfoList);
-		}
-		LOGGER.warn("Indexing failed to produce insertion ids; entry [" + dataWriter.getDataId(
-				entry).getString() + "] not saved.");
-		return new DataStoreEntryInfo(
-				Collections.EMPTY_LIST,
-				Collections.EMPTY_LIST);
-
-	}
-
-	@SuppressWarnings({
-		"rawtypes",
-		"unchecked"
-	})
-	private static <T> FieldInfo<T> getFieldInfo(
-			final DataWriter dataWriter,
-			final PersistentValue<T> fieldValue,
-			final T entry,
-			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-		final FieldWriter fieldWriter = dataWriter.getWriter(fieldValue.getId());
-		final FieldVisibilityHandler<T, Object> customVisibilityHandler = customFieldVisibilityWriter.getFieldVisibilityHandler(fieldValue.getId());
-		if (fieldWriter != null) {
-			final Object value = fieldValue.getValue();
-			return new FieldInfo<T>(
-					fieldValue,
-					fieldWriter.writeField(value),
-					merge(
-							customVisibilityHandler.getVisibility(
-									entry,
-									fieldValue.getId(),
-									value),
-							fieldWriter.getVisibility(
-									entry,
-									fieldValue.getId(),
-									value)));
-		}
-		else if (fieldValue.getValue() != null) {
-			LOGGER.warn("Data writer of class " + dataWriter.getClass() + " does not support field for " + fieldValue.getValue());
-		}
-		return null;
-	}
-
-	@SuppressWarnings({
-		"rawtypes",
-		"unchecked"
-	})
-	private static <T> FieldInfo<T> getFieldInfo(
-			final PersistentValue<T> fieldValue,
-			final byte[] value,
-			final byte[] visibility ) {
-		return new FieldInfo<T>(
-				fieldValue,
-				value,
-				visibility);
-	}
-
-	private static final byte[] BEG_AND_BYTE = "&".getBytes(StringUtils.UTF8_CHAR_SET);
-	private static final byte[] END_AND_BYTE = ")".getBytes(StringUtils.UTF8_CHAR_SET);
-
-	private static byte[] merge(
-			final byte vis1[],
-			final byte vis2[] ) {
-		if ((vis1 == null) || (vis1.length == 0)) {
-			return vis2;
-		}
-		else if ((vis2 == null) || (vis2.length == 0)) {
-			return vis1;
-		}
-
-		final ByteBuffer buffer = ByteBuffer.allocate(vis1.length + 3 + vis2.length);
-		buffer.putChar('(');
-		buffer.put(vis1);
-		buffer.putChar(')');
-		buffer.put(BEG_AND_BYTE);
-		buffer.put(vis2);
-		buffer.put(END_AND_BYTE);
-		return buffer.array();
 	}
 
 	/**
@@ -1103,7 +897,12 @@ public class AccumuloUtils
 			adapterIds.add(adapter.getAdapterId());
 			final AccumuloConstraintsQuery accumuloQuery = new AccumuloConstraintsQuery(
 					adapterIds,
-					index);
+					index,
+					null,
+					null,
+					null,
+					Collections.<String> emptyList(),
+					new String[0]);
 			final CloseableIterator<?> iterator = accumuloQuery.query(
 					operations,
 					new AccumuloAdapterStore(
@@ -1119,7 +918,7 @@ public class AccumuloUtils
 	}
 
 	/**
-	 * Get number of entries per index.
+	 * * Get number of entries per index.
 	 * 
 	 * @param namespace
 	 * @param index
@@ -1143,43 +942,18 @@ public class AccumuloUtils
 				operations);
 		if (indexStore.indexExists(index.getId())) {
 			final AccumuloConstraintsQuery accumuloQuery = new AccumuloConstraintsQuery(
-					index);
+					null,
+					index,
+					null,
+					null,
+					null,
+					Collections.<String> emptyList(),
+					new String[0]);
 			final CloseableIterator<?> iterator = accumuloQuery.query(
 					operations,
 					new AccumuloAdapterStore(
 							operations),
 					null);
-			while (iterator.hasNext()) {
-				counter++;
-				iterator.next();
-			}
-			iterator.close();
-		}
-		return counter;
-	}
-
-	/**
-	 * Get number of entries per namespace.
-	 * 
-	 * @param namespace
-	 * @return
-	 * @throws AccumuloException
-	 * @throws AccumuloSecurityException
-	 * @throws IOException
-	 */
-	public static long getEntries(
-			final Connector connector,
-			final String namespace )
-			throws AccumuloException,
-			AccumuloSecurityException,
-			IOException {
-		long counter = 0L;
-		final AccumuloDataStore dataStore = new AccumuloDataStore(
-				new BasicAccumuloOperations(
-						connector,
-						namespace));
-		if (dataStore != null) {
-			final CloseableIterator<?> iterator = dataStore.query((Query) null);
 			while (iterator.hasNext()) {
 				counter++;
 				iterator.next();
@@ -1333,5 +1107,49 @@ public class AccumuloUtils
 
 		@Override
 		public void remove() {}
+	}
+
+	public static void handleSubsetOfFieldIds(
+			final ScannerBase scanner,
+			final PrimaryIndex index,
+			final Collection<String> fieldIds,
+			final CloseableIterator<DataAdapter<?>> dataAdapters ) {
+
+		Set<ByteArrayId> uniqueDimensions = new HashSet<>();
+		for (final NumericDimensionField<? extends CommonIndexValue> dimension : index.getIndexModel().getDimensions()) {
+			uniqueDimensions.add(dimension.getFieldId());
+		}
+
+		while (dataAdapters.hasNext()) {
+
+			final Text colFam = new Text(
+					dataAdapters.next().getAdapterId().getBytes());
+
+			// dimension fields must be included
+			for (ByteArrayId dimension : uniqueDimensions) {
+				scanner.fetchColumn(
+						colFam,
+						new Text(
+								dimension.getBytes()));
+			}
+
+			// configure scanner to fetch only the specified fieldIds
+			for (String fieldId : fieldIds) {
+				scanner.fetchColumn(
+						colFam,
+						new Text(
+								StringUtils.stringToBinary(fieldId)));
+			}
+		}
+
+		try {
+			dataAdapters.close();
+		}
+		catch (IOException e) {
+			LOGGER.error(
+					"Unable to close iterator",
+					e);
+		}
+
 	}
 }

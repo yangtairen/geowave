@@ -34,14 +34,14 @@ public class CommonIndexedPersistenceEncoding extends
 	public CommonIndexedPersistenceEncoding(
 			final ByteArrayId adapterId,
 			final ByteArrayId dataId,
-			final ByteArrayId indexId,
+			final ByteArrayId indexInsertionId,
 			final int duplicateCount,
 			final PersistentDataset<CommonIndexValue> commonData,
 			final PersistentDataset<byte[]> unknownData ) {
 		super(
 				adapterId,
 				dataId,
-				indexId,
+				indexInsertionId,
 				duplicateCount,
 				commonData,
 				unknownData);

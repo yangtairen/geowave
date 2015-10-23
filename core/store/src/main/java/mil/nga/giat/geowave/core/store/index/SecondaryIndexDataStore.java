@@ -41,4 +41,6 @@ public interface SecondaryIndexDataStore
 			List<DistributableQueryFilter> constraints,
 			ByteArrayId primaryIndexId,
 			String... visibility );
+
+	public void flush();
 }

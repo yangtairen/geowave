@@ -17,11 +17,11 @@ import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.IngestCallback;
 import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.data.CommonIndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.DataWriter;
-import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
@@ -121,11 +121,11 @@ public class DataStoreUtils
 				ingestInfo);
 	}
 
-	public static List<IndexedPersistenceEncoding> getEncodings(
+	public static List<IndexedAdapterPersistenceEncoding> getEncodings(
 			final PrimaryIndex index,
 			final AdapterPersistenceEncoding encoding ) {
 		final List<ByteArrayId> ids = encoding.getInsertionIds(index);
-		final ArrayList<IndexedPersistenceEncoding> encodings = new ArrayList<IndexedPersistenceEncoding>();
+		final ArrayList<IndexedAdapterPersistenceEncoding> encodings = new ArrayList<IndexedAdapterPersistenceEncoding>();
 		for (final ByteArrayId id : ids) {
 			encodings.add(new IndexedAdapterPersistenceEncoding(
 					encoding.getAdapterId(),
@@ -139,23 +139,31 @@ public class DataStoreUtils
 		return encodings;
 	}
 
-	protected static IndexedPersistenceEncoding getEncoding(
+	protected static IndexedAdapterPersistenceEncoding getEncoding(
 			final CommonIndexModel model,
+			final DataAdapter<?> adapter,
 			final EntryRow row ) {
 		final PersistentDataset<CommonIndexValue> commonData = new PersistentDataset<CommonIndexValue>();
 		final PersistentDataset<byte[]> unknownData = new PersistentDataset<byte[]>();
+		final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
 		for (final FieldInfo column : row.info.getFieldInfo()) {
 			final FieldReader<? extends CommonIndexValue> reader = model.getReader(column.getDataValue().getId());
 			if (reader == null) {
-				unknownData.addValue(new PersistentValue<byte[]>(
-						column.getDataValue().getId(),
-						column.getWrittenValue()));
+				FieldReader extendedReader = adapter.getReader(column.getDataValue().getId());
+				if (extendedReader != null) {
+					extendedData.addValue(column.getDataValue());
+				}
+				else {
+					unknownData.addValue(new PersistentValue<byte[]>(
+							column.getDataValue().getId(),
+							column.getWrittenValue()));
+				}
 			}
 			else {
 				commonData.addValue(column.getDataValue());
 			}
 		}
-		return new CommonIndexedPersistenceEncoding(
+		return new IndexedAdapterPersistenceEncoding(
 				new ByteArrayId(
 						row.getTableRowId().getAdapterId()),
 				new ByteArrayId(
@@ -164,7 +172,8 @@ public class DataStoreUtils
 						row.getTableRowId().getInsertionId()),
 				row.getTableRowId().getNumberOfDuplicates(),
 				commonData,
-				unknownData);
+				unknownData,
+				extendedData);
 	}
 
 	private static <T> List<EntryRow> buildRows(
@@ -211,7 +220,7 @@ public class DataStoreUtils
 		return rowIds;
 	}
 
-	private static <T> void addToRowIds(
+	public static <T> void addToRowIds(
 			final List<ByteArrayId> rowIds,
 			final List<ByteArrayId> insertionIds,
 			final byte[] dataId,
@@ -309,7 +318,7 @@ public class DataStoreUtils
 		"rawtypes",
 		"unchecked"
 	})
-	private static <T> FieldInfo<T> getFieldInfo(
+	public static <T> FieldInfo<T> getFieldInfo(
 			final DataWriter dataWriter,
 			final PersistentValue<T> fieldValue,
 			final T entry,
@@ -335,6 +344,20 @@ public class DataStoreUtils
 			LOGGER.warn("Data writer of class " + dataWriter.getClass() + " does not support field for " + fieldValue.getValue());
 		}
 		return null;
+	}
+
+	@SuppressWarnings({
+		"rawtypes",
+		"unchecked"
+	})
+	public static <T> FieldInfo<T> getFieldInfo(
+			final PersistentValue<T> fieldValue,
+			final byte[] value,
+			final byte[] visibility ) {
+		return new FieldInfo<T>(
+				fieldValue,
+				value,
+				visibility);
 	}
 
 	private static final byte[] BEG_AND_BYTE = "&".getBytes(StringUtils.UTF8_CHAR_SET);

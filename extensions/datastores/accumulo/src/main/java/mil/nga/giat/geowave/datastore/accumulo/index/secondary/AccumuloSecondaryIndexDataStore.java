@@ -221,4 +221,9 @@ public class AccumuloSecondaryIndexDataStore implements
 			writer.close();
 		}
 	}
+
+	@Override
+	public void flush() {
+		close();
+	}
 }

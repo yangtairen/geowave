@@ -72,6 +72,11 @@ public class CQLQueryFilter implements
 							v.getId(),
 							value));
 				}
+				if (persistenceEncoding instanceof IndexedAdapterPersistenceEncoding) {
+					for (PersistentValue<Object> v : ((IndexedAdapterPersistenceEncoding) persistenceEncoding).getAdapterExtendedData().getValues()) {
+						adapterExtendedValues.addValue(v);
+					}
+				}
 				final IndexedAdapterPersistenceEncoding encoding = new IndexedAdapterPersistenceEncoding(
 						persistenceEncoding.getAdapterId(),
 						persistenceEncoding.getDataId(),

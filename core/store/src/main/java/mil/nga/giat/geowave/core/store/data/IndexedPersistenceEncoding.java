@@ -14,13 +14,13 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 public class IndexedPersistenceEncoding<T> extends
 		PersistenceEncoding<T>
 {
-	private final ByteArrayId indexId;
+	private final ByteArrayId indexInsertionId;
 	private final int duplicateCount;
 
 	public IndexedPersistenceEncoding(
 			final ByteArrayId adapterId,
 			final ByteArrayId dataId,
-			final ByteArrayId indexId,
+			final ByteArrayId indexInsertionId,
 			final int duplicateCount,
 			final PersistentDataset<T> commonData,
 			final PersistentDataset<byte[]> unknownData ) {
@@ -29,7 +29,7 @@ public class IndexedPersistenceEncoding<T> extends
 				dataId,
 				commonData,
 				unknownData);
-		this.indexId = indexId;
+		this.indexInsertionId = indexInsertionId;
 		this.duplicateCount = duplicateCount;
 	}
 
@@ -40,7 +40,7 @@ public class IndexedPersistenceEncoding<T> extends
 	 * @return the index ID
 	 */
 	public ByteArrayId getIndexInsertionId() {
-		return indexId;
+		return indexInsertionId;
 	}
 
 	@Override

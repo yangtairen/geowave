@@ -11,6 +11,8 @@ import javax.imageio.ImageIO;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.IndexWriter;
+import mil.nga.giat.geowave.core.store.memory.DataStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreFactoryFamily;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
@@ -106,17 +108,20 @@ public class GeoWaveIngestGeoserverIT extends
 				"Beginning to ingest a uniform grid of %d features",
 				features.size()));
 		int ingestedFeatures = 0;
-		final int featuresPer5Percent = features.size() / 20;
-		for (final SimpleFeature feat : features) {
-			ds.ingest(
-					fda,
-					idx,
-					feat);
-			ingestedFeatures++;
-			if ((ingestedFeatures % featuresPer5Percent) == 0) {
-				LOGGER.info(String.format(
-						"Ingested %d percent of features",
-						(ingestedFeatures / featuresPer5Percent) * 5));
+		int featuresPer5Percent = features.size() / 20;
+		try (IndexWriter writer = ds.createIndexWriter(
+				idx,
+				DataStoreUtils.DEFAULT_VISIBILITY)) {
+			for (SimpleFeature feat : features) {
+				writer.write(
+						fda,
+						feat);
+				ingestedFeatures++;
+				if (ingestedFeatures % featuresPer5Percent == 0) {
+					LOGGER.info(String.format(
+							"Ingested %d percent of features",
+							(ingestedFeatures / featuresPer5Percent) * 5));
+				}
 			}
 		}
 

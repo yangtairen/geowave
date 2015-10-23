@@ -21,6 +21,10 @@ public class AdapterIdQuery implements
 		this.adapterId = adapterId;
 	}
 
+	public ByteArrayId getAdapterId() {
+		return adapterId;
+	}
+
 	@Override
 	public List<QueryFilter> createFilters(
 			CommonIndexModel indexModel ) {
