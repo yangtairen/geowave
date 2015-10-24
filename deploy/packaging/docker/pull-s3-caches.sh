@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # If we've not specifically disabled and there is no current Maven repo
 # pull a cache from S3 so the first run won't take forever

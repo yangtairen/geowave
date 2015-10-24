@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This script will build a single set of rpms for a given configuration
 #
 
 # Set a default version
-VENDOR_VERSION=cdh
+VENDOR_VERSION=cdh5
 
 if [ -z $GEOSERVER_DOWNLOAD_BASE ]; then
 	GEOSERVER_DOWNLOAD_BASE=https://s3.amazonaws.com/geowave/third-party-downloads/geoserver
@@ -31,9 +31,6 @@ echo "BUILD_ARGS=${BUILD_ARGS}"
 echo "VENDOR_VERSION=${VENDOR_VERSION}"
 echo "---------------------------------------------------------------"
 
-# Ensure mounted volume permissions are OK for access
-chown -R root:root /usr/src/geowave/deploy
-
 # Staging Artifacts for Build
 cd /usr/src/geowave/deploy/packaging/rpm/centos/6/SOURCES
 rm -f *.gz *.jar
@@ -43,5 +40,9 @@ cp /usr/src/geowave/deploy/target/*.jar .
 cp /usr/src/geowave/deploy/target/*.tar.gz .
 cd ..
 
-# Build
+# Oddness with Virtualbox and Docker-Machine mounting of volumes
+if [ $(ls -ld /usr/src/geowave/deploy/ | awk '{print $3}') -eq 1000 ]; then
+	useradd -u 1000 geowave
+fi
+
 ./rpm.sh --command build --vendor-version $VENDOR_VERSION
