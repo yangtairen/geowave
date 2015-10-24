@@ -46,6 +46,7 @@ Source12:       puppet-scripts.tar.gz
 Source13:       manpages.tar.gz
 Source14:       plugins.tar.gz
 Source15:       geowave-analytic-mapreduce.jar
+Source16:
 BuildRequires:  unzip
 BuildRequires:  zip
 BuildRequires:  xmlto

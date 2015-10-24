@@ -7,6 +7,9 @@ configurations are shown below but any OS capable of running Docker containers s
 
 ```
 sudo yum -y install docker git unzip
+sudo groupadd docker
+sudo usermod -aG docker $(whoami)
+sudo su $USER
 sudo systemctl start docker
 sudo systemctl enable docker
 ```
@@ -19,9 +22,22 @@ sudo apt-get update
 sudo apt-get -y install lxc-docker git unzip
 ```
 
+### Mac Build Host
+```
+# Install Prerequisite Applications
+Docker Machine and Git using brew or the standalone installers
+  - brew install docker docker-machine git
+  - https://docs.docker.com/installation/mac/
+  - https://git-scm.com/download/mac
+
+# Create a docker vm
+docker-machine create --driver virtualbox --virtualbox-cpu-count "2" --virtualbox-memory "3072" geowave-build
+eval "$(docker-machine env geowave-build)"
+```
+
 ### Docker Test
 
-Before continuing test that Docker is available with the `sudo docker info` command
+Before continuing, test that Docker is available to the current user with the `docker info` command
 
 ## Step #2: GeoWave Source Code
 
@@ -35,12 +51,19 @@ git clone --depth 1 https://github.com/ngageoint/geowave.git
 
 ## Step #3: Create Docker Images for Building
 
-We'll eventually publish these images, until then you'll have to build them locally
+We'll eventually publish these images, until then you'll have to build them locally. As a temporary workaround
+you can also use a personally hosted set of containers.
+
+```
+export DOCKER_REPO=spohnan
+```
+
+or build them yourself ...
 
 ```
 pushd geowave/deploy/packaging/docker
-sudo docker build -t ngageoint/geowave-centos6-java8-build -f geowave-centos6-java8-build.dockerfile .   
-sudo docker build -t ngageoint/geowave-centos6-rpm-build -f geowave-centos6-rpm-build.dockerfile .
+docker build -t ngageoint/geowave-centos6-java8-build -f geowave-centos6-java8-build.dockerfile .   
+docker build -t ngageoint/geowave-centos6-rpm-build -f geowave-centos6-rpm-build.dockerfile .
 popd
 ```
 
@@ -50,9 +73,7 @@ The docker-build-rpms script will coordinate a series of container builds result
 built for each of the desired build configurations (ex: cdh5, hortonworks or apache).
 
 ```
-export WORKSPACE="$(pwd)/geowave"
 export SKIP_TESTS="-Dfindbugs.skip=true -DskipFormat=true -DskipITs=true -DskipTests=true" # (Optional)
-sudo chown -R $(whoami) geowave/deploy/packaging
 geowave/deploy/packaging/docker/docker-build-rpms.sh
 ```
 
