@@ -15,13 +15,13 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStoreFactorySpi;
-import mil.nga.giat.geowave.core.store.adapter.statistics.SecondaryIndexDataStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.config.AbstractConfigOption;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.config.StringConfigOption;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.IndexStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStore;
+import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStoreFactorySpi;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

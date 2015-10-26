@@ -351,7 +351,7 @@ public class AccumuloDataStore implements
 		public CloseableIterator<T> next() {
 			return (CloseableIterator<T>) it.next();
 		}
-		
+
 		public void remove() {
 			it.remove();
 		}

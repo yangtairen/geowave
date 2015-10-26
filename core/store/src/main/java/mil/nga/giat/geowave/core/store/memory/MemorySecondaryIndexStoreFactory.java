@@ -3,8 +3,8 @@ package mil.nga.giat.geowave.core.store.memory;
 import java.util.HashMap;
 import java.util.Map;
 
-import mil.nga.giat.geowave.core.store.adapter.statistics.SecondaryIndexDataStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStore;
+import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStoreFactorySpi;
 
 public class MemorySecondaryIndexStoreFactory extends
 		AbstractMemoryStoreFactory<SecondaryIndexDataStore> implements
