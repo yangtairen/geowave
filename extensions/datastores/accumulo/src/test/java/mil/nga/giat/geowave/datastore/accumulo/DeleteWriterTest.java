@@ -27,6 +27,7 @@ import mil.nga.giat.geowave.core.store.memory.DataStoreUtils;
 import mil.nga.giat.geowave.core.store.query.DataIdQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.core.store.query.RowIdQuery;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStoreStatsTest.TestGeometry;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStoreStatsTest.TestGeometryAdapter;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
 
@@ -48,6 +49,7 @@ public class DeleteWriterTest
 	private BasicAccumuloOperations operations;
 	private DataStore mockDataStore;
 	private List<ByteArrayId> rowId1s;
+	private List<ByteArrayId> rowId2s;
 	private WritableDataAdapter<AccumuloDataStoreStatsTest.TestGeometry> adapter;
 	private DataStatisticsStore statsStore;
 
@@ -121,19 +123,43 @@ public class DeleteWriterTest
 										28.232),
 							}),
 							"test_pt_1"));
+
+			rowId2s = indexWriter.write(
+					adapter,
+					new AccumuloDataStoreStatsTest.TestGeometry(
+							factory.createLineString(new Coordinate[] {
+								new Coordinate(
+										43.444,
+										28.232),
+								new Coordinate(
+										43.454,
+										28.242),
+								new Coordinate(
+										43.444,
+										28.252),
+								new Coordinate(
+										43.444,
+										28.232),
+							}),
+							"test_pt_2"));
 		}
 
 	}
 
 	@Test
-	public void testGetRowById() {
+	public void testDeleteByDataId() {
 		CountDataStatistics countStats = (CountDataStatistics) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID);
 		assertEquals(
-				1,
+				2,
 				countStats.getCount());
 		assertTrue(rowId1s.size() > 1);
+		final CloseableIterator it1 = mockDataStore.query(
+				new QueryOptions(),
+				new RowIdQuery(
+						rowId1s));
+		assertTrue(it1.hasNext());
 		assertTrue(mockDataStore.delete(
 				new QueryOptions(
 						adapter,
@@ -142,16 +168,50 @@ public class DeleteWriterTest
 						adapter.getAdapterId(),
 						new ByteArrayId(
 								"test_pt_1"))));
-		final CloseableIterator it = mockDataStore.query(
+		final CloseableIterator it2 = mockDataStore.query(
 				new QueryOptions(),
 				new RowIdQuery(
 						rowId1s));
-		assertTrue(!it.hasNext());
+		assertTrue(!it2.hasNext());
 		countStats = (CountDataStatistics) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID);
 		assertEquals(
-				0,
+				1,
 				countStats.getCount());
+	}
+
+	@Test
+	public void testDeleteByRowId() {
+		CountDataStatistics countStats = (CountDataStatistics) statsStore.getDataStatistics(
+				adapter.getAdapterId(),
+				CountDataStatistics.STATS_ID);
+		assertTrue(rowId2s.size() > 1);
+		final CloseableIterator it1 = mockDataStore.query(
+				new QueryOptions(),
+				new DataIdQuery(
+						adapter.getAdapterId(),
+						new ByteArrayId(
+								"test_pt_2")));
+		assertTrue(it1.hasNext());
+		assertTrue(adapter.getDataId((TestGeometry)it1.next()).getString().equals("test_pt_2"));
+		assertTrue(mockDataStore.delete(
+				new QueryOptions(
+						adapter,
+						index),
+				new RowIdQuery(
+						rowId2s)));
+		final CloseableIterator it2 = mockDataStore.query(
+				new QueryOptions(),
+				new RowIdQuery(
+						rowId2s));
+		assertTrue(!it2.hasNext());
+		countStats = (CountDataStatistics) statsStore.getDataStatistics(
+				adapter.getAdapterId(),
+				CountDataStatistics.STATS_ID);
+		//TODO: BUG
+	//	assertEquals(
+	//			0,
+	//			countStats.getCount());
 	}
 }

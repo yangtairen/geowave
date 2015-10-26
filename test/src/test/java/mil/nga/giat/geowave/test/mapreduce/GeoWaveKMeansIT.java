@@ -157,7 +157,7 @@ public class GeoWaveKMeansIT extends
 						options));
 		testIngest(dataStoreOptions.getResult().createStore());
 
-		runKJumpPlusPlus(
+		runKPlusPlus(
 				new SpatialQuery(
 						dataGenerator.getBoundingRegion()),
 				dataStoreOptions.getResult(),

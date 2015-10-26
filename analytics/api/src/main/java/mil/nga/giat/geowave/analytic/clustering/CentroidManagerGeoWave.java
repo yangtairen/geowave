@@ -432,7 +432,7 @@ public class CentroidManagerGeoWave<T> implements
 			final String dataId ) {
 		final ByteArrayId adapterId = new ByteArrayId(
 				StringUtils.stringToBinary(centroidDataTypeId));
-		try (CloseableIterator<AnalyticItemWrapper<T>> it = dataStore.query(
+		try (CloseableIterator<T> it = dataStore.query(
 				new QueryOptions(
 						adapterId,
 						index.getId()),
@@ -440,7 +440,7 @@ public class CentroidManagerGeoWave<T> implements
 						adapterId,
 						new ByteArrayId(
 								StringUtils.stringToBinary(dataId))))) {
-			if (it.hasNext()) return it.next();
+			if (it.hasNext()) return centroidFactory.create(it.next());
 		}
 		catch (IOException e) {
 			LOGGER.error(
@@ -520,7 +520,7 @@ public class CentroidManagerGeoWave<T> implements
 						item.getWrappedItem());
 			}
 			it.close();
-			indexWriter.close();
+		//	indexWriter.close();
 		}
 		LOGGER.info("Transfer " + count + " centroids for " + fromBatchId + " to " + batchId);
 	}

@@ -2,8 +2,8 @@ package mil.nga.giat.geowave.core.store;
 
 import mil.nga.giat.geowave.core.store.adapter.AdapterStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStoreFactorySpi;
-import mil.nga.giat.geowave.core.store.adapter.statistics.SecondaryIndexDataStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.index.IndexStoreFactorySpi;
+import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStoreFactorySpi;
 
 public interface StoreFactoryFamilySpi extends
 		GenericFactory

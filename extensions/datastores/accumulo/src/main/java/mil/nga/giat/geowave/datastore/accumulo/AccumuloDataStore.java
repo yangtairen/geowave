@@ -313,7 +313,7 @@ public class AccumuloDataStore implements
 					e1);
 		}
 
-		if (queryOptions.isDedupAcrossIndices() && indexCount > 0) {
+		if (queryOptions.isDedupAcrossIndices() && indexCount > 1) {
 			filter.setDedupAcrossIndices(true);
 		}
 
@@ -351,7 +351,7 @@ public class AccumuloDataStore implements
 		public CloseableIterator<T> next() {
 			return (CloseableIterator<T>) it.next();
 		}
-		
+
 		public void remove() {
 			it.remove();
 		}
@@ -434,9 +434,21 @@ public class AccumuloDataStore implements
 						fieldIds,
 						authorizations);
 
-				return q.query(
+				final CloseableIterator<Object> it =  q.query(
 						accumuloOperations,
 						tempAdapterStore,
+						limit ? 1 : -1);
+				if (it.hasNext()) 
+					return it;
+				//TODO: bug
+				return getEntryRows(
+					index,
+						tempAdapterStore,
+						dataIds,
+						adapter.getAdapterId(),
+						fieldIds,
+						callback,
+						authorizations,
 						limit ? 1 : -1);
 
 			}
@@ -702,7 +714,7 @@ public class AccumuloDataStore implements
 										queryOptions.getAdapterIds(adapterStore),
 										index,
 										((RowIdQuery) query).getRowIds(),
-										(ScanCallback<Object>) queryOptions.getScanCallback(),
+										callback,
 										null,
 										queryOptions.getFieldIds(),
 										queryOptions.getAuthorizations());

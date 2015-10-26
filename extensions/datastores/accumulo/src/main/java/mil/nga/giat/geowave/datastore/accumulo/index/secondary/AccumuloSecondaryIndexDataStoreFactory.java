@@ -2,8 +2,8 @@ package mil.nga.giat.geowave.datastore.accumulo.index.secondary;
 
 import java.util.Map;
 
-import mil.nga.giat.geowave.core.store.adapter.statistics.SecondaryIndexDataStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStore;
+import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStoreFactorySpi;
 import mil.nga.giat.geowave.datastore.accumulo.AbstractAccumuloStoreFactory;
 
 public class AccumuloSecondaryIndexDataStoreFactory extends
