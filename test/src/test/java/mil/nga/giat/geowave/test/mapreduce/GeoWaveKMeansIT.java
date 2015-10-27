@@ -163,8 +163,6 @@ public class GeoWaveKMeansIT extends
 				dataStoreOptions.getResult(),
 				indexStoreOptions.getResult(),
 				adapterStoreOptions.getResult());
-		// runKJumpPlusPlus(new SpatialQuery(
-		// dataGenerator.getBoundingRegion()));
 
 	}
 

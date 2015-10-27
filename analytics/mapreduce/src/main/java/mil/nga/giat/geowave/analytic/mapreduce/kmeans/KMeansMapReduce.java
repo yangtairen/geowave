@@ -17,6 +17,7 @@ import mil.nga.giat.geowave.analytic.extract.SimpleFeatureCentroidExtractor;
 import mil.nga.giat.geowave.analytic.kmeans.AssociationNotification;
 import mil.nga.giat.geowave.analytic.mapreduce.GroupIDText;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
+import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.mapreduce.GeoWaveWritableInputMapper;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputKey;

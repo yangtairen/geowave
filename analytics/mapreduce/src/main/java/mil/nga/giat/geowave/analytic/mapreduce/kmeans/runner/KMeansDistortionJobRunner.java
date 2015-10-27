@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.analytic.mapreduce.kmeans.runner;
 
 import mil.nga.giat.geowave.analytic.PropertyManagement;
+import mil.nga.giat.geowave.analytic.clustering.DistortionGroupManagement.DistortionDataAdapter;
 import mil.nga.giat.geowave.analytic.clustering.DistortionGroupManagement.DistortionEntry;
 import mil.nga.giat.geowave.analytic.clustering.NestedGroupCentroidAssignment;
 import mil.nga.giat.geowave.analytic.mapreduce.CountofDoubleWritable;
@@ -8,6 +9,7 @@ import mil.nga.giat.geowave.analytic.mapreduce.GeoWaveAnalyticJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.kmeans.KMeansDistortionMapReduce;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
+import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.JumpParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
@@ -95,6 +97,7 @@ public class KMeansDistortionJobRunner extends
 		GeoWaveInputFormat.setGeoWaveNamespace(
 				conf,
 				dataStoreOptions.getNamespace());
+		GeoWaveOutputFormat.addDataAdapter(conf, new DistortionDataAdapter());
 	}
 
 	@Override
@@ -113,7 +116,8 @@ public class KMeansDistortionJobRunner extends
 		runTimeProperties.setConfig(
 				new ParameterEnum[] {
 					CentroidParameters.Centroid.EXTRACTOR_CLASS,
-					CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS
+					CentroidParameters.Centroid.WRAPPER_FACTORY_CLASS,
+					GlobalParameters.Global.PARENT_BATCH_ID
 				},
 				config,
 				getScope());

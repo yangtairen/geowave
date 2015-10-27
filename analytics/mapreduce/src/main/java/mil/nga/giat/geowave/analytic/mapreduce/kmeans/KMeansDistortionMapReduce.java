@@ -18,6 +18,7 @@ import mil.nga.giat.geowave.analytic.extract.SimpleFeatureCentroidExtractor;
 import mil.nga.giat.geowave.analytic.kmeans.AssociationNotification;
 import mil.nga.giat.geowave.analytic.mapreduce.CountofDoubleWritable;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
+import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.JumpParameters;
 import mil.nga.giat.geowave.mapreduce.GeoWaveWritableInputMapper;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
@@ -205,6 +206,7 @@ public class KMeansDistortionMapReduce
 		final protected Text output = new Text(
 				"");
 		private CentroidManagerGeoWave<Object> centroidManager;
+		private String batchId;
 
 		@Override
 		public void reduce(
@@ -245,6 +247,7 @@ public class KMeansDistortionMapReduce
 
 				final DistortionEntry entry = new DistortionEntry(
 						key.toString(),
+						batchId,
 						kCount,
 						distortion);
 
@@ -289,6 +292,10 @@ public class KMeansDistortionMapReduce
 						e);
 			}
 
+			
+			batchId = config.getString(
+					GlobalParameters.Global.PARENT_BATCH_ID,
+					centroidManager.getBatchId());
 		}
 	}
 

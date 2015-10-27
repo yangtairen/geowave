@@ -89,6 +89,7 @@ public class DistortionGroupManagementTest
 
 	private void addDistortion(
 			final String grp,
+			final String batchId,
 			final int count,
 			final Double distortion )
 			throws IOException {
@@ -97,6 +98,7 @@ public class DistortionGroupManagementTest
 				DistortionGroupManagement.DISTORTIONS_INDEX,
 				new DistortionEntry(
 						grp,
+						batchId,
 						count,
 						distortion));
 
@@ -112,30 +114,42 @@ public class DistortionGroupManagementTest
 		// b1
 		addDistortion(
 				"grp1",
+				"b1",
 				1,
 				0.1);
 		addDistortion(
 				"grp2",
+				"b1",
 				1,
 				0.1);
 		// b2
 		addDistortion(
 				"grp1",
+				"b1",
 				2,
 				0.2);
 		addDistortion(
 				"grp2",
+				"b1",
 				2,
 				0.3);
 		// b3
 		addDistortion(
 				"grp1",
+				"b1",
 				3,
 				0.4);
 		addDistortion(
 				"grp2",
+				"b1",
 				3,
 				0.4);
+		// another batch to catch wrong batch error case
+		addDistortion(
+				"grp1",
+				"b2",
+				3,
+				0.05);
 
 		ingest(
 				adapter,
@@ -418,10 +432,11 @@ public class DistortionGroupManagementTest
 	@Test
 	public void test()
 			throws IOException {
-		DistortionGroupManagement.retainBestGroups(
+		DistortionGroupManagement distortionGroupManagement = new DistortionGroupManagement(
 				dataStore,
 				indexStore,
-				adapterStore,
+				adapterStore);
+		distortionGroupManagement.retainBestGroups(
 				new SimpleFeatureItemWrapperFactory(),
 				StringUtils.stringFromBinary(adapter.getAdapterId().getBytes()),
 				StringUtils.stringFromBinary(index.getId().getBytes()),

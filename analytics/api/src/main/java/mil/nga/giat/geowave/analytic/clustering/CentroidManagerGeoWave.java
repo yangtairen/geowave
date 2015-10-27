@@ -574,6 +574,10 @@ public class CentroidManagerGeoWave<T> implements
 	public ByteArrayId getIndexId() {
 		return index.getId();
 	}
+	
+	public String getBatchId() {
+		return this.batchId;
+	}
 
 	private DataAdapter<?> getAdapter() {
 		return adapterStore.getAdapter(getDataTypeId());

@@ -12,24 +12,31 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
+import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
+import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
 import mil.nga.giat.geowave.core.store.data.field.FieldUtils;
 import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
+import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
+import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
+import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.NullIndex;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.core.store.query.EverythingQuery;
+import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -57,6 +64,90 @@ public class DistortionGroupManagement
 	public final static PrimaryIndex DISTORTIONS_INDEX = new NullIndex(
 			"DISTORTIONS");
 
+	final DataStore dataStore;
+	final IndexStore indexStore;
+	final AdapterStore adapterStore;
+
+	public DistortionGroupManagement(
+			final DataStore dataStore,
+			final IndexStore indexStore,
+			final AdapterStore adapterStore ) {
+		this.dataStore = dataStore;
+		this.indexStore = indexStore;
+		this.adapterStore = adapterStore;
+		indexStore.addIndex(DISTORTIONS_INDEX);
+		adapterStore.addAdapter(new DistortionDataAdapter());
+	}
+
+	public static class BatchIdFilter implements
+			DistributableQueryFilter
+	{
+		String batchId;
+
+		public BatchIdFilter() {
+
+		}
+
+		public BatchIdFilter(
+				String batchId ) {
+			super();
+			this.batchId = batchId;
+		}
+
+		@Override
+		public boolean accept(
+				CommonIndexModel indexModel,
+				IndexedPersistenceEncoding<?> persistenceEncoding ) {
+			return new DistortionEntry(
+					persistenceEncoding.getDataId(),
+					(Double) 0.0).batchId.equals(batchId);
+		}
+
+		@Override
+		public byte[] toBinary() {
+			return StringUtils.stringToBinary(batchId);
+		}
+
+		@Override
+		public void fromBinary(
+				byte[] bytes ) {
+			batchId = StringUtils.stringFromBinary(bytes);
+		}
+	}
+
+	public static class BatchIdQuery implements
+			Query
+	{
+		String batchId;
+
+		public BatchIdQuery() {}
+
+		public BatchIdQuery(
+				String batchId ) {
+			super();
+			this.batchId = batchId;
+		}
+
+		@Override
+		public List<QueryFilter> createFilters(
+				CommonIndexModel indexModel ) {
+			return Collections.<QueryFilter> singletonList(new BatchIdFilter(batchId));
+		}
+
+		@Override
+		public boolean isSupported(
+				Index<?, ?> index ) {
+			return index instanceof NullIndex;
+		}
+
+		@Override
+		public MultiDimensionalNumericData getIndexConstraints(
+				NumericIndexStrategy indexStrategy ) {
+			return new BasicNumericDataset();
+		}
+
+	}
+
 	/**
 	 * 
 	 * @param ops
@@ -66,14 +157,11 @@ public class DistortionGroupManagement
 	 *            the batch id to associate with the centroids for each group
 	 * @return
 	 */
-	public static <T> int retainBestGroups(
-			final DataStore dataStore,
-			final IndexStore indexStore,
-			final AdapterStore adapterStore,
+	public <T> int retainBestGroups(
 			final AnalyticItemWrapperFactory<T> itemWrapperFactory,
 			final String dataTypeId,
 			final String indexId,
-			final String parentBatchId,
+			final String batchId,
 			final int level ) {
 
 		try {
@@ -85,7 +173,8 @@ public class DistortionGroupManagement
 					new QueryOptions(
 							new DistortionDataAdapter(),
 							DISTORTIONS_INDEX),
-					new EverythingQuery())) {
+					new BatchIdQuery(
+							batchId))) {
 				while (it.hasNext()) {
 					final DistortionEntry entry = it.next();
 					final String groupID = entry.getGroupId();
@@ -113,15 +202,15 @@ public class DistortionGroupManagement
 					itemWrapperFactory,
 					dataTypeId,
 					indexId,
-					parentBatchId,
+					batchId,
 					level);
 
 			for (final DistortionGroup grp : groupDistortions.values()) {
 				final int optimalK = grp.bestCount();
-				LOGGER.info("Batch: " + parentBatchId + "; Group: " + grp.groupID + "; Optimal Cluster Size: " + optimalK);
-				final String batchId = parentBatchId + "_" + optimalK;
+				LOGGER.info("Batch: " + batchId + "; Group: " + grp.groupID + "; Optimal Cluster Size: " + optimalK);
+				final String kbatchId = batchId + "_" + optimalK;
 				centroidManager.transferBatch(
-						batchId,
+						kbatchId,
 						grp.getGroupID());
 			}
 		}
@@ -130,7 +219,7 @@ public class DistortionGroupManagement
 		}
 		catch (final Exception ex) {
 			LOGGER.error(
-					"Cannot detremine groups for batch" + parentBatchId,
+					"Cannot detremine groups for batch" + batchId,
 					ex);
 			return 1;
 		}
@@ -141,6 +230,7 @@ public class DistortionGroupManagement
 			Writable
 	{
 		private String groupId;
+		private String batchId;
 		private Integer clusterCount;
 		private Double distortionValue;
 
@@ -148,9 +238,11 @@ public class DistortionGroupManagement
 
 		public DistortionEntry(
 				final String groupId,
+				final String batchId,
 				final Integer clusterCount,
 				final Double distortionValue ) {
 			this.groupId = groupId;
+			this.batchId = batchId;
 			this.clusterCount = clusterCount;
 			this.distortionValue = distortionValue;
 		}
@@ -160,8 +252,9 @@ public class DistortionGroupManagement
 				final Double distortionValue ) {
 			final String dataIdStr = StringUtils.stringFromBinary(dataId.getBytes());
 			final String[] split = dataIdStr.split("/");
-			groupId = split[0];
-			clusterCount = Integer.parseInt(split[1]);
+			batchId = split[0];
+			groupId = split[1];
+			clusterCount = Integer.parseInt(split[2]);
 			this.distortionValue = distortionValue;
 		}
 
@@ -179,7 +272,7 @@ public class DistortionGroupManagement
 
 		private ByteArrayId getDataId() {
 			return new ByteArrayId(
-					groupId + "/" + clusterCount);
+					batchId + "/" + groupId + "/" + clusterCount);
 		}
 
 		@Override
@@ -187,6 +280,7 @@ public class DistortionGroupManagement
 				final DataOutput out )
 				throws IOException {
 			out.writeUTF(groupId);
+			out.writeUTF(batchId);
 			out.writeInt(clusterCount);
 			out.writeDouble(distortionValue);
 		}
@@ -196,6 +290,7 @@ public class DistortionGroupManagement
 				final DataInput in )
 				throws IOException {
 			groupId = in.readUTF();
+			batchId = in.readUTF();
 			clusterCount = in.readInt();
 			distortionValue = in.readDouble();
 		}

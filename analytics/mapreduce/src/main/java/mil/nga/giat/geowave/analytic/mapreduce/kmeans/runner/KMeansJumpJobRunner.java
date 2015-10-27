@@ -153,6 +153,11 @@ public class KMeansJumpJobRunner extends
 			final GenericStoreCommandLineOptions<IndexStore> indexStoreOptions = ((PersistableIndexStore) propertyManagement.getProperty(StoreParam.INDEX_STORE)).getCliOptions();
 			final GenericStoreCommandLineOptions<AdapterStore> adapterStoreOptions = ((PersistableAdapterStore) propertyManagement.getProperty(StoreParam.ADAPTER_STORE)).getCliOptions();
 
+			final DistortionGroupManagement distortionGroupManagement = new DistortionGroupManagement(
+					dataStoreOptions.createStore(),
+					indexStoreOptions.createStore(),
+					adapterStoreOptions.createStore());
+
 			for (int k = (int) Math.max(
 					2,
 					Math.round(rangeOfIterations.getMin())); k < Math.round(rangeOfIterations.getMax()); k++) {
@@ -196,15 +201,14 @@ public class KMeansJumpJobRunner extends
 			 * Associate the batch id with the best set of groups so the caller
 			 * can find the clusters for the given batch
 			 */
-			final int result = DistortionGroupManagement.retainBestGroups(
-					dataStoreOptions.createStore(),
-					indexStoreOptions.createStore(),
-					adapterStoreOptions.createStore(),
+			final int result = distortionGroupManagement.retainBestGroups(
 					(AnalyticItemWrapperFactory<SimpleFeature>) analyticItemWrapperFC.newInstance(),
 					propertyManagement.getPropertyAsString(CentroidParameters.Centroid.DATA_TYPE_ID),
 					propertyManagement.getPropertyAsString(CentroidParameters.Centroid.INDEX_ID),
 					currentBatchId,
 					currentZoomLevel);
+
+			// distortionGroupManagement.cleanUp();
 
 			return result;
 		}
