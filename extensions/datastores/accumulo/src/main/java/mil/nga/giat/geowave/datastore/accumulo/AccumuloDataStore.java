@@ -434,23 +434,11 @@ public class AccumuloDataStore implements
 						fieldIds,
 						authorizations);
 
-				final CloseableIterator<Object> it =  q.query(
+				final CloseableIterator<Object> it = q.query(
 						accumuloOperations,
 						tempAdapterStore,
-						limit ? 1 : -1);
-				if (it.hasNext()) 
-					return it;
-				//TODO: bug
-				return getEntryRows(
-					index,
-						tempAdapterStore,
-						dataIds,
-						adapter.getAdapterId(),
-						fieldIds,
-						callback,
-						authorizations,
-						limit ? 1 : -1);
-
+						(limit || rowIds.size() < 2) ? 1 : -1);
+				if (it.hasNext()) return it;
 			}
 		}
 		else {

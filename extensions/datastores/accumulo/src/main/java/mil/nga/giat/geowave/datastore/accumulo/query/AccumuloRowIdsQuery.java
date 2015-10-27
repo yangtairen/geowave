@@ -33,7 +33,7 @@ public class AccumuloRowIdsQuery<T> extends
 			final Collection<String> fieldIds,
 			final String[] authorizations ) {
 		super(
-				Collections.singletonList(adapter.getAdapterId()),
+				Collections.<ByteArrayId>emptyList(),
 				index,
 				(Query) null,
 				(DedupeFilter) dedupFilter,
@@ -68,7 +68,8 @@ public class AccumuloRowIdsQuery<T> extends
 		for (ByteArrayId row : rows)
 			ranges.add(new ByteArrayRange(
 					row,
-					row));
+					row,
+					true));
 		return ranges;
 	}
 }
