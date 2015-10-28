@@ -18,7 +18,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TimeZone;
 
-import mil.nga.giat.geowave.adapter.vector.VectorDataStore;
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveTransaction;
 import mil.nga.giat.geowave.adapter.vector.query.cql.CQLQuery;
 import mil.nga.giat.geowave.adapter.vector.render.DistributableRenderer;
@@ -289,22 +288,21 @@ public class GeoWaveFeatureReader implements
 		public CloseableIterator<SimpleFeature> query(
 				final PrimaryIndex index,
 				final mil.nga.giat.geowave.core.store.query.Query query ) {
-			if (components.getDataStore() instanceof VectorDataStore) {
-				return ((VectorDataStore) components.getDataStore()).query(
-						components.getAdapter(),
-						index,
-						query,
-						width,
-						height,
-						pixelSize,
-						filter,
-						envelope,
-						limit,
-						transaction.composeAuthorizations());
-			}
-			LOGGER.warn("Data Store does not support spatial subsampling");
-			return new CloseableIterator.Wrapper(
-					Iterators.emptyIterator());
+			return components.getDataStore().query(
+					new QueryOptions(
+							components.getAdapter(),
+							index,
+							transaction.composeAuthorizations()),
+					new CQLQuery(
+							query,
+							filter,
+							components.getAdapter()));
+			// TODO: Added back SpatialDecimationQuery
+			// width,
+			// height,
+			// pixelSize,
+			// envelope,
+			// limit,
 		}
 
 	}
@@ -329,20 +327,18 @@ public class GeoWaveFeatureReader implements
 		public CloseableIterator<SimpleFeature> query(
 				final PrimaryIndex index,
 				final mil.nga.giat.geowave.core.store.query.Query query ) {
-			if (components.getDataStore() instanceof VectorDataStore) {
-				return ((VectorDataStore) components.getDataStore()).query(
-						components.getAdapter(),
-						index,
-						query,
-						filter,
-						renderer,
-						transaction.composeAuthorizations());
-			}
-			LOGGER.warn("Data Store does not support distributed rendering");
-			return new CloseableIterator.Wrapper(
-					Iterators.emptyIterator());
+			return components.getDataStore().query(
+					new QueryOptions(
+							components.getAdapter(),
+							index,
+							transaction.composeAuthorizations()),
+					new CQLQuery(
+							query,
+							filter,
+							components.getAdapter()));
+			// TODO: ? need to figure out how to add back CqlQueryRenderIterator
+			// renderer,
 		}
-
 	}
 
 	private class IdQueryIssuer extends

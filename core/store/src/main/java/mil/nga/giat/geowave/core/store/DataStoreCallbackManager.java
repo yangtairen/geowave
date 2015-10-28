@@ -74,7 +74,7 @@ public class DataStoreCallbackManager implements
 	public <T> DeleteCallback<T> getDeleteCallback(
 			final WritableDataAdapter<T> writableAdapter,
 			final PrimaryIndex index ) {
-		if (!icache.containsKey(writableAdapter.getAdapterId())) {
+		if (!dcache.containsKey(writableAdapter.getAdapterId())) {
 			final DataStoreStatsAdapterWrapper<T> statsAdapter = new DataStoreStatsAdapterWrapper<T>(
 					index,
 					writableAdapter);

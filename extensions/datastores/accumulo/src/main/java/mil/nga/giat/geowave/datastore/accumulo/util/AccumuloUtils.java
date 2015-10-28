@@ -370,6 +370,7 @@ public class AccumuloUtils
 								encodedRow,
 								index),
 						new DataStoreEntryInfo(
+								rowId.getDataId(),
 								Arrays.asList(new ByteArrayId(
 										k.getRowData().getBackingArray())),
 								fieldInfoList));

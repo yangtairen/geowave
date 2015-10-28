@@ -271,12 +271,13 @@ public class DataStoreUtils
 
 		final List<FieldInfo<?>> fieldInfoList = new ArrayList<FieldInfo<?>>();
 
+		final byte[] dataId = dataWriter.getDataId(
+				entry).getBytes();
 		if (!insertionIds.isEmpty()) {
 			addToRowIds(
 					rowIds,
 					insertionIds,
-					dataWriter.getDataId(
-							entry).getBytes(),
+					dataId,
 					dataWriter.getAdapterId().getBytes(),
 					encodedData.isDeduplicationEnabled());
 
@@ -303,12 +304,14 @@ public class DataStoreUtils
 				}
 			}
 			return new DataStoreEntryInfo(
+					dataId,
 					rowIds,
 					fieldInfoList);
 		}
 		LOGGER.warn("Indexing failed to produce insertion ids; entry [" + dataWriter.getDataId(
 				entry).getString() + "] not saved.");
 		return new DataStoreEntryInfo(
+				dataId,
 				Collections.EMPTY_LIST,
 				Collections.EMPTY_LIST);
 
