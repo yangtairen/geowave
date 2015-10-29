@@ -59,13 +59,11 @@ public class SecondaryIndexingDriver extends
 	private static int NUM_FEATURES = 10;
 
 	@BeforeClass
-	public static void init()
+	public static void initializeTest()
 			throws IOException,
 			SchemaException,
 			AccumuloException,
 			AccumuloSecurityException {
-
-		GeoWaveTestEnvironment.setup();
 
 		// see https://github.com/ngageoint/geowave/wiki/Secondary-Indexing
 		schema = DataUtilities.createType(
