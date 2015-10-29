@@ -108,11 +108,13 @@ public class BasicQuery implements
 			final NumericDimensionDefinition[] dimensionDefinitions = indexStrategy.getOrderedDimensionDefinitions();
 			final NumericData[] dataPerDimension = new NumericData[dimensionDefinitions.length];
 			// all or nothing...for now
+			boolean hasFullRange = false;
 			for (int d = 0; d < dimensionDefinitions.length; d++) {
 				final ConstraintData dimConstraint = constraintsPerTypeOfDimensionDefinition.get(dimensionDefinitions[d].getClass());
+				hasFullRange |= (dimConstraint == null);
 				dataPerDimension[d] = (dimConstraint == null ? dimensionDefinitions[d].getFullRange() : dimConstraint.range);
 			}
-			return new BasicNumericDataset(
+			return hasFullRange ? new BasicNumericDataset() : new BasicNumericDataset(
 					dataPerDimension);
 		}
 

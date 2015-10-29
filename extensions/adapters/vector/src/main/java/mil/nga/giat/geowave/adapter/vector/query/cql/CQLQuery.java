@@ -6,20 +6,36 @@ import java.util.Collections;
 import java.util.List;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
+import mil.nga.giat.geowave.adapter.vector.plugin.ExtractGeometryFilterVisitor;
+import mil.nga.giat.geowave.adapter.vector.plugin.ExtractTimeFilterVisitor;
+import mil.nga.giat.geowave.adapter.vector.util.QueryIndexHelper;
+import mil.nga.giat.geowave.core.geotime.GeometryUtils;
+import mil.nga.giat.geowave.core.geotime.store.filter.SpatialQueryFilter.CompareOperation;
+import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
+import mil.nga.giat.geowave.core.geotime.store.query.SpatialTemporalQuery;
+import mil.nga.giat.geowave.core.geotime.store.query.TemporalConstraints;
+import mil.nga.giat.geowave.core.geotime.store.query.TemporalConstraintsSet;
+import mil.nga.giat.geowave.core.geotime.store.query.TemporalQuery;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
+import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndex;
+import mil.nga.giat.geowave.core.store.query.BasicQuery.Constraints;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
 
 import org.apache.log4j.Logger;
+import org.geotools.filter.text.cql2.CQL;
+import org.geotools.filter.text.cql2.CQLException;
 import org.opengis.filter.Filter;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 public class CQLQuery implements
 		DistributableQuery
@@ -29,6 +45,54 @@ public class CQLQuery implements
 	private CQLQueryFilter filter;
 
 	protected CQLQuery() {}
+
+	public CQLQuery(
+			final String cql,
+			final FeatureDataAdapter adapter )
+			throws CQLException {
+		this(
+				cql,
+				CompareOperation.OVERLAPS,
+				adapter);
+	}
+
+	public CQLQuery(
+			final String cql,
+			final CompareOperation geoCompareOp,
+			final FeatureDataAdapter adapter )
+			throws CQLException {
+		final Filter filter = CQL.toFilter(cql);
+		final Geometry geometry = ExtractGeometryFilterVisitor.getConstraints(
+				filter,
+				adapter.getType().getCoordinateReferenceSystem());
+		final TemporalConstraintsSet timeConstraintSet = new ExtractTimeFilterVisitor().getConstraints(filter);
+
+		// determine which time constraints are associated with an indexable
+		// field
+		final TemporalConstraints temporalConstraints = QueryIndexHelper.getTemporalConstraintsForIndex(
+				adapter.getTimeDescriptors(),
+				timeConstraintSet);
+		// convert to constraints
+		final Constraints timeConstraints = SpatialTemporalQuery.createConstraints(
+				temporalConstraints,
+				false);
+		if (geometry != null) {
+			Constraints constraints = GeometryUtils.basicConstraintsFromGeometry(geometry);
+
+			if (timeConstraintSet != null && !timeConstraintSet.isEmpty()) {
+				constraints = constraints.merge(timeConstraints);
+			}
+			baseQuery = new SpatialQuery(
+					constraints,
+					geometry,
+					geoCompareOp);
+		}
+		else if (timeConstraintSet != null && !timeConstraintSet.isEmpty()) {
+			baseQuery = new TemporalQuery(
+					temporalConstraints);
+		}
+		// default case is to leave base query null.
+	}
 
 	public CQLQuery(
 			final Query baseQuery,
@@ -71,7 +135,7 @@ public class CQLQuery implements
 		if (baseQuery != null) {
 			return baseQuery.getIndexConstraints(indexStrategy);
 		}
-		return null;
+		return new BasicNumericDataset();
 	}
 
 	@Override

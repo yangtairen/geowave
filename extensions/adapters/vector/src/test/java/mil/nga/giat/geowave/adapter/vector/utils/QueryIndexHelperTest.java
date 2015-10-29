@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.adapter.vector.utils;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.text.ParseException;
@@ -706,13 +707,15 @@ public class QueryIndexHelperTest
 				statsMap,
 				constraintsSet);
 		final MultiDimensionalNumericData nd = constraints.getIndexConstraints(IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndexStrategy());
+		assertTrue(nd.isEmpty());
+		/*
 		assertEquals(
 				stime.getTime(),
 				(long) nd.getDataPerDimension()[2].getMin());
 		assertEquals(
 				etime.getTime(),
 				(long) nd.getDataPerDimension()[2].getMax());
-
+*/
 		final TemporalConstraintsSet constraintsSet2 = new TemporalConstraintsSet();
 		constraintsSet2.getConstraintsFor(
 				"start_end").add(

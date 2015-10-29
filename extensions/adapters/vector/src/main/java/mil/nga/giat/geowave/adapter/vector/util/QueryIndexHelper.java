@@ -16,7 +16,6 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.query.BasicQuery.Constraints;
 
-import org.apache.log4j.Logger;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -25,8 +24,6 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class QueryIndexHelper
 {
-
-	private static final Logger LOGGER = Logger.getLogger(QueryIndexHelper.class);
 
 	private static TemporalRange getStatsRange(
 			final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap,
@@ -43,8 +40,8 @@ public class QueryIndexHelper
 	}
 
 	/**
-	 * Clip the provided constraint with associated index constraints, if
-	 * available.
+	 * Clip the provided constraints using the statistics, if available.
+	 * 
 	 * 
 	 * @param statsMap
 	 * @param timeDescriptors
@@ -109,7 +106,48 @@ public class QueryIndexHelper
 	}
 
 	/**
-	 * Clip the provided bounded box with the constraints of the index
+	 * Compose temporal constraints given the constraint set and the descriptors
+	 * for the index.
+	 * 
+	 * @param timeDescriptors
+	 * @param constraintsSet
+	 * @return null if the constraints does not have the fields required by the
+	 *         time descriptors
+	 */
+	public static TemporalConstraints composeRangeTemporalConstraints(
+			final TimeDescriptors timeDescriptors,
+			final TemporalConstraintsSet constraintsSet ) {
+
+		if ((timeDescriptors.getEndRange() != null) && (timeDescriptors.getStartRange() != null)) {
+			final String ename = timeDescriptors.getEndRange().getLocalName();
+			final String sname = timeDescriptors.getStartRange().getLocalName();
+			final String rangeName = sname + "_" + ename;
+
+			if (constraintsSet.hasConstraintsFor(rangeName)) {
+				return constraintsSet.getConstraintsFor(rangeName);
+			}
+
+			final TemporalConstraints sconstraints = constraintsSet.getConstraintsFor(sname);
+			final TemporalConstraints econstraints = constraintsSet.getConstraintsFor(ename);
+
+			if (sconstraints != null && sconstraints != null) {
+				final TemporalRange fullRange = new TemporalRange(
+						sconstraints.getStartRange().getStartTime(),
+						econstraints.getEndRange().getEndTime());
+
+				return new TemporalConstraints(
+						fullRange,
+						rangeName);
+			}
+		}
+		else if ((timeDescriptors.getTime() != null) && constraintsSet.hasConstraintsFor(timeDescriptors.getTime().getLocalName())) {
+			return constraintsSet.getConstraintsFor(timeDescriptors.getTime().getLocalName());
+		}
+		return null;
+	}
+
+	/**
+	 * Clip the provided bounded box with the statistics for the index
 	 * 
 	 * @param featureType
 	 * @param bbox
@@ -125,7 +163,7 @@ public class QueryIndexHelper
 
 		final ByteArrayId statId = FeatureBoundingBoxStatistics.composeId(geoAttrName);
 		final FeatureBoundingBoxStatistics bboxStats = (FeatureBoundingBoxStatistics) statsMap.get(statId);
-		if (bboxStats != null) {
+		if (bboxStats != null && bbox != null) {
 			final Geometry geo = bboxStats.composeGeometry(featureType.getGeometryDescriptor().getType().getCoordinateReferenceSystem());
 			return geo.intersection(bbox);
 		}
@@ -186,8 +224,10 @@ public class QueryIndexHelper
 			return null;
 		}
 
-		if ((timeDescriptors.getStartRange() != null) && (timeDescriptors.getEndRange() != null) && timeBoundsSet.hasConstraintsFor(timeDescriptors.getStartRange().getLocalName() + "_" + timeDescriptors.getEndRange().getLocalName())) {
-			return timeBoundsSet.getConstraintsFor(timeDescriptors.getStartRange().getLocalName() + "_" + timeDescriptors.getEndRange().getLocalName());
+		if ((timeDescriptors.getStartRange() != null) && (timeDescriptors.getEndRange() != null)) {
+			return composeRangeTemporalConstraints(
+					timeDescriptors,
+					timeBoundsSet);
 		}
 		else if ((timeDescriptors.getTime() != null) && timeBoundsSet.hasConstraintsFor(timeDescriptors.getTime().getLocalName())) {
 			return timeBoundsSet.getConstraintsFor(timeDescriptors.getTime().getLocalName());

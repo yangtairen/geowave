@@ -332,18 +332,9 @@ public class GeoWaveFeatureCollection extends
 			return new GeometryFactory().toGeometry(envelope);
 		}
 
-		final Geometry bbox = (Geometry) query.getFilter().accept(
-				ExtractGeometryFilterVisitor.GEOMETRY_VISITOR,
-				null);
-		if ((bbox == null) || bbox.isEmpty()) {
-			return null;
-		}
-		final double area = bbox.getArea();
-		if (Double.isInfinite(area) || Double.isNaN(area)) {
-			return null;
-		}
-
-		return reader.clipIndexedBBOXConstraints(bbox);
+		return reader.clipIndexedBBOXConstraints(ExtractGeometryFilterVisitor.getConstraints(
+				query.getFilter(),
+				GeoWaveGTDataStore.DEFAULT_CRS));
 	}
 
 	private Query validateQuery(
