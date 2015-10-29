@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
+import mil.nga.giat.geowave.core.store.index.FilterableConstraints;
 
 public class FilterableLikeConstraint extends
 		TextQueryConstraint
@@ -32,6 +33,11 @@ public class FilterableLikeConstraint extends
 						"%",
 						".*"),
 				caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
+	}
+	
+	@Override
+	public ByteArrayId getFieldId() {
+		return fieldId;
 	}
 
 	@Override
@@ -104,5 +110,18 @@ public class FilterableLikeConstraint extends
 				fieldId,
 				regex,
 				caseSensitive);
+	}
+
+	//TODO:
+	@Override
+	public FilterableConstraints intersect(
+			FilterableConstraints constraints ) {
+		return this;
+	}
+	//TODO:
+	@Override
+	public FilterableConstraints union(
+			FilterableConstraints constraints ) {
+		return this;
 	}
 }

@@ -37,7 +37,7 @@ public class NumericIndexStrategyTest
 
 	@Test
 	public void testEquals() {
-		final List<ByteArrayRange> ranges = strategy.getQueryRanges(new FilterableEqualsConstraint(
+		final List<ByteArrayRange> ranges = strategy.getQueryRanges(new NumericEqualsConstraint(
 				fieldId,
 				number));
 		Assert.assertTrue(ranges.size() == 1);
@@ -52,7 +52,7 @@ public class NumericIndexStrategyTest
 
 	@Test
 	public void testGreaterThanOrEqualTo() {
-		final List<ByteArrayRange> ranges = strategy.getQueryRanges(new FilterableGreaterThanOrEqualToConstraint(
+		final List<ByteArrayRange> ranges = strategy.getQueryRanges(new NumericGreaterThanOrEqualToConstraint(
 				fieldId,
 				number));
 		Assert.assertTrue(ranges.size() == 1);
@@ -68,7 +68,7 @@ public class NumericIndexStrategyTest
 	@Test
 	public void testLessThanOrEqualTo() {
 		final NumericIndexStrategy strategy = new NumericIndexStrategy();
-		final List<ByteArrayRange> ranges = strategy.getQueryRanges(new FilterableLessThanOrEqualToConstraint(
+		final List<ByteArrayRange> ranges = strategy.getQueryRanges(new NumericLessThanOrEqualToConstraint(
 				fieldId,
 				number));
 		Assert.assertTrue(ranges.size() == 1);

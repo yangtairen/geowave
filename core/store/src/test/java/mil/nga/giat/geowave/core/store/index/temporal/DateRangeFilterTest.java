@@ -29,6 +29,7 @@ public class DateRangeFilterTest
 						StringUtils.stringToBinary("myAttribute")),
 				start,
 				end,
+				false,
 				false);
 		final byte[] filterBytes = PersistenceUtils.toBinary(filter);
 		final DateRangeFilter deserializedFilter = PersistenceUtils.fromBinary(
@@ -37,7 +38,8 @@ public class DateRangeFilterTest
 		Assert.assertTrue(filter.fieldId.equals(deserializedFilter.fieldId));
 		Assert.assertTrue(filter.start.equals(deserializedFilter.start));
 		Assert.assertTrue(filter.end.equals(deserializedFilter.end));
-		Assert.assertTrue(filter.rangeInclusive == deserializedFilter.rangeInclusive);
+		Assert.assertTrue(filter.inclusiveLow == deserializedFilter.inclusiveLow);
+		Assert.assertTrue(filter.inclusiveHigh == deserializedFilter.inclusiveHigh);
 	}
 
 	@Test
@@ -48,6 +50,7 @@ public class DateRangeFilterTest
 						StringUtils.stringToBinary("myAttribute")),
 				format.parse("01-01-2014 11:01:01"),
 				format.parse("12-31-2014 11:01:01"),
+				true,
 				true);
 
 		// should match because date is in range

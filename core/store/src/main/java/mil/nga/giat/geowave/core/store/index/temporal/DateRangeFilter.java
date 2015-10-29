@@ -15,7 +15,8 @@ public class DateRangeFilter implements
 	protected ByteArrayId fieldId;
 	protected Date start;
 	protected Date end;
-	protected boolean rangeInclusive;
+	protected boolean inclusiveLow;
+	protected boolean inclusiveHigh;
 
 	protected DateRangeFilter() {
 		super();
@@ -25,12 +26,14 @@ public class DateRangeFilter implements
 			final ByteArrayId fieldId,
 			final Date start,
 			final Date end,
-			final boolean rangeInclusive ) {
+			final boolean inclusiveLow,
+			final boolean inclusiveHigh ) {
 		super();
 		this.fieldId = fieldId;
 		this.start = start;
 		this.end = end;
-		this.rangeInclusive = rangeInclusive;
+		this.inclusiveHigh = inclusiveHigh;
+		this.inclusiveLow = inclusiveLow;
 	}
 
 	@Override
@@ -44,7 +47,7 @@ public class DateRangeFilter implements
 			final Date value = new Date(
 					dateLong);
 			if (start != null) {
-				if (rangeInclusive) {
+				if (inclusiveLow) {
 					if (value.compareTo(start) < 0) {
 						return false;
 					}
@@ -54,7 +57,7 @@ public class DateRangeFilter implements
 				}
 			}
 			if (end != null) {
-				if (rangeInclusive) {
+				if (inclusiveHigh) {
 					if (value.compareTo(end) > 0) {
 						return false;
 					}
@@ -72,13 +75,15 @@ public class DateRangeFilter implements
 
 	@Override
 	public byte[] toBinary() {
-		final ByteBuffer bb = ByteBuffer.allocate(4 + fieldId.getBytes().length + 8 + 8 + 4);
+		final ByteBuffer bb = ByteBuffer.allocate(4 + fieldId.getBytes().length + 8 + 8 + 8);
 		bb.putInt(fieldId.getBytes().length);
 		bb.put(fieldId.getBytes());
 		bb.putLong(start.getTime());
 		bb.putLong(end.getTime());
-		final int rangeInclusiveInt = (rangeInclusive) ? 1 : 0;
-		bb.putInt(rangeInclusiveInt);
+		final int rangeInclusiveHighInt = (inclusiveHigh) ? 1 : 0;
+		final int rangeInclusiveLowInt = (inclusiveLow) ? 1 : 0;
+		bb.putInt(rangeInclusiveLowInt);
+		bb.putInt(rangeInclusiveHighInt);
 		return bb.array();
 	}
 
@@ -94,7 +99,8 @@ public class DateRangeFilter implements
 				bb.getLong());
 		end = new Date(
 				bb.getLong());
-		rangeInclusive = (bb.getInt() == 1) ? true : false;
+		inclusiveLow = (bb.getInt() == 1) ? true : false;
+		inclusiveHigh = (bb.getInt() == 1) ? true : false;
 	}
 
 }

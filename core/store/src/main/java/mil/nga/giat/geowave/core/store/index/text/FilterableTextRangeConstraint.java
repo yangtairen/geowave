@@ -7,6 +7,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
+import mil.nga.giat.geowave.core.store.index.FilterableConstraints;
 
 public class FilterableTextRangeConstraint extends
 		TextQueryConstraint
@@ -39,6 +40,11 @@ public class FilterableTextRangeConstraint extends
 		this.end = caseSensitive ? end : end.toLowerCase();
 		this.fieldId = fieldId;
 		this.caseSensitive = caseSensitive;
+	}
+
+	@Override
+	public ByteArrayId getFieldId() {
+		return fieldId;
 	}
 
 	private int subStringSize(
@@ -114,5 +120,37 @@ public class FilterableTextRangeConstraint extends
 				caseSensitive,
 				start,
 				end);
+	}
+
+	@Override
+	public FilterableConstraints intersect(
+			FilterableConstraints constraints ) {
+		if (constraints instanceof FilterableTextRangeConstraint) {
+			FilterableTextRangeConstraint filterConstraints = (FilterableTextRangeConstraint) constraints;
+			if (fieldId.equals(filterConstraints.fieldId)) {
+				return new FilterableTextRangeConstraint(
+						fieldId,
+						start.compareTo(filterConstraints.start) < 0 ? filterConstraints.start : start,
+						end.compareTo(filterConstraints.end) > 0 ? filterConstraints.end : end,
+						filterConstraints.caseSensitive & this.caseSensitive);
+			}
+		}
+		return this;
+	}
+
+	@Override
+	public FilterableConstraints union(
+			FilterableConstraints constraints ) {
+		if (constraints instanceof FilterableTextRangeConstraint) {
+			FilterableTextRangeConstraint filterConstraints = (FilterableTextRangeConstraint) constraints;
+			if (fieldId.equals(filterConstraints.fieldId)) {
+				return new FilterableTextRangeConstraint(
+						fieldId,
+						start.compareTo(filterConstraints.start) > 0 ? filterConstraints.start : start,
+						end.compareTo(filterConstraints.end) < 0 ? filterConstraints.end : end,
+						filterConstraints.caseSensitive | this.caseSensitive);
+			}
+		}
+		return this;
 	}
 }

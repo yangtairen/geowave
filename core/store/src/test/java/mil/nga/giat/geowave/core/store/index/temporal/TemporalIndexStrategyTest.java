@@ -39,7 +39,7 @@ public class TemporalIndexStrategyTest
 
 	@Test
 	public void testDateRange() {
-		final List<ByteArrayRange> ranges = strategy.getQueryRanges(new FilterableDateRangeConstraint(
+		final List<ByteArrayRange> ranges = strategy.getQueryRanges(new TemporalQueryConstraint(
 				fieldId,
 				date,
 				date));

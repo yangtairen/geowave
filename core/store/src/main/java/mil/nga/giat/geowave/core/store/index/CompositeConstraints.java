@@ -3,6 +3,7 @@ package mil.nga.giat.geowave.core.store.index;
 import java.util.ArrayList;
 import java.util.List;
 
+import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.QueryConstraints;
 import mil.nga.giat.geowave.core.store.filter.DistributableFilterList;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
@@ -41,5 +42,25 @@ public class CompositeConstraints implements
 		return new DistributableFilterList(
 				filters);
 	}
+
+	@Override
+	public ByteArrayId getFieldId() {
+		return constraints.get(0).getFieldId();
+	}
+
+	@Override
+	public FilterableConstraints intersect(
+			FilterableConstraints constaints ) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public FilterableConstraints union(
+			FilterableConstraints constaints ) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 
 }

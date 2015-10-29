@@ -8,22 +8,31 @@ import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 
-public class GreaterThanOrEqualToFilter implements
+public class NumberRangeFilter implements
 		DistributableQueryFilter
 {
 	protected ByteArrayId fieldId;
-	protected Number number;
+	protected Number lowerValue;
+	protected Number upperValue;
+	protected boolean inclusiveLow;
+	protected boolean inclusiveHigh;
 
-	protected GreaterThanOrEqualToFilter() {
+	protected NumberRangeFilter() {
 		super();
 	}
 
-	public GreaterThanOrEqualToFilter(
-			final ByteArrayId fieldId,
-			final Number number ) {
+	public NumberRangeFilter(
+			ByteArrayId fieldId,
+			Number lowerValue,
+			Number upperValue,
+			boolean inclusiveLow,
+			boolean inclusiveHigh ) {
 		super();
 		this.fieldId = fieldId;
-		this.number = number;
+		this.lowerValue = lowerValue;
+		this.upperValue = upperValue;
+		this.inclusiveHigh = inclusiveHigh;
+		this.inclusiveLow = inclusiveLow;
 	}
 
 	@Override
@@ -34,17 +43,25 @@ public class GreaterThanOrEqualToFilter implements
 				fieldId);
 		if (value != null) {
 			final double val = Lexicoders.DOUBLE.fromByteArray(value.getBytes());
-			return val >= number.doubleValue();
+			if (inclusiveLow && inclusiveHigh)
+				return val >= lowerValue.doubleValue() && val <= upperValue.doubleValue();
+			else if (inclusiveLow)
+				return val >= lowerValue.doubleValue() && val < upperValue.doubleValue();
+			else if (inclusiveHigh)
+				return val > lowerValue.doubleValue() && val <= upperValue.doubleValue();
+			else
+				return val > lowerValue.doubleValue() && val < upperValue.doubleValue();
 		}
 		return false;
 	}
 
 	@Override
 	public byte[] toBinary() {
-		final ByteBuffer bb = ByteBuffer.allocate(4 + fieldId.getBytes().length + 8);
+		final ByteBuffer bb = ByteBuffer.allocate(4 + fieldId.getBytes().length + 16);
 		bb.putInt(fieldId.getBytes().length);
 		bb.put(fieldId.getBytes());
-		bb.putDouble(number.doubleValue());
+		bb.putDouble(lowerValue.doubleValue());
+		bb.putDouble(upperValue.doubleValue());
 		return bb.array();
 	}
 
@@ -56,8 +73,11 @@ public class GreaterThanOrEqualToFilter implements
 		bb.get(fieldIdBytes);
 		fieldId = new ByteArrayId(
 				fieldIdBytes);
-		number = new Double(
+		lowerValue = new Double(
 				bb.getDouble());
+		upperValue = new Double(
+				bb.getDouble());
+
 	}
 
 }
