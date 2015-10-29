@@ -186,7 +186,10 @@ public class DeleteWriterTest
 		CountDataStatistics countStats = (CountDataStatistics) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID);
-		assertTrue(rowId2s.size() > 1);
+		assertEquals(
+				2,
+				countStats.getCount());
+		assertEquals(18,rowId2s.size());
 		final CloseableIterator it1 = mockDataStore.query(
 				new QueryOptions(),
 				new DataIdQuery(
@@ -210,8 +213,8 @@ public class DeleteWriterTest
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID);
 		//TODO: BUG
-	//	assertEquals(
-	//			0,
-	//			countStats.getCount());
+		assertEquals(
+				1,
+				countStats.getCount());
 	}
 }

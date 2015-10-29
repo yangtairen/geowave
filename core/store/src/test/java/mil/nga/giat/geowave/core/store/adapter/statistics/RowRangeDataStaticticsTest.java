@@ -34,6 +34,7 @@ public class RowRangeDataStaticticsTest
 
 		stats.entryIngested(
 				new DataStoreEntryInfo(
+						"23".getBytes(),
 						Arrays.asList(
 								new ByteArrayId(
 										"20030"),
@@ -70,6 +71,7 @@ public class RowRangeDataStaticticsTest
 
 		stats2.entryIngested(
 				new DataStoreEntryInfo(
+						"32".getBytes(),
 						Arrays.asList(
 								new ByteArrayId(
 										"20030"),
