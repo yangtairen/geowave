@@ -71,7 +71,7 @@ public class GeoServerIT extends
 	private static String update;
 
 	@BeforeClass
-	public static void setUp()
+	public static void initialize()
 			throws ClientProtocolException,
 			IOException {
 		ServicesTestEnvironment.startServices();
@@ -137,7 +137,7 @@ public class GeoServerIT extends
 	}
 
 	@AfterClass
-	public static void cleanup() {
+	public static void cleanupWorkspace() {
 		assertTrue(geoserverServiceClient.deleteWorkspace(TEST_WORKSPACE));
 	}
 

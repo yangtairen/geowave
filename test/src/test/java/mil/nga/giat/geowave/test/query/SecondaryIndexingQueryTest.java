@@ -76,11 +76,9 @@ public class SecondaryIndexingQueryTest extends
 			43.0578914);
 
 	@BeforeClass
-	public static void init()
+	public static void initTest()
 			throws SchemaException,
 			IOException {
-
-		GeoWaveTestEnvironment.setup();
 
 		// create SimpleFeatureType
 		schema = DataUtilities.createType(

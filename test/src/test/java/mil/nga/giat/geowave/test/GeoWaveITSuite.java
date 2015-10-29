@@ -4,6 +4,7 @@ import mil.nga.giat.geowave.test.mapreduce.BasicMapReduceIT;
 import mil.nga.giat.geowave.test.mapreduce.DBScanIT;
 import mil.nga.giat.geowave.test.mapreduce.GeoWaveKMeansIT;
 import mil.nga.giat.geowave.test.mapreduce.KDERasterResizeIT;
+import mil.nga.giat.geowave.test.mapreduce.MapReduceTestEnvironment;
 import mil.nga.giat.geowave.test.query.AttributesSubsetQueryIT;
 import mil.nga.giat.geowave.test.query.SecondaryIndexingDriver;
 import mil.nga.giat.geowave.test.query.SecondaryIndexingQueryTest;
@@ -36,17 +37,18 @@ import org.junit.runners.Suite.SuiteClasses;
 public class GeoWaveITSuite
 {
 	@BeforeClass
-	public static void setup() {
+	public static void setupSuite() {
 		synchronized (GeoWaveTestEnvironment.MUTEX) {
 			GeoWaveTestEnvironment.DEFER_CLEANUP.set(true);
 		}
 	}
 
 	@AfterClass
-	public static void cleanup() {
+	public static void cleanupSuite() {
 		synchronized (GeoWaveTestEnvironment.MUTEX) {
 			GeoWaveTestEnvironment.DEFER_CLEANUP.set(false);
 			ServicesTestEnvironment.stopServices();
+			MapReduceTestEnvironment.cleanupHdfsFiles();
 			GeoWaveTestEnvironment.cleanup();
 		}
 	}
