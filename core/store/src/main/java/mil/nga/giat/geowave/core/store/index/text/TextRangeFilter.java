@@ -32,7 +32,6 @@ public class TextRangeFilter implements
 		this.end = end;
 	}
 
-	
 	public ByteArrayId getFieldId() {
 		return fieldId;
 	}

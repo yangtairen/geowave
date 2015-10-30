@@ -131,7 +131,8 @@ public class DistortionGroupManagement
 		@Override
 		public List<QueryFilter> createFilters(
 				CommonIndexModel indexModel ) {
-			return Collections.<QueryFilter> singletonList(new BatchIdFilter(batchId));
+			return Collections.<QueryFilter> singletonList(new BatchIdFilter(
+					batchId));
 		}
 
 		@Override

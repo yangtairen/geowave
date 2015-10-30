@@ -64,8 +64,7 @@ import org.opengis.filter.temporal.TOverlaps;
 /**
  * CQL visitor to extract constraints for secondary indexing queries.
  * 
- * TODO: compare operators for text (e.g. <,>,<=,>=)
- * TODO: Temporal
+ * TODO: compare operators for text (e.g. <,>,<=,>=) TODO: Temporal
  * 
  */
 public class PropertyFilterVisitor extends

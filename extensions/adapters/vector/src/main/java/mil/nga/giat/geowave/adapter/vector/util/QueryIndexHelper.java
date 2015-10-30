@@ -130,15 +130,13 @@ public class QueryIndexHelper
 			final TemporalConstraints sconstraints = constraintsSet.getConstraintsFor(sname);
 			final TemporalConstraints econstraints = constraintsSet.getConstraintsFor(ename);
 
-			if (sconstraints != null && sconstraints != null) {
-				final TemporalRange fullRange = new TemporalRange(
-						sconstraints.getStartRange().getStartTime(),
-						econstraints.getEndRange().getEndTime());
+			final TemporalRange fullRange = new TemporalRange(
+					sconstraints.getStartRange().getStartTime(),
+					econstraints.getEndRange().getEndTime());
 
-				return new TemporalConstraints(
-						fullRange,
-						rangeName);
-			}
+			return new TemporalConstraints(
+					fullRange,
+					rangeName);
 		}
 		else if ((timeDescriptors.getTime() != null) && constraintsSet.hasConstraintsFor(timeDescriptors.getTime().getLocalName())) {
 			return constraintsSet.getConstraintsFor(timeDescriptors.getTime().getLocalName());

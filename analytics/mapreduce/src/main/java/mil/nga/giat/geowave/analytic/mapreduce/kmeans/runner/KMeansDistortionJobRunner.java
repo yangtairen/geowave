@@ -97,7 +97,9 @@ public class KMeansDistortionJobRunner extends
 		GeoWaveInputFormat.setGeoWaveNamespace(
 				conf,
 				dataStoreOptions.getNamespace());
-		GeoWaveOutputFormat.addDataAdapter(conf, new DistortionDataAdapter());
+		GeoWaveOutputFormat.addDataAdapter(
+				conf,
+				new DistortionDataAdapter());
 	}
 
 	@Override

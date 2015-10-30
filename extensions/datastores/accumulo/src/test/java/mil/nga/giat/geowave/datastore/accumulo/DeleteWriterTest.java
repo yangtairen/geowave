@@ -189,7 +189,9 @@ public class DeleteWriterTest
 		assertEquals(
 				2,
 				countStats.getCount());
-		assertEquals(18,rowId2s.size());
+		assertEquals(
+				18,
+				rowId2s.size());
 		final CloseableIterator it1 = mockDataStore.query(
 				new QueryOptions(),
 				new DataIdQuery(
@@ -197,7 +199,9 @@ public class DeleteWriterTest
 						new ByteArrayId(
 								"test_pt_2")));
 		assertTrue(it1.hasNext());
-		assertTrue(adapter.getDataId((TestGeometry)it1.next()).getString().equals("test_pt_2"));
+		assertTrue(adapter.getDataId(
+				(TestGeometry) it1.next()).getString().equals(
+				"test_pt_2"));
 		assertTrue(mockDataStore.delete(
 				new QueryOptions(
 						adapter,
@@ -212,7 +216,7 @@ public class DeleteWriterTest
 		countStats = (CountDataStatistics) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID);
-		//TODO: BUG
+		// TODO: BUG
 		assertEquals(
 				1,
 				countStats.getCount());

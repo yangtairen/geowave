@@ -1120,7 +1120,7 @@ public class AccumuloUtils
 		for (final NumericDimensionField<? extends CommonIndexValue> dimension : index.getIndexModel().getDimensions()) {
 			uniqueDimensions.add(dimension.getFieldId());
 		}
-		
+
 		scanner.clearColumns();
 
 		while (dataAdapters.hasNext()) {

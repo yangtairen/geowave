@@ -444,11 +444,6 @@ public class AccumuloDataStoreStatsTest
 						}),
 				new EverythingQuery()));
 
-		try (IndexWriter indexWriter = mockDataStore.createIndexWriter(
-				index,
-				DataStoreUtils.DEFAULT_VISIBILITY)) {
-
-		}
 		it1 = mockDataStore.query(
 				new QueryOptions(
 						Collections.<String> emptyList(),

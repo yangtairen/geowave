@@ -709,13 +709,10 @@ public class QueryIndexHelperTest
 		final MultiDimensionalNumericData nd = constraints.getIndexConstraints(IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndexStrategy());
 		assertTrue(nd.isEmpty());
 		/*
-		assertEquals(
-				stime.getTime(),
-				(long) nd.getDataPerDimension()[2].getMin());
-		assertEquals(
-				etime.getTime(),
-				(long) nd.getDataPerDimension()[2].getMax());
-*/
+		 * assertEquals( stime.getTime(), (long)
+		 * nd.getDataPerDimension()[2].getMin()); assertEquals( etime.getTime(),
+		 * (long) nd.getDataPerDimension()[2].getMax());
+		 */
 		final TemporalConstraintsSet constraintsSet2 = new TemporalConstraintsSet();
 		constraintsSet2.getConstraintsFor(
 				"start_end").add(

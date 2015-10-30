@@ -142,7 +142,7 @@ public class TemporalConstraints
 	}
 
 	public List<TemporalRange> getRanges() {
-		return constraints == null ? Collections.<TemporalRange>emptyList() : constraints;
+		return constraints == null ? Collections.<TemporalRange> emptyList() : constraints;
 	}
 
 	public static final TemporalConstraints findIntersections(

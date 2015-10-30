@@ -87,7 +87,7 @@ public class SpatialTemporalQuery extends
 	public static Constraints createConstraints(
 			final TemporalConstraints temporalConstraints,
 			final boolean isDefault ) {
-		final Constraints constraints = new Constraints(); 
+		final Constraints constraints = new Constraints();
 		if (temporalConstraints == null) return constraints;
 		for (final TemporalRange range : temporalConstraints.getRanges()) {
 			constraints.addConstraint(

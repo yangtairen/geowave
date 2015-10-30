@@ -31,12 +31,11 @@ public class NumericQueryConstraint implements
 		this.inclusiveLow = inclusiveLow;
 	}
 
-	
 	@Override
 	public ByteArrayId getFieldId() {
 		return fieldId;
 	}
-	
+
 	@Override
 	public int getDimensionCount() {
 		return 1;
@@ -87,8 +86,7 @@ public class NumericQueryConstraint implements
 		}
 		return this;
 	}
-	
-	
+
 	public FilterableConstraints union(
 			FilterableConstraints other ) {
 		if (other instanceof NumericQueryConstraint && ((NumericQueryConstraint) other).fieldId.equals(this.fieldId)) {

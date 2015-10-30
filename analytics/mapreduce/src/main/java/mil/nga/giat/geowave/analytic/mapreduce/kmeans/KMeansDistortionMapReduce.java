@@ -292,7 +292,6 @@ public class KMeansDistortionMapReduce
 						e);
 			}
 
-			
 			batchId = config.getString(
 					GlobalParameters.Global.PARENT_BATCH_ID,
 					centroidManager.getBatchId());

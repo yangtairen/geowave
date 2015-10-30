@@ -35,7 +35,6 @@ public class NumberRangeFilter implements
 		this.inclusiveLow = inclusiveLow;
 	}
 
-	
 	public ByteArrayId getFieldId() {
 		return fieldId;
 	}

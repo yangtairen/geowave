@@ -520,7 +520,7 @@ public class CentroidManagerGeoWave<T> implements
 						item.getWrappedItem());
 			}
 			it.close();
-		//	indexWriter.close();
+			// indexWriter.close();
 		}
 		LOGGER.info("Transfer " + count + " centroids for " + fromBatchId + " to " + batchId);
 	}
@@ -574,7 +574,7 @@ public class CentroidManagerGeoWave<T> implements
 	public ByteArrayId getIndexId() {
 		return index.getId();
 	}
-	
+
 	public String getBatchId() {
 		return this.batchId;
 	}

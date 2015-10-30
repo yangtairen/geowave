@@ -36,6 +36,7 @@ public class FilterList<T extends QueryFilter> implements
 	public boolean accept(
 			final CommonIndexModel indexModel,
 			final IndexedPersistenceEncoding<?> entry ) {
+		if (filters.size() == 0) return true;
 		boolean matches = false;
 		for (final QueryFilter filter : filters) {
 			if (!filter.accept(

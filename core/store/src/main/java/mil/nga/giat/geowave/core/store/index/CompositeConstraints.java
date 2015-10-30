@@ -15,9 +15,8 @@ public class CompositeConstraints implements
 	private final List<FilterableConstraints> constraints = new LinkedList<FilterableConstraints>();
 	private boolean intersect = false;
 
-	public CompositeConstraints() {
-	}
-	
+	public CompositeConstraints() {}
+
 	public CompositeConstraints(
 			final List<FilterableConstraints> constraints ) {
 		super();

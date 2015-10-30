@@ -33,7 +33,7 @@ public class AccumuloRowIdsQuery<T> extends
 			final Collection<String> fieldIds,
 			final String[] authorizations ) {
 		super(
-				Collections.<ByteArrayId>emptyList(),
+				Collections.<ByteArrayId> emptyList(),
 				index,
 				(Query) null,
 				(DedupeFilter) dedupFilter,

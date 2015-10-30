@@ -33,57 +33,98 @@ public class CQLQueryTest
 	}
 
 	@Test
-	public void testGeoAndTemporalWithMatchingIndex() throws CQLException {
+	public void testGeoAndTemporalWithMatchingIndex()
+			throws CQLException {
 		final CQLQuery query = new CQLQuery(
 				"BBOX(geometry,27.20,41.30,27.30,41.20) and when during 2005-05-19T20:32:56Z/2005-05-19T21:32:56Z",
 				adapter);
 		final MultiDimensionalNumericData constraints = query.getIndexConstraints(IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndexStrategy());
-		assertTrue(Arrays.equals(constraints.getMinValuesPerDimension(), new double[] { 27.2, 41.2, 1.116534776E12 }));
-		assertTrue(Arrays.equals(constraints.getMaxValuesPerDimension(), new double[] { 27.3, 41.3, 1.116538376E12 }));
+		assertTrue(Arrays.equals(
+				constraints.getMinValuesPerDimension(),
+				new double[] {
+					27.2,
+					41.2,
+					1.116534776E12
+				}));
+		assertTrue(Arrays.equals(
+				constraints.getMaxValuesPerDimension(),
+				new double[] {
+					27.3,
+					41.3,
+					1.116538376E12
+				}));
 	}
-	
+
 	@Test
-	public void testGeoAndTemporalWithNonMatchingIndex() throws CQLException {
+	public void testGeoAndTemporalWithNonMatchingIndex()
+			throws CQLException {
 		final CQLQuery query = new CQLQuery(
 				"BBOX(geometry,27.20,41.30,27.30,41.20) and when during 2005-05-19T20:32:56Z/2005-05-19T21:32:56Z",
 				adapter);
 		final MultiDimensionalNumericData constraints = query.getIndexConstraints(IndexType.SPATIAL_VECTOR.createDefaultIndexStrategy());
-		assertTrue(Arrays.equals(constraints.getMinValuesPerDimension(), new double[] { 27.2, 41.2 }));
-		assertTrue(Arrays.equals(constraints.getMaxValuesPerDimension(), new double[] { 27.3, 41.3 }));
+		assertTrue(Arrays.equals(
+				constraints.getMinValuesPerDimension(),
+				new double[] {
+					27.2,
+					41.2
+				}));
+		assertTrue(Arrays.equals(
+				constraints.getMaxValuesPerDimension(),
+				new double[] {
+					27.3,
+					41.3
+				}));
 	}
 
 	@Test
-	public void testGeoWithMatchingIndex() throws CQLException {
+	public void testGeoWithMatchingIndex()
+			throws CQLException {
 		final CQLQuery query = new CQLQuery(
 				"BBOX(geometry,27.20,41.30,27.30,41.20)",
 				adapter);
 		final MultiDimensionalNumericData constraints = query.getIndexConstraints(IndexType.SPATIAL_VECTOR.createDefaultIndexStrategy());
-		assertTrue(Arrays.equals(constraints.getMinValuesPerDimension(), new double[] { 27.2, 41.2 }));
-		assertTrue(Arrays.equals(constraints.getMaxValuesPerDimension(), new double[] { 27.3, 41.3 }));
+		assertTrue(Arrays.equals(
+				constraints.getMinValuesPerDimension(),
+				new double[] {
+					27.2,
+					41.2
+				}));
+		assertTrue(Arrays.equals(
+				constraints.getMaxValuesPerDimension(),
+				new double[] {
+					27.3,
+					41.3
+				}));
 	}
-	
+
 	@Test
-	public void testNoConstraintsWithGeoIndex() throws CQLException {
+	public void testNoConstraintsWithGeoIndex()
+			throws CQLException {
 		final CQLQuery query = new CQLQuery(
 				"pid = '10'",
 				adapter);
-		assertTrue(query.getIndexConstraints(IndexType.SPATIAL_VECTOR.createDefaultIndexStrategy()).isEmpty());
+		assertTrue(query.getIndexConstraints(
+				IndexType.SPATIAL_VECTOR.createDefaultIndexStrategy()).isEmpty());
 	}
-	
+
 	@Test
-	public void testNoConstraintsWithTemporalIndex() throws CQLException {
+	public void testNoConstraintsWithTemporalIndex()
+			throws CQLException {
 		final CQLQuery query = new CQLQuery(
 				"pid = '10'",
 				adapter);
-		assertTrue(query.getIndexConstraints(IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndexStrategy()).isEmpty());
+		assertTrue(query.getIndexConstraints(
+				IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndexStrategy()).isEmpty());
 	}
-	
+
 	@Test
-	public void testGeoWithTemporalIndex() throws CQLException {
+	public void testGeoWithTemporalIndex()
+			throws CQLException {
 		final CQLQuery query = new CQLQuery(
 				"BBOX(geometry,27.20,41.30,27.30,41.20)",
 				adapter);
-		assertTrue(query.getIndexConstraints(IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndexStrategy()).isEmpty());
+		assertTrue(query.getIndexConstraints(
+				IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndexStrategy()).isEmpty());
 	}
-	
+
 }
