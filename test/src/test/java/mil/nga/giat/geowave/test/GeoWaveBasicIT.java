@@ -884,17 +884,32 @@ public class GeoWaveBasicIT extends
 							adapterId,
 							dataId))) {
 
-				success = !geowaveStore.query(
+				success = !hasAtLeastOne(geowaveStore.query(
 						new QueryOptions(
 								adapterId,
 								index.getId()),
 						new DataIdQuery(
 								adapterId,
-								dataId)).hasNext();
+								dataId)));
 			}
 		}
 		Assert.assertTrue(
 				"Unable to delete entry by data ID and adapter ID",
 				success);
+	}
+
+	private boolean hasAtLeastOne(
+			CloseableIterator<?> it ) {
+		try {
+			return it.hasNext();
+		}
+		finally {
+			try {
+				it.close();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

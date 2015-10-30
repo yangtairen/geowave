@@ -434,11 +434,10 @@ public class AccumuloDataStore implements
 						fieldIds,
 						authorizations);
 
-				final CloseableIterator<Object> it = q.query(
+				return q.query(
 						accumuloOperations,
 						tempAdapterStore,
 						(limit || rowIds.size() < 2) ? 1 : -1);
-				if (it.hasNext()) return it;
 			}
 		}
 		else {
@@ -585,7 +584,6 @@ public class AccumuloDataStore implements
 								iterator.next().getKey().getColumnQualifierData().getBackingArray()));
 						i++;
 					}
-
 				}
 				catch (final TableNotFoundException e) {
 					LOGGER.warn(
@@ -751,6 +749,12 @@ public class AccumuloDataStore implements
 
 							while (dataIt.hasNext()) {
 								dataIt.next();
+							}
+							try {
+							   dataIt.close();
+							}
+							catch(Exception ex) {
+								LOGGER.warn("Cannot close iterator",ex);
 							}
 						}
 					}
