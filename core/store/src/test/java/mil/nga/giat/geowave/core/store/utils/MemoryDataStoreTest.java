@@ -64,7 +64,7 @@ public class MemoryDataStoreTest
 				namespace);
 		final WritableDataAdapter<Integer> adapter = new MockComponents.MockAbstractDataAdapter();
 
-		final IndexWriter indexWriter = dataStore.createIndexWriter(
+		try (final IndexWriter indexWriter = dataStore.createIndexWriter(
 				index,
 				new VisibilityWriter<Integer>() {
 					@Override
@@ -73,19 +73,20 @@ public class MemoryDataStoreTest
 						return new GlobalVisibilityHandler(
 								"aaa&bbb");
 					}
-				});
+				})) {
 
-		indexWriter.write(
-				adapter,
-				new Integer(
-						25));
-		indexWriter.flush();
+			indexWriter.write(
+					adapter,
+					new Integer(
+							25));
+			indexWriter.flush();
 
-		indexWriter.write(
-				adapter,
-				new Integer(
-						35));
-		indexWriter.flush();
+			indexWriter.write(
+					adapter,
+					new Integer(
+							35));
+			indexWriter.flush();
+		}
 
 		// authorization check
 		try (CloseableIterator<?> itemIt = dataStore.query(

@@ -32,6 +32,23 @@ public class TextRangeFilter implements
 		this.end = end;
 	}
 
+	
+	public ByteArrayId getFieldId() {
+		return fieldId;
+	}
+
+	public boolean isCaseSensitive() {
+		return caseSensitive;
+	}
+
+	public String getStart() {
+		return start;
+	}
+
+	public String getEnd() {
+		return end;
+	}
+
 	@Override
 	public boolean accept(
 			final CommonIndexModel indexModel,

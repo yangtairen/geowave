@@ -43,6 +43,7 @@ public class CQLQuery implements
 	private final static Logger LOGGER = Logger.getLogger(CQLQuery.class);
 	private Query baseQuery;
 	private CQLQueryFilter filter;
+	private Filter cqlFilter;
 
 	protected CQLQuery() {}
 
@@ -61,11 +62,14 @@ public class CQLQuery implements
 			final CompareOperation geoCompareOp,
 			final FeatureDataAdapter adapter )
 			throws CQLException {
-		final Filter filter = CQL.toFilter(cql);
+		cqlFilter = CQL.toFilter(cql);
+		this.filter = new CQLQueryFilter(
+				cqlFilter,
+				adapter);
 		final Geometry geometry = ExtractGeometryFilterVisitor.getConstraints(
-				filter,
+				cqlFilter,
 				adapter.getType().getCoordinateReferenceSystem());
-		final TemporalConstraintsSet timeConstraintSet = new ExtractTimeFilterVisitor().getConstraints(filter);
+		final TemporalConstraintsSet timeConstraintSet = new ExtractTimeFilterVisitor().getConstraints(cqlFilter);
 
 		// determine which time constraints are associated with an indexable
 		// field
@@ -99,6 +103,7 @@ public class CQLQuery implements
 			final Filter filter,
 			final FeatureDataAdapter adapter ) {
 		this.baseQuery = baseQuery;
+		this.cqlFilter = filter;
 		this.filter = new CQLQueryFilter(
 				filter,
 				adapter);
@@ -126,6 +131,8 @@ public class CQLQuery implements
 		if (baseQuery != null) {
 			return baseQuery.isSupported(index);
 		}
+		// TODO: this should interrogate strategy to see if constraint are
+		// processed by stratey
 		return true;
 	}
 
@@ -208,14 +215,20 @@ public class CQLQuery implements
 	@Override
 	public List<ByteArrayRange> getSecondaryIndexConstraints(
 			SecondaryIndex<?> index ) {
-		// FIXME better way to handle this?
-		return Collections.<ByteArrayRange> emptyList();
+		PropertyFilterVisitor visitor = new PropertyFilterVisitor();
+		PropertyConstraintSet constraints = (PropertyConstraintSet) cqlFilter.accept(
+				visitor,
+				null);
+		return constraints.getRangesFor(index);
 	}
 
 	@Override
 	public List<DistributableQueryFilter> getSecondaryQueryFilter(
 			SecondaryIndex<?> index ) {
-		// FIXME better way to handle this?
-		return Collections.<DistributableQueryFilter> emptyList();
+		PropertyFilterVisitor visitor = new PropertyFilterVisitor();
+		PropertyConstraintSet constraints = (PropertyConstraintSet) cqlFilter.accept(
+				visitor,
+				null);
+		return constraints.getFiltersFor(index);
 	}
 }

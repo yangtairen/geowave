@@ -8,6 +8,7 @@ import mil.nga.giat.geowave.core.store.index.numeric.NumericLessThanConstraint;
 import mil.nga.giat.geowave.core.store.index.numeric.NumericLessThanOrEqualToConstraint;
 import mil.nga.giat.geowave.core.store.index.numeric.NumericQueryConstraint;
 import mil.nga.giat.geowave.core.store.index.text.FilterableLikeConstraint;
+import mil.nga.giat.geowave.core.store.index.text.FilterableTextRangeConstraint;
 
 import org.geotools.filter.visitor.NullFilterVisitor;
 import org.opengis.filter.And;
@@ -61,12 +62,10 @@ import org.opengis.filter.temporal.TEquals;
 import org.opengis.filter.temporal.TOverlaps;
 
 /**
- * This class can be used to get Time range from an OpenGIS filter object.
- * GeoWave then uses this time range to perform a spatial intersection query.
+ * CQL visitor to extract constraints for secondary indexing queries.
  * 
- * Only those time elements associated with an index are extracted. At the
- * moment, the adapter only supports temporal indexing on a single attribute or
- * a pair of attributes representing a time range.
+ * TODO: compare operators for text (e.g. <,>,<=,>=)
+ * TODO: Temporal
  * 
  */
 public class PropertyFilterVisitor extends
@@ -296,12 +295,23 @@ public class PropertyFilterVisitor extends
 				this,
 				data);
 
-		return new NumericQueryConstraint(
-				leftResult,
-				(Number) lower,
-				(Number) upper,
-				true,
-				true);
+		if (lower instanceof Number) {
+
+			return new PropertyConstraintSet(
+					new NumericQueryConstraint(
+							leftResult,
+							(Number) lower,
+							(Number) upper,
+							true,
+							true));
+		}
+		return new PropertyConstraintSet(
+				new FilterableTextRangeConstraint(
+						leftResult,
+						lower.toString(),
+						upper.toString(),
+						true));
+
 	}
 
 	@Override
@@ -325,7 +335,7 @@ public class PropertyFilterVisitor extends
 							(Number) value));
 		else
 			return new PropertyConstraintSet(
-					new FilterableLikeConstraint(
+					new FilterableTextRangeConstraint(
 							leftResult,
 							value.toString(),
 							true));
@@ -354,10 +364,13 @@ public class PropertyFilterVisitor extends
 				this,
 				data);
 
-		return new PropertyConstraintSet(
-				new NumericGreaterThanConstraint(
-						leftResult,
-						(Number) value));
+		if (value instanceof Number) {
+			return new PropertyConstraintSet(
+					new NumericGreaterThanConstraint(
+							leftResult,
+							(Number) value));
+		}
+		return new PropertyConstraintSet();
 	}
 
 	@Override
@@ -371,10 +384,13 @@ public class PropertyFilterVisitor extends
 				this,
 				data);
 
-		return new PropertyConstraintSet(
-				new NumericGreaterThanOrEqualToConstraint(
-						leftResult,
-						(Number) value));
+		if (value instanceof Number) {
+			return new PropertyConstraintSet(
+					new NumericGreaterThanOrEqualToConstraint(
+							leftResult,
+							(Number) value));
+		}
+		return new PropertyConstraintSet();
 	}
 
 	@Override
@@ -388,10 +404,13 @@ public class PropertyFilterVisitor extends
 				this,
 				data);
 
-		return new PropertyConstraintSet(
-				new NumericLessThanConstraint(
-						leftResult,
-						(Number) value));
+		if (value instanceof Number) {
+			return new PropertyConstraintSet(
+					new NumericLessThanConstraint(
+							leftResult,
+							(Number) value));
+		}
+		return new PropertyConstraintSet();
 	}
 
 	@Override
@@ -407,9 +426,13 @@ public class PropertyFilterVisitor extends
 				this,
 				data);
 
-		return new NumericLessThanOrEqualToConstraint(
-				leftResult,
-				(Number) value);
+		if (value instanceof Number) {
+			return new PropertyConstraintSet(
+					new NumericLessThanOrEqualToConstraint(
+							leftResult,
+							(Number) value));
+		}
+		return new PropertyConstraintSet();
 
 	}
 
@@ -424,7 +447,7 @@ public class PropertyFilterVisitor extends
 				new FilterableLikeConstraint(
 						leftResult,
 						filter.getLiteral(),
-						true));
+						filter.isMatchingCase()));
 
 	}
 

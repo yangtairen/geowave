@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.core.store.index;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -11,12 +12,24 @@ import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 public class CompositeConstraints implements
 		FilterableConstraints
 {
-	private List<FilterableConstraints> constraints;
+	private final List<FilterableConstraints> constraints = new LinkedList<FilterableConstraints>();
+	private boolean intersect = false;
+
+	public CompositeConstraints() {
+	}
+	
+	public CompositeConstraints(
+			final List<FilterableConstraints> constraints ) {
+		super();
+		this.constraints.addAll(constraints);
+	}
 
 	public CompositeConstraints(
-			List<FilterableConstraints> constraints ) {
+			final List<FilterableConstraints> constraints,
+			final boolean intersect ) {
 		super();
-		this.constraints = constraints;
+		this.constraints.addAll(constraints);
+		this.intersect = intersect;
 	}
 
 	public List<FilterableConstraints> getConstraints() {
@@ -30,37 +43,45 @@ public class CompositeConstraints implements
 
 	@Override
 	public boolean isEmpty() {
-		return constraints == null || constraints.isEmpty();
+		return (constraints == null) || constraints.isEmpty();
 	}
 
 	@Override
 	public DistributableQueryFilter getFilter() {
-		List<DistributableQueryFilter> filters = new ArrayList<DistributableQueryFilter>();
-		for (QueryConstraints constraint : constraints) {
-			if (constraint instanceof FilterableConstraints) filters.add(((FilterableConstraints) constraint).getFilter());
+		final List<DistributableQueryFilter> filters = new ArrayList<DistributableQueryFilter>();
+		for (final QueryConstraints constraint : constraints) {
+			if (constraint instanceof FilterableConstraints) {
+				filters.add(((FilterableConstraints) constraint).getFilter());
+			}
 		}
 		return new DistributableFilterList(
-				filters);
+				filters,
+				intersect);
 	}
 
 	@Override
 	public ByteArrayId getFieldId() {
-		return constraints.get(0).getFieldId();
+		return constraints.get(
+				0).getFieldId();
 	}
 
 	@Override
 	public FilterableConstraints intersect(
-			FilterableConstraints constaints ) {
-		// TODO Auto-generated method stub
-		return null;
+			final FilterableConstraints constraints ) {
+		final CompositeConstraints cc = new CompositeConstraints(
+				this.constraints,
+				true);
+		cc.constraints.add(constraints);
+		return cc;
 	}
 
 	@Override
 	public FilterableConstraints union(
-			FilterableConstraints constaints ) {
-		// TODO Auto-generated method stub
-		return null;
+			final FilterableConstraints constraints ) {
+		final CompositeConstraints cc = new CompositeConstraints(
+				this.constraints);
+		cc.constraints.add(constraints);
+		return cc;
 	}
-
 
 }

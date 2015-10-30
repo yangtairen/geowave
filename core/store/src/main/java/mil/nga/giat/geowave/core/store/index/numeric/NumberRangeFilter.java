@@ -35,6 +35,27 @@ public class NumberRangeFilter implements
 		this.inclusiveLow = inclusiveLow;
 	}
 
+	
+	public ByteArrayId getFieldId() {
+		return fieldId;
+	}
+
+	public Number getLowerValue() {
+		return lowerValue;
+	}
+
+	public Number getUpperValue() {
+		return upperValue;
+	}
+
+	public boolean isInclusiveLow() {
+		return inclusiveLow;
+	}
+
+	public boolean isInclusiveHigh() {
+		return inclusiveHigh;
+	}
+
 	@Override
 	public boolean accept(
 			final CommonIndexModel indexModel,

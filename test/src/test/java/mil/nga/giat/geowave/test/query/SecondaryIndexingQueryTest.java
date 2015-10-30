@@ -31,7 +31,7 @@ import mil.nga.giat.geowave.core.store.index.FilterableConstraints;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndex;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexQueryManager;
-import mil.nga.giat.geowave.core.store.index.numeric.FilterableGreaterThanOrEqualToConstraint;
+import mil.nga.giat.geowave.core.store.index.numeric.NumericGreaterThanOrEqualToConstraint;
 import mil.nga.giat.geowave.core.store.index.numeric.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.store.index.temporal.TemporalIndexStrategy;
 import mil.nga.giat.geowave.core.store.index.text.TextIndexStrategy;
@@ -165,7 +165,7 @@ public class SecondaryIndexingQueryTest extends
 				StringUtils.stringToBinary("landArea"));
 		additionalConstraints.put(
 				byteArray,
-				new FilterableGreaterThanOrEqualToConstraint(
+				new NumericGreaterThanOrEqualToConstraint(
 						byteArray,
 						100));
 		final Query query = new SpatialQuery(

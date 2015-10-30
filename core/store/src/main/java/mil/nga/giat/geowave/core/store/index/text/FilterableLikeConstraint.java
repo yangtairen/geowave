@@ -1,12 +1,14 @@
 package mil.nga.giat.geowave.core.store.index.text;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
+import mil.nga.giat.geowave.core.store.index.CompositeConstraints;
 import mil.nga.giat.geowave.core.store.index.FilterableConstraints;
 
 public class FilterableLikeConstraint extends
@@ -29,12 +31,12 @@ public class FilterableLikeConstraint extends
 		this.fieldId = fieldId;
 		this.caseSensitive = caseSensitive;
 		regex = Pattern.compile(
-				expression.replace(
+				expression.replaceAll(
 						"%",
 						".*"),
 				caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
 	}
-	
+
 	@Override
 	public ByteArrayId getFieldId() {
 		return fieldId;
@@ -112,16 +114,26 @@ public class FilterableLikeConstraint extends
 				caseSensitive);
 	}
 
-	//TODO:
 	@Override
 	public FilterableConstraints intersect(
 			FilterableConstraints constraints ) {
-		return this;
+		final FilterableLikeConstraint flc = (FilterableLikeConstraint) constraints;
+		final CompositeConstraints cc = new CompositeConstraints(
+				Arrays.asList(
+						(FilterableConstraints) this,
+						(FilterableConstraints) flc),
+				true);
+		return cc;
 	}
-	//TODO:
+
 	@Override
 	public FilterableConstraints union(
 			FilterableConstraints constraints ) {
-		return this;
+		final FilterableLikeConstraint flc = (FilterableLikeConstraint) constraints;
+		final CompositeConstraints cc = new CompositeConstraints(
+				Arrays.asList(
+						(FilterableConstraints) this,
+						(FilterableConstraints) flc));
+		return cc;
 	}
 }

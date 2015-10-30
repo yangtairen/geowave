@@ -10,6 +10,7 @@ import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 
+// TODO: What if expression has characters [,],(,).  Perhaps it is better to simplify
 public class LikeFilter implements
 		DistributableQueryFilter
 {
@@ -32,6 +33,22 @@ public class LikeFilter implements
 		this.fieldId = fieldId;
 		this.regex = regex;
 		this.caseSensitive = caseSensitive;
+	}
+
+	public String getExpression() {
+		return expression;
+	}
+
+	public ByteArrayId getFieldId() {
+		return fieldId;
+	}
+
+	public Pattern getRegex() {
+		return regex;
+	}
+
+	public boolean isCaseSensitive() {
+		return caseSensitive;
 	}
 
 	@Override
@@ -74,7 +91,7 @@ public class LikeFilter implements
 				fieldIdBytes);
 		caseSensitive = (bb.getInt() == 1) ? true : false;
 		regex = Pattern.compile(
-				expression.replace(
+				expression.replaceAll(
 						"%",
 						".*"),
 				caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);

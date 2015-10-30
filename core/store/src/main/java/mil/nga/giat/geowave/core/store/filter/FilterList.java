@@ -15,6 +15,7 @@ public class FilterList<T extends QueryFilter> implements
 		QueryFilter
 {
 	protected List<T> filters;
+	protected boolean allMatch = true;
 
 	protected FilterList() {}
 
@@ -23,18 +24,29 @@ public class FilterList<T extends QueryFilter> implements
 		this.filters = filters;
 	}
 
+	public FilterList(
+			List<T> filters,
+			boolean allMatch ) {
+		super();
+		this.filters = filters;
+		this.allMatch = allMatch;
+	}
+
 	@Override
 	public boolean accept(
 			final CommonIndexModel indexModel,
 			final IndexedPersistenceEncoding<?> entry ) {
+		boolean matches = false;
 		for (final QueryFilter filter : filters) {
 			if (!filter.accept(
 					indexModel,
 					entry)) {
-				return false;
+				if (allMatch) return false;
 			}
+			else
+				matches = true;
 		}
-		return true;
+		return matches;
 	}
 
 }
