@@ -2,10 +2,22 @@ package mil.nga.giat.geowave.mapreduce.input;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.IteratorUtils;
+import org.apache.commons.collections.Transformer;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.mapreduce.RecordReader;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.log4j.Logger;
+
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
@@ -22,16 +34,6 @@ import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
 import mil.nga.giat.geowave.mapreduce.JobContextIndexStore;
 import mil.nga.giat.geowave.mapreduce.MapReduceDataStore;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputConfigurator.InputConfig;
-
-import org.apache.commons.collections.IteratorUtils;
-import org.apache.commons.collections.Transformer;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.InputFormat;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.hadoop.mapreduce.RecordReader;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.log4j.Logger;
 
 public class GeoWaveInputFormat<T> extends
 		InputFormat<GeoWaveInputKey, T>
@@ -380,35 +382,43 @@ public class GeoWaveInputFormat<T> extends
 	 * @param adapterStore
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public static List<ByteArrayId> getAdapterIds(
 			final JobContext context,
 			final AdapterStore adapterStore ) {
 		final DataAdapter<?>[] userAdapters = GeoWaveConfiguratorBase.getDataAdapters(
 				CLASS,
 				context);
+		List<ByteArrayId> retVal = null;
 		if ((userAdapters == null) || (userAdapters.length <= 0)) {
-			return IteratorUtils.toList(IteratorUtils.transformedIterator(
-					adapterStore.getAdapters(),
+			try (CloseableIterator<DataAdapter<?>> adapters = adapterStore.getAdapters()) {
+			Iterator<?> transformed = IteratorUtils.transformedIterator(
+					adapters,
 					new Transformer() {
 
 						@Override
 						public Object transform(
 								final Object input ) {
 							if (input instanceof DataAdapter) {
-								return ((DataAdapter) input).getAdapterId();
+								return ((DataAdapter<?>) input).getAdapterId();
 							}
 							return input;
 						}
-					}));
+					});
+			retVal = IteratorUtils.toList(transformed);
+			}
+			catch (IOException e) {
+				LOGGER.warn("Unable to close iterator" + e);
+			}
 		}
 		else {
-			final List<ByteArrayId> retVal = new ArrayList<ByteArrayId>(
+			retVal = new ArrayList<ByteArrayId>(
 					userAdapters.length);
 			for (final DataAdapter<?> adapter : userAdapters) {
 				retVal.add(adapter.getAdapterId());
 			}
-			return retVal;
 		}
+		return retVal;
 	}
 
 	@Override

@@ -4,6 +4,12 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.geotools.feature.type.BasicFeatureTypes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vividsolutions.jts.geom.Polygon;
+
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
@@ -23,12 +29,6 @@ import mil.nga.giat.geowave.core.store.index.CustomIdIndex;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-
-import org.geotools.feature.type.BasicFeatureTypes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vividsolutions.jts.geom.Polygon;
 
 public class ClusteringUtils
 {
@@ -107,7 +107,7 @@ public class ClusteringUtils
 		while (it.hasNext()) {
 			adapters.add(it.next());
 		}
-
+		it.close();
 		final DataAdapter[] result = new DataAdapter[adapters.size()];
 		adapters.toArray(result);
 		return result;
@@ -124,7 +124,12 @@ public class ClusteringUtils
 		while (it.hasNext()) {
 			indices.add((PrimaryIndex) it.next());
 		}
-
+		try {
+			it.close();
+		}
+		catch (IOException e) {
+			LOGGER.warn("Unable to close iterator" + e);
+		}
 		final PrimaryIndex[] result = new PrimaryIndex[indices.size()];
 		indices.toArray(result);
 		return result;

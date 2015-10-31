@@ -1,16 +1,20 @@
 package mil.nga.giat.geowave.mapreduce.input;
 
+import java.io.IOException;
+
+import org.apache.commons.collections.IteratorUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.JobContext;
+
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
+import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.JobContextIndexStore;
-
-import org.apache.commons.collections.IteratorUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.JobContext;
 
 /**
  * This class provides utility methods for accessing job context configuration
@@ -203,15 +207,20 @@ public class GeoWaveInputConfigurator extends
 	public static PrimaryIndex[] searchForIndices(
 			final Class<?> implementingClass,
 			final JobContext context ) {
-		final PrimaryIndex[] userIndices = JobContextIndexStore.getIndices(context);
+		PrimaryIndex[] userIndices = JobContextIndexStore.getIndices(context);
 		if ((userIndices == null) || (userIndices.length <= 0)) {
 			// if there are no indices, assume we are searching all indices
 			// in the metadata store
-			return (PrimaryIndex[]) IteratorUtils.toArray(
-					getIndexStore(
-							implementingClass,
-							context).getIndices(),
+			try (CloseableIterator<Index<?, ?>> indicesIterator = getIndexStore(
+					implementingClass,
+					context).getIndices()) {
+			userIndices = (PrimaryIndex[]) IteratorUtils.toArray(
+					indicesIterator,
 					PrimaryIndex.class);
+			}
+			catch (IOException e) {
+				LOGGER.warn("Unable to close CloseableIterator", e);
+			}
 		}
 		return userIndices;
 	}
