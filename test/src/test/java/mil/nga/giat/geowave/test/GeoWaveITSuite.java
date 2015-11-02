@@ -23,8 +23,6 @@ import org.junit.runners.Suite.SuiteClasses;
 	// GeoWaveBasicIT.class, FIXME currently failing due to assertion failure
 	// and resource leakage
 	GeoWaveRasterIT.class,
-	// BasicKafkaIT.class, FIXME does not terminate properly due to incorrect
-	// kafka ingest & stage command arguments
 	BasicMapReduceIT.class,
 	BulkIngestInputGenerationIT.class,
 	KDERasterResizeIT.class,

@@ -6,12 +6,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.opengis.feature.simple.SimpleFeature;
-
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureBoundingBoxStatistics;
 import mil.nga.giat.geowave.core.geotime.IndexType;
@@ -33,6 +27,13 @@ import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsSt
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.format.gpx.GpxTrack;
 
+import org.junit.Test;
+import org.opengis.feature.simple.SimpleFeature;
+
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+
 public class BasicKafkaIT extends
 		KafkaTestBase<GpxTrack>
 {
@@ -50,7 +51,7 @@ public class BasicKafkaIT extends
 	}
 
 	@SuppressWarnings("unchecked")
-//	@Test
+	@Test
 	public void testBasicIngestGpx()
 			throws Exception {
 		testKafkaStage(OSM_GPX_INPUT_DIR);
