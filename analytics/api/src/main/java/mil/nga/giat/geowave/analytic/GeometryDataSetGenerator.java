@@ -375,7 +375,7 @@ public class GeometryDataSetGenerator
 			final double minCenterDistanceFactor,
 			final double minAxis[],
 			final double maxAxis[] ) {
-		assert (minCenterDistanceFactor > 0.001);
+	//	assert (minCenterDistanceFactor > 0.001);
 		assert (minCenterDistanceFactor < 0.75);
 
 		final int dims = coordSystem.getDimension();
