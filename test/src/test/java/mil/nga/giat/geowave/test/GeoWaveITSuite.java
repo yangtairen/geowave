@@ -4,6 +4,7 @@ import mil.nga.giat.geowave.test.mapreduce.BasicMapReduceIT;
 import mil.nga.giat.geowave.test.mapreduce.BulkIngestInputGenerationIT;
 import mil.nga.giat.geowave.test.mapreduce.DBScanIT;
 import mil.nga.giat.geowave.test.mapreduce.GeoWaveKMeansIT;
+import mil.nga.giat.geowave.test.mapreduce.GeoWaveNNIT;
 import mil.nga.giat.geowave.test.mapreduce.KDERasterResizeIT;
 import mil.nga.giat.geowave.test.mapreduce.MapReduceTestEnvironment;
 import mil.nga.giat.geowave.test.query.AttributesSubsetQueryIT;
@@ -21,13 +22,12 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
 	GeoWaveBasicIT.class,
-	// and resource leakage
 	GeoWaveRasterIT.class,
 	BasicMapReduceIT.class,
 	BulkIngestInputGenerationIT.class,
 	KDERasterResizeIT.class,
 	GeoWaveKMeansIT.class,
-	// GeoWaveNNIT.class, FIXME currently failing due to assertion error
+	GeoWaveNNIT.class,
 	GeoServerIT.class,
 	// GeoWaveServicesIT.class, FIXME does not terminate properly
 	// GeoWaveIngestGeoserverIT.class, FIXME currently failing
