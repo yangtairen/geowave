@@ -221,7 +221,10 @@ public class IngestServiceImpl implements
 			args.add(jobTracker);
 		}
 
-		GeoWaveMain.main(args.toArray(new String[] {}));
-		return Response.ok().build();
+		final int retVal = GeoWaveMain.run(args.toArray(new String[] {}));
+		if (retVal == 0) {
+			return Response.ok().build();
+		}
+		return Response.serverError().build();
 	}
 }

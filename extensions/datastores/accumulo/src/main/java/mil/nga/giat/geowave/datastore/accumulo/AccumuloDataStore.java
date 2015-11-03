@@ -751,10 +751,12 @@ public class AccumuloDataStore implements
 								dataIt.next();
 							}
 							try {
-							   dataIt.close();
+								dataIt.close();
 							}
-							catch(Exception ex) {
-								LOGGER.warn("Cannot close iterator",ex);
+							catch (Exception ex) {
+								LOGGER.warn(
+										"Cannot close iterator",
+										ex);
 							}
 						}
 					}

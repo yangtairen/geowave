@@ -392,20 +392,20 @@ public class GeoWaveInputFormat<T> extends
 		List<ByteArrayId> retVal = null;
 		if ((userAdapters == null) || (userAdapters.length <= 0)) {
 			try (CloseableIterator<DataAdapter<?>> adapters = adapterStore.getAdapters()) {
-			Iterator<?> transformed = IteratorUtils.transformedIterator(
-					adapters,
-					new Transformer() {
+				Iterator<?> transformed = IteratorUtils.transformedIterator(
+						adapters,
+						new Transformer() {
 
-						@Override
-						public Object transform(
-								final Object input ) {
-							if (input instanceof DataAdapter) {
-								return ((DataAdapter<?>) input).getAdapterId();
+							@Override
+							public Object transform(
+									final Object input ) {
+								if (input instanceof DataAdapter) {
+									return ((DataAdapter<?>) input).getAdapterId();
+								}
+								return input;
 							}
-							return input;
-						}
-					});
-			retVal = IteratorUtils.toList(transformed);
+						});
+				retVal = IteratorUtils.toList(transformed);
 			}
 			catch (IOException e) {
 				LOGGER.warn("Unable to close iterator" + e);
