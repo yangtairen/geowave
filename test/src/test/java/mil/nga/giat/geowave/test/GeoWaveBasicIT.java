@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -50,7 +51,6 @@ import mil.nga.giat.geowave.format.geotools.vector.GeoToolsVectorDataStoreIngest
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.math.util.MathUtils;
 import org.apache.log4j.Logger;
 import org.geotools.feature.AttributeTypeBuilder;
@@ -655,84 +655,82 @@ public class GeoWaveBasicIT extends
 		}
 		final DistributableQuery q = new SpatialQuery(
 				((Geometry) args.get(Geometry.class)).buffer(0.5d));
-		final CloseableIterator<?> iter = geowaveStore.query(
-				new QueryOptions(),
-				q);
-		boolean foundFeat = false;
-		while (iter.hasNext()) {
-			final Object maybeFeat = iter.next();
-			Assert.assertTrue(
-					"Iterator should return simple feature in this test",
-					maybeFeat instanceof SimpleFeature);
-			foundFeat = true;
-			final SimpleFeature isFeat = (SimpleFeature) maybeFeat;
-			for (final Property p : isFeat.getProperties()) {
-				final Object before = args.get(p.getType().getBinding());
-				final Object after = isFeat.getAttribute(p.getType().getName().toString());
+		try (final CloseableIterator<?> iter = geowaveStore.query(
+				new QueryOptions(/* TODO do I need to pass 'index'? */),
+				q)) {
+			boolean foundFeat = false;
+			while (iter.hasNext()) {
+				final Object maybeFeat = iter.next();
+				Assert.assertTrue(
+						"Iterator should return simple feature in this test",
+						maybeFeat instanceof SimpleFeature);
+				foundFeat = true;
+				final SimpleFeature isFeat = (SimpleFeature) maybeFeat;
+				for (final Property p : isFeat.getProperties()) {
+					final Object before = args.get(p.getType().getBinding());
+					final Object after = isFeat.getAttribute(p.getType().getName().toString());
 
-				if (before instanceof double[]) {
-					Assert.assertArrayEquals(
-							(double[]) before,
-							(double[]) after,
-							1e-12d);
-				}
-				else if (before instanceof boolean[]) {
-					final boolean[] b = (boolean[]) before;
-					final boolean[] a = (boolean[]) after;
-					Assert.assertTrue(a.length == b.length);
-					for (int i = 0; i < b.length; i++) {
-						Assert.assertTrue(b[i] == a[i]);
+					if (before instanceof double[]) {
+						Assert.assertTrue(Arrays.equals(
+								(double[]) before,
+								(double[]) after));
+					}
+					else if (before instanceof boolean[]) {
+						final boolean[] b = (boolean[]) before;
+						final boolean[] a = (boolean[]) after;
+						Assert.assertTrue(a.length == b.length);
+						for (int i = 0; i < b.length; i++) {
+							Assert.assertTrue(b[i] == a[i]);
+						}
+					}
+					else if (before instanceof byte[]) {
+						Assert.assertArrayEquals(
+								(byte[]) before,
+								(byte[]) after);
+					}
+					else if (before instanceof char[]) {
+						Assert.assertArrayEquals(
+								(char[]) before,
+								(char[]) after);
+					}
+					else if (before instanceof float[]) {
+						Assert.assertTrue(Arrays.equals(
+								(float[]) before,
+								(float[]) after));
+					}
+					else if (before instanceof int[]) {
+						Assert.assertArrayEquals(
+								(int[]) before,
+								(int[]) after);
+					}
+					else if (before instanceof long[]) {
+						Assert.assertArrayEquals(
+								(long[]) before,
+								(long[]) after);
+					}
+					else if (before instanceof short[]) {
+						Assert.assertArrayEquals(
+								(short[]) before,
+								(short[]) after);
+					}
+					else if (before.getClass().isArray()) {
+						Assert.assertArrayEquals(
+								returnArray(
+										p.getType().getBinding(),
+										before),
+								returnArray(
+										p.getType().getBinding(),
+										after));
+					}
+					else {
+						Assert.assertTrue(before.equals(after));
 					}
 				}
-				else if (before instanceof byte[]) {
-					Assert.assertArrayEquals(
-							(byte[]) before,
-							(byte[]) after);
-				}
-				else if (before instanceof char[]) {
-					Assert.assertArrayEquals(
-							(char[]) before,
-							(char[]) after);
-				}
-				else if (before instanceof float[]) {
-					Assert.assertArrayEquals(
-							(float[]) before,
-							(float[]) after,
-							1e-12f);
-				}
-				else if (before instanceof int[]) {
-					Assert.assertArrayEquals(
-							(int[]) before,
-							(int[]) after);
-				}
-				else if (before instanceof long[]) {
-					Assert.assertArrayEquals(
-							(long[]) before,
-							(long[]) after);
-				}
-				else if (before instanceof short[]) {
-					Assert.assertArrayEquals(
-							(short[]) before,
-							(short[]) after);
-				}
-				else if (before.getClass().isArray()) {
-					Assert.assertArrayEquals(
-							returnArray(
-									p.getType().getBinding(),
-									before),
-							returnArray(
-									p.getType().getBinding(),
-									after));
-				}
-				else {
-					Assert.assertTrue(before.equals(after));
-				}
 			}
+			Assert.assertTrue(
+					"One feature should be found",
+					foundFeat);
 		}
-		IOUtils.closeQuietly(iter);
-		Assert.assertTrue(
-				"One feature should be found",
-				foundFeat);
 		try {
 			accumuloOperations.deleteAll();
 		}
@@ -783,30 +781,36 @@ public class GeoWaveBasicIT extends
 		// this file is the filtered dataset (using the previous file as a
 		// filter) so use it to ensure the query worked
 		final DistributableQuery query = resourceToQuery(savedFilterResource);
-		final CloseableIterator<?> actualResults;
-		if (index == null) {
-			actualResults = geowaveStore.query(
-					new QueryOptions(),
-					query);
-		}
-		else {
-			actualResults = geowaveStore.query(
-					new QueryOptions(
-							index),
-					query);
-		}
-		final ExpectedResults expectedResults = getExpectedResults(expectedResultsResources);
-		int totalResults = 0;
-		while (actualResults.hasNext()) {
-			final Object obj = actualResults.next();
-			if (obj instanceof SimpleFeature) {
-				final SimpleFeature result = (SimpleFeature) obj;
-				Assert.assertTrue(
-						"Actual result '" + result.toString() + "' not found in expected result set",
-						expectedResults.hashedCentroids.contains(hashCentroid((Geometry) result.getDefaultGeometry())));
-				totalResults++;
+		try (final CloseableIterator<?> actualResults = (index == null) ? geowaveStore.query(
+				new QueryOptions(),
+				query) : geowaveStore.query(
+				new QueryOptions(
+						index),
+				query)) {
+			final ExpectedResults expectedResults = getExpectedResults(expectedResultsResources);
+			int totalResults = 0;
+			while (actualResults.hasNext()) {
+				final Object obj = actualResults.next();
+				if (obj instanceof SimpleFeature) {
+					final SimpleFeature result = (SimpleFeature) obj;
+					Assert.assertTrue(
+							"Actual result '" + result.toString() + "' not found in expected result set",
+							expectedResults.hashedCentroids.contains(hashCentroid((Geometry) result.getDefaultGeometry())));
+					totalResults++;
+				}
+				else {
+					try {
+						accumuloOperations.deleteAll();
+					}
+					catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
+						LOGGER.error(
+								"Unable to clear accumulo namespace",
+								ex);
+					}
+					Assert.fail("Actual result '" + obj.toString() + "' is not of type Simple Feature.");
+				}
 			}
-			else {
+			if (expectedResults.count != totalResults) {
 				try {
 					accumuloOperations.deleteAll();
 				}
@@ -814,25 +818,13 @@ public class GeoWaveBasicIT extends
 					LOGGER.error(
 							"Unable to clear accumulo namespace",
 							ex);
+					Assert.fail("Unable to clear accumulo namespace");
 				}
-				Assert.fail("Actual result '" + obj.toString() + "' is not of type Simple Feature.");
 			}
+			Assert.assertEquals(
+					expectedResults.count,
+					totalResults);
 		}
-		if (expectedResults.count != totalResults) {
-			try {
-				accumuloOperations.deleteAll();
-			}
-			catch (TableNotFoundException | AccumuloSecurityException | AccumuloException ex) {
-				LOGGER.error(
-						"Unable to clear accumulo namespace",
-						ex);
-				Assert.fail("Unable to clear accumulo namespace");
-			}
-		}
-		Assert.assertEquals(
-				expectedResults.count,
-				totalResults);
-		actualResults.close();
 	}
 
 	private void testDelete(

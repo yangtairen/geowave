@@ -20,7 +20,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-	// GeoWaveBasicIT.class, FIXME currently failing due to assertion failure
+	GeoWaveBasicIT.class,
 	// and resource leakage
 	GeoWaveRasterIT.class,
 	BasicMapReduceIT.class,
