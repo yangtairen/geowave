@@ -107,9 +107,9 @@ public class GeoWaveFeatureReader implements
 			throws IOException {
 		Iterator<SimpleFeature> it = featureCollection.getOpenIterator();
 		if (it != null) {
-			// protect againt GeoTools forgetting to call close() 
+			// protect againt GeoTools forgetting to call close()
 			// on this FeatureReader, which causes a resource leak
-			if(!it.hasNext()) ((CloseableIterator<?>)it).close(); 
+			if (!it.hasNext()) ((CloseableIterator<?>) it).close();
 			return it.hasNext();
 		}
 		it = featureCollection.openIterator();

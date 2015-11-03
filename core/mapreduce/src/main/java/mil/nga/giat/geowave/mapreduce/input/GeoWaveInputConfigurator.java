@@ -214,12 +214,14 @@ public class GeoWaveInputConfigurator extends
 			try (CloseableIterator<Index<?, ?>> indicesIterator = getIndexStore(
 					implementingClass,
 					context).getIndices()) {
-			userIndices = (PrimaryIndex[]) IteratorUtils.toArray(
-					indicesIterator,
-					PrimaryIndex.class);
+				userIndices = (PrimaryIndex[]) IteratorUtils.toArray(
+						indicesIterator,
+						PrimaryIndex.class);
 			}
 			catch (IOException e) {
-				LOGGER.warn("Unable to close CloseableIterator", e);
+				LOGGER.warn(
+						"Unable to close CloseableIterator",
+						e);
 			}
 		}
 		return userIndices;
