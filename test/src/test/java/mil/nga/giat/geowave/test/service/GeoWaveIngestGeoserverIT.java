@@ -50,10 +50,7 @@ public class GeoWaveIngestGeoserverIT extends
 	private static final String WORKSPACE = "testomatic";
 	private static final String WMS_VERSION = "1.3";
 
-	private static InfoServiceClient infoServiceClient = null;
 	private static GeoserverServiceClient geoserverServiceClient = null;
-	private static IngestServiceClient ingestServiceClient = null;
-
 	private static final String WMS_URL_PREFIX = "/geoserver/wms";
 	private static final String REFERENCE_26_WMS_IMAGE_PATH = "src/test/resources/wms/wms-grid-2.6.gif";
 	private static final String REFERENCE_25_WMS_IMAGE_PATH = "src/test/resources/wms/wms-grid-2.5.gif";
@@ -64,10 +61,6 @@ public class GeoWaveIngestGeoserverIT extends
 
 		ServicesTestEnvironment.startServices();
 		geoserverServiceClient = new GeoserverServiceClient(
-				GEOWAVE_BASE_URL);
-		infoServiceClient = new InfoServiceClient(
-				GEOWAVE_BASE_URL);
-		ingestServiceClient = new IngestServiceClient(
 				GEOWAVE_BASE_URL);
 
 	}

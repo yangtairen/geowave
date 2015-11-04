@@ -198,10 +198,6 @@ public class IngestServiceImpl implements
 		args.add(namespace);
 		args.add("-dim");
 		args.add(dimType);
-		for (final Entry<String, String> e : additionalParams.entrySet()) {
-			args.add("-" + e.getKey());
-			args.add(e.getValue());
-		}
 
 		if ((visibility != null) && !visibility.isEmpty()) {
 			args.add("-v");
@@ -219,6 +215,10 @@ public class IngestServiceImpl implements
 			args.add(hdfsBase);
 			args.add("-jobtracker");
 			args.add(jobTracker);
+		}
+		for (final Entry<String, String> e : additionalParams.entrySet()) {
+			args.add("-" + e.getKey());
+			args.add(e.getValue());
 		}
 
 		final int retVal = GeoWaveMain.run(args.toArray(new String[] {}));
