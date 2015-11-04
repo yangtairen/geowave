@@ -11,6 +11,8 @@ import mil.nga.giat.geowave.test.query.AttributesSubsetQueryIT;
 import mil.nga.giat.geowave.test.query.SecondaryIndexingDriver;
 import mil.nga.giat.geowave.test.query.SecondaryIndexingQueryTest;
 import mil.nga.giat.geowave.test.service.GeoServerIT;
+import mil.nga.giat.geowave.test.service.GeoWaveIngestGeoserverIT;
+import mil.nga.giat.geowave.test.service.GeoWaveServicesIT;
 import mil.nga.giat.geowave.test.service.ServicesTestEnvironment;
 
 import org.junit.AfterClass;
@@ -29,8 +31,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	GeoWaveKMeansIT.class,
 	GeoWaveNNIT.class,
 	GeoServerIT.class,
-	// GeoWaveServicesIT.class, FIXME does not terminate properly
-	// GeoWaveIngestGeoserverIT.class, FIXME currently failing
+	GeoWaveServicesIT.class,
+	GeoWaveIngestGeoserverIT.class,
 	AttributesSubsetQueryIT.class,
 	SecondaryIndexingDriver.class,
 	SecondaryIndexingQueryTest.class,
