@@ -6,8 +6,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import mil.nga.giat.geowave.core.cli.GenericStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.geotime.IndexType;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreFactoryFamily;
+import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.format.gpx.GpxUtils;
 import mil.nga.giat.geowave.service.client.GeoserverServiceClient;
 import mil.nga.giat.geowave.service.client.InfoServiceClient;
@@ -267,15 +269,15 @@ public class GeoWaveServicesIT extends
 		if (dsInfo != null) {
 
 			assertTrue(dsInfo.getString(
-					"Namespace").equals(
+					GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY).equals(
 					TEST_NAMESPACE));
 
 			assertTrue(dsInfo.getString(
-					"ZookeeperServers").equals(
+					BasicAccumuloOperations.ZOOKEEPER_CONFIG_NAME).equals(
 					zookeeper));
 
 			assertTrue(dsInfo.getString(
-					"InstanceName").equals(
+					BasicAccumuloOperations.INSTANCE_CONFIG_NAME).equals(
 					accumuloInstance));
 		}
 
