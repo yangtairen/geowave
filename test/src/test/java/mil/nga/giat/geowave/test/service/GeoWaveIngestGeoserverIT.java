@@ -10,8 +10,8 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
-import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.IndexWriter;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.memory.DataStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreFactoryFamily;
@@ -48,7 +48,6 @@ public class GeoWaveIngestGeoserverIT extends
 	private static final Logger LOGGER = Logger.getLogger(GeoWaveIngestGeoserverIT.class);
 
 	private static final String WORKSPACE = "testomatic";
-	private static final String NAMESPACE = "exampleIngest";
 	private static final String WMS_VERSION = "1.3";
 
 	private static InfoServiceClient infoServiceClient = null;
@@ -85,7 +84,7 @@ public class GeoWaveIngestGeoserverIT extends
 					accumuloInstance,
 					accumuloUser,
 					accumuloPassword,
-					NAMESPACE);
+					TEST_NAMESPACE);
 		}
 		catch (final AccumuloException e) {
 			e.printStackTrace();
@@ -129,13 +128,13 @@ public class GeoWaveIngestGeoserverIT extends
 		Assert.assertTrue(geoserverServiceClient.publishDatastore(
 				new AccumuloStoreFactoryFamily().getName(),
 				getAccumuloConfig(),
-				NAMESPACE,
+				TEST_NAMESPACE,
 				null,
 				null,
 				null,
 				WORKSPACE));
 		Assert.assertTrue(geoserverServiceClient.publishLayer(
-				NAMESPACE,
+				TEST_NAMESPACE,
 				"default_point",
 				SimpleIngest.FEATURE_NAME,
 				WORKSPACE));
@@ -153,7 +152,7 @@ public class GeoWaveIngestGeoserverIT extends
 
 		BufferedImage ref = null;
 
-		final String geoserverVersion = System.getProperty("geoserver.version");
+		final String geoserverVersion = (System.getProperty("geoserver.version") != null) ? System.getProperty("geoserver.version") : "";
 
 		Assert.assertNotNull(geoserverVersion);
 
