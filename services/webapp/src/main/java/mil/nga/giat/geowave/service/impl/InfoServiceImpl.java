@@ -53,13 +53,17 @@ public class InfoServiceImpl implements
 
 		final Set<Object> keySet = props.keySet();
 		final Iterator<Object> it = keySet.iterator();
+		System.err.println("LOADING INFO SERVICE");
 		while (it.hasNext()) {
 			final String key = it.next().toString();
 			strMap.put(
 					key,
 					ServiceUtils.getProperty(
 							props,
-							key));
+							key));System.err.println("key: " + key + "; val: " +
+									ServiceUtils.getProperty(
+											props,
+											key));
 		}
 		configOptions = ConfigUtils.valuesFromStrings(strMap);
 		indexStoreFactory = GeoWaveStoreFinder.findIndexStoreFactory(configOptions);
@@ -137,6 +141,8 @@ public class InfoServiceImpl implements
 	public Response getAdapters(
 			@PathParam("namespace")
 			final String namespace ) {
+		System.err.println("GETTING ADAPTERS");
+		System.err.println("zookeeper: " + configOptions.get("zookeeper"));
 		try (CloseableIterator<DataAdapter<?>> dataAdapters = adapterStoreFactory.createStore(
 				configOptions,
 				namespace).getAdapters()) {
