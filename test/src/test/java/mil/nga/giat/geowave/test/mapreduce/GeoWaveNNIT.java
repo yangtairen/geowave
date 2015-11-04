@@ -52,7 +52,7 @@ public class GeoWaveNNIT extends
 
 	private SimpleFeatureBuilder getBuilder() {
 		final SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
-		typeBuilder.setName("test");
+		typeBuilder.setName("testnn");
 		typeBuilder.setCRS(DefaultGeographicCRS.WGS84); // <- Coordinate
 														// reference
 		// add attributes in order
@@ -81,7 +81,7 @@ public class GeoWaveNNIT extends
 		final Map<String, String> options = getAccumuloConfigOptions();
 		options.put(
 				GenericStoreCommandLineOptions.NAMESPACE_OPTION_KEY,
-				TEST_NAMESPACE);
+				TEST_NAMESPACE + "_nn");
 		final Options nsOptions = new Options();
 		DataStoreCommandLineOptions.applyOptions(nsOptions);
 		final CommandLineResult<DataStoreCommandLineOptions> dataStoreOptions = DataStoreCommandLineOptions.parseOptions(
