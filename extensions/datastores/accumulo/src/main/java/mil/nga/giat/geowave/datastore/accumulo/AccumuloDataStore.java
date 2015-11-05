@@ -654,109 +654,110 @@ public class AccumuloDataStore implements
 							secondaryIndexDataStore)) {
 						callbackCache.setPersistStats(accumuloOptions.persistDataStatistics);
 
-						final Iterator<DataAdapter<?>> adapterIt = queryOptions.getAdapters(adapterStore);
-						while (adapterIt.hasNext()) {
-							final DataAdapter<Object> adapter = (DataAdapter<Object>) adapterIt.next();
+						try (final CloseableIterator<DataAdapter<?>> adapterIt = queryOptions.getAdapters(adapterStore)) {
+							while (adapterIt.hasNext()) {
+								final DataAdapter<Object> adapter = (DataAdapter<Object>) adapterIt.next();
 
-							final ScanCallback<Object> callback = new ScanCallback<Object>() {
-								@Override
-								public void entryScanned(
-										final DataStoreEntryInfo entryInfo,
-										final Object entry ) {
-									callbackCache.getDeleteCallback(
-											(WritableDataAdapter<Object>) adapter,
-											index).entryDeleted(
-											entryInfo,
-											entry);
-									try {
-										addToBatch(
-												idxDeleter,
-												entryInfo.getRowIds());
-										if (useAltIndex) {
+								final ScanCallback<Object> callback = new ScanCallback<Object>() {
+									@Override
+									public void entryScanned(
+											final DataStoreEntryInfo entryInfo,
+											final Object entry ) {
+										callbackCache.getDeleteCallback(
+												(WritableDataAdapter<Object>) adapter,
+												index).entryDeleted(
+												entryInfo,
+												entry);
+										try {
 											addToBatch(
-													altIdxDelete,
-													Collections.singletonList(adapter.getDataId(entry)));
+													idxDeleter,
+													entryInfo.getRowIds());
+											if (useAltIndex) {
+												addToBatch(
+														altIdxDelete,
+														Collections.singletonList(adapter.getDataId(entry)));
+											}
 										}
+										catch (final MutationsRejectedException e) {
+											LOGGER.error(
+													"Failed deletion",
+													e);
+											aOk.set(false);
+										}
+										catch (final TableNotFoundException e) {
+											LOGGER.error(
+													"Failed deletion",
+													e);
+											aOk.set(false);
+										}
+
 									}
-									catch (final MutationsRejectedException e) {
-										LOGGER.error(
-												"Failed deletion",
-												e);
-										aOk.set(false);
-									}
-									catch (final TableNotFoundException e) {
-										LOGGER.error(
-												"Failed deletion",
-												e);
-										aOk.set(false);
-									}
+								};
+
+								CloseableIterator<?> dataIt = null;
+								if (query instanceof RowIdQuery) {
+									final AccumuloRowIdsQuery<Object> q = new AccumuloRowIdsQuery<Object>(
+											queryOptions.getAdapterIds(adapterStore),
+											index,
+											((RowIdQuery) query).getRowIds(),
+											callback,
+											null,
+											queryOptions.getFieldIds(),
+											queryOptions.getAuthorizations());
+
+									dataIt = q.query(
+											accumuloOperations,
+											adapterStore,
+											-1);
+								}
+								else if (query instanceof DataIdQuery) {
+									DataIdQuery idQuery = (DataIdQuery) query;
+									dataIt = this.getEntries(
+											index,
+											idQuery.getDataIds(),
+											(DataAdapter<Object>) adapterStore.getAdapter(idQuery.getAdapterId()),
+											null,
+											callback,
+											queryOptions.getFieldIds(),
+											queryOptions.getAuthorizations(),
+											false);
+								}
+								else if (query instanceof PrefixIdQuery) {
+									dataIt = new AccumuloRowPrefixQuery<Object>(
+											index,
+											((PrefixIdQuery) query).getRowPrefix(),
+											callback,
+											null,
+											queryOptions.getAuthorizations()).query(
+											accumuloOperations,
+											adapterStore);
 
 								}
-							};
+								else {
+									dataIt = new AccumuloConstraintsQuery(
+											Collections.singletonList(adapter.getAdapterId()),
+											index,
+											query,
+											null,
+											callback,
+											null,
+											queryOptions.getAuthorizations()).query(
+											accumuloOperations,
+											adapterStore,
+											null);
+								}
 
-							CloseableIterator<?> dataIt = null;
-							if (query instanceof RowIdQuery) {
-								final AccumuloRowIdsQuery<Object> q = new AccumuloRowIdsQuery<Object>(
-										queryOptions.getAdapterIds(adapterStore),
-										index,
-										((RowIdQuery) query).getRowIds(),
-										callback,
-										null,
-										queryOptions.getFieldIds(),
-										queryOptions.getAuthorizations());
-
-								dataIt = q.query(
-										accumuloOperations,
-										adapterStore,
-										-1);
-							}
-							else if (query instanceof DataIdQuery) {
-								DataIdQuery idQuery = (DataIdQuery) query;
-								dataIt = this.getEntries(
-										index,
-										idQuery.getDataIds(),
-										(DataAdapter<Object>) adapterStore.getAdapter(idQuery.getAdapterId()),
-										null,
-										callback,
-										queryOptions.getFieldIds(),
-										queryOptions.getAuthorizations(),
-										false);
-							}
-							else if (query instanceof PrefixIdQuery) {
-								dataIt = new AccumuloRowPrefixQuery<Object>(
-										index,
-										((PrefixIdQuery) query).getRowPrefix(),
-										callback,
-										null,
-										queryOptions.getAuthorizations()).query(
-										accumuloOperations,
-										adapterStore);
-
-							}
-							else {
-								dataIt = new AccumuloConstraintsQuery(
-										Collections.singletonList(adapter.getAdapterId()),
-										index,
-										query,
-										null,
-										callback,
-										null,
-										queryOptions.getAuthorizations()).query(
-										accumuloOperations,
-										adapterStore,
-										null);
-							}
-
-							while (dataIt.hasNext()) {
-								dataIt.next();
-							}
-							try {
-								dataIt.close();
-							}
-							catch (Exception ex) {
-								LOGGER.warn(
-										"Cannot close iterator",
-										ex);
+								while (dataIt.hasNext()) {
+									dataIt.next();
+								}
+								try {
+									dataIt.close();
+								}
+								catch (Exception ex) {
+									LOGGER.warn(
+											"Cannot close iterator",
+											ex);
+								}
 							}
 						}
 					}
@@ -794,14 +795,15 @@ public class AccumuloDataStore implements
 		final String altIdxTableName = tableName + AccumuloUtils.ALT_INDEX_TABLE;
 		final String adapterId = StringUtils.stringFromBinary(adapter.getAdapterId().getBytes());
 
-		final CloseableIterator<DataStatistics<?>> it = statisticsStore.getDataStatistics(adapter.getAdapterId());
+		try (final CloseableIterator<DataStatistics<?>> it = statisticsStore.getDataStatistics(adapter.getAdapterId())) {
 
-		while (it.hasNext()) {
-			final DataStatistics stats = it.next();
-			statisticsStore.removeStatistics(
-					adapter.getAdapterId(),
-					stats.getStatisticsId(),
-					additionalAuthorizations);
+			while (it.hasNext()) {
+				final DataStatistics stats = it.next();
+				statisticsStore.removeStatistics(
+						adapter.getAdapterId(),
+						stats.getStatisticsId(),
+						additionalAuthorizations);
+			}
 		}
 
 		deleteAll(

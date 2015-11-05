@@ -570,10 +570,16 @@ public class AccumuloUtils
 						connector,
 						namespace));
 
-		final Iterator<DataAdapter<?>> itr = adapterStore.getAdapters();
+		try (final CloseableIterator<DataAdapter<?>> itr = adapterStore.getAdapters()) {
 
-		while (itr.hasNext()) {
-			adapters.add(itr.next());
+			while (itr.hasNext()) {
+				adapters.add(itr.next());
+			}
+		}
+		catch (IOException e) {
+			LOGGER.error(
+					"Unable to close iterator",
+					e);
 		}
 
 		return adapters;
@@ -595,10 +601,16 @@ public class AccumuloUtils
 						connector,
 						namespace));
 
-		final Iterator<Index<?, ?>> itr = indexStore.getIndices();
+		try (final CloseableIterator<Index<?, ?>> itr = indexStore.getIndices()) {
 
-		while (itr.hasNext()) {
-			indices.add(itr.next());
+			while (itr.hasNext()) {
+				indices.add(itr.next());
+			}
+		}
+		catch (IOException e) {
+			LOGGER.error(
+					"Unable to close iterator",
+					e);
 		}
 
 		return indices;
@@ -627,63 +639,64 @@ public class AccumuloUtils
 			TableNotFoundException {
 		final SortedSet<Text> splits = new TreeSet<Text>();
 
-		final CloseableIterator<Entry<Key, Value>> iterator = getIterator(
+		try (final CloseableIterator<Entry<Key, Value>> iterator = getIterator(
 				connector,
 				namespace,
-				index);
+				index)) {
 
-		if (iterator == null) {
-			LOGGER.error("could not get iterator instance, getIterator returned null");
-			throw new IOException(
-					"could not get iterator instance, getIterator returned null");
-		}
-
-		final int numberSplits = quantile - 1;
-		BigInteger min = null;
-		BigInteger max = null;
-
-		while (iterator.hasNext()) {
-			final Entry<Key, Value> entry = iterator.next();
-			final byte[] bytes = entry.getKey().getRow().getBytes();
-			final BigInteger value = new BigInteger(
-					bytes);
-			if ((min == null) || (max == null)) {
-				min = value;
-				max = value;
+			if (iterator == null) {
+				LOGGER.error("could not get iterator instance, getIterator returned null");
+				throw new IOException(
+						"could not get iterator instance, getIterator returned null");
 			}
-			min = min.min(value);
-			max = max.max(value);
+
+			final int numberSplits = quantile - 1;
+			BigInteger min = null;
+			BigInteger max = null;
+
+			while (iterator.hasNext()) {
+				final Entry<Key, Value> entry = iterator.next();
+				final byte[] bytes = entry.getKey().getRow().getBytes();
+				final BigInteger value = new BigInteger(
+						bytes);
+				if ((min == null) || (max == null)) {
+					min = value;
+					max = value;
+				}
+				min = min.min(value);
+				max = max.max(value);
+			}
+
+			final BigDecimal dMax = new BigDecimal(
+					max);
+			final BigDecimal dMin = new BigDecimal(
+					min);
+			BigDecimal delta = dMax.subtract(dMin);
+			delta = delta.divideToIntegralValue(new BigDecimal(
+					quantile));
+
+			for (int ii = 1; ii <= numberSplits; ii++) {
+				final BigDecimal temp = delta.multiply(BigDecimal.valueOf(ii));
+				final BigInteger value = min.add(temp.toBigInteger());
+
+				final Text split = new Text(
+						value.toByteArray());
+				splits.add(split);
+			}
+
+			final String tableName = AccumuloUtils.getQualifiedTableName(
+					namespace,
+					StringUtils.stringFromBinary(index.getId().getBytes()));
+			connector.tableOperations().addSplits(
+					tableName,
+					splits);
+			connector.tableOperations().compact(
+					tableName,
+					null,
+					null,
+					true,
+					true);
 		}
-
-		final BigDecimal dMax = new BigDecimal(
-				max);
-		final BigDecimal dMin = new BigDecimal(
-				min);
-		BigDecimal delta = dMax.subtract(dMin);
-		delta = delta.divideToIntegralValue(new BigDecimal(
-				quantile));
-
-		for (int ii = 1; ii <= numberSplits; ii++) {
-			final BigDecimal temp = delta.multiply(BigDecimal.valueOf(ii));
-			final BigInteger value = min.add(temp.toBigInteger());
-
-			final Text split = new Text(
-					value.toByteArray());
-			splits.add(split);
-		}
-
-		final String tableName = AccumuloUtils.getQualifiedTableName(
-				namespace,
-				StringUtils.stringFromBinary(index.getId().getBytes()));
-		connector.tableOperations().addSplits(
-				tableName,
-				splits);
-		connector.tableOperations().compact(
-				tableName,
-				null,
-				null,
-				true,
-				true);
 	}
 
 	/**
@@ -712,41 +725,42 @@ public class AccumuloUtils
 				namespace,
 				index);
 
-		final CloseableIterator<Entry<Key, Value>> iterator = getIterator(
+		try (final CloseableIterator<Entry<Key, Value>> iterator = getIterator(
 				connector,
 				namespace,
-				index);
+				index)) {
 
-		if (iterator == null) {
-			LOGGER.error("Could not get iterator instance, getIterator returned null");
-			throw new IOException(
-					"Could not get iterator instance, getIterator returned null");
-		}
-
-		long ii = 0;
-		final long splitInterval = count / numberSplits;
-		final SortedSet<Text> splits = new TreeSet<Text>();
-		while (iterator.hasNext()) {
-			final Entry<Key, Value> entry = iterator.next();
-			ii++;
-			if (ii >= splitInterval) {
-				ii = 0;
-				splits.add(entry.getKey().getRow());
+			if (iterator == null) {
+				LOGGER.error("Could not get iterator instance, getIterator returned null");
+				throw new IOException(
+						"Could not get iterator instance, getIterator returned null");
 			}
-		}
 
-		final String tableName = AccumuloUtils.getQualifiedTableName(
-				namespace,
-				StringUtils.stringFromBinary(index.getId().getBytes()));
-		connector.tableOperations().addSplits(
-				tableName,
-				splits);
-		connector.tableOperations().compact(
-				tableName,
-				null,
-				null,
-				true,
-				true);
+			long ii = 0;
+			final long splitInterval = count / numberSplits;
+			final SortedSet<Text> splits = new TreeSet<Text>();
+			while (iterator.hasNext()) {
+				final Entry<Key, Value> entry = iterator.next();
+				ii++;
+				if (ii >= splitInterval) {
+					ii = 0;
+					splits.add(entry.getKey().getRow());
+				}
+			}
+
+			final String tableName = AccumuloUtils.getQualifiedTableName(
+					namespace,
+					StringUtils.stringFromBinary(index.getId().getBytes()));
+			connector.tableOperations().addSplits(
+					tableName,
+					splits);
+			connector.tableOperations().compact(
+					tableName,
+					null,
+					null,
+					true,
+					true);
+		}
 	}
 
 	/**
@@ -769,40 +783,41 @@ public class AccumuloUtils
 			AccumuloSecurityException,
 			IOException,
 			TableNotFoundException {
-		final CloseableIterator<Entry<Key, Value>> iterator = getIterator(
+		try (final CloseableIterator<Entry<Key, Value>> iterator = getIterator(
 				connector,
 				namespace,
-				index);
+				index)) {
 
-		if (iterator == null) {
-			LOGGER.error("Unable to get iterator instance, getIterator returned null");
-			throw new IOException(
-					"Unable to get iterator instance, getIterator returned null");
-		}
-
-		long ii = 0;
-		final SortedSet<Text> splits = new TreeSet<Text>();
-		while (iterator.hasNext()) {
-			final Entry<Key, Value> entry = iterator.next();
-			ii++;
-			if (ii >= numberRows) {
-				ii = 0;
-				splits.add(entry.getKey().getRow());
+			if (iterator == null) {
+				LOGGER.error("Unable to get iterator instance, getIterator returned null");
+				throw new IOException(
+						"Unable to get iterator instance, getIterator returned null");
 			}
-		}
 
-		final String tableName = AccumuloUtils.getQualifiedTableName(
-				namespace,
-				StringUtils.stringFromBinary(index.getId().getBytes()));
-		connector.tableOperations().addSplits(
-				tableName,
-				splits);
-		connector.tableOperations().compact(
-				tableName,
-				null,
-				null,
-				true,
-				true);
+			long ii = 0;
+			final SortedSet<Text> splits = new TreeSet<Text>();
+			while (iterator.hasNext()) {
+				final Entry<Key, Value> entry = iterator.next();
+				ii++;
+				if (ii >= numberRows) {
+					ii = 0;
+					splits.add(entry.getKey().getRow());
+				}
+			}
+
+			final String tableName = AccumuloUtils.getQualifiedTableName(
+					namespace,
+					StringUtils.stringFromBinary(index.getId().getBytes()));
+			connector.tableOperations().addSplits(
+					tableName,
+					splits);
+			connector.tableOperations().compact(
+					tableName,
+					null,
+					null,
+					true,
+					true);
+		}
 	}
 
 	/**
@@ -1011,7 +1026,9 @@ public class AccumuloUtils
 				operations);
 
 		if (indexStore.indexExists(index.getId())) {
-			final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
+			final String tableName = AccumuloUtils.getQualifiedTableName(
+					namespace,
+					StringUtils.stringFromBinary(index.getId().getBytes()));
 			final ScannerBase scanner = operations.createBatchScanner(tableName);
 			((BatchScanner) scanner).setRanges(AccumuloUtils.byteArrayRangesToAccumuloRanges(null));
 

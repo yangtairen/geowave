@@ -238,7 +238,7 @@ public class AccumuloDataStoreStatsTest
 		final SpatialQuery query = new SpatialQuery(
 				testGeoFilter);
 
-		CloseableIterator it1 = mockDataStore.query(
+		try (CloseableIterator<?> it1 = mockDataStore.query(
 				new QueryOptions(
 						Collections.<String> emptyList(),
 						adapter,
@@ -249,17 +249,18 @@ public class AccumuloDataStoreStatsTest
 							"aaa",
 							"bbb"
 						}),
-				query);
-		int count = 0;
-		while (it1.hasNext()) {
-			it1.next();
-			count++;
+				query)) {
+			int count = 0;
+			while (it1.hasNext()) {
+				it1.next();
+				count++;
+			}
+			assertEquals(
+					3,
+					count);
 		}
-		assertEquals(
-				3,
-				count);
 
-		CountDataStatistics countStats = (CountDataStatistics) statsStore.getDataStatistics(
+		CountDataStatistics<?> countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
 				"aaa",
@@ -268,7 +269,7 @@ public class AccumuloDataStoreStatsTest
 				3,
 				countStats.getCount());
 
-		countStats = (CountDataStatistics) statsStore.getDataStatistics(
+		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
 				"aaa");
@@ -276,7 +277,7 @@ public class AccumuloDataStoreStatsTest
 				2,
 				countStats.getCount());
 
-		countStats = (CountDataStatistics) statsStore.getDataStatistics(
+		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
 				"bbb");
@@ -284,19 +285,19 @@ public class AccumuloDataStoreStatsTest
 				1,
 				countStats.getCount());
 
-		BoundingBoxDataStatistics bboxStats = (BoundingBoxDataStatistics) statsStore.getDataStatistics(
+		BoundingBoxDataStatistics<?> bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"aaa");
 		assertTrue((bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 26) && (bboxStats.getMinY() == 32) && (bboxStats.getMaxY() == 32));
 
-		bboxStats = (BoundingBoxDataStatistics) statsStore.getDataStatistics(
+		bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"bbb");
 		assertTrue((bboxStats.getMinX() == 27) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32) && (bboxStats.getMaxY() == 32));
 
-		bboxStats = (BoundingBoxDataStatistics) statsStore.getDataStatistics(
+		bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"aaa",
@@ -329,7 +330,7 @@ public class AccumuloDataStoreStatsTest
 								"test_pt_2".getBytes(StringUtils.UTF8_CHAR_SET))));
 		assertFalse(found.get());
 
-		it1 = mockDataStore.query(
+		try (CloseableIterator<?> it1 = mockDataStore.query(
 				new QueryOptions(
 						Collections.<String> emptyList(),
 						adapter,
@@ -340,15 +341,16 @@ public class AccumuloDataStoreStatsTest
 							"aaa",
 							"bbb"
 						}),
-				query);
-		count = 0;
-		while (it1.hasNext()) {
-			it1.next();
-			count++;
+				query)) {
+			int count = 0;
+			while (it1.hasNext()) {
+				it1.next();
+				count++;
+			}
+			assertEquals(
+					3,
+					count);
 		}
-		assertEquals(
-				3,
-				count);
 
 		mockDataStore.delete(
 				new QueryOptions(
@@ -365,7 +367,7 @@ public class AccumuloDataStoreStatsTest
 						new ByteArrayId(
 								"test_pt".getBytes(StringUtils.UTF8_CHAR_SET))));
 
-		it1 = mockDataStore.query(
+		try (CloseableIterator<?> it1 = mockDataStore.query(
 				new QueryOptions(
 						Collections.<String> emptyList(),
 						adapter,
@@ -376,17 +378,18 @@ public class AccumuloDataStoreStatsTest
 							"aaa",
 							"bbb"
 						}),
-				query);
-		count = 0;
-		while (it1.hasNext()) {
-			it1.next();
-			count++;
+				query)) {
+			int count = 0;
+			while (it1.hasNext()) {
+				it1.next();
+				count++;
+			}
+			assertEquals(
+					2,
+					count);
 		}
-		assertEquals(
-				2,
-				count);
 
-		countStats = (CountDataStatistics) statsStore.getDataStatistics(
+		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
 				"aaa");
@@ -394,7 +397,7 @@ public class AccumuloDataStoreStatsTest
 				1,
 				countStats.getCount());
 
-		countStats = (CountDataStatistics) statsStore.getDataStatistics(
+		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
 				"bbb");
@@ -402,19 +405,19 @@ public class AccumuloDataStoreStatsTest
 				1,
 				countStats.getCount());
 
-		bboxStats = (BoundingBoxDataStatistics) statsStore.getDataStatistics(
+		bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"aaa");
 		assertTrue((bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 26) && (bboxStats.getMinY() == 32) && (bboxStats.getMaxY() == 32));
 
-		bboxStats = (BoundingBoxDataStatistics) statsStore.getDataStatistics(
+		bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"bbb");
 		assertTrue((bboxStats.getMinX() == 27) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32) && (bboxStats.getMaxY() == 32));
 
-		bboxStats = (BoundingBoxDataStatistics) statsStore.getDataStatistics(
+		bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"aaa",
@@ -444,7 +447,7 @@ public class AccumuloDataStoreStatsTest
 						}),
 				new EverythingQuery()));
 
-		it1 = mockDataStore.query(
+		try (CloseableIterator<?> it1 = mockDataStore.query(
 				new QueryOptions(
 						Collections.<String> emptyList(),
 						adapter,
@@ -455,17 +458,18 @@ public class AccumuloDataStoreStatsTest
 							"aaa",
 							"bbb"
 						}),
-				query);
-		count = 0;
-		while (it1.hasNext()) {
-			it1.next();
-			count++;
+				query)) {
+			int count = 0;
+			while (it1.hasNext()) {
+				it1.next();
+				count++;
+			}
+			assertEquals(
+					0,
+					count);
 		}
-		assertEquals(
-				0,
-				count);
 
-		countStats = (CountDataStatistics) statsStore.getDataStatistics(
+		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID);
 		assertNull(countStats);
@@ -483,7 +487,7 @@ public class AccumuloDataStoreStatsTest
 					0);
 		}
 
-		countStats = (CountDataStatistics) statsStore.getDataStatistics(
+		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
 				"bbb");
@@ -493,13 +497,13 @@ public class AccumuloDataStoreStatsTest
 				adapter.getAdapterId(),
 				"bbb");
 
-		countStats = (CountDataStatistics) statsStore.getDataStatistics(
+		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
 				"bbb");
 		assertNull(countStats);
 
-		RowRangeDataStatistics rowStats = (RowRangeDataStatistics) statsStore.getDataStatistics(
+		RowRangeDataStatistics<?> rowStats = (RowRangeDataStatistics<?>) statsStore.getDataStatistics(
 				null,
 				RowRangeDataStatistics.getId(index.getId()),
 				"bbb");
@@ -547,6 +551,7 @@ public class AccumuloDataStoreStatsTest
 						new byte[0]);
 			}
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public PersistentValue<Object>[] toNativeValues(
 					final CommonIndexValue indexValue ) {
@@ -618,6 +623,7 @@ public class AccumuloDataStoreStatsTest
 					entry.id);
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public FieldReader getReader(
 				final ByteArrayId fieldId ) {
@@ -709,6 +715,7 @@ public class AccumuloDataStoreStatsTest
 			BoundingBoxDataStatistics<TestGeometry>
 	{
 
+		@SuppressWarnings("unused")
 		protected GeoBoundingBoxStatistics() {
 			super();
 		}
