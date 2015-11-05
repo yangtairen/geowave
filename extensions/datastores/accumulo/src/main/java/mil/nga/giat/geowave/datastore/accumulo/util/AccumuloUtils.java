@@ -1026,7 +1026,9 @@ public class AccumuloUtils
 				operations);
 
 		if (indexStore.indexExists(index.getId())) {
-			final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
+			final String tableName = AccumuloUtils.getQualifiedTableName(
+					namespace,
+					StringUtils.stringFromBinary(index.getId().getBytes()));
 			final ScannerBase scanner = operations.createBatchScanner(tableName);
 			((BatchScanner) scanner).setRanges(AccumuloUtils.byteArrayRangesToAccumuloRanges(null));
 
