@@ -19,6 +19,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.DataStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
@@ -42,6 +44,7 @@ public class InfoServiceImpl implements
 	private final static int defaultIndentation = 2;
 	private final IndexStoreFactorySpi indexStoreFactory;
 	private final AdapterStoreFactorySpi adapterStoreFactory;
+	private final DataStoreFactorySpi dataStoreFactory;
 	private final Map<String, Object> configOptions;
 
 	public InfoServiceImpl(
@@ -53,19 +56,16 @@ public class InfoServiceImpl implements
 
 		final Set<Object> keySet = props.keySet();
 		final Iterator<Object> it = keySet.iterator();
-		System.err.println("LOADING INFO SERVICE");
 		while (it.hasNext()) {
 			final String key = it.next().toString();
 			strMap.put(
 					key,
 					ServiceUtils.getProperty(
 							props,
-							key));System.err.println("key: " + key + "; val: " +
-									ServiceUtils.getProperty(
-											props,
-											key));
+							key));
 		}
 		configOptions = ConfigUtils.valuesFromStrings(strMap);
+		dataStoreFactory = GeoWaveStoreFinder.findDataStoreFactory(configOptions);
 		indexStoreFactory = GeoWaveStoreFinder.findIndexStoreFactory(configOptions);
 		adapterStoreFactory = GeoWaveStoreFinder.findAdapterStoreFactory(configOptions);
 	}
@@ -141,8 +141,10 @@ public class InfoServiceImpl implements
 	public Response getAdapters(
 			@PathParam("namespace")
 			final String namespace ) {
-		System.err.println("GETTING ADAPTERS");
-		System.err.println("zookeeper: " + configOptions.get("zookeeper"));
+		DataStore store = dataStoreFactory.createStore(
+				configOptions,
+				namespace);
+
 		try (CloseableIterator<DataAdapter<?>> dataAdapters = adapterStoreFactory.createStore(
 				configOptions,
 				namespace).getAdapters()) {

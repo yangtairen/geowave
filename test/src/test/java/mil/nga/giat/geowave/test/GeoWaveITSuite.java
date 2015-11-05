@@ -8,8 +8,8 @@ import mil.nga.giat.geowave.test.mapreduce.GeoWaveNNIT;
 import mil.nga.giat.geowave.test.mapreduce.KDERasterResizeIT;
 import mil.nga.giat.geowave.test.mapreduce.MapReduceTestEnvironment;
 import mil.nga.giat.geowave.test.query.AttributesSubsetQueryIT;
-import mil.nga.giat.geowave.test.query.SecondaryIndexingDriver;
-import mil.nga.giat.geowave.test.query.SecondaryIndexingQueryTest;
+import mil.nga.giat.geowave.test.query.SecondaryIndexingDriverIT;
+import mil.nga.giat.geowave.test.query.SecondaryIndexingQueryIT;
 import mil.nga.giat.geowave.test.service.GeoServerIT;
 import mil.nga.giat.geowave.test.service.GeoWaveIngestGeoserverIT;
 import mil.nga.giat.geowave.test.service.GeoWaveServicesIT;
@@ -34,8 +34,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	GeoWaveServicesIT.class,
 	GeoWaveIngestGeoserverIT.class,
 	AttributesSubsetQueryIT.class,
-	SecondaryIndexingDriver.class,
-	SecondaryIndexingQueryTest.class,
+	SecondaryIndexingDriverIT.class,
+	SecondaryIndexingQueryIT.class,
 	DBScanIT.class
 })
 public class GeoWaveITSuite

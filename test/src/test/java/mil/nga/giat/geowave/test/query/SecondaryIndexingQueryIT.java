@@ -58,7 +58,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
-public class SecondaryIndexingQueryTest extends
+public class SecondaryIndexingQueryIT extends
 		GeoWaveTestEnvironment
 {
 	private static String BASE_DIR = "/src/test/resources/mil/nga/giat/geowave/test/query/";

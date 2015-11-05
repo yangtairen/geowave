@@ -50,7 +50,7 @@ import com.vividsolutions.jts.geom.Coordinate;
  * integration test for secondary indexing once the capability matures
  * 
  */
-public class SecondaryIndexingDriver extends
+public class SecondaryIndexingDriverIT extends
 		GeoWaveTestEnvironment
 
 {
