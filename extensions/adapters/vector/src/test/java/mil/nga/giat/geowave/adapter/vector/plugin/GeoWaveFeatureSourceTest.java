@@ -27,7 +27,6 @@ import org.geotools.data.Query;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -122,62 +121,63 @@ public class GeoWaveFeatureSourceTest extends
 				Filter.INCLUDE);
 		assertTrue(source.getCount(query) > 2);
 
-		final CloseableIterator<DataStatistics<?>> stats = ((GeoWaveGTDataStore) dataStore).getDataStatisticsStore().getDataStatistics(
+		try (final CloseableIterator<DataStatistics<?>> stats = ((GeoWaveGTDataStore) dataStore).getDataStatisticsStore().getDataStatistics(
 				new ByteArrayId(
-						(typeName).getBytes(StringUtils.UTF8_CHAR_SET)));
-		assertTrue(stats.hasNext());
-		int count = 0;
-		BoundingBoxDataStatistics<SimpleFeature> bboxStats = null;
-		CountDataStatistics<SimpleFeature> cStats = null;
-		FeatureTimeRangeStatistics timeRangeStats = null;
-		FeatureNumericRangeStatistics popStats = null;
-		while (stats.hasNext()) {
-			final DataStatistics<?> statsData = stats.next();
-			System.out.println(statsData.toString());
-			if (statsData instanceof BoundingBoxDataStatistics) {
-				bboxStats = (BoundingBoxDataStatistics<SimpleFeature>) statsData;
+						(typeName).getBytes(StringUtils.UTF8_CHAR_SET)))) {
+			assertTrue(stats.hasNext());
+			int count = 0;
+			BoundingBoxDataStatistics<SimpleFeature> bboxStats = null;
+			CountDataStatistics<SimpleFeature> cStats = null;
+			FeatureTimeRangeStatistics timeRangeStats = null;
+			FeatureNumericRangeStatistics popStats = null;
+			while (stats.hasNext()) {
+				final DataStatistics<?> statsData = stats.next();
+				System.out.println(statsData.toString());
+				if (statsData instanceof BoundingBoxDataStatistics) {
+					bboxStats = (BoundingBoxDataStatistics<SimpleFeature>) statsData;
+				}
+				else if (statsData instanceof CountDataStatistics) {
+					cStats = (CountDataStatistics<SimpleFeature>) statsData;
+				}
+				else if (statsData instanceof FeatureTimeRangeStatistics) {
+					timeRangeStats = (FeatureTimeRangeStatistics) statsData;
+				}
+				else if (statsData instanceof FeatureNumericRangeStatistics) {
+					popStats = (FeatureNumericRangeStatistics) statsData;
+				}
+				count++;
 			}
-			else if (statsData instanceof CountDataStatistics) {
-				cStats = (CountDataStatistics<SimpleFeature>) statsData;
-			}
-			else if (statsData instanceof FeatureTimeRangeStatistics) {
-				timeRangeStats = (FeatureTimeRangeStatistics) statsData;
-			}
-			else if (statsData instanceof FeatureNumericRangeStatistics) {
-				popStats = (FeatureNumericRangeStatistics) statsData;
-			}
-			count++;
+
+			assertEquals(
+					7,
+					count);
+
+			assertEquals(
+					66,
+					popStats.getMin(),
+					0.001);
+			assertEquals(
+					100,
+					popStats.getMax(),
+					0.001);
+			assertEquals(
+					DateUtilities.parseISO("2005-05-17T20:32:56Z"),
+					timeRangeStats.asTemporalRange().getStartTime());
+			assertEquals(
+					DateUtilities.parseISO("2005-05-19T20:32:56Z"),
+					timeRangeStats.asTemporalRange().getEndTime());
+			assertEquals(
+					43.454,
+					bboxStats.getMaxX(),
+					0.0001);
+			assertEquals(
+					27.232,
+					bboxStats.getMinY(),
+					0.0001);
+			assertEquals(
+					3,
+					cStats.getCount());
 		}
-
-		assertEquals(
-				7,
-				count);
-
-		assertEquals(
-				66,
-				popStats.getMin(),
-				0.001);
-		assertEquals(
-				100,
-				popStats.getMax(),
-				0.001);
-		assertEquals(
-				DateUtilities.parseISO("2005-05-17T20:32:56Z"),
-				timeRangeStats.asTemporalRange().getStartTime());
-		assertEquals(
-				DateUtilities.parseISO("2005-05-19T20:32:56Z"),
-				timeRangeStats.asTemporalRange().getEndTime());
-		assertEquals(
-				43.454,
-				bboxStats.getMaxX(),
-				0.0001);
-		assertEquals(
-				27.232,
-				bboxStats.getMinY(),
-				0.0001);
-		assertEquals(
-				3,
-				cStats.getCount());
 
 	}
 

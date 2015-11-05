@@ -1,7 +1,6 @@
 package mil.nga.giat.geowave.cli.stats;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import mil.nga.giat.geowave.core.cli.AdapterStoreCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.CLIOperationDriver;
@@ -145,7 +144,7 @@ abstract public class AbstractStatsOperation implements
 				DataAdapter<?> adapter = adapterStore.getAdapter(adapterId);
 				if (adapter == null) {
 					LOGGER.error("Unknown adapter " + adapterId);
-					final Iterator<DataAdapter<?>> it = adapterStore.getAdapters();
+					final CloseableIterator<DataAdapter<?>> it = adapterStore.getAdapters();
 					final StringBuffer buffer = new StringBuffer();
 					while (it.hasNext()) {
 						adapter = it.next();
@@ -153,6 +152,7 @@ abstract public class AbstractStatsOperation implements
 								adapter.getAdapterId().getString()).append(
 								' ');
 					}
+					it.close();
 					LOGGER.info("Available adapters: " + buffer.toString());
 					return false;
 				}
