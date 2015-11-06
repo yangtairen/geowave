@@ -144,7 +144,7 @@ public class InfoServiceImpl implements
 		DataStore store = dataStoreFactory.createStore(
 				configOptions,
 				namespace);
-
+		if (store != null){
 		try (CloseableIterator<DataAdapter<?>> dataAdapters = adapterStoreFactory.createStore(
 				configOptions,
 				namespace).getAdapters()) {
@@ -172,5 +172,7 @@ public class InfoServiceImpl implements
 					e);
 			return Response.serverError().build();
 		}
+		}
+		return Response.serverError().build();
 	}
 }
