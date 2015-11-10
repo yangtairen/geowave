@@ -8,6 +8,7 @@ import java.util.List;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo.FieldInfo;
+import mil.nga.giat.geowave.core.store.DeleteCallback;
 import mil.nga.giat.geowave.core.store.IngestCallback;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 
@@ -20,9 +21,8 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
  */
 public class SecondaryIndexDataManager<T> implements
 		Closeable,
-		IngestCallback<T>/*
-						 * TODO , DeleteCallback<T>, ScanCallback<T>
-						 */
+		IngestCallback<T>,
+		DeleteCallback<T>
 {
 	private final SecondaryIndexDataAdapter<T> adapter;
 	final SecondaryIndexDataStore secondaryIndexStore;
@@ -63,6 +63,25 @@ public class SecondaryIndexDataManager<T> implements
 						entryInfo,
 						entry);
 			}
+		}
+
+	}
+
+	@Override
+	public void entryDeleted(
+			final DataStoreEntryInfo entryInfo,
+			final T entry ) {
+
+		for (final SecondaryIndex<T> index : adapter.getSupportedSecondaryIndices()) {
+			final List<FieldInfo<?>> indexedAttributes = new LinkedList<FieldInfo<?>>();
+			for (final ByteArrayId fieldID : index.getFieldIDs()) {
+				indexedAttributes.add(getFieldInfo(
+						entryInfo,
+						fieldID));
+			}
+			secondaryIndexStore.delete(
+					index,
+					indexedAttributes);
 		}
 
 	}
