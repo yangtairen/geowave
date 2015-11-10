@@ -1,7 +1,6 @@
 package mil.nga.giat.geowave.service.impl;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -19,8 +18,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import mil.nga.giat.geowave.core.store.CloseableIterator;
-import mil.nga.giat.geowave.core.store.DataStore;
-import mil.nga.giat.geowave.core.store.DataStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStoreFactorySpi;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
@@ -44,7 +41,6 @@ public class InfoServiceImpl implements
 	private final static int defaultIndentation = 2;
 	private final IndexStoreFactorySpi indexStoreFactory;
 	private final AdapterStoreFactorySpi adapterStoreFactory;
-	private final DataStoreFactorySpi dataStoreFactory;
 	private final Map<String, Object> configOptions;
 
 	public InfoServiceImpl(
@@ -63,9 +59,9 @@ public class InfoServiceImpl implements
 					ServiceUtils.getProperty(
 							props,
 							key));
+			System.err.println(key + "=" +props.getProperty(key)+";" );
 		}
 		configOptions = ConfigUtils.valuesFromStrings(strMap);
-		dataStoreFactory = GeoWaveStoreFinder.findDataStoreFactory(configOptions);
 		indexStoreFactory = GeoWaveStoreFinder.findIndexStoreFactory(configOptions);
 		adapterStoreFactory = GeoWaveStoreFinder.findAdapterStoreFactory(configOptions);
 	}
@@ -141,10 +137,6 @@ public class InfoServiceImpl implements
 	public Response getAdapters(
 			@PathParam("namespace")
 			final String namespace ) {
-		DataStore store = dataStoreFactory.createStore(
-				configOptions,
-				namespace);
-		if (store != null){
 		try (CloseableIterator<DataAdapter<?>> dataAdapters = adapterStoreFactory.createStore(
 				configOptions,
 				namespace).getAdapters()) {
@@ -172,7 +164,5 @@ public class InfoServiceImpl implements
 					e);
 			return Response.serverError().build();
 		}
-		}
-		return Response.serverError().build();
 	}
 }
