@@ -74,7 +74,6 @@ public class GeoServerIT extends
 	public static void initialize()
 			throws ClientProtocolException,
 			IOException {
-		ServicesTestEnvironment.startServices();
 		try {
 			accumuloOperations.deleteAll();
 		}

@@ -18,8 +18,6 @@ import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreFactoryFamily;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.examples.ingest.SimpleIngest;
 import mil.nga.giat.geowave.service.client.GeoserverServiceClient;
-import mil.nga.giat.geowave.service.client.InfoServiceClient;
-import mil.nga.giat.geowave.service.client.IngestServiceClient;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -58,8 +56,6 @@ public class GeoWaveIngestGeoserverIT extends
 	@BeforeClass
 	public static void setupIngestTest()
 			throws URISyntaxException {
-
-		ServicesTestEnvironment.startServices();
 		geoserverServiceClient = new GeoserverServiceClient(
 				GEOWAVE_BASE_URL);
 
@@ -90,7 +86,7 @@ public class GeoWaveIngestGeoserverIT extends
 		final AccumuloDataStore ds = new AccumuloDataStore(
 				bao);
 		final SimpleFeatureType sft = SimpleIngest.createPointFeatureType();
-		PrimaryIndex idx = SimpleIngest.createSpatialIndex();
+		final PrimaryIndex idx = SimpleIngest.createSpatialIndex();
 		final FeatureDataAdapter fda = SimpleIngest.createDataAdapter(sft);
 		final List<SimpleFeature> features = SimpleIngest.getGriddedFeatures(
 				new SimpleFeatureBuilder(
@@ -100,16 +96,16 @@ public class GeoWaveIngestGeoserverIT extends
 				"Beginning to ingest a uniform grid of %d features",
 				features.size()));
 		int ingestedFeatures = 0;
-		int featuresPer5Percent = features.size() / 20;
+		final int featuresPer5Percent = features.size() / 20;
 		try (IndexWriter writer = ds.createIndexWriter(
 				idx,
 				DataStoreUtils.DEFAULT_VISIBILITY)) {
-			for (SimpleFeature feat : features) {
+			for (final SimpleFeature feat : features) {
 				writer.write(
 						fda,
 						feat);
 				ingestedFeatures++;
-				if (ingestedFeatures % featuresPer5Percent == 0) {
+				if ((ingestedFeatures % featuresPer5Percent) == 0) {
 					LOGGER.info(String.format(
 							"Ingested %d percent of features",
 							(ingestedFeatures / featuresPer5Percent) * 5));
