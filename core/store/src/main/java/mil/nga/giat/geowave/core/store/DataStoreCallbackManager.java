@@ -9,8 +9,8 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStoreStatsAdapterWrapper;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStoreStatsAdapterWrapper;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatisticalDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
@@ -84,13 +84,12 @@ public class DataStoreCallbackManager implements
 						statsAdapter,
 						statsStore));
 			}
-			// TODO:
-			// if (writableAdapter instanceof SecondaryIndexDataAdapter<?>) {
-			// callbackList.add(new SecondaryIndexDataManager<T>(
-			// secondaryIndexStore,
-			// (SecondaryIndexDataAdapter<T>) writableAdapter,
-			// index.getId()));
-			// }
+			if (writableAdapter instanceof SecondaryIndexDataAdapter<?>) {
+				callbackList.add(new SecondaryIndexDataManager<T>(
+						secondaryIndexStore,
+						(SecondaryIndexDataAdapter<T>) writableAdapter,
+						index.getId()));
+			}
 			dcache.put(
 					writableAdapter.getAdapterId(),
 					new DeleteCallbackList<T>(

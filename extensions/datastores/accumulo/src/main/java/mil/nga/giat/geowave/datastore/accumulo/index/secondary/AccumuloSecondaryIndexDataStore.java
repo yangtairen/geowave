@@ -102,6 +102,26 @@ public class AccumuloSecondaryIndexDataStore implements
 		}
 	}
 
+	@Override
+	public void delete(
+			final SecondaryIndex<?> secondaryIndex,
+			final List<FieldInfo<?>> indexedAttributes ) {
+		final Writer writer = getWriter(secondaryIndex.getIndexStrategy().getId());
+		if (writer != null) {
+			for (final FieldInfo<?> indexedAttribute : indexedAttributes) {
+				@SuppressWarnings("unchecked")
+				final List<ByteArrayId> secondaryIndexInsertionIds = secondaryIndex.getIndexStrategy().getInsertionIds(
+						Arrays.asList(indexedAttribute));
+				for (final ByteArrayId insertionId : secondaryIndexInsertionIds) {
+					writer.write(buildDeleteMutation(
+							insertionId.getBytes(),
+							secondaryIndex.getId().getBytes(),
+							indexedAttribute.getDataValue().getId().getBytes()));
+				}
+			}
+		}
+	}
+
 	private Mutation buildMutation(
 			final byte[] secondaryIndexRowId,
 			final byte[] secondaryIndexId,
@@ -124,6 +144,18 @@ public class AccumuloSecondaryIndexDataStore implements
 				primaryIndexId,
 				columnVisibility,
 				primaryIndexRowId);
+		return m;
+	}
+
+	private Mutation buildDeleteMutation(
+			final byte[] secondaryIndexRowId,
+			final byte[] secondaryIndexId,
+			final byte[] attributeName ) {
+		final Mutation m = new Mutation(
+				secondaryIndexRowId);
+		m.putDelete(
+				secondaryIndexId,
+				attributeName);
 		return m;
 	}
 

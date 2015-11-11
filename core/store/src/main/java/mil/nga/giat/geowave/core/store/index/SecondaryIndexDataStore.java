@@ -29,6 +29,16 @@ public interface SecondaryIndexDataStore
 	/**
 	 * 
 	 * @param secondaryIndex
+	 * @param primaryIndexId
+	 * @param indexedAttributes
+	 */
+	public void delete(
+			final SecondaryIndex<?> secondaryIndex,
+			final List<FieldInfo<?>> indexedAttributes );
+
+	/**
+	 * 
+	 * @param secondaryIndex
 	 * @param ranges
 	 * @param constraints
 	 * @param primaryIndexId

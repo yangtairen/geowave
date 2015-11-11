@@ -25,6 +25,14 @@ public class MemorySecondaryIndexDataStore implements
 	}
 
 	@Override
+	public void delete(
+			SecondaryIndex<?> secondaryIndex,
+			List<FieldInfo<?>> indexedAttributes ) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
 	public CloseableIterator<ByteArrayId> query(
 			SecondaryIndex<?> secondaryIndex,
 			List<ByteArrayRange> ranges,
