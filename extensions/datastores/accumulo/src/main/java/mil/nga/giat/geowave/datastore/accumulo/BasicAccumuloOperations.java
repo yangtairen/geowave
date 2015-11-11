@@ -91,7 +91,7 @@ public class BasicAccumuloOperations implements
 	 * This is will create an Accumulo connector based on passed in connection
 	 * information and credentials for convenience convenience. It will also use
 	 * reasonable defaults for unspecified parameters.
-	 * 
+	 *
 	 * @param zookeeperUrl
 	 *            The comma-delimited URLs for all zookeeper servers, this will
 	 *            be directly used to instantiate a ZookeeperInstance
@@ -123,11 +123,6 @@ public class BasicAccumuloOperations implements
 				null,
 				tableNamespace);
 		this.password = password;
-		LOGGER.warn("zk:" + zookeeperUrl + ";");
-		LOGGER.warn("in:" + instanceName + ";");
-		LOGGER.warn("un:" + userName + ";");
-		LOGGER.warn("pw:" + password + ";");
-		LOGGER.warn("ns:" + tableNamespace + ";");
 
 		connector = ConnectorPool.getInstance().getConnector(
 				zookeeperUrl,
@@ -139,7 +134,7 @@ public class BasicAccumuloOperations implements
 	/**
 	 * This constructor uses reasonable defaults and only requires an Accumulo
 	 * connector
-	 * 
+	 *
 	 * @param connector
 	 *            The connector to use for all operations
 	 */
@@ -153,7 +148,7 @@ public class BasicAccumuloOperations implements
 	/**
 	 * This constructor uses reasonable defaults and requires an Accumulo
 	 * connector and table namespace
-	 * 
+	 *
 	 * @param connector
 	 *            The connector to use for all operations
 	 * @param password
@@ -176,7 +171,7 @@ public class BasicAccumuloOperations implements
 	/**
 	 * This is the full constructor for the operation factory and should be used
 	 * if any of the defaults are insufficient.
-	 * 
+	 *
 	 * @param numThreads
 	 *            The number of threads to use for a batch scanner and batch
 	 *            writer
@@ -274,7 +269,7 @@ public class BasicAccumuloOperations implements
 						e);
 			}
 		}
-		BatchWriterConfig config = new BatchWriterConfig();
+		final BatchWriterConfig config = new BatchWriterConfig();
 		config.setMaxMemory(byteBufferSize);
 		config.setMaxLatency(
 				timeoutMillis,

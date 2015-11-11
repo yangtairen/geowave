@@ -8,11 +8,9 @@ import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.ZooKeeperInstance;
-import org.apache.log4j.Logger;
 
 public class ConnectorPool
 {
-	private final static Logger LOGGER = Logger.getLogger(ConnectorPool.class);
 	private static ConnectorPool singletonInstance;
 
 	public static synchronized ConnectorPool getInstance() {
@@ -38,11 +36,6 @@ public class ConnectorPool
 				password);
 		Connector connector = connectorCache.get(config);
 		if (connector == null) {
-			LOGGER.warn("NEW CONNECTOR");
-			LOGGER.warn("zk:" + zookeeperUrl + ";");
-			LOGGER.warn("in:" + instanceName + ";");
-			LOGGER.warn("un:" + userName + ";");
-			LOGGER.warn("pw:" + password + ";");
 			final Instance inst = new ZooKeeperInstance(
 					instanceName,
 					zookeeperUrl);

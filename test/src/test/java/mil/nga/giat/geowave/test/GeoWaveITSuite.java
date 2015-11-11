@@ -23,7 +23,6 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-	GeoWaveServicesIT.class,
 	GeoWaveBasicIT.class,
 	GeoWaveRasterIT.class,
 	BasicMapReduceIT.class,
@@ -32,6 +31,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	GeoWaveKMeansIT.class,
 	GeoWaveNNIT.class,
 	GeoServerIT.class,
+	GeoWaveServicesIT.class,
 	GeoWaveIngestGeoserverIT.class,
 	AttributesSubsetQueryIT.class,
 	SecondaryIndexingDriverIT.class,
