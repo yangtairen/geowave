@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -52,6 +53,7 @@ public class InfoServiceImpl implements
 
 		final Set<Object> keySet = props.keySet();
 		final Iterator<Object> it = keySet.iterator();
+		LOGGER.warn("PROPERTIES");
 		while (it.hasNext()) {
 			final String key = it.next().toString();
 			strMap.put(
@@ -59,9 +61,13 @@ public class InfoServiceImpl implements
 					ServiceUtils.getProperty(
 							props,
 							key));
-			System.err.println(key + "=" +props.getProperty(key)+";" );
+			LOGGER.warn(key + "=" + props.getProperty(key) + ";");
 		}
+		LOGGER.warn("CONFIG OPTIONS");
 		configOptions = ConfigUtils.valuesFromStrings(strMap);
+		for (final Entry<String, Object> e : configOptions.entrySet()) {
+			LOGGER.warn(e.getKey() + "=" + e.getValue().toString() + ";");
+		}
 		indexStoreFactory = GeoWaveStoreFinder.findIndexStoreFactory(configOptions);
 		adapterStoreFactory = GeoWaveStoreFinder.findAdapterStoreFactory(configOptions);
 	}

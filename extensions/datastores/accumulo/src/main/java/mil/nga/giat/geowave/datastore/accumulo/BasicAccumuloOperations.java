@@ -123,6 +123,12 @@ public class BasicAccumuloOperations implements
 				null,
 				tableNamespace);
 		this.password = password;
+		LOGGER.warn("zk:" + zookeeperUrl + ";");
+		LOGGER.warn("in:" + instanceName + ";");
+		LOGGER.warn("un:" + userName + ";");
+		LOGGER.warn("pw:" + password + ";");
+		LOGGER.warn("ns:" + tableNamespace + ";");
+
 		connector = ConnectorPool.getInstance().getConnector(
 				zookeeperUrl,
 				instanceName,
