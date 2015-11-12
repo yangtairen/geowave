@@ -7,13 +7,8 @@ import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class ConfigUtils
 {
-	private final static Logger LOGGER = LoggerFactory.getLogger(ConfigUtils.class);
-
 	public static String cleanOptionName(
 			String name ) {
 		name = name.trim().toLowerCase().replaceAll(
@@ -88,10 +83,7 @@ public class ConfigUtils
 				stringValues.size());
 		final Map<String, AbstractConfigOption<?>> configOptionMap = new HashMap<String, AbstractConfigOption<?>>();
 		// first get a map of optionname to option
-		LOGGER.warn("Abstract options");
 		for (final AbstractConfigOption<?> option : configOptions) {
-
-			LOGGER.warn(option.getName() + "=" + option + ";");
 			configOptionMap.put(
 					option.getName(),
 					option);
@@ -102,12 +94,6 @@ public class ConfigUtils
 				objectValues.put(
 						stringValue.getKey(),
 						option.valueFromString(stringValue.getValue()));
-
-				LOGGER.warn("mapping: " + stringValue.getKey() + "=" + stringValue.getValue() + ";" + option.valueFromString(stringValue.getValue()) + ";" + option);
-			}
-			else {
-
-				LOGGER.warn("crap! " + stringValue.getKey());
 			}
 		}
 		return objectValues;
