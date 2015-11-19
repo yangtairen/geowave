@@ -240,7 +240,7 @@ public class KryoFeatureSerializer extends
 			else if (Geometry.class.isAssignableFrom(attributeType)) {
 				final int length = input.readInt();
 				final byte[] buffer = new byte[length];
-				input.read(buffer);
+				input.readBytes(buffer);
 				try {
 					return geoByteReader.read(buffer);
 				}
@@ -278,7 +278,7 @@ public class KryoFeatureSerializer extends
 
 						final int length = input.readInt();
 						final byte[] buffer = new byte[length];
-						input.read(buffer);
+						input.readBytes(buffer);
 						final ByteArrayInputStream bis = new ByteArrayInputStream(
 								buffer);
 						ObjectInputStream ois;
