@@ -1,7 +1,15 @@
 package mil.nga.giat.geowave.adapter.vector.field;
 
+import java.io.ByteArrayOutputStream;
+
+import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.opengis.feature.simple.SimpleFeature;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+
+import mil.nga.giat.geowave.adapter.vector.serialization.kryo.KryoFeatureSerializer;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
 import mil.nga.giat.geowave.core.store.data.field.FieldSerializationProviderSpi;
@@ -24,6 +32,15 @@ public class SimpleFeatureSerializationProvider implements
 	protected static class SimpleFeatureReader implements
 			FieldReader<SimpleFeature>
 	{
+		private final Kryo kryo;
+
+		public SimpleFeatureReader() {
+			super();
+			kryo = new Kryo();
+			kryo.register(
+					SimpleFeatureImpl.class,
+					new KryoFeatureSerializer());
+		}
 
 		@Override
 		public SimpleFeature readField(
@@ -31,7 +48,11 @@ public class SimpleFeatureSerializationProvider implements
 			if (fieldData == null) {
 				return null;
 			}
-			return null; // FIXME use Kryo to deserialize SimpleFeature
+			final Input input = new Input(
+					fieldData);
+			return kryo.readObject(
+					input,
+					SimpleFeatureImpl.class);
 		}
 
 	}
@@ -39,6 +60,15 @@ public class SimpleFeatureSerializationProvider implements
 	protected static class SimpleFeatureWriter implements
 			FieldWriter<Object, SimpleFeature>
 	{
+		private final Kryo kryo;
+
+		public SimpleFeatureWriter() {
+			super();
+			kryo = new Kryo();
+			kryo.register(
+					SimpleFeatureImpl.class,
+					new KryoFeatureSerializer());
+		}
 
 		@Override
 		public byte[] writeField(
@@ -46,7 +76,13 @@ public class SimpleFeatureSerializationProvider implements
 			if (fieldValue == null) {
 				return new byte[] {};
 			}
-			return null; // FIXME use Kryo to serialize SimpleFeature
+			final Output output = new Output(
+					new ByteArrayOutputStream());
+			kryo.writeObject(
+					output,
+					fieldValue);
+			output.close();
+			return ((ByteArrayOutputStream) output.getOutputStream()).toByteArray();
 		}
 
 		@Override
