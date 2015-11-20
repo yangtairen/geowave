@@ -35,8 +35,8 @@ public class KryoFeatureSerializer extends
 	private final static Logger LOGGER = Logger.getLogger(KryoFeatureSerializer.class);
 	private final Map<String, SimpleFeatureType> typeCache = new HashMap<>();
 	private final Map<String, SimpleFeatureBuilder> builderCache = new HashMap<>();
-	private final WKBReader geoByteReader = new WKBReader();
-	private final WKBWriter geoByteWriter = new WKBWriter();
+	private WKBReader geoByteReader;
+	private WKBWriter geoByteWriter;
 
 	@Override
 	public void write(
@@ -96,7 +96,7 @@ public class KryoFeatureSerializer extends
 				output.writeLong(((Date) attributeValue).getTime());
 			}
 			else if (Geometry.class.isAssignableFrom(attributeType)) {
-				final byte[] buffer = geoByteWriter.write((Geometry) attributeValue);
+				final byte[] buffer = getGeoByteWriter().write((Geometry) attributeValue);
 				final int length = buffer.length;
 				output.writeInt(length);
 				output.write(buffer);
@@ -242,7 +242,7 @@ public class KryoFeatureSerializer extends
 				final byte[] buffer = new byte[length];
 				input.readBytes(buffer);
 				try {
-					return geoByteReader.read(buffer);
+					return getGeoByteReader().read(buffer);
 				}
 				catch (final ParseException e) {
 					LOGGER.warn(
@@ -350,6 +350,20 @@ public class KryoFeatureSerializer extends
 					builder);
 			return builder;
 		}
+	}
+	
+	private WKBReader getGeoByteReader() {
+		if(geoByteReader == null) {
+			geoByteReader = new WKBReader();
+		}
+		return geoByteReader;
+	}
+	
+	private WKBWriter getGeoByteWriter() {
+		if(geoByteWriter == null) {
+			geoByteWriter = new WKBWriter();
+		}
+		return geoByteWriter;
 	}
 
 }
