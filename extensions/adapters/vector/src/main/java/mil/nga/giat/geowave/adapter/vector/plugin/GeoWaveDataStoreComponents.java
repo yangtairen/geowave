@@ -12,14 +12,17 @@ import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveTransaction
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.TransactionsAllocator;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.data.visibility.GlobalVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
-import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.query.BasicQuery.Constraints;
 import mil.nga.giat.geowave.core.store.query.DataIdQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 
@@ -87,6 +90,36 @@ public class GeoWaveDataStoreComponents
 							transaction.composeAuthorizations()));
 		}
 		return stats;
+	}
+
+	public CloseableIterator<Index<?, ?>> getIndices(
+			Constraints timeConstraints,
+			Constraints geoConstraints ) {
+		return new CloseableIterator<Index<?, ?>>() {
+			final CloseableIterator<Index<?, ?>> it = getIndexStore().getIndices();
+			Index<?, ?> nextIdx = null;
+			@Override
+			public boolean hasNext() {
+				while (nextIdx == null && it.hasNext()) {
+					nextIdx = it.next();
+					
+				}
+				return nextIdx == null;
+			}
+
+			@Override
+			public Index<?, ?> next() {
+				Index<?, ?> returnVal = nextIdx;
+				nextIdx = null;
+				return returnVal;
+			}
+
+			@Override
+			public void close()
+					throws IOException {
+			  it.close();				
+			}
+		};
 	}
 
 	public void remove(

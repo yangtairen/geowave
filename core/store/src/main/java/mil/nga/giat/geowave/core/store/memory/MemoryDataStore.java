@@ -267,7 +267,7 @@ public class MemoryDataStore implements
 							CommonIndexModel indexModel,
 							IndexedPersistenceEncoding persistenceEncoding ) {
 						try {
-							for (ByteArrayId id : queryOptions.getAdapterIds(getAdapterStore())) {
+							for (ByteArrayId id : DataStoreUtils.trimAdapterIdsByIndex(statsStore, index.getId(), queryOptions.getAdapterIds(getAdapterStore()))) {
 								if (id.equals(persistenceEncoding.getAdapterId())) return true;
 							}
 						}

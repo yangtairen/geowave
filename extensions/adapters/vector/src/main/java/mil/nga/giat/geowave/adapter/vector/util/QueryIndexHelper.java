@@ -293,7 +293,7 @@ public class QueryIndexHelper
 	}
 
 	/**
-	 * * Compose a time constraints. When the provided constraints do not
+	 * Compose a geometric constraints. When the provided constraints do not
 	 * fulfill the indexed dimensions, compose constraints from statistics.
 	 * 
 	 * 

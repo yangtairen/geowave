@@ -20,7 +20,8 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.core.store.data.CommonIndexedPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
+import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
 import mil.nga.giat.geowave.core.store.data.DataWriter;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
@@ -218,6 +219,31 @@ public class DataStoreUtils
 				encodedData.isDeduplicationEnabled());
 
 		return rowIds;
+	}
+
+	/**
+	 * Reduce the list of adapter IDs to those which have associated data in the given index.
+	 * @param statisticsStore
+	 * @param indexId
+	 * @param adapterIds
+	 * @param authorizations
+	 * @return
+	 */
+	public static List<ByteArrayId> trimAdapterIdsByIndex(
+			DataStatisticsStore statisticsStore,
+			ByteArrayId indexId,
+			List<ByteArrayId> adapterIds,
+			String... authorizations ) {
+		final List<ByteArrayId> results = new ArrayList<ByteArrayId>();
+		for (ByteArrayId adapterId : adapterIds) {
+			if (statisticsStore.getDataStatistics(
+					adapterId,
+					RowRangeHistogramStatistics.composeId(indexId),
+					authorizations) != null) {
+				results.add(adapterId);
+			}
+		}
+		return results;
 	}
 
 	public static <T> void addToRowIds(

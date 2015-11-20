@@ -54,6 +54,7 @@ public class GeoWavePluginConfig
 	protected static final String AUTH_MGT_KEY = "Authorization Management Provider";
 	protected static final String AUTH_URL_KEY = "Authorization Data URL";
 	protected static final String TRANSACTION_BUFFER_SIZE = "Transaction Buffer Size";
+	protected static final String QUERY_INDEX_STRATEGY_KEY = "Query Index Strategy";
 
 	private static final Param GEOWAVE_NAMESPACE = new Param(
 			GEOWAVE_NAMESPACE_KEY,
@@ -95,6 +96,13 @@ public class GeoWavePluginConfig
 			"The providers data URL.",
 			false);
 
+	
+	private static final Param QUERY_INDEX_STRATEGY = new Param(
+			QUERY_INDEX_STRATEGY_KEY,
+			String.class,
+			"Strategy to choose an index during query processing.",
+			false);
+	
 	private final AdapterStore adapterStore;
 	private final DataStore dataStore;
 	private final IndexStore indexStore;
@@ -105,6 +113,7 @@ public class GeoWavePluginConfig
 	private final AuthorizationFactorySPI authorizationFactory;
 	private final URL authorizationURL;
 	private final Integer transactionBufferSize;
+	private final String 
 
 	private static Map<String, List<Param>> paramMap = new HashMap<String, List<Param>>();
 

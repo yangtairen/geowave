@@ -18,25 +18,13 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TimeZone;
 
-import org.apache.log4j.Logger;
-import org.geotools.data.FeatureReader;
-import org.geotools.data.Query;
-import org.geotools.filter.FidFilterImpl;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.filter.Filter;
-
-import com.google.common.collect.Iterators;
-import com.vividsolutions.jts.geom.Geometry;
-
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveTransaction;
 import mil.nga.giat.geowave.adapter.vector.query.cql.CQLQuery;
 import mil.nga.giat.geowave.adapter.vector.render.DistributableRenderer;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureStatistic;
 import mil.nga.giat.geowave.adapter.vector.util.QueryIndexHelper;
 import mil.nga.giat.geowave.core.geotime.DimensionalityType;
+import mil.nga.giat.geowave.core.geotime.GeometryUtils;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.geotime.store.query.TemporalConstraintsSet;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -50,6 +38,19 @@ import mil.nga.giat.geowave.core.store.query.BasicQuery;
 import mil.nga.giat.geowave.core.store.query.BasicQuery.Constraints;
 import mil.nga.giat.geowave.core.store.query.DataIdQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
+
+import org.apache.log4j.Logger;
+import org.geotools.data.FeatureReader;
+import org.geotools.data.Query;
+import org.geotools.filter.FidFilterImpl;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.filter.Filter;
+
+import com.google.common.collect.Iterators;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * This class wraps a geotools data store as well as one for statistics (for
@@ -141,15 +142,21 @@ public class GeoWaveFeatureReader implements
 		final List<CloseableIterator<SimpleFeature>> results = new ArrayList<CloseableIterator<SimpleFeature>>();
 		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = components.getDataStatistics(transaction);
 
-		try (CloseableIterator<Index<?, ?>> indexIt = getComponents().getIndexStore().getIndices()) {
+		final Constraints timeConstraints = QueryIndexHelper.composeTimeBoundedConstraints(
+				components.getAdapter().getType(),
+				components.getAdapter().getTimeDescriptors(),
+				statsMap,
+				timeBounds);
+
+		final Constraints geoConstraints = (jtsBounds == null && !timeConstraints.isEmpty()) ? QueryIndexHelper.getBBOXIndexConstraints(
+				getFeatureType(),
+				components.getDataStatistics(transaction)) : (jtsBounds != null ? GeometryUtils.basicConstraintsFromGeometry(jtsBounds) : new Constraints());
+
+		try (CloseableIterator<Index<?, ?>> indexIt = getComponents().getIndices(
+				timeConstraints,
+				geoConstraints)) {
 			while (indexIt.hasNext()) {
 				final PrimaryIndex index = (PrimaryIndex) indexIt.next();
-
-				final Constraints timeConstraints = QueryIndexHelper.composeTimeBoundedConstraints(
-						components.getAdapter().getType(),
-						components.getAdapter().getTimeDescriptors(),
-						statsMap,
-						timeBounds);
 
 				/*
 				 * Inspect for SPATIAL_TEMPORAL type index. Most queries issued
@@ -169,11 +176,6 @@ public class GeoWaveFeatureReader implements
 							null));
 				}
 				else {
-
-					final Constraints geoConstraints = QueryIndexHelper.composeGeometricConstraints(
-							components.getAdapter().getType(),
-							statsMap,
-							jtsBounds);
 
 					if (timeConstraints.isSupported(index)) {
 
@@ -527,24 +529,15 @@ public class GeoWaveFeatureReader implements
 			final Constraints geoConstraints,
 			final Constraints temporalConstraints ) {
 
-		if ((geoConstraints == null) && (temporalConstraints != null)) {
-			final Constraints statBasedGeoConstraints = QueryIndexHelper.getBBOXIndexConstraints(
-					getFeatureType(),
-					components.getDataStatistics(transaction));
+		if (jtsBounds == null) {
 			return new BasicQuery(
-					statBasedGeoConstraints.merge(temporalConstraints));
+					geoConstraints.merge(temporalConstraints));
 		}
-		else if ((jtsBounds != null) && (temporalConstraints == null)) {
-			return new SpatialQuery(
-					geoConstraints,
-					jtsBounds);
-		}
-		else if ((jtsBounds != null) && (temporalConstraints != null)) {
+		else {
 			return new SpatialQuery(
 					geoConstraints.merge(temporalConstraints),
 					jtsBounds);
 		}
-		return null;
 	}
 
 	public Object convertToType(
