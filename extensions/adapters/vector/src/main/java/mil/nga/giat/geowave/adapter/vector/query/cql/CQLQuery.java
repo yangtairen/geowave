@@ -112,7 +112,7 @@ public class CQLQuery implements
 	@Override
 	public List<QueryFilter> createFilters(
 			final CommonIndexModel indexModel ) {
-		final List<QueryFilter> queryFilters;
+		List<QueryFilter> queryFilters;
 		if (baseQuery != null) {
 			queryFilters = baseQuery.createFilters(indexModel);
 		}
@@ -120,6 +120,8 @@ public class CQLQuery implements
 			queryFilters = new ArrayList<QueryFilter>();
 		}
 		if (filter != null) {
+			queryFilters = new ArrayList<QueryFilter>(
+					queryFilters);
 			queryFilters.add(filter);
 		}
 		return queryFilters;
@@ -137,12 +139,12 @@ public class CQLQuery implements
 	}
 
 	@Override
-	public MultiDimensionalNumericData getIndexConstraints(
+	public List<MultiDimensionalNumericData> getIndexConstraints(
 			final NumericIndexStrategy indexStrategy ) {
 		if (baseQuery != null) {
 			return baseQuery.getIndexConstraints(indexStrategy);
 		}
-		return new BasicNumericDataset();
+		return Collections.emptyList();
 	}
 
 	@Override

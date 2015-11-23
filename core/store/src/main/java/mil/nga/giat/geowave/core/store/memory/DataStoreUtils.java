@@ -50,19 +50,7 @@ public class DataStoreUtils
 			new UnconstrainedVisibilityHandler());
 
 	public static List<ByteArrayRange> constraintsToByteArrayRanges(
-			final MultiDimensionalNumericData constraints,
-			final NumericIndexStrategy indexStrategy ) {
-		if ((constraints == null) || constraints.isEmpty()) {
-			return new ArrayList<ByteArrayRange>(); // implies in negative and
-			// positive infinity
-		}
-		else {
-			return indexStrategy.getQueryRanges(constraints);
-		}
-	}
-
-	public static List<ByteArrayRange> constraintsToByteArrayRanges(
-			final MultiDimensionalNumericData constraints,
+			final List<MultiDimensionalNumericData> constraints,
 			final NumericIndexStrategy indexStrategy,
 			final int maxRanges ) {
 		if ((constraints == null) || constraints.isEmpty()) {
@@ -70,9 +58,16 @@ public class DataStoreUtils
 			// positive infinity
 		}
 		else {
-			return indexStrategy.getQueryRanges(
-					constraints,
-					maxRanges);
+			final List<ByteArrayRange> ranges = new ArrayList<ByteArrayRange>();
+			for (MultiDimensionalNumericData nd : constraints) {
+				ranges.addAll(indexStrategy.getQueryRanges(
+						nd,
+						maxRanges));
+			}
+			ByteArrayRange.mergeIntersections(
+					ranges,
+					0);
+			return ranges;
 		}
 	}
 

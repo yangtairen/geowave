@@ -47,6 +47,7 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.BasicQuery;
+import mil.nga.giat.geowave.core.store.query.BasicQuery.ConstraintSet;
 import mil.nga.giat.geowave.core.store.query.BasicQuery.Constraints;
 import mil.nga.giat.geowave.core.store.query.DataIdQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
@@ -139,7 +140,7 @@ public class GeoWaveFeatureReader implements
 			final QueryIssuer issuer ) {
 
 		final List<CloseableIterator<SimpleFeature>> results = new ArrayList<CloseableIterator<SimpleFeature>>();
-		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = components.getDataStatistics(transaction);
+		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = transaction.getDataStatistics();
 
 		try (CloseableIterator<Index<?, ?>> indexIt = getComponents().getIndexStore().getIndices()) {
 			while (indexIt.hasNext()) {
@@ -496,7 +497,7 @@ public class GeoWaveFeatureReader implements
 	protected List<DataStatistics<SimpleFeature>> getStatsFor(
 			final String name ) {
 		final List<DataStatistics<SimpleFeature>> stats = new LinkedList<DataStatistics<SimpleFeature>>();
-		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = components.getDataStatistics(transaction);
+		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = transaction.getDataStatistics();
 		for (final Map.Entry<ByteArrayId, DataStatistics<SimpleFeature>> stat : statsMap.entrySet()) {
 			if ((stat.getValue() instanceof FeatureStatistic) && ((FeatureStatistic) stat.getValue()).getFieldName().endsWith(
 					name)) {
@@ -509,7 +510,7 @@ public class GeoWaveFeatureReader implements
 	protected TemporalConstraintsSet clipIndexedTemporalConstraints(
 			final TemporalConstraintsSet constraintsSet ) {
 		return QueryIndexHelper.clipIndexedTemporalConstraints(
-				components.getDataStatistics(transaction),
+				transaction.getDataStatistics(),
 				components.getAdapter().getTimeDescriptors(),
 				constraintsSet);
 	}
@@ -519,7 +520,7 @@ public class GeoWaveFeatureReader implements
 		return QueryIndexHelper.clipIndexedBBOXConstraints(
 				getFeatureType(),
 				bbox,
-				components.getDataStatistics(transaction));
+				transaction.getDataStatistics());
 	}
 
 	private BasicQuery composeQuery(
@@ -528,11 +529,12 @@ public class GeoWaveFeatureReader implements
 			final Constraints temporalConstraints ) {
 
 		if ((geoConstraints == null) && (temporalConstraints != null)) {
-			final Constraints statBasedGeoConstraints = QueryIndexHelper.getBBOXIndexConstraints(
+			final ConstraintSet statBasedGeoConstraints = QueryIndexHelper.getBBOXIndexConstraintsFromIndex(
 					getFeatureType(),
-					components.getDataStatistics(transaction));
+					transaction.getDataStatistics());
 			return new BasicQuery(
-					statBasedGeoConstraints.merge(temporalConstraints));
+					new Constraints(
+							statBasedGeoConstraints).merge(temporalConstraints));
 		}
 		else if ((jtsBounds != null) && (temporalConstraints == null)) {
 			return new SpatialQuery(

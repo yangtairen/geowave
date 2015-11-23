@@ -1,10 +1,9 @@
 package mil.nga.giat.geowave.adapter.vector.query.cql;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.List;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.core.geotime.IndexType;
@@ -38,16 +37,18 @@ public class CQLQueryTest
 		final CQLQuery query = new CQLQuery(
 				"BBOX(geometry,27.20,41.30,27.30,41.20) and when during 2005-05-19T20:32:56Z/2005-05-19T21:32:56Z",
 				adapter);
-		final MultiDimensionalNumericData constraints = query.getIndexConstraints(IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndexStrategy());
+		final List<MultiDimensionalNumericData> constraints = query.getIndexConstraints(IndexType.SPATIAL_TEMPORAL_VECTOR.createDefaultIndexStrategy());
 		assertTrue(Arrays.equals(
-				constraints.getMinValuesPerDimension(),
+				constraints.get(
+						0).getMinValuesPerDimension(),
 				new double[] {
 					27.2,
 					41.2,
 					1.116534776E12
 				}));
 		assertTrue(Arrays.equals(
-				constraints.getMaxValuesPerDimension(),
+				constraints.get(
+						0).getMaxValuesPerDimension(),
 				new double[] {
 					27.3,
 					41.3,
@@ -61,15 +62,17 @@ public class CQLQueryTest
 		final CQLQuery query = new CQLQuery(
 				"BBOX(geometry,27.20,41.30,27.30,41.20) and when during 2005-05-19T20:32:56Z/2005-05-19T21:32:56Z",
 				adapter);
-		final MultiDimensionalNumericData constraints = query.getIndexConstraints(IndexType.SPATIAL_VECTOR.createDefaultIndexStrategy());
+		final List<MultiDimensionalNumericData> constraints = query.getIndexConstraints(IndexType.SPATIAL_VECTOR.createDefaultIndexStrategy());
 		assertTrue(Arrays.equals(
-				constraints.getMinValuesPerDimension(),
+				constraints.get(
+						0).getMinValuesPerDimension(),
 				new double[] {
 					27.2,
 					41.2
 				}));
 		assertTrue(Arrays.equals(
-				constraints.getMaxValuesPerDimension(),
+				constraints.get(
+						0).getMaxValuesPerDimension(),
 				new double[] {
 					27.3,
 					41.3
@@ -82,15 +85,17 @@ public class CQLQueryTest
 		final CQLQuery query = new CQLQuery(
 				"BBOX(geometry,27.20,41.30,27.30,41.20)",
 				adapter);
-		final MultiDimensionalNumericData constraints = query.getIndexConstraints(IndexType.SPATIAL_VECTOR.createDefaultIndexStrategy());
+		final List<MultiDimensionalNumericData> constraints = query.getIndexConstraints(IndexType.SPATIAL_VECTOR.createDefaultIndexStrategy());
 		assertTrue(Arrays.equals(
-				constraints.getMinValuesPerDimension(),
+				constraints.get(
+						0).getMinValuesPerDimension(),
 				new double[] {
 					27.2,
 					41.2
 				}));
 		assertTrue(Arrays.equals(
-				constraints.getMaxValuesPerDimension(),
+				constraints.get(
+						0).getMaxValuesPerDimension(),
 				new double[] {
 					27.3,
 					41.3
