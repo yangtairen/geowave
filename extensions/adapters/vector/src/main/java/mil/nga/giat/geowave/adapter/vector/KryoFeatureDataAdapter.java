@@ -38,8 +38,7 @@ public class KryoFeatureDataAdapter extends
 				featureType);
 		this.featureType = featureType;
 		adapterId = new ByteArrayId(
-				StringUtils.stringToBinary(
-						featureType.getTypeName()));
+				StringUtils.stringToBinary(featureType.getTypeName()));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -47,8 +46,7 @@ public class KryoFeatureDataAdapter extends
 	public FieldReader<Object> getReader(
 			final ByteArrayId fieldId ) {
 		final Class<?> clazz = SimpleFeature.class;
-		return (FieldReader<Object>) FieldUtils.getDefaultReaderForClass(
-				clazz);
+		return (FieldReader<Object>) FieldUtils.getDefaultReaderForClass(clazz);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -56,8 +54,7 @@ public class KryoFeatureDataAdapter extends
 	public FieldWriter<SimpleFeature, Object> getWriter(
 			final ByteArrayId fieldId ) {
 		final Class<?> clazz = SimpleFeature.class;
-		return (FieldWriter<SimpleFeature, Object>) FieldUtils.getDefaultWriterForClass(
-				clazz);
+		return (FieldWriter<SimpleFeature, Object>) FieldUtils.getDefaultWriterForClass(clazz);
 	}
 
 	@Override
@@ -76,8 +73,7 @@ public class KryoFeatureDataAdapter extends
 	public ByteArrayId getDataId(
 			final SimpleFeature entry ) {
 		return new ByteArrayId(
-				StringUtils.stringToBinary(
-						entry.getID()));
+				StringUtils.stringToBinary(entry.getID()));
 	}
 
 	@Override

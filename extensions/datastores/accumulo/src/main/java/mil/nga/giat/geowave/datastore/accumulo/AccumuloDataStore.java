@@ -288,11 +288,15 @@ public class AccumuloDataStore implements
 						List<ByteArrayId> adapterIds = queryOptions.getAdapterIds(adapterStore);
 						// only narrow adapter Ids if the set of adapter id's is
 						// resolved
-						adapterIds = (adapterIds != null && accumuloOptions.persistDataStatistics && adapterIds.size() > 0) ? DataStoreUtils.trimAdapterIdsByIndex(
-								statisticsStore,
-								index.getId(),
-								adapterIds) : adapterIds;
-					    // the null case should not happen, but the findbugs seems to like it.
+						try (CloseableIterator<DataAdapter<?>> adapters = queryOptions.getAdapters(getAdapterStore())) {
+							adapterIds = (adapterIds != null && accumuloOptions.persistDataStatistics && adapterIds.size() > 0) ? DataStoreUtils.trimAdapterIdsByIndex(
+									statisticsStore,
+									index.getId(),
+									adapters,
+									queryOptions.getAuthorizations()) : adapterIds;
+						}
+						// the null case should not happen, but the findbugs
+						// seems to like it.
 						if (adapterIds == null || adapterIds.size() > 0) {
 							accumuloQuery = new AccumuloConstraintsQuery(
 									adapterIds,

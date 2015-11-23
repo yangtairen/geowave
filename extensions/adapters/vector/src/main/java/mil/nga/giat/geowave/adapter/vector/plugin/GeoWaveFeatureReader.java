@@ -23,8 +23,6 @@ import mil.nga.giat.geowave.adapter.vector.query.cql.CQLQuery;
 import mil.nga.giat.geowave.adapter.vector.render.DistributableRenderer;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureStatistic;
 import mil.nga.giat.geowave.adapter.vector.util.QueryIndexHelper;
-import mil.nga.giat.geowave.core.geotime.DimensionalityType;
-import mil.nga.giat.geowave.core.geotime.GeometryUtils;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.geotime.store.query.TemporalConstraintsSet;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -140,7 +138,7 @@ public class GeoWaveFeatureReader implements
 			final QueryIssuer issuer ) {
 
 		final List<CloseableIterator<SimpleFeature>> results = new ArrayList<CloseableIterator<SimpleFeature>>();
-		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = components.getDataStatistics(transaction);
+		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = transaction.getDataStatistics();
 
 		final Constraints timeConstraints = QueryIndexHelper.composeTimeBoundedConstraints(
 				components.getAdapter().getType(),
@@ -148,54 +146,28 @@ public class GeoWaveFeatureReader implements
 				statsMap,
 				timeBounds);
 
-		final Constraints geoConstraints = (jtsBounds == null && !timeConstraints.isEmpty()) ? QueryIndexHelper.getBBOXIndexConstraints(
+		final Constraints geoConstraints = QueryIndexHelper.composeGeometricConstraints(
 				getFeatureType(),
-				components.getDataStatistics(transaction)) : (jtsBounds != null ? GeometryUtils.basicConstraintsFromGeometry(jtsBounds) : new Constraints());
+				transaction.getDataStatistics(),
+				jtsBounds);
+
+		/**
+		 * NOTE: query to an index that requires a constraint and the constraint
+		 * is missing equates to a full table scan. @see BasicQuery
+		 */
 
 		try (CloseableIterator<Index<?, ?>> indexIt = getComponents().getIndices(
 				timeConstraints,
 				geoConstraints)) {
 			while (indexIt.hasNext()) {
 				final PrimaryIndex index = (PrimaryIndex) indexIt.next();
+				results.add(issuer.query(
+						index,
+						composeQuery(
+								jtsBounds,
+								geoConstraints,
+								timeConstraints)));
 
-				/*
-				 * Inspect for SPATIAL_TEMPORAL type index. Most queries issued
-				 * from GeoServer, where time is an 'enabled' dimension, provide
-				 * time constraints. Often they only an upper bound. The
-				 * statistics were used to clip the bounds prior to this point.
-				 * However, the range may be still too wide. Ideally, spatial
-				 * temporal indexing should not be used in these cases.
-				 * Eventually all this logic should be replaced by a
-				 * QueryPlanner that takes the full set of constraints and has
-				 * in-depth knowledge of each indices capabilities.
-				 */
-				if ((jtsBounds == null) || (DimensionalityType.SPATIAL_TEMPORAL.isCompatible(index) && timeConstraints.isEmpty())) {
-					// full table scan
-					results.add(issuer.query(
-							index,
-							null));
-				}
-				else {
-
-					if (timeConstraints.isSupported(index)) {
-
-						results.add(issuer.query(
-								index,
-								composeQuery(
-										jtsBounds,
-										geoConstraints,
-										timeConstraints)));
-					}
-					else {
-						// just geo
-						results.add(issuer.query(
-								index,
-								composeQuery(
-										jtsBounds,
-										geoConstraints,
-										null)));
-					}
-				}
 			}
 		}
 		catch (final IOException e) {
@@ -498,7 +470,7 @@ public class GeoWaveFeatureReader implements
 	protected List<DataStatistics<SimpleFeature>> getStatsFor(
 			final String name ) {
 		final List<DataStatistics<SimpleFeature>> stats = new LinkedList<DataStatistics<SimpleFeature>>();
-		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = components.getDataStatistics(transaction);
+		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = transaction.getDataStatistics();
 		for (final Map.Entry<ByteArrayId, DataStatistics<SimpleFeature>> stat : statsMap.entrySet()) {
 			if ((stat.getValue() instanceof FeatureStatistic) && ((FeatureStatistic) stat.getValue()).getFieldName().endsWith(
 					name)) {
@@ -511,7 +483,7 @@ public class GeoWaveFeatureReader implements
 	protected TemporalConstraintsSet clipIndexedTemporalConstraints(
 			final TemporalConstraintsSet constraintsSet ) {
 		return QueryIndexHelper.clipIndexedTemporalConstraints(
-				components.getDataStatistics(transaction),
+				transaction.getDataStatistics(),
 				components.getAdapter().getTimeDescriptors(),
 				constraintsSet);
 	}
@@ -521,7 +493,7 @@ public class GeoWaveFeatureReader implements
 		return QueryIndexHelper.clipIndexedBBOXConstraints(
 				getFeatureType(),
 				bbox,
-				components.getDataStatistics(transaction));
+				transaction.getDataStatistics());
 	}
 
 	private BasicQuery composeQuery(

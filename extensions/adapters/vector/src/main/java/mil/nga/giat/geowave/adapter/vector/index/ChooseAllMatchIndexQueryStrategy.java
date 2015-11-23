@@ -1,14 +1,22 @@
 package mil.nga.giat.geowave.adapter.vector.index;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.index.Index;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.BasicQuery.Constraints;
 
 public class ChooseAllMatchIndexQueryStrategy implements
-		IndexQueryStrategy
+		IndexQueryStrategySPI
 {
+
+	public static final String NAME = "All Match";
+
+	public String toString() {
+		return NAME;
+	}
 
 	@Override
 	public CloseableIterator<Index<?, ?>> getIndices(
@@ -16,18 +24,25 @@ public class ChooseAllMatchIndexQueryStrategy implements
 			final Constraints geoConstraints,
 			final CloseableIterator<Index<?, ?>> indices ) {
 		return new CloseableIterator<Index<?, ?>>() {
-			Index<?, ?> nextIdx = null;
+			PrimaryIndex nextIdx = null;
 
 			@Override
 			public boolean hasNext() {
 				while (nextIdx == null && indices.hasNext()) {
-					nextIdx = indices.next();
-				} 
-				return nextIdx == null;
+					Index<?, ?> nextChoosenIdx = indices.next();
+					if (nextChoosenIdx instanceof PrimaryIndex) {
+						nextIdx = (PrimaryIndex) nextChoosenIdx;
+						if (geoConstraints.isSupported(nextIdx) && timeConstraints.isSupported(nextIdx)) break;
+						nextIdx = null;
+					}
+				}
+				return nextIdx != null;
 			}
 
 			@Override
-			public Index<?, ?> next() {
+			public Index<?, ?> next()
+					throws NoSuchElementException {
+				if (nextIdx == null) throw new NoSuchElementException();
 				Index<?, ?> returnVal = nextIdx;
 				nextIdx = null;
 				return returnVal;
@@ -40,5 +55,4 @@ public class ChooseAllMatchIndexQueryStrategy implements
 			}
 		};
 	}
-
 }

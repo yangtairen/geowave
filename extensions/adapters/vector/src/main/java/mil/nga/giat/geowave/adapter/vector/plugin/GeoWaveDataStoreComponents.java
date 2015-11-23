@@ -1,10 +1,8 @@
 package mil.nga.giat.geowave.adapter.vector.plugin;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
@@ -15,7 +13,6 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.IndexWriter;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.data.visibility.GlobalVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
@@ -75,51 +72,17 @@ public class GeoWaveDataStoreComponents
 		return currentIndex;
 	}
 
-	@SuppressWarnings("unchecked")
-	public Map<ByteArrayId, DataStatistics<SimpleFeature>> getDataStatistics(
-			final GeoWaveTransaction transaction ) {
-		final Map<ByteArrayId, DataStatistics<SimpleFeature>> stats = new HashMap<ByteArrayId, DataStatistics<SimpleFeature>>();
-
-		for (final ByteArrayId statsId : adapter.getSupportedStatisticsIds()) {
-			@SuppressWarnings("unused")
-			final DataStatistics<SimpleFeature> put = stats.put(
-					statsId,
-					(DataStatistics<SimpleFeature>) dataStatisticsStore.getDataStatistics(
-							adapter.getAdapterId(),
-							statsId,
-							transaction.composeAuthorizations()));
-		}
-		return stats;
+	public DataStatisticsStore getStatsStore() {
+		return dataStatisticsStore;
 	}
 
 	public CloseableIterator<Index<?, ?>> getIndices(
 			Constraints timeConstraints,
 			Constraints geoConstraints ) {
-		return new CloseableIterator<Index<?, ?>>() {
-			final CloseableIterator<Index<?, ?>> it = getIndexStore().getIndices();
-			Index<?, ?> nextIdx = null;
-			@Override
-			public boolean hasNext() {
-				while (nextIdx == null && it.hasNext()) {
-					nextIdx = it.next();
-					
-				}
-				return nextIdx == null;
-			}
-
-			@Override
-			public Index<?, ?> next() {
-				Index<?, ?> returnVal = nextIdx;
-				nextIdx = null;
-				return returnVal;
-			}
-
-			@Override
-			public void close()
-					throws IOException {
-			  it.close();				
-			}
-		};
+		return getGTstore().getIndexQueryStrategy().getIndices(
+				timeConstraints,
+				geoConstraints,
+				getIndexStore().getIndices());
 	}
 
 	public void remove(

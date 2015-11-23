@@ -13,6 +13,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
+import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.IngestCallback;
@@ -22,6 +23,7 @@ import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
+import mil.nga.giat.geowave.core.store.adapter.statistics.StatisticalDataAdapter;
 import mil.nga.giat.geowave.core.store.data.DataWriter;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
@@ -51,19 +53,7 @@ public class DataStoreUtils
 			new UnconstrainedVisibilityHandler());
 
 	public static List<ByteArrayRange> constraintsToByteArrayRanges(
-			final MultiDimensionalNumericData constraints,
-			final NumericIndexStrategy indexStrategy ) {
-		if ((constraints == null) || constraints.isEmpty()) {
-			return new ArrayList<ByteArrayRange>(); // implies in negative and
-			// positive infinity
-		}
-		else {
-			return indexStrategy.getQueryRanges(constraints);
-		}
-	}
-
-	public static List<ByteArrayRange> constraintsToByteArrayRanges(
-			final MultiDimensionalNumericData constraints,
+			final List<MultiDimensionalNumericData> constraints,
 			final NumericIndexStrategy indexStrategy,
 			final int maxRanges ) {
 		if ((constraints == null) || constraints.isEmpty()) {
@@ -71,9 +61,16 @@ public class DataStoreUtils
 			// positive infinity
 		}
 		else {
-			return indexStrategy.getQueryRanges(
-					constraints,
-					maxRanges);
+			final List<ByteArrayRange> ranges = new ArrayList<ByteArrayRange>();
+			for (final MultiDimensionalNumericData nd : constraints) {
+				ranges.addAll(indexStrategy.getQueryRanges(
+						nd,
+						maxRanges));
+			}
+			ByteArrayRange.mergeIntersections(
+					ranges,
+					0);
+			return ranges;
 		}
 	}
 
@@ -150,7 +147,7 @@ public class DataStoreUtils
 		for (final FieldInfo column : row.info.getFieldInfo()) {
 			final FieldReader<? extends CommonIndexValue> reader = model.getReader(column.getDataValue().getId());
 			if (reader == null) {
-				FieldReader extendedReader = adapter.getReader(column.getDataValue().getId());
+				final FieldReader extendedReader = adapter.getReader(column.getDataValue().getId());
 				if (extendedReader != null) {
 					extendedData.addValue(column.getDataValue());
 				}
@@ -222,7 +219,9 @@ public class DataStoreUtils
 	}
 
 	/**
-	 * Reduce the list of adapter IDs to those which have associated data in the given index.
+	 * Reduce the list of adapter IDs to those which have associated data in the
+	 * given index.
+	 * 
 	 * @param statisticsStore
 	 * @param indexId
 	 * @param adapterIds
@@ -230,17 +229,18 @@ public class DataStoreUtils
 	 * @return
 	 */
 	public static List<ByteArrayId> trimAdapterIdsByIndex(
-			DataStatisticsStore statisticsStore,
-			ByteArrayId indexId,
-			List<ByteArrayId> adapterIds,
-			String... authorizations ) {
+			final DataStatisticsStore statisticsStore,
+			final ByteArrayId indexId,
+			final CloseableIterator<DataAdapter<?>> adapters,
+			final String... authorizations ) {
 		final List<ByteArrayId> results = new ArrayList<ByteArrayId>();
-		for (ByteArrayId adapterId : adapterIds) {
-			if (statisticsStore.getDataStatistics(
-					adapterId,
+		while (adapters.hasNext()) {
+			final DataAdapter<?> adapter = adapters.next();
+			if (!(adapter instanceof StatisticalDataAdapter) || (statisticsStore.getDataStatistics(
+					adapter.getAdapterId(),
 					RowRangeHistogramStatistics.composeId(indexId),
-					authorizations) != null) {
-				results.add(adapterId);
+					authorizations) != null)) {
+				results.add(adapter.getAdapterId());
 			}
 		}
 		return results;
