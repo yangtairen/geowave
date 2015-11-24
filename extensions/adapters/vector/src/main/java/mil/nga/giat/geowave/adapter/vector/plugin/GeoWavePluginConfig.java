@@ -56,7 +56,7 @@ public class GeoWavePluginConfig
 	protected static final String AUTH_MGT_KEY = "Authorization Management Provider";
 	protected static final String AUTH_URL_KEY = "Authorization Data URL";
 	protected static final String TRANSACTION_BUFFER_SIZE = "Transaction Buffer Size";
-	protected static final String QUERY_INDEX_STRATEGY_KEY = "Query Index Strategy";
+	public static final String QUERY_INDEX_STRATEGY_KEY = "Query Index Strategy";
 
 	private static final Param GEOWAVE_NAMESPACE = new Param(
 			GEOWAVE_NAMESPACE_KEY,
