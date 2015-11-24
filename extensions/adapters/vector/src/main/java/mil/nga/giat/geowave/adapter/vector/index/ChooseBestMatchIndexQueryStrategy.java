@@ -49,6 +49,9 @@ public class ChooseBestMatchIndexQueryStrategy implements
 				nextIdx = null;
 				return returnVal;
 			}
+			
+			@Override
+			public void remove() {}
 
 			@Override
 			public void close()
