@@ -330,7 +330,7 @@ public class PrimitiveHilbertSFCOperations implements
 			minRangeList.add(normalizedMin);
 			maxRangeList.add(normalizedMax);
 			region.add(LongRange.of(
-					normalizedMin,
+					Math.max(0L,normalizedMin - 1L),
 					normalizedMax + 1L));
 
 		}

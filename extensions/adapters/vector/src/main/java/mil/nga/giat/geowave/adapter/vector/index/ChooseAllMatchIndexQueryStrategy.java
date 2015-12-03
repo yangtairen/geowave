@@ -53,9 +53,6 @@ public class ChooseAllMatchIndexQueryStrategy implements
 
 
 			@Override
-			public void remove() {}
-
-			@Override
 			public void close()
 					throws IOException {
 				indices.close();

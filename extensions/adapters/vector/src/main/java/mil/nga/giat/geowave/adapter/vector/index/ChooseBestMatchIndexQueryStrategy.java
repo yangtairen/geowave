@@ -54,9 +54,6 @@ public class ChooseBestMatchIndexQueryStrategy implements
 			public void remove() {}
 
 			@Override
-			public void remove() {}
-
-			@Override
 			public void close()
 					throws IOException {
 				indices.close();
