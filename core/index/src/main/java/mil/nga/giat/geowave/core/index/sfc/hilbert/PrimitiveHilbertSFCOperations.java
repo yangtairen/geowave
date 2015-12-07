@@ -237,12 +237,18 @@ public class PrimitiveHilbertSFCOperations implements
 		// scale it to a value within the bits of precision,
 		// because max is handled as exclusive and min is inclusive, we need to
 		// handle the edge differently
+		if (isMin) {
+			return (long) Math.min(
+					Math.floor(normalizedValue * bins),
+					bins - 1);
 
-		return (long) Math.min(
-				Math.max(
-						(long) (Math.ceil(normalizedValue * bins) - 1L),
-						(long) 0),
-				bins);
+		}
+		else {
+			return (long) Math.max(
+					Math.ceil(normalizedValue * bins) - 1L,
+					0);
+
+		}
 
 	}
 
