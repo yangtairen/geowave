@@ -13,6 +13,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
+import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.IngestCallback;
@@ -20,7 +21,9 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.core.store.data.CommonIndexedPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
+import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
+import mil.nga.giat.geowave.core.store.adapter.statistics.StatisticalDataAdapter;
 import mil.nga.giat.geowave.core.store.data.DataWriter;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
@@ -59,7 +62,7 @@ public class DataStoreUtils
 		}
 		else {
 			final List<ByteArrayRange> ranges = new ArrayList<ByteArrayRange>();
-			for (MultiDimensionalNumericData nd : constraints) {
+			for (final MultiDimensionalNumericData nd : constraints) {
 				ranges.addAll(indexStrategy.getQueryRanges(
 						nd,
 						maxRanges));
@@ -144,7 +147,7 @@ public class DataStoreUtils
 		for (final FieldInfo column : row.info.getFieldInfo()) {
 			final FieldReader<? extends CommonIndexValue> reader = model.getReader(column.getDataValue().getId());
 			if (reader == null) {
-				FieldReader extendedReader = adapter.getReader(column.getDataValue().getId());
+				final FieldReader extendedReader = adapter.getReader(column.getDataValue().getId());
 				if (extendedReader != null) {
 					extendedData.addValue(column.getDataValue());
 				}
@@ -213,6 +216,34 @@ public class DataStoreUtils
 				encodedData.isDeduplicationEnabled());
 
 		return rowIds;
+	}
+
+	/**
+	 * Reduce the list of adapter IDs to those which have associated data in the
+	 * given index.
+	 * 
+	 * @param statisticsStore
+	 * @param indexId
+	 * @param adapterIds
+	 * @param authorizations
+	 * @return
+	 */
+	public static List<ByteArrayId> trimAdapterIdsByIndex(
+			final DataStatisticsStore statisticsStore,
+			final ByteArrayId indexId,
+			final CloseableIterator<DataAdapter<?>> adapters,
+			final String... authorizations ) {
+		final List<ByteArrayId> results = new ArrayList<ByteArrayId>();
+		while (adapters.hasNext()) {
+			final DataAdapter<?> adapter = adapters.next();
+			if (!(adapter instanceof StatisticalDataAdapter) || (statisticsStore.getDataStatistics(
+					adapter.getAdapterId(),
+					RowRangeHistogramStatistics.composeId(indexId),
+					authorizations) != null)) {
+				results.add(adapter.getAdapterId());
+			}
+		}
+		return results;
 	}
 
 	public static <T> void addToRowIds(

@@ -73,7 +73,7 @@ public class CQLQuery implements
 
 		// determine which time constraints are associated with an indexable
 		// field
-		final TemporalConstraints temporalConstraints = QueryIndexHelper.getTemporalConstraintsForIndex(
+		final TemporalConstraints temporalConstraints = QueryIndexHelper.getTemporalConstraintsForDescriptors(
 				adapter.getTimeDescriptors(),
 				timeConstraintSet);
 		// convert to constraints

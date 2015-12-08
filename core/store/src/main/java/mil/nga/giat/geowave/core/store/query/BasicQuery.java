@@ -11,10 +11,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
-import com.google.common.math.DoubleMath;
-
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
@@ -37,9 +33,18 @@ import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndex;
 
+import org.apache.log4j.Logger;
+
+import com.google.common.math.DoubleMath;
+
 /**
  * The Basic Query class represent a hyper-cube(s) query across all dimensions
  * that match the Constraints passed into the constructor
+ * 
+ * NOTE: query to an index that requires a constraint and the constraint is
+ * missing within the query equates to an unconstrained index scan. The query
+ * filter is still applied.
+ * 
  */
 public class BasicQuery implements
 		DistributableQuery
@@ -158,6 +163,10 @@ public class BasicQuery implements
 			return intersects;
 		}
 
+		/*
+		 * Makes the decision to provide a empty data set if an one dimension is
+		 * left unconstrained.
+		 */
 		public MultiDimensionalNumericData getIndexConstraints(
 				final NumericIndexStrategy indexStrategy ) {
 			if (constraintsPerTypeOfDimensionDefinition.isEmpty()) {
