@@ -150,11 +150,7 @@ public abstract class AbstractPartitioner<T> implements
 	}
 
 	private static double[] getDistances(
-			final JobContext context,
-			final Class<?> scope ) {
-		final ScopedJobConfiguration config = new ScopedJobConfiguration(
-				context.getConfiguration(),
-				scope);
+			final ScopedJobConfiguration config ) {
 		final String distances = config.getString(
 				ClusteringParameters.Clustering.DISTANCE_THRESHOLDS,
 				"0.000001");
@@ -175,13 +171,16 @@ public abstract class AbstractPartitioner<T> implements
 			final JobContext context,
 			final Class<?> scope )
 			throws IOException {
-
-		final ScopedJobConfiguration config = new ScopedJobConfiguration(
+		initialize(new ScopedJobConfiguration(
 				context.getConfiguration(),
-				scope);
-		distancePerDimension = getDistances(
-				context,
-				scope);
+				scope));
+	}
+
+	public void initialize(
+			final ScopedJobConfiguration config )
+			throws IOException {
+
+		distancePerDimension = getDistances(config);
 
 		this.precisionFactor = config.getDouble(
 				Partition.PARTITION_PRECISION,

@@ -5,10 +5,9 @@ import org.apache.spark.rdd.RDD
 import org.apache.hadoop.conf.Configuration
 import org.opengis.feature.simple.SimpleFeature
 import org.apache.spark.SparkContext
-import org.apache.accumulo.core.data.{ Key, Value }
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputKey
+import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey
 import mil.nga.giat.geowave.core.store.query.Query
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.input.GeoWaveInputFormat
+import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat
 import mil.nga.giat.geowave.analytic.ConfigurationWrapper
 import org.apache.spark.serializer.KryoRegistrator
 import com.esotericsoftware.kryo.Kryo
@@ -17,14 +16,15 @@ import mil.nga.giat.geowave.analytic.partitioner.Partitioner.PartitionData
 import scala.collection.JavaConverters._
 import mil.nga.giat.geowave.analytic.partitioner.OrthodromicDistancePartitioner
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter
-import mil.nga.giat.geowave.core.store.index.Index
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.output.GeoWaveOutputFormat
-import mil.nga.giat.geowave.datastore.accumulo.mapreduce.output.GeoWaveOutputKey
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex
+import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputFormat
+import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputKey
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.api.java.function.PairFunction
 import mil.nga.giat.geowave.core.store.query.DistributableQuery
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter
 import org.geotools.feature.simple.SimpleFeatureBuilder
+
 
 /**
  * Convenience obejct to provide different RDDs.
@@ -50,7 +50,7 @@ object GeoWaveRDD {
    * The default splits are necessarily optimal
    */
   def rddForSimpleFeatures(sc: SparkContext,   
-    index: Index,
+    index: PrimaryIndex,
     adapter: DataAdapter[SimpleFeature],
     minSplits: Int,
     maxSplits: Int,
@@ -58,12 +58,14 @@ object GeoWaveRDD {
 
     val conf = new org.apache.hadoop.conf.Configuration(sc.hadoopConfiguration)
 
+    GeoWaveInputFormat.setDataStoreName(conf,
+       geoWaveContext.dataStoreName)
+    
     GeoWaveInputFormat.setStoreConfigOptions(conf,
-      geoWaveContext.storeParameters)
+       geoWaveContext.storeParameters)
 
-    GeoWaveInputFormat.setGeoWaveNamespace(
-				conf,
-				geoWaveContext.tableNameSpace))
+    GeoWaveInputFormat.setGeoWaveNamespace(conf,
+				geoWaveContext.tableNameSpace)
 
     // index and adapters are not mandatory.
     // they are used here as an example
@@ -84,7 +86,7 @@ object GeoWaveRDD {
    * Translate a set of objects in a JavaRDD to SimpleFeatures and push to GeoWave
    */
   def writeFeatureToGeoWave[V](sc: SparkContext,
-    index: Index,
+    index: PrimaryIndex,
     adapter: FeatureDataAdapter,
     inputRDD: JavaRDD[V],
     toOutput: (V, SimpleFeatureBuilder) => SimpleFeature)(implicit geoWaveContext: GeoWaveContext) = {
@@ -102,7 +104,7 @@ object GeoWaveRDD {
    * Translate a set of objects in a JavaRDD to a provided type and push to GeoWave
    */
   def writeToGeoWave[V, OutputType](sc: SparkContext,
-    index: Index,
+    index: PrimaryIndex,
     adapter: DataAdapter[OutputType],
     inputRDD: JavaRDD[V],
     toOutput: V => OutputType)(implicit geoWaveContext: GeoWaveContext) = {
@@ -110,13 +112,14 @@ object GeoWaveRDD {
     //setup the configuration and the output format
     val conf = new org.apache.hadoop.conf.Configuration(sc.hadoopConfiguration)
 
+    GeoWaveOutputFormat.setDataStoreName(conf,
+        geoWaveContext.dataStoreName)
+    
     GeoWaveOutputFormat.setStoreConfigOptions(conf,
-      geoWaveContext.storeParameters,
-      geoWaveContext.tableNameSpace)
+      geoWaveContext.storeParameters)
 
-    GeoWaveOutputFormat.setGeoWaveNamespace(
-				conf,
-				geoWaveContext.tableNameSpace))
+    GeoWaveOutputFormat.setGeoWaveNamespace(conf,
+				geoWaveContext.tableNameSpace)
 
     GeoWaveOutputFormat.addIndex(conf, index)
     GeoWaveOutputFormat.addDataAdapter(conf, adapter)
@@ -139,9 +142,9 @@ object GeoWaveRDD {
     }) saveAsNewAPIHadoopDataset (job.getConfiguration)
   }
 
-  def sparkPartition(rdd: RDD[(GeoWaveInputKey, SimpleFeature)], config: ConfigurationWrapper): PartitionVectorRDD = {
+  def sparkPartition(rdd: RDD[(GeoWaveInputKey, SimpleFeature)], sc: SparkContext): PartitionVectorRDD = {
     val distancePartitioner = new OrthodromicDistancePartitioner[SimpleFeature]();
-    distancePartitioner.initialize(config);
+    distancePartitioner.initialize(new org.apache.hadoop.conf.Configuration(sc.hadoopConfiguration));
     PartitionVectorRDD(rdd, distancePartitioner)
   }
 

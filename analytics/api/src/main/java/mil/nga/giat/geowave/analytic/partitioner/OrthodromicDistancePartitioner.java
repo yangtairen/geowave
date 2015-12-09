@@ -239,9 +239,17 @@ public class OrthodromicDistancePartitioner<T> extends
 			final JobContext context,
 			final Class<?> scope )
 			throws IOException {
-
-		final ScopedJobConfiguration config = new ScopedJobConfiguration(
+		this.initialize(
 				context.getConfiguration(),
+				scope);
+	}
+
+	public void initialize(
+			final Configuration configuration,
+			final Class<?> scope )
+			throws IOException {
+		final ScopedJobConfiguration config = new ScopedJobConfiguration(
+				configuration,
 				scope);
 		crsName = config.getString(
 				GlobalParameters.Global.CRS_ID,
@@ -275,9 +283,7 @@ public class OrthodromicDistancePartitioner<T> extends
 
 		this.geometricDistanceUnit = (Unit<Length>) Unit.valueOf(distanceUnit);
 
-		super.initialize(
-				context,
-				scope);
+		super.initialize(config);
 	}
 
 	@Override
