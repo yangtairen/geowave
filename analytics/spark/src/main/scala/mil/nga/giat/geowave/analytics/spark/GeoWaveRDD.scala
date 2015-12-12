@@ -8,7 +8,7 @@ import org.apache.spark.SparkContext
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey
 import mil.nga.giat.geowave.core.store.query.Query
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputFormat
-import mil.nga.giat.geowave.analytic.ConfigurationWrapper
+import mil.nga.giat.geowave.analytic.ScopedJobConfiguration
 import org.apache.spark.serializer.KryoRegistrator
 import com.esotericsoftware.kryo.Kryo
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner
@@ -24,6 +24,7 @@ import org.apache.spark.api.java.function.PairFunction
 import mil.nga.giat.geowave.core.store.query.DistributableQuery
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter
 import org.geotools.feature.simple.SimpleFeatureBuilder
+import mil.nga.giat.geowave.analytic.PropertyManagement
 
 
 /**
@@ -142,9 +143,11 @@ object GeoWaveRDD {
     }) saveAsNewAPIHadoopDataset (job.getConfiguration)
   }
 
-  def sparkPartition(rdd: RDD[(GeoWaveInputKey, SimpleFeature)], sc: SparkContext): PartitionVectorRDD = {
+  def sparkPartition(rdd: RDD[(GeoWaveInputKey, SimpleFeature)], pm: PropertyManagement, sc: SparkContext): PartitionVectorRDD = {
     val distancePartitioner = new OrthodromicDistancePartitioner[SimpleFeature]();
-    distancePartitioner.initialize(new org.apache.hadoop.conf.Configuration(sc.hadoopConfiguration));
+    val jobConfig = new org.apache.hadoop.conf.Configuration(sc.hadoopConfiguration)
+    distancePartitioner.setup(pm,classOf[OrthodromicDistancePartitioner[SimpleFeature]], jobConfig)
+    distancePartitioner.initialize(new ScopedJobConfiguration(jobConfig,classOf[OrthodromicDistancePartitioner[SimpleFeature]]));
     PartitionVectorRDD(rdd, distancePartitioner)
   }
 
