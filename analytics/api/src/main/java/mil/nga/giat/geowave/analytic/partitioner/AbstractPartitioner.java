@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.analytic.partitioner;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,6 +19,7 @@ import mil.nga.giat.geowave.analytic.param.CommonParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.PartitionParameters.Partition;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.sfc.SFCFactory.SFCType;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.tiered.TieredSFCIndexFactory;
@@ -37,14 +39,15 @@ import org.apache.hadoop.mapreduce.JobContext;
 public abstract class AbstractPartitioner<T> implements
 		Partitioner<T>
 {
-
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private transient PrimaryIndex index = null;
 	private transient double[] distancePerDimension = null;
 	private transient double precisionFactor = 1.0;
 
-	public AbstractPartitioner() {
-		distancePerDimension = new double[0];
-	}
+	public AbstractPartitioner() {}
 
 	public AbstractPartitioner(
 			final CommonIndexModel indexModel,
@@ -284,6 +287,34 @@ public abstract class AbstractPartitioner<T> implements
 			Partition.PARTITION_PRECISION
 		});
 
+	}
+
+	private void writeObject(
+			ObjectOutputStream stream )
+			throws IOException {
+		final byte[] indexData = PersistenceUtils.toBinary(this.index);
+		stream.writeInt(indexData.length);
+		stream.write(indexData);
+		stream.writeDouble(this.precisionFactor);
+		stream.writeInt(distancePerDimension.length);
+		for (double v : distancePerDimension)
+			stream.writeDouble(v);
+	}
+
+	private void readObject(
+			java.io.ObjectInputStream stream )
+			throws IOException,
+			ClassNotFoundException {
+		final byte[] indexData = new byte[stream.readInt()];
+		stream.readFully(indexData);
+		this.index = PersistenceUtils.fromBinary(
+				indexData,
+				PrimaryIndex.class);
+		this.precisionFactor = stream.readDouble();
+		this.distancePerDimension = new double[stream.readInt()];
+		for (int i = 0; i < distancePerDimension.length; i++) {
+			distancePerDimension[i] = stream.readDouble();
+		}
 	}
 
 }

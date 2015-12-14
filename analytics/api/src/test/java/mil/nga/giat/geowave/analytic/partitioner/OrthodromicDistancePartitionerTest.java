@@ -3,7 +3,11 @@ package mil.nga.giat.geowave.analytic.partitioner;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.List;
 
 import mil.nga.giat.geowave.analytic.AnalyticFeature;
@@ -198,6 +202,24 @@ public class OrthodromicDistancePartitionerTest
 		assertTrue(minY < 88.0);
 		assertTrue(maxX > 0);
 		assertTrue(minX < 0);
+
+		try (final ByteArrayOutputStream bs = new ByteArrayOutputStream()) {
+			final ObjectOutputStream os = new ObjectOutputStream(
+					bs);
+			os.writeObject(partitioner);
+			os.flush();
+			try (final ObjectInputStream is = new ObjectInputStream(
+					new ByteArrayInputStream(
+							bs.toByteArray()))) {
+				try {
+					final OrthodromicDistancePartitioner<SimpleFeature> partitioner2 = (OrthodromicDistancePartitioner<SimpleFeature>) is.readObject();
+				}
+				catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 
 	}
 

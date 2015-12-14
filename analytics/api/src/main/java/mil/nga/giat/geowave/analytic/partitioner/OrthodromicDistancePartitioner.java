@@ -248,9 +248,15 @@ public class OrthodromicDistancePartitioner<T> extends
 			final Configuration configuration,
 			final Class<?> scope )
 			throws IOException {
-		final ScopedJobConfiguration config = new ScopedJobConfiguration(
+		initialize(new ScopedJobConfiguration(
 				configuration,
-				scope);
+				scope));
+	}
+
+	public void initialize(
+			ScopedJobConfiguration config )
+			throws IOException {
+
 		crsName = config.getString(
 				GlobalParameters.Global.CRS_ID,
 				"EPSG:4326");

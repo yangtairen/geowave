@@ -495,12 +495,6 @@ public class SpatialQueryExample
 				"complex-feature");
 		FeatureDataAdapter bfAdapter = (FeatureDataAdapter) adapterStore.getAdapter(bfAdId);
 
-		// Define the geometry to query. We'll find all points that fall inside
-		// that geometry.
-		String queryPolygonDefinition = "POLYGON (( " + "-180 -90, " + "-180 90, " + "180 90, " + "180 -90, " + "-180 -90" + "))";
-
-		Geometry queryPolygon = new WKTReader(
-				JTSFactoryFinder.getGeometryFactory()).read(queryPolygonDefinition);
 		// This CQL query will yield a single point - Complex-LA
 		String CQLFilter = "latitude > 25 AND longitude < -118";
 		// Perform the query.Parameters are

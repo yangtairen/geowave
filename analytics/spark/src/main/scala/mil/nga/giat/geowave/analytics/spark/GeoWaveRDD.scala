@@ -90,15 +90,9 @@ object GeoWaveRDD {
     index: PrimaryIndex,
     adapter: FeatureDataAdapter,
     inputRDD: JavaRDD[V],
-    toOutput: (V, SimpleFeatureBuilder) => SimpleFeature)(implicit geoWaveContext: GeoWaveContext) = {
-    // not serializable
-    val pointBuilder = sc.broadcast(new SimpleFeatureBuilder(adapter.getType))
+    toOutput: (V) => SimpleFeature)(implicit geoWaveContext: GeoWaveContext) = {
 
-    def myOutputFunc(in: V): SimpleFeature = {
-      toOutput(in, pointBuilder.value)
-    }
-
-    writeToGeoWave(sc, index, adapter, inputRDD, myOutputFunc)
+    writeToGeoWave(sc, index, adapter, inputRDD, toOutput)
   }
 
   /**
