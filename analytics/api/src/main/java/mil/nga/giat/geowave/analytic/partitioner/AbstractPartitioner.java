@@ -43,7 +43,7 @@ public abstract class AbstractPartitioner<T> implements
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private PrimaryIndex index = null;
+	private transient PrimaryIndex index = null;
 	private double[] distancePerDimension = null;
 	private double precisionFactor = 1.0;
 
@@ -295,7 +295,7 @@ public abstract class AbstractPartitioner<T> implements
 		final byte[] indexData = PersistenceUtils.toBinary(this.index);
 		stream.writeInt(indexData.length);
 		stream.write(indexData);
-		stream.writeDouble(this.precisionFactor);
+		stream.writeDouble(precisionFactor);
 		stream.writeInt(distancePerDimension.length);
 		for (double v : distancePerDimension)
 			stream.writeDouble(v);
@@ -307,11 +307,11 @@ public abstract class AbstractPartitioner<T> implements
 			ClassNotFoundException {
 		final byte[] indexData = new byte[stream.readInt()];
 		stream.readFully(indexData);
-		this.index = PersistenceUtils.fromBinary(
+		index = PersistenceUtils.fromBinary(
 				indexData,
 				PrimaryIndex.class);
-		this.precisionFactor = stream.readDouble();
-		this.distancePerDimension = new double[stream.readInt()];
+		precisionFactor = stream.readDouble();
+		distancePerDimension = new double[stream.readInt()];
 		for (int i = 0; i < distancePerDimension.length; i++) {
 			distancePerDimension[i] = stream.readDouble();
 		}
