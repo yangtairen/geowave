@@ -39,6 +39,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 public class OrthodromicDistancePartitionerTest
 {
 	public static CoordinateReferenceSystem DEFAULT_CRS;
+
 	static {
 		try {
 			DEFAULT_CRS = CRS.decode(
@@ -52,7 +53,8 @@ public class OrthodromicDistancePartitionerTest
 
 	@Test
 	public void test()
-			throws IOException {
+			throws IOException,
+			ClassNotFoundException {
 
 		final SimpleFeatureType ftype = AnalyticFeature.createGeometryFeatureAdapter(
 				"centroid",
@@ -211,13 +213,13 @@ public class OrthodromicDistancePartitionerTest
 			try (final ObjectInputStream is = new ObjectInputStream(
 					new ByteArrayInputStream(
 							bs.toByteArray()))) {
-				try {
-					final OrthodromicDistancePartitioner<SimpleFeature> partitioner2 = (OrthodromicDistancePartitioner<SimpleFeature>) is.readObject();
-				}
-				catch (ClassNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+
+				@SuppressWarnings("unchecked")
+				final OrthodromicDistancePartitioner<SimpleFeature> partitioner2 = (OrthodromicDistancePartitioner<SimpleFeature>) is.readObject();
+				assertEquals(
+						partitioner2,
+						partitioner);
+
 			}
 		}
 

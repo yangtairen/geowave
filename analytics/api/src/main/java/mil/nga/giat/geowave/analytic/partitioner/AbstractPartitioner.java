@@ -43,9 +43,9 @@ public abstract class AbstractPartitioner<T> implements
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private transient PrimaryIndex index = null;
-	private transient double[] distancePerDimension = null;
-	private transient double precisionFactor = 1.0;
+	private PrimaryIndex index = null;
+	private double[] distancePerDimension = null;
+	private double precisionFactor = 1.0;
 
 	public AbstractPartitioner() {}
 
@@ -315,6 +315,36 @@ public abstract class AbstractPartitioner<T> implements
 		for (int i = 0; i < distancePerDimension.length; i++) {
 			distancePerDimension[i] = stream.readDouble();
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(distancePerDimension);
+		result = prime * result + ((index == null) ? 0 : index.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(precisionFactor);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(
+			Object obj ) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		AbstractPartitioner other = (AbstractPartitioner) obj;
+		if (!Arrays.equals(
+				distancePerDimension,
+				other.distancePerDimension)) return false;
+		if (index == null) {
+			if (other.index != null) return false;
+		}
+		else if (!index.equals(other.index)) return false;
+		if (Double.doubleToLongBits(precisionFactor) != Double.doubleToLongBits(other.precisionFactor)) return false;
+		return true;
 	}
 
 }
