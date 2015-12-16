@@ -8,18 +8,17 @@ import java.util.NoSuchElementException;
 import org.opengis.feature.simple.SimpleFeature;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.ByteArrayRange;
+import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.core.store.memory.DataStoreUtils;
 import mil.nga.giat.geowave.core.store.query.BasicQuery;
 
-public class ChooseBestMatchIndexQueryStrategy implements
+public class ChooseHeuristicMatchIndexQueryStrategy implements
 		IndexQueryStrategySPI
 {
-	public static final String NAME = "Best Match";
+	public static final String NAME = "Heuristic Match";
 
 	public String toString() {
 		return NAME;
@@ -36,24 +35,31 @@ public class ChooseBestMatchIndexQueryStrategy implements
 
 			@Override
 			public boolean hasNext() {
-				long min = Long.MAX_VALUE;
+				double min = Long.MAX_VALUE;
 				PrimaryIndex bestIdx = null;
-
 				while (!done && indices.hasNext()) {
 					final Index<?, ?> nextChoosenIdx = indices.next();
 					if (nextChoosenIdx instanceof PrimaryIndex) {
 						nextIdx = (PrimaryIndex) nextChoosenIdx;
-						List<ByteArrayRange> ranges = DataStoreUtils.constraintsToByteArrayRanges(
-								query.getIndexConstraints(nextIdx.getIndexStrategy()),
-								nextIdx.getIndexStrategy(),
-								5000);
-						final long temp = DataStoreUtils.cardinality(
-								nextIdx,
-								stats,
-								ranges);
+						final List<MultiDimensionalNumericData> queryRanges = query.getIndexConstraints(nextIdx.getIndexStrategy());
+						final double rangePerDimension[] = nextIdx.getIndexStrategy().getHighestPrecisionIdRangePerDimension();
+						long totalMax = 0;
+						for (MultiDimensionalNumericData qr : queryRanges) {
+							long maxCell = Long.MIN_VALUE;
+							for (int d = 0; d < rangePerDimension.length; d++) {
+								double temp = (qr.getMaxValuesPerDimension()[d] - qr.getMinValuesPerDimension()[d]);
+								maxCell = Math.max(
+										(long) Math.ceil(temp / rangePerDimension[d]),
+										maxCell);
+							}
+							totalMax += maxCell;
+						}
+						double temp = Math.pow(
+								totalMax,
+								rangePerDimension.length);
 						if (temp < min) {
-							bestIdx = nextIdx;
 							min = temp;
+							bestIdx = nextIdx;
 						}
 					}
 				}

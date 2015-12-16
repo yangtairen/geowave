@@ -30,16 +30,17 @@ public abstract class AbstractTransactionManagement implements
 	public Map<ByteArrayId, DataStatistics<SimpleFeature>> getDataStatistics() {
 		final Map<ByteArrayId, DataStatistics<SimpleFeature>> stats = new HashMap<ByteArrayId, DataStatistics<SimpleFeature>>();
 		final FeatureDataAdapter adapter = components.getAdapter();
-		ByteArrayId[] ids = adapter.getSupportedStatisticsIds();
-		Set<ByteArrayId> idSet = new HashSet<ByteArrayId>();
-		for (ByteArrayId id : ids)
-			idSet.add(id);
+		// ByteArrayId[] ids = adapter.getSupportedStatisticsIds();
+		// Set<ByteArrayId> idSet = new HashSet<ByteArrayId>();
+		// for (ByteArrayId id : ids)
+		// idSet.add(id);
 		try (CloseableIterator<DataStatistics<?>> it = components.getStatsStore().getDataStatistics(
 				adapter.getAdapterId(),
 				composeAuthorizations())) {
 			while (it.hasNext()) {
 				DataStatistics<?> stat = (DataStatistics<?>) it.next();
-				if (idSet.contains(stat.getStatisticsId())) stats.put(
+				// if (idSet.contains(stat.getStatisticsId()))
+				stats.put(
 						stat.getStatisticsId(),
 						(DataStatistics<SimpleFeature>) stat);
 			}

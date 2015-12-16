@@ -3,6 +3,7 @@ package mil.nga.giat.geowave.adapter.vector.plugin;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
@@ -13,6 +14,7 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.IndexWriter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.data.visibility.GlobalVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
@@ -20,6 +22,7 @@ import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.BasicQuery.Constraints;
+import mil.nga.giat.geowave.core.store.query.BasicQuery;
 import mil.nga.giat.geowave.core.store.query.DataIdQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 
@@ -77,11 +80,11 @@ public class GeoWaveDataStoreComponents
 	}
 
 	public CloseableIterator<Index<?, ?>> getIndices(
-			Constraints timeConstraints,
-			Constraints geoConstraints ) {
+			final Map<ByteArrayId, DataStatistics<SimpleFeature>> stats,
+			final BasicQuery query ) {
 		return getGTstore().getIndexQueryStrategy().getIndices(
-				timeConstraints,
-				geoConstraints,
+				stats,
+				query,
 				getIndexStore().getIndices());
 	}
 

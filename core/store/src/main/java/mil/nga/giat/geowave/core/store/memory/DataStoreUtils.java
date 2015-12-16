@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
@@ -21,6 +24,7 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatisticalDataAdapter;
@@ -37,13 +41,12 @@ import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 
-import org.apache.log4j.Logger;
-
 /*
  */
 public class DataStoreUtils
 {
-	private final static Logger LOGGER = Logger.getLogger(DataStoreUtils.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			DataStoreUtils.class);
 
 	@SuppressWarnings({
 		"rawtypes",
@@ -51,6 +54,23 @@ public class DataStoreUtils
 	})
 	public static final UniformVisibilityWriter DEFAULT_VISIBILITY = new UniformVisibilityWriter(
 			new UnconstrainedVisibilityHandler());
+
+	public static <T >long cardinality(
+			final PrimaryIndex index,
+			final Map<ByteArrayId, DataStatistics<T>> stats,
+			List<ByteArrayRange> ranges ) {
+		RowRangeHistogramStatistics rangeStats = (RowRangeHistogramStatistics) stats.get(
+				RowRangeHistogramStatistics.composeId(
+						index.getId()));
+		if (rangeStats == null) return Long.MAX_VALUE;
+		long count = 0;
+		for (ByteArrayRange range : ranges) {
+			count += rangeStats.cardinality(
+					range.getStart().getBytes(),
+					range.getEnd().getBytes());
+		}
+		return count;
+	}
 
 	public static List<ByteArrayRange> constraintsToByteArrayRanges(
 			final List<MultiDimensionalNumericData> constraints,
@@ -63,9 +83,10 @@ public class DataStoreUtils
 		else {
 			final List<ByteArrayRange> ranges = new ArrayList<ByteArrayRange>();
 			for (final MultiDimensionalNumericData nd : constraints) {
-				ranges.addAll(indexStrategy.getQueryRanges(
-						nd,
-						maxRanges));
+				ranges.addAll(
+						indexStrategy.getQueryRanges(
+								nd,
+								maxRanges));
 			}
 			ByteArrayRange.mergeIntersections(
 					ranges,
@@ -82,15 +103,18 @@ public class DataStoreUtils
 		}
 		VisibilityExpression expr;
 		try {
-			expr = new VisibilityExpressionParser().parse(visibility);
+			expr = new VisibilityExpressionParser().parse(
+					visibility);
 		}
 		catch (final IOException e) {
 			LOGGER.error(
-					"inavalid visibility " + Arrays.toString(visibility),
+					"inavalid visibility " + Arrays.toString(
+							visibility),
 					e);
 			return false;
 		}
-		return expr.ok(authorizations);
+		return expr.ok(
+				authorizations);
 	}
 
 	public static String getQualifiedTableName(
@@ -122,17 +146,19 @@ public class DataStoreUtils
 	public static List<IndexedAdapterPersistenceEncoding> getEncodings(
 			final PrimaryIndex index,
 			final AdapterPersistenceEncoding encoding ) {
-		final List<ByteArrayId> ids = encoding.getInsertionIds(index);
+		final List<ByteArrayId> ids = encoding.getInsertionIds(
+				index);
 		final ArrayList<IndexedAdapterPersistenceEncoding> encodings = new ArrayList<IndexedAdapterPersistenceEncoding>();
 		for (final ByteArrayId id : ids) {
-			encodings.add(new IndexedAdapterPersistenceEncoding(
-					encoding.getAdapterId(),
-					encoding.getDataId(),
-					id,
-					ids.size(),
-					encoding.getCommonData(),
-					encoding.getUnknownData(),
-					encoding.getAdapterExtendedData()));
+			encodings.add(
+					new IndexedAdapterPersistenceEncoding(
+							encoding.getAdapterId(),
+							encoding.getDataId(),
+							id,
+							ids.size(),
+							encoding.getCommonData(),
+							encoding.getUnknownData(),
+							encoding.getAdapterExtendedData()));
 		}
 		return encodings;
 	}
@@ -145,20 +171,25 @@ public class DataStoreUtils
 		final PersistentDataset<byte[]> unknownData = new PersistentDataset<byte[]>();
 		final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
 		for (final FieldInfo column : row.info.getFieldInfo()) {
-			final FieldReader<? extends CommonIndexValue> reader = model.getReader(column.getDataValue().getId());
+			final FieldReader<? extends CommonIndexValue> reader = model.getReader(
+					column.getDataValue().getId());
 			if (reader == null) {
-				final FieldReader extendedReader = adapter.getReader(column.getDataValue().getId());
+				final FieldReader extendedReader = adapter.getReader(
+						column.getDataValue().getId());
 				if (extendedReader != null) {
-					extendedData.addValue(column.getDataValue());
+					extendedData.addValue(
+							column.getDataValue());
 				}
 				else {
-					unknownData.addValue(new PersistentValue<byte[]>(
-							column.getDataValue().getId(),
-							column.getWrittenValue()));
+					unknownData.addValue(
+							new PersistentValue<byte[]>(
+									column.getDataValue().getId(),
+									column.getWrittenValue()));
 				}
 			}
 			else {
-				commonData.addValue(column.getDataValue());
+				commonData.addValue(
+						column.getDataValue());
 			}
 		}
 		return new IndexedAdapterPersistenceEncoding(
@@ -180,10 +211,11 @@ public class DataStoreUtils
 			final DataStoreEntryInfo ingestInfo ) {
 		final List<EntryRow> rows = new ArrayList<EntryRow>();
 		for (final ByteArrayId rowId : ingestInfo.getRowIds()) {
-			rows.add(new EntryRow(
-					rowId,
-					entry,
-					ingestInfo));
+			rows.add(
+					new EntryRow(
+							rowId,
+							entry,
+							ingestInfo));
 		}
 		return rows;
 	}
@@ -203,7 +235,8 @@ public class DataStoreUtils
 		final AdapterPersistenceEncoding encodedData = dataWriter.encode(
 				entry,
 				indexModel);
-		final List<ByteArrayId> insertionIds = encodedData.getInsertionIds(index);
+		final List<ByteArrayId> insertionIds = encodedData.getInsertionIds(
+				index);
 		final List<ByteArrayId> rowIds = new ArrayList<ByteArrayId>(
 				insertionIds.size());
 
@@ -238,9 +271,11 @@ public class DataStoreUtils
 			final DataAdapter<?> adapter = adapters.next();
 			if (!(adapter instanceof StatisticalDataAdapter) || (statisticsStore.getDataStatistics(
 					adapter.getAdapterId(),
-					RowRangeHistogramStatistics.composeId(indexId),
+					RowRangeHistogramStatistics.composeId(
+							indexId),
 					authorizations) != null)) {
-				results.add(adapter.getAdapterId());
+				results.add(
+						adapter.getAdapterId());
 			}
 		}
 		return results;
@@ -264,12 +299,13 @@ public class DataStoreUtils
 			// lastly add a number of duplicates which can be useful as
 			// metadata in our de-duplication
 			// step
-			rowIds.add(new ByteArrayId(
-					new EntryRowID(
-							indexId,
-							dataId,
-							adapterId,
-							enableDeduplication ? numberOfDuplicates : -1).getRowId()));
+			rowIds.add(
+					new ByteArrayId(
+							new EntryRowID(
+									indexId,
+									dataId,
+									adapterId,
+									enableDeduplication ? numberOfDuplicates : -1).getRowId()));
 		}
 	}
 
@@ -287,7 +323,8 @@ public class DataStoreUtils
 		final AdapterPersistenceEncoding encodedData = dataWriter.encode(
 				entry,
 				indexModel);
-		final List<ByteArrayId> insertionIds = encodedData.getInsertionIds(index);
+		final List<ByteArrayId> insertionIds = encodedData.getInsertionIds(
+				index);
 		final List<ByteArrayId> rowIds = new ArrayList<ByteArrayId>(
 				insertionIds.size());
 		final PersistentDataset extendedData = encodedData.getAdapterExtendedData();
@@ -314,7 +351,8 @@ public class DataStoreUtils
 						entry,
 						customFieldVisibilityWriter);
 				if (fieldInfo != null) {
-					fieldInfoList.add(fieldInfo);
+					fieldInfoList.add(
+							fieldInfo);
 				}
 			}
 			for (final PersistentValue fieldValue : extendedValues) {
@@ -325,7 +363,8 @@ public class DataStoreUtils
 							entry,
 							customFieldVisibilityWriter);
 					if (fieldInfo != null) {
-						fieldInfoList.add(fieldInfo);
+						fieldInfoList.add(
+								fieldInfo);
 					}
 				}
 			}
@@ -334,8 +373,9 @@ public class DataStoreUtils
 					rowIds,
 					fieldInfoList);
 		}
-		LOGGER.warn("Indexing failed to produce insertion ids; entry [" + dataWriter.getDataId(
-				entry).getString() + "] not saved.");
+		LOGGER.warn(
+				"Indexing failed to produce insertion ids; entry [" + dataWriter.getDataId(
+						entry).getString() + "] not saved.");
 		return new DataStoreEntryInfo(
 				dataId,
 				Collections.EMPTY_LIST,
@@ -352,13 +392,16 @@ public class DataStoreUtils
 			final PersistentValue<T> fieldValue,
 			final T entry,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-		final FieldWriter fieldWriter = dataWriter.getWriter(fieldValue.getId());
-		final FieldVisibilityHandler<T, Object> customVisibilityHandler = customFieldVisibilityWriter.getFieldVisibilityHandler(fieldValue.getId());
+		final FieldWriter fieldWriter = dataWriter.getWriter(
+				fieldValue.getId());
+		final FieldVisibilityHandler<T, Object> customVisibilityHandler = customFieldVisibilityWriter.getFieldVisibilityHandler(
+				fieldValue.getId());
 		if (fieldWriter != null) {
 			final Object value = fieldValue.getValue();
 			return new FieldInfo<T>(
 					fieldValue,
-					fieldWriter.writeField(value),
+					fieldWriter.writeField(
+							value),
 					merge(
 							customVisibilityHandler.getVisibility(
 									entry,
@@ -370,7 +413,8 @@ public class DataStoreUtils
 									value)));
 		}
 		else if (fieldValue.getValue() != null) {
-			LOGGER.warn("Data writer of class " + dataWriter.getClass() + " does not support field for " + fieldValue.getValue());
+			LOGGER.warn(
+					"Data writer of class " + dataWriter.getClass() + " does not support field for " + fieldValue.getValue());
 		}
 		return null;
 	}
@@ -389,8 +433,10 @@ public class DataStoreUtils
 				visibility);
 	}
 
-	private static final byte[] BEG_AND_BYTE = "&".getBytes(StringUtils.UTF8_CHAR_SET);
-	private static final byte[] END_AND_BYTE = ")".getBytes(StringUtils.UTF8_CHAR_SET);
+	private static final byte[] BEG_AND_BYTE = "&".getBytes(
+			StringUtils.UTF8_CHAR_SET);
+	private static final byte[] END_AND_BYTE = ")".getBytes(
+			StringUtils.UTF8_CHAR_SET);
 
 	private static byte[] merge(
 			final byte vis1[],
@@ -402,13 +448,20 @@ public class DataStoreUtils
 			return vis1;
 		}
 
-		final ByteBuffer buffer = ByteBuffer.allocate(vis1.length + 3 + vis2.length);
-		buffer.putChar('(');
-		buffer.put(vis1);
-		buffer.putChar(')');
-		buffer.put(BEG_AND_BYTE);
-		buffer.put(vis2);
-		buffer.put(END_AND_BYTE);
+		final ByteBuffer buffer = ByteBuffer.allocate(
+				vis1.length + 3 + vis2.length);
+		buffer.putChar(
+				'(');
+		buffer.put(
+				vis1);
+		buffer.putChar(
+				')');
+		buffer.put(
+				BEG_AND_BYTE);
+		buffer.put(
+				vis2);
+		buffer.put(
+				END_AND_BYTE);
 		return buffer.array();
 	}
 
@@ -420,13 +473,15 @@ public class DataStoreUtils
 
 		public VisibilityExpression and() {
 			final AndExpression exp = new AndExpression();
-			exp.add(this);
+			exp.add(
+					this);
 			return exp;
 		}
 
 		public VisibilityExpression or() {
 			final OrExpression exp = new OrExpression();
-			exp.add(this);
+			exp.add(
+					this);
 			return exp;
 		}
 
@@ -452,9 +507,10 @@ public class DataStoreUtils
 
 		VisibilityExpression parse(
 				final byte[] expression )
-				throws IOException {
+						throws IOException {
 			if (expression.length > 0) {
-				final VisibilityExpression expr = parse_(expression);
+				final VisibilityExpression expr = parse_(
+						expression);
 				if (expr == null) {
 					badArgumentException(
 							"operator or missing parens",
@@ -477,7 +533,7 @@ public class DataStoreUtils
 				final int end,
 				final VisibilityExpression expr,
 				final byte[] expression )
-				throws UnsupportedEncodingException {
+						throws UnsupportedEncodingException {
 			if (start != end) {
 				if (expr != null) {
 					badArgumentException(
@@ -507,7 +563,7 @@ public class DataStoreUtils
 
 		VisibilityExpression parse_(
 				final byte[] expression )
-				throws IOException {
+						throws IOException {
 			VisibilityExpression result = null;
 			VisibilityExpression expr = null;
 			int termStart = index;
@@ -530,7 +586,8 @@ public class DataStoreUtils
 						else {
 							result = new AndExpression();
 						}
-						result.add(expr);
+						result.add(
+								expr);
 						expr = null;
 						termStart = index;
 						break;
@@ -552,7 +609,8 @@ public class DataStoreUtils
 						else {
 							result = new OrExpression();
 						}
-						result.add(expr);
+						result.add(
+								expr);
 						expr = null;
 						termStart = index;
 						break;
@@ -565,7 +623,8 @@ public class DataStoreUtils
 									expression,
 									index - 1);
 						}
-						expr = parse_(expression);
+						expr = parse_(
+								expression);
 						termStart = index;
 						break;
 					}
@@ -585,7 +644,8 @@ public class DataStoreUtils
 						if (result == null) {
 							return child;
 						}
-						result.add(child);
+						result.add(
+								child);
 						return result;
 					}
 				}
@@ -596,7 +656,8 @@ public class DataStoreUtils
 					expr,
 					expression);
 			if (result != null) {
-				result.add(child);
+				result.add(
+						child);
 			}
 			else {
 				result = child;
@@ -624,11 +685,13 @@ public class DataStoreUtils
 			if (expression.getClass().equals(
 					this.getClass())) {
 				for (final VisibilityExpression child : expression.children()) {
-					add(child);
+					add(
+							child);
 				}
 			}
 			else {
-				expressions.add(expression);
+				expressions.add(
+						expression);
 			}
 			return this;
 		}
@@ -650,7 +713,8 @@ public class DataStoreUtils
 				final String[] auths ) {
 			if (auths != null) {
 				for (final String auth : auths) {
-					if (value.equals(auth)) {
+					if (value.equals(
+							auth)) {
 						return true;
 					}
 				}
@@ -683,7 +747,8 @@ public class DataStoreUtils
 		public boolean ok(
 				final String[] auth ) {
 			for (final VisibilityExpression expression : expressions) {
-				if (!expression.ok(auth)) {
+				if (!expression.ok(
+						auth)) {
 					return false;
 				}
 			}
@@ -704,7 +769,8 @@ public class DataStoreUtils
 		public boolean ok(
 				final String[] auths ) {
 			for (final VisibilityExpression expression : expressions) {
-				if (expression.ok(auths)) {
+				if (expression.ok(
+						auths)) {
 					return true;
 				}
 			}
@@ -728,6 +794,7 @@ public class DataStoreUtils
 			final byte[] expression,
 			final int place ) {
 		throw new IllegalArgumentException(
-				msg + " for " + Arrays.toString(expression) + " at " + place);
+				msg + " for " + Arrays.toString(
+						expression) + " at " + place);
 	}
 }
