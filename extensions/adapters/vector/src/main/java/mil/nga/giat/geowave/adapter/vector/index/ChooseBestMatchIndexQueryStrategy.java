@@ -5,10 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.opengis.feature.simple.SimpleFeature;
-
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
+import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.index.Index;
@@ -16,13 +15,33 @@ import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.memory.DataStoreUtils;
 import mil.nga.giat.geowave.core.store.query.BasicQuery;
 
+import org.opengis.feature.simple.SimpleFeature;
+
 public class ChooseBestMatchIndexQueryStrategy implements
 		IndexQueryStrategySPI
 {
 	public static final String NAME = "Best Match";
 
+	@Override
 	public String toString() {
 		return NAME;
+	}
+
+	/**
+	 * Constraints that are empty indicate full table scan. A full table scan
+	 * occurs if ANY one dimension is unbounded.
+	 * 
+	 * @param constraints
+	 * @return true if any one dimension is unbounded
+	 */
+	public static final boolean isFullTableScan(
+			final List<MultiDimensionalNumericData> constraints ) {
+		for (final MultiDimensionalNumericData constraint : constraints) {
+			if (constraint.isEmpty()) {
+				return false;
+			}
+		}
+		return constraints.isEmpty();
 	}
 
 	@Override
@@ -43,17 +62,27 @@ public class ChooseBestMatchIndexQueryStrategy implements
 					final Index<?, ?> nextChoosenIdx = indices.next();
 					if (nextChoosenIdx instanceof PrimaryIndex) {
 						nextIdx = (PrimaryIndex) nextChoosenIdx;
-						List<ByteArrayRange> ranges = DataStoreUtils.constraintsToByteArrayRanges(
-								query.getIndexConstraints(nextIdx.getIndexStrategy()),
-								nextIdx.getIndexStrategy(),
-								5000);
-						final long temp = DataStoreUtils.cardinality(
-								nextIdx,
-								stats,
-								ranges);
-						if (temp < min) {
-							bestIdx = nextIdx;
-							min = temp;
+						final List<MultiDimensionalNumericData> constraints = query.getIndexConstraints(nextIdx.getIndexStrategy());
+						if (isFullTableScan(constraints)) {
+							// keep this is as a default in case all indices
+							// result in a full table scan
+							if (bestIdx == null) {
+								bestIdx = nextIdx;
+							}
+						}
+						else {
+							final List<ByteArrayRange> ranges = DataStoreUtils.constraintsToByteArrayRanges(
+									constraints,
+									nextIdx.getIndexStrategy(),
+									5000);
+							final long temp = DataStoreUtils.cardinality(
+									nextIdx,
+									stats,
+									ranges);
+							if (temp < min) {
+								bestIdx = nextIdx;
+								min = temp;
+							}
 						}
 					}
 				}
@@ -65,8 +94,10 @@ public class ChooseBestMatchIndexQueryStrategy implements
 			@Override
 			public Index<?, ?> next()
 					throws NoSuchElementException {
-				if (nextIdx == null) throw new NoSuchElementException();
-				Index<?, ?> returnVal = nextIdx;
+				if (nextIdx == null) {
+					throw new NoSuchElementException();
+				}
+				final Index<?, ?> returnVal = nextIdx;
 				nextIdx = null;
 				return returnVal;
 			}
