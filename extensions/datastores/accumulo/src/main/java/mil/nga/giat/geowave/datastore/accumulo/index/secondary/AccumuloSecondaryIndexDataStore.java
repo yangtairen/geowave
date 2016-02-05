@@ -52,7 +52,10 @@ public class AccumuloSecondaryIndexDataStore implements
 			final AccumuloOperations accumuloOperations ) {
 		this(
 				accumuloOperations,
-				new AccumuloOptions());
+				new AccumuloOptions(/*
+									 * FIXME do we want to override any
+									 * defaults?
+									 */));
 	}
 
 	public AccumuloSecondaryIndexDataStore(

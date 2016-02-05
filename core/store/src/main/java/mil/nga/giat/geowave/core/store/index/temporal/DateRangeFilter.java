@@ -75,14 +75,14 @@ public class DateRangeFilter implements
 
 	@Override
 	public byte[] toBinary() {
-		final ByteBuffer bb = ByteBuffer.allocate(4 + fieldId.getBytes().length + 8 + 8 + 8);
+		final ByteBuffer bb = ByteBuffer.allocate(4 + fieldId.getBytes().length + 8 + 8 + 4 + 4);
 		bb.putInt(fieldId.getBytes().length);
 		bb.put(fieldId.getBytes());
 		bb.putLong(start.getTime());
 		bb.putLong(end.getTime());
-		final int rangeInclusiveHighInt = (inclusiveHigh) ? 1 : 0;
 		final int rangeInclusiveLowInt = (inclusiveLow) ? 1 : 0;
 		bb.putInt(rangeInclusiveLowInt);
+		final int rangeInclusiveHighInt = (inclusiveHigh) ? 1 : 0;
 		bb.putInt(rangeInclusiveHighInt);
 		return bb.array();
 	}

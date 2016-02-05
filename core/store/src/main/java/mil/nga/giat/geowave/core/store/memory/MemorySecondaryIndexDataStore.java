@@ -20,15 +20,14 @@ public class MemorySecondaryIndexDataStore implements
 			ByteArrayId primaryIndexId,
 			ByteArrayId primaryIndexRowId,
 			List<FieldInfo<?>> indexedAttributes ) {
-		// TODO Auto-generated method stub
-
+		// FIXME implement this method
 	}
 
 	@Override
 	public void delete(
 			SecondaryIndex<?> secondaryIndex,
 			List<FieldInfo<?>> indexedAttributes ) {
-		// TODO Auto-generated method stub
+		// FIXME implement this method
 
 	}
 
@@ -39,13 +38,13 @@ public class MemorySecondaryIndexDataStore implements
 			List<DistributableQueryFilter> constraints,
 			ByteArrayId primaryIndexId,
 			String... visibility ) {
+		// FIXME implement this method
 		return new CloseableIterator.Empty<ByteArrayId>();
 	}
 
 	@Override
 	public void flush() {
-		// TODO Auto-generated method stub
-
+		// FIXME implement this method
 	}
 
 }

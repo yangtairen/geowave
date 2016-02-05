@@ -56,12 +56,17 @@ public class SecondaryIndex<T> implements
 		return fieldIDs;
 	}
 
+	private ByteArrayId indexId = null; // cache
+
 	@Override
 	public ByteArrayId getId() {
-		return new ByteArrayId(
-				StringUtils.stringToBinary(indexStrategy.getId() + "#" + Joiner.on(
-						"#").join(
-						fieldIDs)));
+		if (indexId == null) {
+			indexId = new ByteArrayId(
+					StringUtils.stringToBinary(indexStrategy.getId() + "#" + Joiner.on(
+							"#").join(
+							fieldIDs)));
+		}
+		return indexId;
 	}
 
 	public List<DataStatistics<T>> getAssociatedStatistics() {

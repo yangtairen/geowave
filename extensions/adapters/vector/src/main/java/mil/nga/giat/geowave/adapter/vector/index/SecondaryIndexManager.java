@@ -47,6 +47,8 @@ public class SecondaryIndexManager implements
 		final List<ByteArrayId> temporalFields = new ArrayList<>();
 		final List<DataStatistics<SimpleFeature>> secondaryIndexStatistics = new ArrayList<>();
 
+		// examine user data of simple feature attributes looking for secondary
+		// index configurations
 		for (final AttributeDescriptor desc : sft.getAttributeDescriptors()) {
 			final Map<Object, Object> userData = desc.getUserData();
 			final String attributeName = desc.getLocalName();
@@ -69,6 +71,8 @@ public class SecondaryIndexManager implements
 			}
 		}
 
+		// initialize index strategies and default statistics for each
+		// configured secondary index
 		if (numericFields.size() > 0) {
 			final List<DataStatistics<SimpleFeature>> numericStatistics = new ArrayList<>();
 			for (final ByteArrayId numericField : numericFields) {
@@ -110,6 +114,7 @@ public class SecondaryIndexManager implements
 			secondaryIndexStatistics.addAll(temporalStatistics);
 		}
 
+		// make stats manager aware of statistics for secondary indices
 		for (final DataStatistics<SimpleFeature> secondaryIndexStatistic : secondaryIndexStatistics) {
 			statsManager.addStats(
 					secondaryIndexStatistic,

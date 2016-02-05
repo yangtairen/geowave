@@ -50,11 +50,12 @@ public class SecondaryIndexDataManager<T> implements
 						entryInfo,
 						fieldID));
 			}
+			final ByteArrayId primaryIndexRowId = entryInfo.getRowIds().get(
+					0); // use first
 			secondaryIndexStore.store(
 					index,
 					primaryIndexId,
-					entryInfo.getRowIds().get(
-							0),
+					primaryIndexRowId,
 					indexedAttributes);
 
 			List<DataStatistics<T>> associatedStatistics = index.getAssociatedStatistics();

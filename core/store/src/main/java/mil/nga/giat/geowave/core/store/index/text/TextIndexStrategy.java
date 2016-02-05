@@ -67,9 +67,7 @@ public class TextIndexStrategy implements
 	public List<ByteArrayRange> getQueryRanges(
 			final TextQueryConstraint indexedRange,
 			final int maxEstimatedRangeDecomposition ) {
-		return indexedRange.getRange(
-				start,
-				end);
+		return getQueryRanges(indexedRange);
 	}
 
 	@Override

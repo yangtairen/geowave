@@ -14,6 +14,7 @@ import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 public interface SecondaryIndexDataStore
 {
 	/**
+	 * Writes index attributes to a secondary index
 	 * 
 	 * @param secondaryIndex
 	 * @param primaryIndexId
@@ -27,6 +28,7 @@ public interface SecondaryIndexDataStore
 			List<FieldInfo<?>> indexedAttributes );
 
 	/**
+	 * Deletes indexed attributes from a secondary index
 	 * 
 	 * @param secondaryIndex
 	 * @param primaryIndexId
@@ -37,6 +39,8 @@ public interface SecondaryIndexDataStore
 			final List<FieldInfo<?>> indexedAttributes );
 
 	/**
+	 * 
+	 * Returns matching primary index row IDs for a secondary index lookup
 	 * 
 	 * @param secondaryIndex
 	 * @param ranges

@@ -11,7 +11,7 @@ public class NumericLessThanOrEqualToConstraint extends
 			final Number number ) {
 		super(
 				fieldId,
-				Double.MIN_VALUE,
+				Long.MIN_VALUE,
 				number,
 				true,
 				true);

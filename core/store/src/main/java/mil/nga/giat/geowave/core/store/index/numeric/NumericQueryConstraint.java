@@ -21,8 +21,8 @@ public class NumericQueryConstraint implements
 			final ByteArrayId fieldId,
 			final Number lowerValue,
 			final Number upperValue,
-			boolean inclusiveLow,
-			boolean inclusiveHigh ) {
+			final boolean inclusiveLow,
+			final boolean inclusiveHigh ) {
 		super();
 		this.fieldId = fieldId;
 		this.lowerValue = lowerValue;
@@ -64,9 +64,10 @@ public class NumericQueryConstraint implements
 						NumericIndexStrategy.toIndexByte(upperValue.doubleValue()))));
 	}
 
+	@Override
 	public FilterableConstraints intersect(
-			FilterableConstraints other ) {
-		if (other instanceof NumericQueryConstraint && ((NumericQueryConstraint) other).fieldId.equals(this.fieldId)) {
+			final FilterableConstraints other ) {
+		if ((other instanceof NumericQueryConstraint) && ((NumericQueryConstraint) other).fieldId.equals(fieldId)) {
 			final NumericQueryConstraint otherNumeric = ((NumericQueryConstraint) other);
 
 			final boolean lowEquals = lowerValue.equals(otherNumeric.lowerValue);
@@ -76,10 +77,10 @@ public class NumericQueryConstraint implements
 			return new NumericQueryConstraint(
 					fieldId,
 					Math.max(
-							this.lowerValue.doubleValue(),
+							lowerValue.doubleValue(),
 							otherNumeric.lowerValue.doubleValue()),
 					Math.min(
-							this.upperValue.doubleValue(),
+							upperValue.doubleValue(),
 							otherNumeric.upperValue.doubleValue()),
 					lowEquals ? otherNumeric.inclusiveLow & inclusiveLow : (replaceMin ? otherNumeric.inclusiveLow : inclusiveLow),
 					upperEquals ? otherNumeric.inclusiveHigh & inclusiveHigh : (replaceMax ? otherNumeric.inclusiveHigh : inclusiveHigh));
@@ -87,9 +88,10 @@ public class NumericQueryConstraint implements
 		return this;
 	}
 
+	@Override
 	public FilterableConstraints union(
-			FilterableConstraints other ) {
-		if (other instanceof NumericQueryConstraint && ((NumericQueryConstraint) other).fieldId.equals(this.fieldId)) {
+			final FilterableConstraints other ) {
+		if ((other instanceof NumericQueryConstraint) && ((NumericQueryConstraint) other).fieldId.equals(fieldId)) {
 			final NumericQueryConstraint otherNumeric = ((NumericQueryConstraint) other);
 
 			final boolean lowEquals = lowerValue.equals(otherNumeric.lowerValue);
@@ -99,10 +101,10 @@ public class NumericQueryConstraint implements
 			return new NumericQueryConstraint(
 					fieldId,
 					Math.min(
-							this.lowerValue.doubleValue(),
+							lowerValue.doubleValue(),
 							otherNumeric.lowerValue.doubleValue()),
 					Math.max(
-							this.upperValue.doubleValue(),
+							upperValue.doubleValue(),
 							otherNumeric.upperValue.doubleValue()),
 					lowEquals ? otherNumeric.inclusiveLow | inclusiveLow : (replaceMin ? otherNumeric.inclusiveLow : inclusiveLow),
 					upperEquals ? otherNumeric.inclusiveHigh | inclusiveHigh : (replaceMax ? otherNumeric.inclusiveHigh : inclusiveHigh));

@@ -1,14 +1,15 @@
 package mil.nga.giat.geowave.core.index.lexicoder;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.google.common.primitives.UnsignedBytes;
+import mil.nga.giat.geowave.core.index.ByteArrayId;
 
 public class LongLexicoderTest
 {
@@ -16,10 +17,12 @@ public class LongLexicoderTest
 
 	@Test
 	public void testRanges() {
-		Assert.assertTrue(longLexicoder.getMinimumValue().equals(
-				Long.MIN_VALUE));
-		Assert.assertTrue(longLexicoder.getMaximumValue().equals(
-				Long.MAX_VALUE));
+		Assert.assertTrue(
+				longLexicoder.getMinimumValue().equals(
+						Long.MIN_VALUE));
+		Assert.assertTrue(
+				longLexicoder.getMaximumValue().equals(
+						Long.MAX_VALUE));
 	}
 
 	@Test
@@ -30,20 +33,25 @@ public class LongLexicoderTest
 				2678l,
 				Long.MAX_VALUE,
 				0l);
-		final List<byte[]> byteArrays = new ArrayList<>(
-				values.size());
-		for (final long value : values) {
-			byteArrays.add(longLexicoder.toByteArray(value));
+		final Set<ByteArrayId> lexigraphicallyOrderedBytes = new TreeSet<ByteArrayId>();
+		for (final Long l : values) {
+			lexigraphicallyOrderedBytes.add(
+					new ByteArrayId(
+							longLexicoder.toByteArray(
+									l)));
 		}
 		Collections.sort(
-				byteArrays,
-				UnsignedBytes.lexicographicalComparator());
-		Collections.sort(values);
-		final List<Long> convertedBytes = new ArrayList<>(
-				byteArrays.size());
-		for (final byte[] bytes : byteArrays) {
-			convertedBytes.add(longLexicoder.fromByteArray(bytes));
+				values);
+		Assert.assertTrue(
+				values.size() == lexigraphicallyOrderedBytes.size());
+		int i = 0;
+		for (final ByteArrayId bytes : lexigraphicallyOrderedBytes) {
+			final Long d = longLexicoder.fromByteArray(
+					bytes.getBytes());
+			Assert.assertTrue(
+					d.equals(
+							values.get(
+									i++)));
 		}
-		Assert.assertTrue(values.equals(convertedBytes));
 	}
 }

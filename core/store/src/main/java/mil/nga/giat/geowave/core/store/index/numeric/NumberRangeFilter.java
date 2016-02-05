@@ -22,11 +22,11 @@ public class NumberRangeFilter implements
 	}
 
 	public NumberRangeFilter(
-			ByteArrayId fieldId,
-			Number lowerValue,
-			Number upperValue,
-			boolean inclusiveLow,
-			boolean inclusiveHigh ) {
+			final ByteArrayId fieldId,
+			final Number lowerValue,
+			final Number upperValue,
+			final boolean inclusiveLow,
+			final boolean inclusiveHigh ) {
 		super();
 		this.fieldId = fieldId;
 		this.lowerValue = lowerValue;
@@ -62,26 +62,32 @@ public class NumberRangeFilter implements
 		final ByteArrayId value = (ByteArrayId) persistenceEncoding.getCommonData().getValue(
 				fieldId);
 		if (value != null) {
-			final double val = Lexicoders.DOUBLE.fromByteArray(value.getBytes());
-			if (inclusiveLow && inclusiveHigh)
-				return val >= lowerValue.doubleValue() && val <= upperValue.doubleValue();
-			else if (inclusiveLow)
-				return val >= lowerValue.doubleValue() && val < upperValue.doubleValue();
-			else if (inclusiveHigh)
-				return val > lowerValue.doubleValue() && val <= upperValue.doubleValue();
-			else
-				return val > lowerValue.doubleValue() && val < upperValue.doubleValue();
+			final double val = Lexicoders.DOUBLE.fromByteArray(persistenceEncoding.getIndexInsertionId().getBytes());
+			if (inclusiveLow && inclusiveHigh) {
+				return (val >= lowerValue.doubleValue()) && (val <= upperValue.doubleValue());
+			}
+			else if (inclusiveLow) {
+				return (val >= lowerValue.doubleValue()) && (val < upperValue.doubleValue());
+			}
+			else if (inclusiveHigh) {
+				return (val > lowerValue.doubleValue()) && (val <= upperValue.doubleValue());
+			}
+			else {
+				return (val > lowerValue.doubleValue()) && (val < upperValue.doubleValue());
+			}
 		}
 		return false;
 	}
 
 	@Override
 	public byte[] toBinary() {
-		final ByteBuffer bb = ByteBuffer.allocate(4 + fieldId.getBytes().length + 16);
+		final ByteBuffer bb = ByteBuffer.allocate(4 + fieldId.getBytes().length + 8 + 8 + 4 + 4);
 		bb.putInt(fieldId.getBytes().length);
 		bb.put(fieldId.getBytes());
 		bb.putDouble(lowerValue.doubleValue());
 		bb.putDouble(upperValue.doubleValue());
+		bb.putInt(inclusiveLow ? 1 : 0);
+		bb.putInt(inclusiveHigh ? 1 : 0);
 		return bb.array();
 	}
 
@@ -97,7 +103,8 @@ public class NumberRangeFilter implements
 				bb.getDouble());
 		upperValue = new Double(
 				bb.getDouble());
-
+		inclusiveLow = (bb.getInt() == 1) ? true : false;
+		inclusiveHigh = (bb.getInt() == 1) ? true : false;
 	}
 
 }

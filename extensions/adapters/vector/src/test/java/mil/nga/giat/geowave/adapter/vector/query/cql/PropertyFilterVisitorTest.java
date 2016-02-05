@@ -35,7 +35,7 @@ public class PropertyFilterVisitorTest
 				null);
 		NumberRangeFilter nf = (NumberRangeFilter) ((NumericLessThanConstraint) constraints.getConstraintsById(new ByteArrayId(
 				"a"))).getFilter();
-		assertTrue(nf.getLowerValue().doubleValue() == Double.MIN_VALUE);
+		assertTrue(nf.getLowerValue().doubleValue() == Long.MIN_VALUE);
 		assertEquals(
 				9,
 				nf.getUpperValue().longValue());
@@ -77,7 +77,7 @@ public class PropertyFilterVisitorTest
 		assertEquals(
 				12,
 				nf.getUpperValue().longValue());
-		assertTrue(nf.getLowerValue().doubleValue() == Double.MIN_VALUE);
+		assertTrue(nf.getLowerValue().doubleValue() == Long.MIN_VALUE);
 		assertTrue(nf.isInclusiveHigh());
 		assertTrue(nf.isInclusiveLow());
 
