@@ -1,5 +1,6 @@
 package mil.nga.giat.geowave.core.index;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -98,6 +99,12 @@ public class ByteArrayRange implements
 				this.start.compareTo(other.start) <= 0 ? this.start : other.start,
 				this.end.compareTo(other.end) >= 0 ? this.end : other.end);
 	}
+	
+	public ByteArrayRange union(ByteArrayRange other) {
+		return new ByteArrayRange(
+				this.start.compareTo(other.start) <= 0 ? other.start : this.start,
+				this.end.compareTo(other.end) >= 0 ? other.end : this.end);
+	}
 
 	@Override
 	public int compareTo(
@@ -128,6 +135,29 @@ public class ByteArrayRange implements
 				}
 			}
 		}
+	}
+	
+	public static final List<ByteArrayRange> mergeIntersections(
+			List<ByteArrayRange> ranges) {
+		// sort order so the first range can consume following ranges
+		Collections.<ByteArrayRange> sort(ranges);
+		final List<ByteArrayRange> result = new ArrayList<ByteArrayRange>();
+		for (int i = 0; i < ranges.size(); ) {
+			ByteArrayRange r1 = ranges.get(i);
+			int j = i + 1;
+			for (; j < ranges.size(); j++) {
+				final ByteArrayRange r2 = ranges.get(j);
+				if (r1.intersects(r2)) {
+					r1 = r1.union(r2);
+				}
+				else {
+					break;
+				}
+			}
+			i = j;
+			result.add(r1);
+		}
+		return result;
 	}
 
 }

@@ -123,12 +123,14 @@ public class SecondaryIndexingIT extends
 	@Test
 	public void testGreaterThanOrEqualToConstraint()
 			throws IOException {
-		final Map<ByteArrayId, FilterableConstraints> additionalConstraints = new HashMap<>();
+		final List<FilterableConstraints> numericConstraints = new ArrayList<>();
+		final Map<ByteArrayId, List<FilterableConstraints>> additionalConstraints = new HashMap<>();
+		numericConstraints.add(new NumericGreaterThanOrEqualToConstraint(
+				siblingsFieldId,
+				1));
 		additionalConstraints.put(
 				siblingsFieldId,
-				new NumericGreaterThanOrEqualToConstraint(
-						siblingsFieldId,
-						1));
+				numericConstraints);
 		for (final SecondaryIndex<?> secondaryIndex : adapter.getSupportedSecondaryIndices()) {
 			int numMatches = 0;
 			if (secondaryIndex.getIndexStrategy() instanceof NumericIndexStrategy) {
@@ -153,12 +155,14 @@ public class SecondaryIndexingIT extends
 	@Test
 	public void testGreaterThanConstraint()
 			throws IOException {
-		final Map<ByteArrayId, FilterableConstraints> additionalConstraints = new HashMap<>();
+		final List<FilterableConstraints> numericConstraints = new ArrayList<>();
+		final Map<ByteArrayId, List<FilterableConstraints>> additionalConstraints = new HashMap<>();
+		numericConstraints.add(new NumericGreaterThanConstraint(
+				siblingsFieldId,
+				1));
 		additionalConstraints.put(
 				siblingsFieldId,
-				new NumericGreaterThanConstraint(
-						siblingsFieldId,
-						1));
+				numericConstraints);
 		for (final SecondaryIndex<?> secondaryIndex : adapter.getSupportedSecondaryIndices()) {
 			int numMatches = 0;
 			if (secondaryIndex.getIndexStrategy() instanceof NumericIndexStrategy) {
@@ -183,12 +187,14 @@ public class SecondaryIndexingIT extends
 	@Test
 	public void testLessThanOrEqualToConstraint()
 			throws IOException {
-		final Map<ByteArrayId, FilterableConstraints> additionalConstraints = new HashMap<>();
+		final List<FilterableConstraints> numericConstraints = new ArrayList<>();
+		final Map<ByteArrayId, List<FilterableConstraints>> additionalConstraints = new HashMap<>();
+		numericConstraints.add(new NumericLessThanOrEqualToConstraint(
+				siblingsFieldId,
+				1));
 		additionalConstraints.put(
 				siblingsFieldId,
-				new NumericLessThanOrEqualToConstraint(
-						siblingsFieldId,
-						1));
+				numericConstraints);
 		for (final SecondaryIndex<?> secondaryIndex : adapter.getSupportedSecondaryIndices()) {
 			int numMatches = 0;
 			if (secondaryIndex.getIndexStrategy() instanceof NumericIndexStrategy) {
@@ -213,12 +219,14 @@ public class SecondaryIndexingIT extends
 	@Test
 	public void testLessThanConstraint()
 			throws IOException {
-		final Map<ByteArrayId, FilterableConstraints> additionalConstraints = new HashMap<>();
+		final List<FilterableConstraints> numericConstraints = new ArrayList<>();
+		final Map<ByteArrayId, List<FilterableConstraints>> additionalConstraints = new HashMap<>();
+		numericConstraints.add(new NumericLessThanConstraint(
+				siblingsFieldId,
+				1));
 		additionalConstraints.put(
 				siblingsFieldId,
-				new NumericLessThanConstraint(
-						siblingsFieldId,
-						1));
+				numericConstraints);
 		for (final SecondaryIndex<?> secondaryIndex : adapter.getSupportedSecondaryIndices()) {
 			int numMatches = 0;
 			if (secondaryIndex.getIndexStrategy() instanceof NumericIndexStrategy) {
@@ -243,12 +251,14 @@ public class SecondaryIndexingIT extends
 	@Test
 	public void testEqualsConstraint()
 			throws IOException {
-		final Map<ByteArrayId, FilterableConstraints> additionalConstraints = new HashMap<>();
+		final List<FilterableConstraints> numericConstraints = new ArrayList<>();
+		final Map<ByteArrayId, List<FilterableConstraints>> additionalConstraints = new HashMap<>();
+		numericConstraints.add(new NumericEqualsConstraint(
+				siblingsFieldId,
+				1));
 		additionalConstraints.put(
 				siblingsFieldId,
-				new NumericEqualsConstraint(
-						siblingsFieldId,
-						1));
+				numericConstraints);
 		for (final SecondaryIndex<?> secondaryIndex : adapter.getSupportedSecondaryIndices()) {
 			int numMatches = 0;
 			if (secondaryIndex.getIndexStrategy() instanceof NumericIndexStrategy) {
@@ -276,13 +286,15 @@ public class SecondaryIndexingIT extends
 			ParseException {
 		final SimpleDateFormat textFormat = new SimpleDateFormat(
 				"yyyy-MM-dd");
-		final Map<ByteArrayId, FilterableConstraints> additionalConstraints = new HashMap<>();
+		final List<FilterableConstraints> temporalConstraints = new ArrayList<>();
+		final Map<ByteArrayId, List<FilterableConstraints>> additionalConstraints = new HashMap<>();
+		temporalConstraints.add(new TemporalQueryConstraint(
+				birthDateFieldId,
+				textFormat.parse("1987-12-12"),
+				textFormat.parse("1997-12-12")));
 		additionalConstraints.put(
 				birthDateFieldId,
-				new TemporalQueryConstraint(
-						birthDateFieldId,
-						textFormat.parse("1987-12-12"),
-						textFormat.parse("1997-12-12")));
+				temporalConstraints);
 		for (final SecondaryIndex<?> secondaryIndex : adapter.getSupportedSecondaryIndices()) {
 			int numMatches = 0;
 			if (secondaryIndex.getIndexStrategy() instanceof TemporalIndexStrategy) {
@@ -300,6 +312,40 @@ public class SecondaryIndexingIT extends
 				Assert.assertTrue(
 						"Expected 2 but was " + numMatches,
 						numMatches == 2);
+			}
+		}
+	}
+	
+	@Test
+	public void testMultipleNumeric() throws IOException {
+		final List<FilterableConstraints> numericConstraints = new ArrayList<>();
+		final Map<ByteArrayId, List<FilterableConstraints>> additionalConstraints = new HashMap<>();
+		numericConstraints.add(new NumericGreaterThanConstraint(
+				siblingsFieldId,
+				1));
+		numericConstraints.add(new NumericLessThanConstraint(
+				siblingsFieldId,
+				3));
+		additionalConstraints.put(
+				siblingsFieldId,
+				numericConstraints);
+		for (final SecondaryIndex<?> secondaryIndex : adapter.getSupportedSecondaryIndices()) {
+			int numMatches = 0;
+			if (secondaryIndex.getIndexStrategy() instanceof NumericIndexStrategy) {
+				try (final CloseableIterator<ByteArrayId> matches = secondaryIndexQueryManager.query(
+						new SpatialQuery(
+								queryGeom,
+								additionalConstraints),
+						secondaryIndex,
+						primaryIndex)) {
+					while (matches.hasNext()) {
+						numMatches++;
+						matches.next();
+					}
+				}
+				Assert.assertTrue(
+						"Expected 1 but was " + numMatches,
+						numMatches == 1);
 			}
 		}
 	}

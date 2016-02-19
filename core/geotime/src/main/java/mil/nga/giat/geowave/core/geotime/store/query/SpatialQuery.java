@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.core.geotime.store.query;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -56,7 +57,7 @@ public class SpatialQuery extends
 
 	public SpatialQuery(
 			final Geometry queryGeometry,
-			Map<ByteArrayId, FilterableConstraints> additionalConstraints ) {
+			Map<ByteArrayId, List<FilterableConstraints>> additionalConstraints ) {
 		super(
 				GeometryUtils.basicConstraintsFromGeometry(queryGeometry),
 				additionalConstraints);

@@ -17,13 +17,13 @@ public interface DistributableQuery extends
 		Persistable
 {
 	/**
-	 * Return a set of constraints to apply to the given secondary index.
+	 * Return a collection of ranges over secondary index keys
 	 * 
 	 * @param index
 	 *            the index to extract constraints for
 	 * @return A collection of ranges over secondary index keys.
 	 */
-	public List<ByteArrayRange> getSecondaryIndexConstraints(
+	public List<ByteArrayRange> getSecondaryIndexRanges(
 			SecondaryIndex<?> index );
 
 	public List<DistributableQueryFilter> getSecondaryQueryFilter(

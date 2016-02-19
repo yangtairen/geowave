@@ -532,7 +532,7 @@ public class BasicQuery implements
 
 	private Constraints constraints;
 	// field Id to constraint
-	private Map<ByteArrayId, FilterableConstraints> additionalConstraints = Collections.emptyMap();
+	private Map<ByteArrayId, List<FilterableConstraints>> additionalConstraints = Collections.emptyMap();
 
 	protected BasicQuery() {}
 
@@ -543,7 +543,7 @@ public class BasicQuery implements
 
 	public BasicQuery(
 			final Constraints constraints,
-			final Map<ByteArrayId, FilterableConstraints> additionalConstraints ) {
+			final Map<ByteArrayId, List<FilterableConstraints>> additionalConstraints ) {
 		super();
 		this.constraints = constraints;
 		this.additionalConstraints = additionalConstraints;
@@ -638,7 +638,7 @@ public class BasicQuery implements
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<ByteArrayRange> getSecondaryIndexConstraints(
+	public List<ByteArrayRange> getSecondaryIndexRanges(
 			SecondaryIndex<?> index ) {
 		final List<ByteArrayRange> allRanges = new ArrayList<>();
 		final List<FilterableConstraints> queryConstraints = getSecondaryIndexQueryConstraints(index);
@@ -646,7 +646,7 @@ public class BasicQuery implements
 			allRanges.addAll(index.getIndexStrategy().getQueryRanges(
 					queryConstraint));
 		}
-		return allRanges;
+		return ByteArrayRange.mergeIntersections(allRanges);
 	}
 
 	@Override
@@ -665,7 +665,7 @@ public class BasicQuery implements
 		final List<FilterableConstraints> constraints = new ArrayList<>();
 		for (ByteArrayId id : index.getFieldIDs()) {
 			if (additionalConstraints.get(id) != null) {
-				constraints.add(additionalConstraints.get(id));
+				constraints.addAll(additionalConstraints.get(id));
 			}
 		}
 		return constraints;

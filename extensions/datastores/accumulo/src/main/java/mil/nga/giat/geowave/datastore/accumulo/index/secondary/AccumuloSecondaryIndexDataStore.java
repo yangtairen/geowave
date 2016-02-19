@@ -249,7 +249,7 @@ public class AccumuloSecondaryIndexDataStore implements
 			final List<DistributableQueryFilter> distributableFilters,
 			final ByteArrayId primaryIndexId ) {
 		final DistributableFilterList filterList = new DistributableFilterList(
-				false,
+				true,
 				distributableFilters);
 		final IteratorSetting iteratorSettings = new IteratorSetting(
 				SecondaryIndexQueryFilterIterator.ITERATOR_PRIORITY,

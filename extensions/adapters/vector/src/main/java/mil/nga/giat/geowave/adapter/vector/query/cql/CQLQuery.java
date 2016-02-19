@@ -210,7 +210,7 @@ public class CQLQuery implements
 	}
 
 	@Override
-	public List<ByteArrayRange> getSecondaryIndexConstraints(
+	public List<ByteArrayRange> getSecondaryIndexRanges(
 			final SecondaryIndex<?> index ) {
 		final PropertyFilterVisitor visitor = new PropertyFilterVisitor();
 		final PropertyConstraintSet constraints = (PropertyConstraintSet) cqlFilter.accept(

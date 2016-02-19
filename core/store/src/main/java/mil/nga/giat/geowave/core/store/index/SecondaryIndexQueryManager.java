@@ -37,7 +37,7 @@ public class SecondaryIndexQueryManager
 		if (query.isSupported(secondaryIndex)) {
 			return secondaryIndexDataStore.query(
 					secondaryIndex,
-					query.getSecondaryIndexConstraints(secondaryIndex),
+					query.getSecondaryIndexRanges(secondaryIndex),
 					query.getSecondaryQueryFilter(secondaryIndex),
 					primaryIndex.getId(),
 					visibility);
