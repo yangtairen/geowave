@@ -10,7 +10,6 @@ import mil.nga.giat.geowave.core.store.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.DeleteCallback;
 import mil.nga.giat.geowave.core.store.IngestCallback;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 
 /**
  * One manager associated with each primary index.
@@ -56,13 +55,6 @@ public class SecondaryIndexDataManager<T> implements
 					entryInfo.getRowIds().get(
 							0),
 					indexedAttributes);
-
-			List<DataStatistics<T>> associatedStatistics = index.getAssociatedStatistics();
-			for (DataStatistics<T> associatedStatistic : associatedStatistics) {
-				associatedStatistic.entryIngested(
-						entryInfo,
-						entry);
-			}
 		}
 
 	}

@@ -56,6 +56,14 @@ public class NumericQueryConstraint implements
 				inclusiveHigh);
 	}
 
+	public double getMinValue() {
+		return lowerValue.doubleValue();
+	}
+
+	public double getMaxValue() {
+		return upperValue.doubleValue();
+	}
+
 	public List<ByteArrayRange> getRange() {
 		return Collections.singletonList(new ByteArrayRange(
 				new ByteArrayId(

@@ -1,12 +1,9 @@
 package mil.nga.giat.geowave.core.store.index;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.DataStoreEntryInfo.FieldInfo;
@@ -23,14 +20,12 @@ public class SecondaryIndex<T> implements
 {
 	private FieldIndexStrategy<?, ?> indexStrategy;
 	private ByteArrayId[] fieldIDs;
-	private final List<DataStatistics<T>> associatedStatistics;
 
 	public SecondaryIndex(
 			final FieldIndexStrategy<?, ?> indexStrategy,
 			final ByteArrayId[] fieldIDs ) {
 		this.indexStrategy = indexStrategy;
 		this.fieldIDs = fieldIDs;
-		this.associatedStatistics = Collections.emptyList();
 	}
 
 	public SecondaryIndex(
@@ -40,7 +35,6 @@ public class SecondaryIndex<T> implements
 		super();
 		this.indexStrategy = indexStrategy;
 		this.fieldIDs = fieldIDs;
-		this.associatedStatistics = associatedStatistics;
 	}
 
 	@SuppressWarnings({
@@ -62,10 +56,6 @@ public class SecondaryIndex<T> implements
 				StringUtils.stringToBinary(indexStrategy.getId() + "#" + Joiner.on(
 						"#").join(
 						fieldIDs)));
-	}
-
-	public List<DataStatistics<T>> getAssociatedStatistics() {
-		return associatedStatistics;
 	}
 
 	@Override
@@ -94,21 +84,14 @@ public class SecondaryIndex<T> implements
 	public byte[] toBinary() {
 		final byte[] indexStrategyBinary = PersistenceUtils.toBinary(indexStrategy);
 		final byte[] fieldIdBinary = ByteArrayId.toBytes(fieldIDs);
-		final List<Persistable> persistables = new ArrayList<Persistable>();
-		for (DataStatistics<T> dataStatistics : associatedStatistics) {
-			persistables.add(dataStatistics);
-		}
-		final byte[] persistablesBinary = PersistenceUtils.toBinary(persistables);
-		final ByteBuffer buf = ByteBuffer.allocate(indexStrategyBinary.length + fieldIdBinary.length + 8 + persistablesBinary.length);
+		final ByteBuffer buf = ByteBuffer.allocate(indexStrategyBinary.length + fieldIdBinary.length + 8);
 		buf.putInt(indexStrategyBinary.length);
 		buf.putInt(fieldIdBinary.length);
 		buf.put(indexStrategyBinary);
 		buf.put(fieldIdBinary);
-		buf.put(persistablesBinary);
 		return buf.array();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
@@ -125,13 +108,6 @@ public class SecondaryIndex<T> implements
 				FieldIndexStrategy.class);
 
 		fieldIDs = ByteArrayId.fromBytes(fieldIdBinary);
-
-		final byte[] persistablesBinary = new byte[bytes.length - indexStrategyLength - fieldIdLength - 8];
-		buf.get(persistablesBinary);
-		final List<Persistable> persistables = PersistenceUtils.fromBinary(persistablesBinary);
-		for (final Persistable persistable : persistables) {
-			associatedStatistics.add((DataStatistics<T>) persistable);
-		}
 	}
 
 }

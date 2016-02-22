@@ -24,6 +24,11 @@ public class PropertyConstraintSet
 				true);
 	}
 
+	public boolean isEmpty() {
+		return constraints.isEmpty();
+	}
+
+	
 	public List<FilterableConstraints> getConstraintsFor(
 			ByteArrayId[] fieldIds ) {
 		List<FilterableConstraints> result = new LinkedList<FilterableConstraints>();
