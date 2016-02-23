@@ -315,9 +315,10 @@ public class SecondaryIndexingIT extends
 			}
 		}
 	}
-	
+
 	@Test
-	public void testMultipleNumeric() throws IOException {
+	public void testMultipleNumeric()
+			throws IOException {
 		final List<FilterableConstraints> numericConstraints = new ArrayList<>();
 		final Map<ByteArrayId, List<FilterableConstraints>> additionalConstraints = new HashMap<>();
 		numericConstraints.add(new NumericGreaterThanConstraint(

@@ -64,7 +64,8 @@ public class SecondaryIndexQueryFilterIterator extends
 					final IndexedPersistenceEncoding<ByteArrayId> persistenceEncoding = new IndexedPersistenceEncoding<ByteArrayId>(
 							null, // not needed
 							null, // not needed
-							new ByteArrayId(key.getRow().getBytes()),
+							new ByteArrayId(
+									key.getRow().getBytes()),
 							0, // not needed
 							new PersistentDataset<ByteArrayId>(
 									new PersistentValue<ByteArrayId>(

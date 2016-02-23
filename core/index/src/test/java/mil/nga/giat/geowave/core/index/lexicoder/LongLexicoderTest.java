@@ -17,12 +17,10 @@ public class LongLexicoderTest
 
 	@Test
 	public void testRanges() {
-		Assert.assertTrue(
-				longLexicoder.getMinimumValue().equals(
-						Long.MIN_VALUE));
-		Assert.assertTrue(
-				longLexicoder.getMaximumValue().equals(
-						Long.MAX_VALUE));
+		Assert.assertTrue(longLexicoder.getMinimumValue().equals(
+				Long.MIN_VALUE));
+		Assert.assertTrue(longLexicoder.getMaximumValue().equals(
+				Long.MAX_VALUE));
 	}
 
 	@Test
@@ -35,23 +33,15 @@ public class LongLexicoderTest
 				0l);
 		final Set<ByteArrayId> lexigraphicallyOrderedBytes = new TreeSet<ByteArrayId>();
 		for (final Long l : values) {
-			lexigraphicallyOrderedBytes.add(
-					new ByteArrayId(
-							longLexicoder.toByteArray(
-									l)));
+			lexigraphicallyOrderedBytes.add(new ByteArrayId(
+					longLexicoder.toByteArray(l)));
 		}
-		Collections.sort(
-				values);
-		Assert.assertTrue(
-				values.size() == lexigraphicallyOrderedBytes.size());
+		Collections.sort(values);
+		Assert.assertTrue(values.size() == lexigraphicallyOrderedBytes.size());
 		int i = 0;
 		for (final ByteArrayId bytes : lexigraphicallyOrderedBytes) {
-			final Long d = longLexicoder.fromByteArray(
-					bytes.getBytes());
-			Assert.assertTrue(
-					d.equals(
-							values.get(
-									i++)));
+			final Long d = longLexicoder.fromByteArray(bytes.getBytes());
+			Assert.assertTrue(d.equals(values.get(i++)));
 		}
 	}
 }

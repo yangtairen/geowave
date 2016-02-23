@@ -4,10 +4,10 @@ import com.google.common.base.Preconditions;
 
 /**
  * A lexicoder for preserving the native Java sort order of Double values.
- *
+ * 
  * See Apache Accumulo:
  * org.apache.accumulo.core.client.lexicoder.DoubleLexicoder
- *
+ * 
  */
 public class DoubleLexicoder implements
 		NumberLexicoder<Double>
@@ -16,16 +16,14 @@ public class DoubleLexicoder implements
 	@Override
 	public byte[] toByteArray(
 			final Double value ) {
-		long l = Double.doubleToRawLongBits(
-				value);
+		long l = Double.doubleToRawLongBits(value);
 		if (l < 0) {
 			l = ~l;
 		}
 		else {
 			l = l ^ 0x8000000000000000l;
 		}
-		return encode(
-				l);
+		return encode(l);
 	}
 
 	@Override
@@ -97,8 +95,7 @@ public class DoubleLexicoder implements
 		else {
 			l = ~l;
 		}
-		return Double.longBitsToDouble(
-				l);
+		return Double.longBitsToDouble(l);
 	}
 
 }
