@@ -13,6 +13,7 @@ import java.util.Set;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
+import mil.nga.giat.geowave.core.index.ByteArrayRange.MergeOperation;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.QueryConstraints;
 import mil.nga.giat.geowave.core.index.StringUtils;
@@ -646,7 +647,9 @@ public class BasicQuery implements
 			allRanges.addAll(index.getIndexStrategy().getQueryRanges(
 					queryConstraint));
 		}
-		return ByteArrayRange.mergeIntersections(allRanges);
+		return ByteArrayRange.mergeIntersections(
+				allRanges,
+				MergeOperation.INTERSECTION);
 	}
 
 	@Override
