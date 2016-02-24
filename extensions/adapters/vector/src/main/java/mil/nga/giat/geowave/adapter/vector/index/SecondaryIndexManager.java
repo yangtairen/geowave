@@ -220,11 +220,13 @@ public class SecondaryIndexManager implements
 	 * The intersection (common IDs) returned from the list of ID iterators is
 	 * used to resolve primary index IDs.
 	 * 
-	 * This method does not let the list of ID iterators to exceed the max cutoff.
-	 * Those iterators are deemed not supportive and not considered in the ID intersection. 
+	 * This method does not let the list of ID iterators to exceed the max
+	 * cutoff. Those iterators are deemed not supportive and not considered in
+	 * the ID intersection.
 	 * 
-	 * Ideally, the calling method will not provide ID iterators for those secondary index queries
-	 * that cannot reduce the number of primary index identifiers below the cut-off.  
+	 * Ideally, the calling method will not provide ID iterators for those
+	 * secondary index queries that cannot reduce the number of primary index
+	 * identifiers below the cut-off.
 	 * 
 	 * @param idsIterator
 	 * @param dataAdapterId
@@ -278,7 +280,8 @@ public class SecondaryIndexManager implements
 				validIteratorIds.set(iteratorMaskId);
 			}
 			else {
-				// primePhase is over as long as we have not run through an invalid set of ids (i.e. too many)
+				// primePhase is over as long as we have not run through an
+				// invalid set of ids (i.e. too many)
 				primePhase = false;
 			}
 			iteratorMaskId++;

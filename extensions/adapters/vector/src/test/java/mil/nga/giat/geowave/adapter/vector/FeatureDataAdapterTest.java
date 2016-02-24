@@ -339,7 +339,7 @@ public class FeatureDataAdapterTest
 
 		final SimpleFeatureType schema = DataUtilities.createType(
 				"sp.geostuff",
-				"geometry:Geometry:srid=4326,pop:java.lang.Long,start:Date,end:Date,pid:String");
+				"geometry:Geometry:srid=4326,pop:java.lang.Long,start:Date,end:Date,dd:Date,pid:String");
 
 		final List<AttributeDescriptor> descriptors = schema.getAttributeDescriptors();
 		final Object[] defaults = new Object[descriptors.size()];
