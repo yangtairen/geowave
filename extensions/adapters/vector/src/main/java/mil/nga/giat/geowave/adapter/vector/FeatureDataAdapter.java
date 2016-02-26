@@ -371,11 +371,11 @@ public class FeatureDataAdapter extends
 		byte[] attrBytes = new byte[0];
 
 		final SimpleFeatureUserDataConfigurationSet userDataConfiguration = new SimpleFeatureUserDataConfigurationSet();
-		userDataConfiguration.addConfigurations(new TimeDescriptorConfiguration(
+		userDataConfiguration.addConfigurations(typeName,new TimeDescriptorConfiguration(
 				persistedType));
-		userDataConfiguration.addConfigurations(new SimpleFeatureStatsConfigurationCollection(
+		userDataConfiguration.addConfigurations(typeName,new SimpleFeatureStatsConfigurationCollection(
 				persistedType));
-		userDataConfiguration.addConfigurations(new VisibilityConfiguration(
+		userDataConfiguration.addConfigurations(typeName,new VisibilityConfiguration(
 				persistedType));
 		try {
 			attrBytes = StringUtils.stringToBinary(userDataConfiguration.asJsonString());
@@ -459,11 +459,11 @@ public class FeatureDataAdapter extends
 					StringUtils.stringFromBinary(axisBytes));
 
 			final SimpleFeatureUserDataConfigurationSet userDataConfiguration = new SimpleFeatureUserDataConfigurationSet();
-			userDataConfiguration.addConfigurations(new TimeDescriptorConfiguration(
+			userDataConfiguration.addConfigurations(typeName,new TimeDescriptorConfiguration(
 					myType));
-			userDataConfiguration.addConfigurations(new SimpleFeatureStatsConfigurationCollection(
+			userDataConfiguration.addConfigurations(typeName,new SimpleFeatureStatsConfigurationCollection(
 					myType));
-			userDataConfiguration.addConfigurations(new VisibilityConfiguration(
+			userDataConfiguration.addConfigurations(typeName,new VisibilityConfiguration(
 					myType));
 			try {
 				userDataConfiguration.fromJsonString(
@@ -563,10 +563,7 @@ public class FeatureDataAdapter extends
 	}
 
 	public boolean hasTemporalConstraints() {
-		return typeMatchingFieldHandlers.keySet().contains(
-				Time.class) || typeMatchingFieldHandlers.keySet().contains(
-				FeatureTimestampHandler.class) || typeMatchingFieldHandlers.keySet().contains(
-				FeatureTimeRangeHandler.class);
+		return getTimeDescriptors().hasTime();
 	}
 
 	public synchronized void resetTimeDescriptors() {
