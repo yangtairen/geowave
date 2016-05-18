@@ -59,14 +59,7 @@ public class DBScanOptions
 		"--hullDataTypeId"
 	}, description = "Data Type ID for a centroid item")
 	private String hullDataTypeId;
-
-	@HullParameter(HullParameters.Hull.HULL_BUILDER)
-	@Parameter(names = {
-		"-hhb",
-		"--hullHullBuilder"
-	}, description = "Hull Builder")
-	private String hullHullBuilder;
-
+	
 	@HullParameter(HullParameters.Hull.PROJECTION_CLASS)
 	@Parameter(names = {
 		"-hpe",
@@ -232,16 +225,7 @@ public class DBScanOptions
 			String hullDataTypeId ) {
 		this.hullDataTypeId = hullDataTypeId;
 	}
-
-	public String getHullHullBuilder() {
-		return hullHullBuilder;
-	}
-
-	public void setHullHullBuilder(
-			String hullHullBuilder ) {
-		this.hullHullBuilder = hullHullBuilder;
-	}
-
+	
 	public String getHullProjectionClass() {
 		return hullProjectionClass;
 	}

@@ -144,8 +144,7 @@ public class PropertyManagementConverter
 		if (value != null) {
 			((ParameterEnum<Object>) enumVal).getHelper().setValue(
 					properties,
-					enumVal.getHelper().getValue(
-							value.toString()));
+					value);
 		}
 	}
 }
