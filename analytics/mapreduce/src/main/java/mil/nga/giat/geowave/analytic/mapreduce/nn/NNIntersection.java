@@ -181,7 +181,7 @@ public class NNIntersection
 
 	}
 
-	public class IDReducer extends
+	public static class IDReducer extends
 			Reducer<Text, Text, Text, Text>
 	{
 
