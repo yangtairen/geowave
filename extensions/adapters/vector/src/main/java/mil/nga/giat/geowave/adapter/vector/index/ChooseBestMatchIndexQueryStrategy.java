@@ -71,7 +71,7 @@ public class ChooseBestMatchIndexQueryStrategy implements
 						final List<ByteArrayRange> ranges = DataStoreUtils.constraintsToByteArrayRanges(
 								constraints,
 								nextIdx.getIndexStrategy(),
-								5000);
+								-1);
 						final long temp = DataStoreUtils.cardinality(
 								nextIdx,
 								stats,
