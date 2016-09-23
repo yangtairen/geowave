@@ -21,6 +21,7 @@ import mil.nga.giat.geowave.core.ingest.GeoWaveData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
+import mil.nga.giat.geowave.core.store.index.DataStoreIndexWriter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions;
 import mil.nga.giat.geowave.core.store.operations.remote.options.IndexPluginOptions;
@@ -86,12 +87,16 @@ public class LocalFileIngestDriver extends
 				dataStore)) {
 
 			startExecutor();
-
+			DataStoreIndexWriter.ADD =false;
 			processInput(
 					inputPath,
 					localFileIngestPlugins,
 					runData);
-
+			DataStoreIndexWriter.ADD =true;
+			processInput(
+					inputPath,
+					localFileIngestPlugins,
+					runData);
 			// We place this here and not just in finally because of the way
 			// that try-with-resources works.
 			// We want to wait for our ingesting threads to finish before we

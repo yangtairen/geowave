@@ -27,6 +27,7 @@ public abstract class DataStoreIndexWriter<T, MutationType> implements
 		IndexWriter<T>
 {
 	private final static Logger LOGGER = Logger.getLogger(DataStoreIndexWriter.class);
+	public static boolean ADD = false;
 	protected final PrimaryIndex index;
 	protected final DataStoreOperations operations;
 	protected final DataStoreOptions options;

@@ -1,10 +1,12 @@
-package mil.nga.giat.geowave.core.index.dimension;
+package mil.nga.giat.geowave.core.geotime.index.dimension;
 
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
+import mil.nga.giat.geowave.core.index.dimension.BasicDimensionDefinition;
 import mil.nga.giat.geowave.core.index.dimension.bin.BinRange;
 import mil.nga.giat.geowave.core.index.dimension.bin.BinningStrategy;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
+import mil.nga.giat.geowave.core.store.index.HistogramDimensionDefinition;
 
 /**
  * Because space filling curves require an extent (minimum & maximum), the
@@ -12,7 +14,7 @@ import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
  * an unbounded variable into bounded bins
  */
 public class UnboundedDimensionDefinition extends
-		BasicDimensionDefinition
+HistogramDimensionDefinition
 {
 
 	protected BinningStrategy binningStrategy;

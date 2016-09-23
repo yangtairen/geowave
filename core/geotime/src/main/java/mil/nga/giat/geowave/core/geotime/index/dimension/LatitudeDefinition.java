@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.core.geotime.index.dimension;
 
 import mil.nga.giat.geowave.core.index.dimension.BasicDimensionDefinition;
+import mil.nga.giat.geowave.core.store.index.HistogramDimensionDefinition;
 
 /**
  * The Latitude Definition class is a convenience class used to define a
@@ -10,7 +11,7 @@ import mil.nga.giat.geowave.core.index.dimension.BasicDimensionDefinition;
  * 
  */
 public class LatitudeDefinition extends
-		BasicDimensionDefinition
+		HistogramDimensionDefinition
 {
 
 	/**
@@ -20,7 +21,7 @@ public class LatitudeDefinition extends
 	 */
 	public LatitudeDefinition() {
 		this(
-				false);
+				true);
 	}
 
 	/**
@@ -48,22 +49,22 @@ public class LatitudeDefinition extends
 				90);
 	}
 
-	@Override
-	public byte[] toBinary() {
-		return new byte[] {
-			(byte) (((min > -180) && (max < 180)) ? 0 : 1)
-		};
-	}
-
-	@Override
-	public void fromBinary(
-			final byte[] bytes ) {
-		if ((bytes != null) && (bytes.length > 0)) {
-			if (bytes[0] == (byte) 1) {
-				// this implies we just want to use half the range
-				min = -180;
-				max = 180;
-			}
-		}
-	}
+//	@Override
+//	public byte[] toBinary() {
+//		return new byte[] {
+//			(byte) (((min > -180) && (max < 180)) ? 0 : 1)
+//		};
+//	}
+//
+//	@Override
+//	public void fromBinary(
+//			final byte[] bytes ) {
+//		if ((bytes != null) && (bytes.length > 0)) {
+//			if (bytes[0] == (byte) 1) {
+//				// this implies we just want to use half the range
+//				min = -180;
+//				max = 180;
+//			}
+//		}
+//	}
 }

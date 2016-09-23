@@ -19,6 +19,8 @@ import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
+import mil.nga.giat.geowave.core.store.base.BaseDataStore;
+import mil.nga.giat.geowave.core.store.index.DataStoreIndexWriter;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStore;
@@ -138,6 +140,11 @@ public class LocalIngestRunData implements
 			super.destroyObject(
 					key,
 					p);
+			if (DataStoreIndexWriter.ADD){
+			for (PrimaryIndex i : p.getObject().getIndices()){
+			((BaseDataStore)dataStore).store(i);
+			}
+			}
 			p.getObject().close();
 		}
 

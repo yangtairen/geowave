@@ -10,13 +10,19 @@ import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.index.dimension.NumericDimensionDefinition;
+import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
+import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
+import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.DataStoreIndexWriter;
+import mil.nga.giat.geowave.core.store.index.HistogramDimensionDefinition;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 
@@ -29,7 +35,8 @@ import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 public class AccumuloIndexWriter<T> extends
 		DataStoreIndexWriter<T, Mutation>
 {
-	private final static Logger LOGGER = Logger.getLogger(AccumuloIndexWriter.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			AccumuloIndexWriter.class);
 	protected final AccumuloOperations accumuloOperations;
 	protected final AccumuloOptions accumuloOptions;
 
@@ -55,7 +62,8 @@ public class AccumuloIndexWriter<T> extends
 		if (writer == null) {
 			try {
 				writer = accumuloOperations.createWriter(
-						StringUtils.stringFromBinary(index.getId().getBytes()),
+						StringUtils.stringFromBinary(
+								index.getId().getBytes()),
 						accumuloOptions.isCreateTable(),
 						true,
 						accumuloOptions.isEnableBlockCache(),
@@ -77,23 +85,41 @@ public class AccumuloIndexWriter<T> extends
 		DataStoreEntryInfo entryInfo;
 		synchronized (this) {
 
+			if (DataStoreIndexWriter.ADD) {
 			ensureOpen();
 			if (writer == null) {
 				return Collections.emptyList();
 			}
-			entryInfo = AccumuloUtils.write(
-					(WritableDataAdapter<T>) adapter,
-					index,
-					entry,
-					writer,
-					accumuloOperations,
-					visibilityWriter);
-			if (entryInfo == null) {
+				entryInfo = AccumuloUtils.write(
+						(WritableDataAdapter<T>) adapter,
+						index,
+						entry,
+						writer,
+						accumuloOperations,
+						visibilityWriter);
+				if (entryInfo == null) {
+					return Collections.EMPTY_LIST;
+				}
+				callback.entryIngested(
+						entryInfo,
+						entry);
+			}
+			else{
+				final CommonIndexModel indexModel = index.getIndexModel();
+
+				final AdapterPersistenceEncoding encodedData = ((WritableDataAdapter<T>) adapter).encode(
+						entry,
+						indexModel);
+				MultiDimensionalNumericData data = encodedData.getNumericData(index.getIndexModel().getDimensions());
+				double[] dimensionData = data.getCentroidPerDimension();
+				int i = 0;
+				for (NumericDimensionDefinition dim : index.getIndexStrategy().getOrderedDimensionDefinitions()){
+					if (dim instanceof HistogramDimensionDefinition){
+						((HistogramDimensionDefinition) dim).add(dimensionData[i++]);
+					}
+				}
 				return Collections.EMPTY_LIST;
 			}
-			callback.entryIngested(
-					entryInfo,
-					entry);
 		}
 		return entryInfo.getRowIds();
 	}

@@ -1,7 +1,6 @@
 package mil.nga.giat.geowave.core.geotime.index.dimension;
 
 import mil.nga.giat.geowave.core.geotime.index.dimension.TemporalBinningStrategy.Unit;
-import mil.nga.giat.geowave.core.index.dimension.UnboundedDimensionDefinition;
 import mil.nga.giat.geowave.core.index.dimension.bin.BinningStrategy;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;

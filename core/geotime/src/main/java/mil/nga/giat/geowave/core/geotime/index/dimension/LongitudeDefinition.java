@@ -3,6 +3,7 @@ package mil.nga.giat.geowave.core.geotime.index.dimension;
 import mil.nga.giat.geowave.core.index.dimension.BasicDimensionDefinition;
 import mil.nga.giat.geowave.core.index.dimension.bin.BinRange;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
+import mil.nga.giat.geowave.core.store.index.HistogramDimensionDefinition;
 
 /**
  * The Longitude Definition class is a convenience class used to define a
@@ -12,7 +13,7 @@ import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
  * 
  */
 public class LongitudeDefinition extends
-		BasicDimensionDefinition
+HistogramDimensionDefinition
 {
 
 	/**
@@ -87,13 +88,13 @@ public class LongitudeDefinition extends
 		return (((Math.ceil(Math.abs(offsetLon) / 360) * 360) + offsetLon) % 360) - 180;
 	}
 
-	@Override
-	public byte[] toBinary() {
-		// essentially all that is needed is the class name for reflection
-		return new byte[] {};
-	}
-
-	@Override
-	public void fromBinary(
-			final byte[] bytes ) {}
+//	@Override
+//	public byte[] toBinary() {
+//		// essentially all that is needed is the class name for reflection
+//		return new byte[] {};
+//	}
+//
+//	@Override
+//	public void fromBinary(
+//			final byte[] bytes ) {}
 }
