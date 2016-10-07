@@ -9,9 +9,16 @@ import java.util.List;
 import java.util.Map;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
+import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
+import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
+import com.amazonaws.services.dynamodbv2.model.KeyType;
+import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.PutRequest;
+import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.amazonaws.services.dynamodbv2.model.WriteRequest;
+import com.amazonaws.services.dynamodbv2.util.TableUtils;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
@@ -32,6 +39,8 @@ public class DynamoDBIndexWriter<T> extends
 	public static final String GW_IDX_KEY = "X";
 	public static final String GW_VALUE_KEY = "V";
 	protected final AmazonDynamoDBAsyncClient client;
+	protected final DynamoDBOperations dynamodbOperations;
+	private static Map<String, Boolean> tableExistsCache = new HashMap<>();
 
 	public DynamoDBIndexWriter(
 			final DataAdapter<T> adapter,
@@ -47,14 +56,49 @@ public class DynamoDBIndexWriter<T> extends
 				callback,
 				closable);
 		this.client = operations.getClient();
+		this.dynamodbOperations = operations;
 	}
 
 	private synchronized void ensureOpen() {
 		if (writer == null) {
-			writer = new DynamoDBWriter(
+			final String tableName = dynamodbOperations.getQualifiedTableName(
 					StringUtils.stringFromBinary(
-							index.getId().getBytes()),
+							index.getId().getBytes()));
+			writer = new DynamoDBWriter(
+					tableName,
 					client);
+			final Boolean tableExists = tableExistsCache.get(
+					tableName);
+			if (tableExists == null || !tableExists) {
+				TableUtils.createTableIfNotExists(
+						client,
+						new CreateTableRequest()
+								.withTableName(
+										tableName)
+								.withAttributeDefinitions(
+										new AttributeDefinition(
+												GW_ID_KEY,
+												ScalarAttributeType.B),
+										new AttributeDefinition(
+												GW_IDX_KEY,
+												ScalarAttributeType.B))
+								.withKeySchema(
+										new KeySchemaElement(
+												GW_ID_KEY,
+												KeyType.HASH),
+										new KeySchemaElement(
+												GW_IDX_KEY,
+												KeyType.RANGE))
+								.withProvisionedThroughput(
+										new ProvisionedThroughput(
+												Long.valueOf(
+														10),
+												Long.valueOf(
+														10))));
+				tableExistsCache.put(
+						tableName,
+						true);
+			}
 		}
 	}
 
@@ -122,12 +166,13 @@ public class DynamoDBIndexWriter<T> extends
 					ingestInfo.getDataId());
 			idBuffer.put(
 					adapterId);
-			ByteBuffer.wrap(
-					ingestInfo.getDataId());
 			map.put(
 					GW_ID_KEY,
 					new AttributeValue().withB(
 							idBuffer));
+			if (insertionId.getBytes().length == 0){
+				System.err.println("crap");
+			}
 			map.put(
 					GW_IDX_KEY,
 					new AttributeValue().withB(

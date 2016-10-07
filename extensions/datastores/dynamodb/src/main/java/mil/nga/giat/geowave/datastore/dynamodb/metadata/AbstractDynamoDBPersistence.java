@@ -1,6 +1,8 @@
 package mil.nga.giat.geowave.datastore.dynamodb.metadata;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -9,11 +11,19 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
+import com.amazonaws.services.dynamodbv2.model.AmazonDynamoDBException;
+import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.Condition;
+import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
+import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
+import com.amazonaws.services.dynamodbv2.model.KeyType;
+import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
 import com.amazonaws.services.dynamodbv2.model.QueryRequest;
 import com.amazonaws.services.dynamodbv2.model.QueryResult;
+import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
+import com.amazonaws.services.dynamodbv2.util.TableUtils;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
@@ -35,12 +45,15 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 	private static final String VALUE_KEY = "V";
 
 	private final AmazonDynamoDBAsyncClient client;
+	private final DynamoDBOperations dynamodbOperations;
+	private static Map<String, Boolean> tableExistsCache = new HashMap<>();
 
 	public AbstractDynamoDBPersistence(
-			final DynamoDBOperations ops) {
+			final DynamoDBOperations ops ) {
 		super(
 				ops);
 		this.client = ops.getClient();
+		dynamodbOperations = ops;
 	}
 
 	protected ByteArrayId getSecondaryId(
@@ -109,6 +122,29 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 						ByteBuffer.wrap(
 								PersistenceUtils.toBinary(
 										object))));
+
+		final String tableName = dynamodbOperations.getQualifiedTableName(
+				METADATA_TABLE);
+		final Boolean tableExists = tableExistsCache.get(
+				tableName);
+		if (tableExists == null || !tableExists) {
+			TableUtils.createTableIfNotExists(
+					client,
+					new CreateTableRequest()
+							.withTableName(
+									tableName)
+							.withAttributeDefinitions(
+									new AttributeDefinition(
+											PRIMARY_ID_KEY,
+											ScalarAttributeType.B))
+							.withKeySchema(
+									new KeySchemaElement(
+											PRIMARY_ID_KEY,
+											KeyType.HASH)).withProvisionedThroughput(new ProvisionedThroughput(Long.valueOf(10), Long.valueOf(10))));
+			tableExistsCache.put(
+					tableName,
+					true);
+		}
 		client.putItem(
 				new PutItemRequest(
 						getTableName(),
@@ -210,6 +246,24 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
+
+		final Boolean tableExists = tableExistsCache.get(
+				dynamodbOperations.getQualifiedTableName(
+						getTableName()));
+		if (tableExists == null || !tableExists) {
+			try {
+				if (!dynamodbOperations.tableExists(
+						getTableName())) {
+					return Collections.EMPTY_LIST;
+				}
+			}
+			catch (final IOException e) {
+				LOGGER.warn(
+						"unable to check table existence",
+						e);
+				return Collections.EMPTY_LIST;
+			}
+		}
 		final QueryRequest query = new QueryRequest(
 				getTableName());
 		query.addQueryFilterEntry(
