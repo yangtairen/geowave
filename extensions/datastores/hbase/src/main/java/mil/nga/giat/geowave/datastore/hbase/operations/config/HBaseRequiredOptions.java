@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 
 import mil.nga.giat.geowave.core.store.StoreFactoryOptions;
+import mil.nga.giat.geowave.core.store.base.BaseDataStoreOptions;
 
 public class HBaseRequiredOptions extends
 		StoreFactoryOptions
@@ -18,23 +19,23 @@ public class HBaseRequiredOptions extends
 	private String zookeeper;
 
 	@ParametersDelegate
-	private HBaseOptions additionalOptions = new HBaseOptions();
+	private BaseDataStoreOptions additionalOptions = new BaseDataStoreOptions();
 
 	public String getZookeeper() {
 		return zookeeper;
 	}
 
 	public void setZookeeper(
-			String zookeeper ) {
+			final String zookeeper ) {
 		this.zookeeper = zookeeper;
 	}
 
-	public HBaseOptions getAdditionalOptions() {
+	public BaseDataStoreOptions getAdditionalOptions() {
 		return additionalOptions;
 	}
 
 	public void setAdditionalOptions(
-			HBaseOptions additionalOptions ) {
+			final BaseDataStoreOptions additionalOptions ) {
 		this.additionalOptions = additionalOptions;
 	}
 }

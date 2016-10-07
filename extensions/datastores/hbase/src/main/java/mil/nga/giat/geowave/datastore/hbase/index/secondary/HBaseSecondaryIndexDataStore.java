@@ -23,6 +23,8 @@ import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
+import mil.nga.giat.geowave.core.store.DataStoreOptions;
+import mil.nga.giat.geowave.core.store.base.BaseDataStoreOptions;
 import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
@@ -33,7 +35,6 @@ import mil.nga.giat.geowave.core.store.index.BaseSecondaryIndexDataStore;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndex;
 import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
-import mil.nga.giat.geowave.datastore.hbase.operations.config.HBaseOptions;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
 public class HBaseSecondaryIndexDataStore extends
@@ -41,21 +42,21 @@ public class HBaseSecondaryIndexDataStore extends
 {
 	private final static Logger LOGGER = Logger.getLogger(HBaseSecondaryIndexDataStore.class);
 	private final BasicHBaseOperations hbaseOperations;
-	private final HBaseOptions hbaseOptions;
+	private final DataStoreOptions baseOptions;
 
 	public HBaseSecondaryIndexDataStore(
 			final BasicHBaseOperations hbaseOperations ) {
 		this(
 				hbaseOperations,
-				new HBaseOptions());
+				new BaseDataStoreOptions());
 	}
 
 	public HBaseSecondaryIndexDataStore(
 			final BasicHBaseOperations hbaseOperations,
-			final HBaseOptions hbaseOptions ) {
+			final DataStoreOptions baseOptions ) {
 		super();
 		this.hbaseOperations = hbaseOperations;
-		this.hbaseOptions = hbaseOptions;
+		this.baseOptions = baseOptions;
 	}
 
 	@Override

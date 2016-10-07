@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
@@ -22,7 +23,6 @@ import mil.nga.giat.geowave.core.store.index.DataStoreIndexWriter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
-import mil.nga.giat.geowave.datastore.hbase.operations.config.HBaseOptions;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
 public class HBaseIndexWriter<T> extends
@@ -31,13 +31,13 @@ public class HBaseIndexWriter<T> extends
 
 	private final static Logger LOGGER = Logger.getLogger(HBaseIndexWriter.class);
 	private final BasicHBaseOperations operations;
-	protected final HBaseOptions options;
+	protected final DataStoreOptions options;
 
 	public HBaseIndexWriter(
 			final DataAdapter<T> adapter,
 			final PrimaryIndex index,
 			final BasicHBaseOperations operations,
-			final HBaseOptions options,
+			final DataStoreOptions options,
 			final IngestCallback<T> callback,
 			final Closeable closable ) {
 		super(

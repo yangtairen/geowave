@@ -33,7 +33,7 @@ public abstract class AbstractGeowavePersistence<T extends Persistable>
 	// notifications?
 	protected static final int MAX_ENTRIES = 100;
 	public final static String METADATA_TABLE = "GEOWAVE_METADATA";
-	private final DataStoreOperations operations;
+	protected final DataStoreOperations operations;
 
 	protected final Map<ByteArrayId, T> cache = Collections.synchronizedMap(new LinkedHashMap<ByteArrayId, T>(
 			MAX_ENTRIES + 1,

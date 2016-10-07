@@ -119,8 +119,9 @@ public class GeoWaveBasicIT
 	private static final String TEST_BASE_EXPORT_FILE_NAME = "basicIT-export.avro";
 
 	@GeoWaveTestStore({
-		GeoWaveStoreType.ACCUMULO,
-		GeoWaveStoreType.HBASE
+//		GeoWaveStoreType.ACCUMULO,
+//		GeoWaveStoreType.HBASE
+		GeoWaveStoreType.DYNAMODB
 	})
 	protected DataStorePluginOptions dataStore;
 
@@ -156,12 +157,12 @@ public class GeoWaveBasicIT
 		LOGGER.warn("-----------------------------------------");
 	}
 
-	@Test
+//	@Test
 	public void testMultiThreadedIngestAndQuerySpatialPointsAndLines() {
 		testIngestAndQuerySpatialPointsAndLines(4);
 	}
 
-	@Test
+//	@Test
 	public void testSingleThreadedIngestAndQuerySpatialPointsAndLines() {
 		testIngestAndQuerySpatialPointsAndLines(1);
 	}
@@ -173,11 +174,11 @@ public class GeoWaveBasicIT
 		LOGGER.debug("Testing DataStore Type: " + dataStore.getType());
 
 		// ingest both lines and points
-		TestUtils.testLocalIngest(
-				dataStore,
-				DimensionalityType.SPATIAL,
-				HAIL_SHAPEFILE_FILE,
-				nthreads);
+//		TestUtils.testLocalIngest(
+//				dataStore,
+//				DimensionalityType.SPATIAL,
+//				HAIL_SHAPEFILE_FILE,
+//				nthreads);
 
 		long dur = (System.currentTimeMillis() - mark);
 		LOGGER.debug("Ingest (points) duration = " + dur + " ms with " + nthreads + " thread(s).");
@@ -597,11 +598,11 @@ public class GeoWaveBasicIT
 	@Test
 	public void testIngestAndQuerySpatialTemporalPointsAndLines() {
 		// ingest both lines and points
-		TestUtils.testLocalIngest(
-				dataStore,
-				DimensionalityType.SPATIAL_TEMPORAL,
-				HAIL_SHAPEFILE_FILE,
-				1);
+//		TestUtils.testLocalIngest(
+//				dataStore,
+//				DimensionalityType.SPATIAL_TEMPORAL,
+//				HAIL_SHAPEFILE_FILE,
+//				1);
 
 		TestUtils.testLocalIngest(
 				dataStore,

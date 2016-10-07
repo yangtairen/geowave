@@ -1,47 +1,32 @@
-package mil.nga.giat.geowave.datastore.accumulo.metadata;
+package mil.nga.giat.geowave.datastore.dynamodb.metadata;
 
-import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.apache.accumulo.core.client.IteratorSetting;
-import org.apache.accumulo.core.client.IteratorSetting.Column;
-import org.apache.accumulo.core.client.Scanner;
-import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.iterators.IteratorUtil.IteratorScope;
-import org.apache.accumulo.core.iterators.conf.ColumnSet;
-import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
+
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.BasicOptionProvider;
-import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
-import mil.nga.giat.geowave.datastore.accumulo.MergingCombiner;
-import mil.nga.giat.geowave.datastore.accumulo.MergingVisibilityCombiner;
-import mil.nga.giat.geowave.datastore.accumulo.util.TransformerWriter;
-import mil.nga.giat.geowave.datastore.accumulo.util.VisibilityTransformer;
+import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBOperations;
 
 /**
- * This class will persist Index objects within an Accumulo table for GeoWave
+ * This class will persist Index objects within an DynamoDB table for GeoWave
  * metadata. The adapters will be persisted in an "INDEX" column family.
- * 
+ *
  * There is an LRU cache associated with it so staying in sync with external
  * updates is not practical - it assumes the objects are not updated often or at
  * all. The objects are stored in their own table.
- * 
+ *
  **/
-public class AccumuloDataStatisticsStore extends
-		AbstractAccumuloPersistence<DataStatistics<?>> implements
+public class DynamoDBDataStatisticsStore extends
+		AbstractDynamoDBPersistence<DataStatistics<?>> implements
 		DataStatisticsStore
 {
-	private final static Logger LOGGER = Logger.getLogger(AccumuloDataStatisticsStore.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			DynamoDBDataStatisticsStore.class);
 	// this is fairly arbitrary at the moment because it is the only custom
 	// iterator added
 	private static final int STATS_COMBINER_PRIORITY = 10;
@@ -49,10 +34,10 @@ public class AccumuloDataStatisticsStore extends
 	private static final String STATISTICS_COMBINER_NAME = "STATS_COMBINER";
 	private static final String STATISTICS_CF = "STATS";
 
-	public AccumuloDataStatisticsStore(
-			final AccumuloOperations accumuloOperations ) {
+	public DynamoDBDataStatisticsStore(
+			final DynamoDBOperations dynamodbOperations ) {
 		super(
-				accumuloOperations);
+				dynamodbOperations);
 	}
 
 	@Override
@@ -60,9 +45,10 @@ public class AccumuloDataStatisticsStore extends
 			final DataStatistics<?> statistics ) {
 		// because we're using the combiner, we should simply be able to add the
 		// object
-		addObject(statistics);
+		addObject(
+				statistics);
 
-		// TODO if we do allow caching after we add a statistic to Accumulo we
+		// TODO if we do allow caching after we add a statistic to DynamoDB we
 		// do need to make sure we update our cache, but for now we aren't using
 		// the cache at all
 
@@ -78,7 +64,7 @@ public class AccumuloDataStatisticsStore extends
 		// TODO consider adding a setting to use the cache for statistics, but
 		// because it could change with each new entry, it seems that there
 		// could be too much potential for invalid caching if multiple instances
-		// of GeoWave are able to connect to the same Accumulo tables
+		// of GeoWave are able to connect to the same DynamoDB tables
 	}
 
 	@Override
@@ -90,7 +76,7 @@ public class AccumuloDataStatisticsStore extends
 		// TODO consider adding a setting to use the cache for statistics, but
 		// because it could change with each new entry, it seems that there
 		// could be too much potential for invalid caching if multiple instances
-		// of GeoWave are able to connect to the same Accumulo tables
+		// of GeoWave are able to connect to the same DynamoDB tables
 		return null;
 	}
 
@@ -103,40 +89,8 @@ public class AccumuloDataStatisticsStore extends
 		// TODO consider adding a setting to use the cache for statistics, but
 		// because it could change with each new entry, it seems that there
 		// could be too much potential for invalid caching if multiple instances
-		// of GeoWave are able to connect to the same Accumulo tables
+		// of GeoWave are able to connect to the same DynamoDB tables
 		return true;
-	}
-
-	@Override
-	protected IteratorConfig[] getIteratorConfig() {
-		final Column adapterColumn = new Column(
-				STATISTICS_CF);
-		final Map<String, String> options = new HashMap<String, String>();
-		options.put(
-				MergingCombiner.COLUMNS_OPTION,
-				ColumnSet.encodeColumns(
-						adapterColumn.getFirst(),
-						adapterColumn.getSecond()));
-		final IteratorConfig statsCombiner = new IteratorConfig(
-				EnumSet.allOf(IteratorScope.class),
-				STATS_COMBINER_PRIORITY,
-				STATISTICS_COMBINER_NAME,
-				MergingCombiner.class.getName(),
-				new BasicOptionProvider(
-						options));
-		return new IteratorConfig[] {
-			statsCombiner
-		};
-	}
-
-	@Override
-	protected IteratorSetting[] getScanSettings() {
-		final IteratorSetting statsMultiVisibilityCombiner = new IteratorSetting(
-				STATS_MULTI_VISIBILITY_COMBINER_PRIORITY,
-				MergingVisibilityCombiner.class);
-		return new IteratorSetting[] {
-			statsMultiVisibilityCombiner
-		};
 	}
 
 	@Override
@@ -152,14 +106,13 @@ public class AccumuloDataStatisticsStore extends
 
 	@Override
 	protected DataStatistics<?> entryToValue(
-			final Entry<Key, Value> entry ) {
-		final DataStatistics<?> stats = super.entryToValue(entry);
+			final Map<String, AttributeValue> entry ) {
+		final DataStatistics<?> stats = super.entryToValue(
+				entry);
 		if (stats != null) {
-			stats.setDataAdapterId(getSecondaryId(entry.getKey()));
-			final Text visibility = entry.getKey().getColumnVisibility();
-			if (visibility != null) {
-				stats.setVisibility(visibility.getBytes());
-			}
+			stats.setDataAdapterId(
+					getSecondaryId(
+							entry));
 		}
 		return stats;
 	}
@@ -182,13 +135,15 @@ public class AccumuloDataStatisticsStore extends
 		removeStatistics(
 				statistics.getDataAdapterId(),
 				statistics.getStatisticsId());
-		addObject(statistics);
+		addObject(
+				statistics);
 	}
 
 	@Override
 	public CloseableIterator<DataStatistics<?>> getAllDataStatistics(
 			final String... authorizations ) {
-		return getObjects(authorizations);
+		return getObjects(
+				authorizations);
 	}
 
 	@Override

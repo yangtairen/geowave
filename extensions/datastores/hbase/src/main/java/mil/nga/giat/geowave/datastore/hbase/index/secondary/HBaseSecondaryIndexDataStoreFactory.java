@@ -1,9 +1,9 @@
 package mil.nga.giat.geowave.datastore.hbase.index.secondary;
 
 import mil.nga.giat.geowave.core.store.StoreFactoryOptions;
+import mil.nga.giat.geowave.core.store.base.BaseDataStoreOptions;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStore;
 import mil.nga.giat.geowave.datastore.hbase.AbstractHBaseStoreFactory;
-import mil.nga.giat.geowave.datastore.hbase.operations.config.HBaseOptions;
 import mil.nga.giat.geowave.datastore.hbase.operations.config.HBaseRequiredOptions;
 
 public class HBaseSecondaryIndexDataStoreFactory extends
@@ -19,7 +19,7 @@ public class HBaseSecondaryIndexDataStoreFactory extends
 		}
 		final HBaseRequiredOptions opts = (HBaseRequiredOptions) options;
 		if (opts.getAdditionalOptions() == null) {
-			opts.setAdditionalOptions(new HBaseOptions());
+			opts.setAdditionalOptions(new BaseDataStoreOptions());
 		}
 		return new HBaseSecondaryIndexDataStore(
 				createOperations(opts));

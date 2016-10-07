@@ -1,26 +1,30 @@
-package mil.nga.giat.geowave.datastore.accumulo.operations.config;
+package mil.nga.giat.geowave.datastore.dynamodb;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
+import mil.nga.giat.geowave.core.store.StoreFactoryOptions;
 import mil.nga.giat.geowave.core.store.base.BaseDataStoreOptions;
 
-/**
- * This class can be used to modify the behavior of the Accumulo Data Store.
- *
- */
-public class AccumuloOptions implements
+public class DynamoDBOptions extends
+		StoreFactoryOptions implements
 		DataStoreOptions
 {
+	@Parameter(names = "--endpoint")
+	protected String endpoint;
+
 	@ParametersDelegate
 	protected BaseDataStoreOptions baseOptions = new BaseDataStoreOptions();
 
-	@Parameter(names = "--useLocalityGroups", hidden = true, arity = 1)
-	protected boolean useLocalityGroups = true;
+	public void setEndpoint(
+			String endpoint ) {
+		this.endpoint = endpoint;
+	}
 
-	@Parameter(names = "--enableBlockCache", hidden = true, arity = 1)
-	protected boolean enableBlockCache = true;
+	public String getEndpoint() {
+		return endpoint;
+	}
 
 	@Override
 	public boolean isPersistAdapter() {
@@ -77,21 +81,4 @@ public class AccumuloOptions implements
 				createTable);
 	}
 
-	public boolean isUseLocalityGroups() {
-		return useLocalityGroups;
-	}
-
-	public void setUseLocalityGroups(
-			final boolean useLocalityGroups ) {
-		this.useLocalityGroups = useLocalityGroups;
-	}
-
-	public boolean isEnableBlockCache() {
-		return enableBlockCache;
-	}
-
-	public void setEnableBlockCache(
-			final boolean enableBlockCache ) {
-		this.enableBlockCache = enableBlockCache;
-	}
 }

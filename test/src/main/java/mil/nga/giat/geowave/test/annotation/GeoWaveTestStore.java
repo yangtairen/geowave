@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import mil.nga.giat.geowave.test.AccumuloStoreTestEnvironment;
+import mil.nga.giat.geowave.test.DynamoDBTestEnvironment;
 import mil.nga.giat.geowave.test.HBaseStoreTestEnvironment;
 import mil.nga.giat.geowave.test.StoreTestEnvironment;
 import mil.nga.giat.geowave.test.TestUtils;
@@ -32,6 +33,8 @@ public @interface GeoWaveTestStore {
 	public String namespace() default TestUtils.TEST_NAMESPACE;
 
 	public static enum GeoWaveStoreType {
+		DYNAMODB(
+				DynamoDBTestEnvironment.getInstance()),
 		ACCUMULO(
 				AccumuloStoreTestEnvironment.getInstance()),
 		HBASE(

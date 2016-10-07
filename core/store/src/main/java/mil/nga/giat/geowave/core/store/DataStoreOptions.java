@@ -11,4 +11,6 @@ public interface DataStoreOptions
 
 	public boolean isPersistDataStatistics();
 
+	public boolean isCreateTable();
+
 }

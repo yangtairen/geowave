@@ -1,134 +1,62 @@
 package mil.nga.giat.geowave.datastore.dynamodb;
 
 import java.io.Closeable;
-import java.io.Flushable;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.log4j.Logger;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
-import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
+import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.IndexWriter;
-import mil.nga.giat.geowave.core.store.adapter.AdapterIndexMappingStore;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DuplicateEntryCount;
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
-import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.data.visibility.DifferingFieldVisibilityEntryCount;
-import mil.nga.giat.geowave.core.store.entities.GeowaveRowId;
 import mil.nga.giat.geowave.core.store.filter.DedupeFilter;
 import mil.nga.giat.geowave.core.store.index.IndexMetaDataSet;
-import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStore;
-import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
-import mil.nga.giat.geowave.core.store.util.DataAdapterAndIndexCache;
-import mil.nga.giat.geowave.mapreduce.MapReduceDataStore;
-import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
+import mil.nga.giat.geowave.datastore.dynamodb.metadata.DynamoDBAdapterIndexMappingStore;
+import mil.nga.giat.geowave.datastore.dynamodb.metadata.DynamoDBAdapterStore;
+import mil.nga.giat.geowave.datastore.dynamodb.metadata.DynamoDBDataStatisticsStore;
+import mil.nga.giat.geowave.datastore.dynamodb.metadata.DynamoDBIndexStore;
+import mil.nga.giat.geowave.datastore.dynamodb.query.DynamoDBConstraintsQuery;
+import mil.nga.giat.geowave.datastore.dynamodb.query.DynamoDBRowIdsQuery;
+import mil.nga.giat.geowave.datastore.dynamodb.query.DynamoDBRowPrefixQuery;
 
 public class DynamoDBDataStore extends
-		BaseDataStore
+		BaseDataStore 
 {
 	public final static String TYPE = "dynamodb";
 
 	private final static Logger LOGGER = Logger.getLogger(
 			DynamoDBDataStore.class);
+	private DynamoDBOperations dynamodbOperations;
 
 	public DynamoDBDataStore(
-			final DynamoDBOperations dynamodbOperations ) {
-//		this(
-//				new AccumuloIndexStore(
-//						accumuloOperations),
-//				new AccumuloAdapterStore(
-//						accumuloOperations),
-//				new AccumuloDataStatisticsStore(
-//						accumuloOperations),
-//				new AccumuloSecondaryIndexDataStore(
-//						accumuloOperations),
-//				new AccumuloAdapterIndexMappingStore(
-//						accumuloOperations),
-//				accumuloOperations);
-	}
-
-	public DynamoDBDataStore(
-			final DynamoDBOperations dynamodbOperations,
-			final DynamoDBORequiredOptions ) {
-		this(
-				new AccumuloIndexStore(
-						accumuloOperations),
-				new AccumuloAdapterStore(
-						accumuloOperations),
-				new AccumuloDataStatisticsStore(
-						accumuloOperations),
-				new AccumuloSecondaryIndexDataStore(
-						accumuloOperations,
-						accumuloOptions),
-				new AccumuloAdapterIndexMappingStore(
-						accumuloOperations),
-				accumuloOperations,
-				accumuloOptions);
-	}
-
-	public DynamoDBDataStore(
-			final IndexStore indexStore,
-			final AdapterStore adapterStore,
-			final DataStatisticsStore statisticsStore,
-			final SecondaryIndexDataStore secondaryIndexDataStore,
-			final AdapterIndexMappingStore indexMappingStore,
-			final AccumuloOperations accumuloOperations ) {
-		this(
-				indexStore,
-				adapterStore,
-				statisticsStore,
-				secondaryIndexDataStore,
-				indexMappingStore,
-				accumuloOperations,
-				new AccumuloOptions());
-	}
-
-	public DynamoDBDataStore(
-			final IndexStore indexStore,
-			final AdapterStore adapterStore,
-			final DataStatisticsStore statisticsStore,
-			final SecondaryIndexDataStore secondaryIndexDataStore,
-			final AdapterIndexMappingStore indexMappingStore,
-			final AccumuloOperations accumuloOperations,
-			final AccumuloOptions accumuloOptions ) {
+			final DynamoDBOperations operations ) {
 		super(
-				indexStore,
-				adapterStore,
-				statisticsStore,
-				indexMappingStore,
-				secondaryIndexDataStore,
-				accumuloOperations,
-				accumuloOptions);
-
-		this.accumuloOperations = accumuloOperations;
-		this.accumuloOptions = accumuloOptions;
+				new DynamoDBIndexStore(
+						operations),
+				new DynamoDBAdapterStore(
+						operations),
+				new DynamoDBDataStatisticsStore(
+						operations),
+				new DynamoDBAdapterIndexMappingStore(
+						operations),
+				null,
+				operations,
+				operations.getOptions());
+		dynamodbOperations = operations;
 	}
 
 	@Override
@@ -139,11 +67,10 @@ public class DynamoDBDataStore extends
 			final DataStoreOptions baseOptions,
 			final IngestCallback callback,
 			final Closeable closable ) {
-		return new AccumuloIndexWriter(
+		return new DynamoDBIndexWriter<>(
 				adapter,
 				index,
-				accumuloOperations,
-				accumuloOptions,
+				dynamodbOperations,
 				callback,
 				closable);
 	}
@@ -171,7 +98,8 @@ public class DynamoDBDataStore extends
 			final DedupeFilter filter,
 			final QueryOptions sanitizedQueryOptions,
 			final AdapterStore tempAdapterStore ) {
-		final AccumuloConstraintsQuery accumuloQuery = new AccumuloConstraintsQuery(
+		final DynamoDBConstraintsQuery dynamodbQuery = new DynamoDBConstraintsQuery(
+				dynamodbOperations,
 				adapterIdsToQuery,
 				index,
 				sanitizedQuery,
@@ -196,8 +124,7 @@ public class DynamoDBDataStore extends
 						sanitizedQueryOptions.getAuthorizations()),
 				sanitizedQueryOptions.getAuthorizations());
 
-		return accumuloQuery.query(
-				accumuloOperations,
+		return dynamodbQuery.query(
 				tempAdapterStore,
 				sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension(),
 				sanitizedQueryOptions.getLimit());
@@ -210,7 +137,8 @@ public class DynamoDBDataStore extends
 			final QueryOptions sanitizedQueryOptions,
 			final AdapterStore tempAdapterStore,
 			final List<ByteArrayId> adapterIdsToQuery ) {
-		final AccumuloRowPrefixQuery<Object> prefixQuery = new AccumuloRowPrefixQuery<Object>(
+		final DynamoDBRowPrefixQuery<Object> prefixQuery = new DynamoDBRowPrefixQuery<Object>(
+				dynamodbOperations,
 				index,
 				rowPrefix,
 				(ScanCallback<Object>) sanitizedQueryOptions.getScanCallback(),
@@ -222,7 +150,6 @@ public class DynamoDBDataStore extends
 						sanitizedQueryOptions.getAuthorizations()),
 				sanitizedQueryOptions.getAuthorizations());
 		return prefixQuery.query(
-				accumuloOperations,
 				sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension(),
 				tempAdapterStore);
 	}
@@ -235,7 +162,8 @@ public class DynamoDBDataStore extends
 			final DedupeFilter filter,
 			final QueryOptions sanitizedQueryOptions,
 			final AdapterStore tempAdapterStore ) {
-		final AccumuloRowIdsQuery<Object> q = new AccumuloRowIdsQuery<Object>(
+		final DynamoDBRowIdsQuery<Object> q = new DynamoDBRowIdsQuery<Object>(
+				dynamodbOperations,
 				adapter,
 				index,
 				rowIds,
@@ -244,7 +172,6 @@ public class DynamoDBDataStore extends
 				sanitizedQueryOptions.getAuthorizations());
 
 		return q.query(
-				accumuloOperations,
 				tempAdapterStore,
 				sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension(),
 				sanitizedQueryOptions.getLimit());
@@ -280,7 +207,7 @@ public class DynamoDBDataStore extends
 			final String tableName,
 			final String columnFamily,
 			final String... additionalAuthorizations ) {
-		//TODO
+		// TODO
 		return false;
 	}
 
