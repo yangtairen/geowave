@@ -10,14 +10,14 @@ import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.GenericStoreFactory;
 import mil.nga.giat.geowave.core.store.StoreFactoryOptions;
-import mil.nga.giat.geowave.datastore.hbase.HBaseDataStoreFactory;
 import mil.nga.giat.geowave.test.annotation.GeoWaveTestStore.GeoWaveStoreType;
 
 public class CassandraStoreTestEnvironment extends
 		StoreTestEnvironment
 {
-	private static final GenericStoreFactory<DataStore> STORE_FACTORY = new HBaseDataStoreFactory();
+	private static final GenericStoreFactory<DataStore> STORE_FACTORY = null; // new CassandraDataStoreFactory();
 	private static CassandraStoreTestEnvironment singletonInstance = null;
+	private String customConfigYaml = null;
 
 	public static synchronized CassandraStoreTestEnvironment getInstance() {
 		if (singletonInstance == null) {
@@ -33,7 +33,10 @@ public class CassandraStoreTestEnvironment extends
 
 	@Override
 	protected void initOptions(
-			final StoreFactoryOptions options ) {}
+			final StoreFactoryOptions options ) {
+		// get the file path for the custom config here
+		// customConfigYaml = ((CassandraOptions) options).getConfigYaml();
+	}
 
 	@Override
 	protected GenericStoreFactory<DataStore> getDataStoreFactory() {
@@ -43,7 +46,15 @@ public class CassandraStoreTestEnvironment extends
 	@Override
 	public void setup() {
 		try {
-			EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+			// start embedded cluster if necessary
+			if (customConfigYaml != null) {
+				EmbeddedCassandraServerHelper.startEmbeddedCassandra(customConfigYaml);
+			}
+			else {
+				EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+			}
+			
+			EmbeddedCassandraServerHelper.cleanEmbeddedCassandra(); // reset embedded data
 		}
 		catch (ConfigurationException | TTransportException | IOException | InterruptedException e) {
 			LOGGER.error(
