@@ -33,7 +33,7 @@ public abstract class AbstractGeowavePersistence<T extends Persistable>
 	// notifications?
 	protected static final int MAX_ENTRIES = 100;
 	public final static String METADATA_TABLE = "GEOWAVE_METADATA";
-	private final DataStoreOperations operations;
+	protected final DataStoreOperations operations;
 
 	protected final Map<ByteArrayId, T> cache = Collections.synchronizedMap(new LinkedHashMap<ByteArrayId, T>(
 			MAX_ENTRIES + 1,
@@ -78,8 +78,7 @@ public abstract class AbstractGeowavePersistence<T extends Persistable>
 			final ByteArrayId secondaryId ) {
 		// the secondaryId is optional so check for null
 		if (secondaryId != null) {
-			return new ByteArrayId(
-					operations.getTableNameSpace() + "_" + primaryId.getString() + "_" + secondaryId.getString());
+			return new ByteArrayId(primaryId.getString() + "_" + secondaryId.getString());
 		}
 		return primaryId;
 	}

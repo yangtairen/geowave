@@ -19,10 +19,10 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.AdapterToIndexMapping;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
+import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.IndexWriter;
-import mil.nga.giat.geowave.core.store.CloseableIterator.Empty;
 import mil.nga.giat.geowave.core.store.adapter.AdapterIndexMappingStore;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
@@ -34,9 +34,7 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.IngestCallbackList;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
-import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
 import mil.nga.giat.geowave.core.store.filter.DedupeFilter;
-import mil.nga.giat.geowave.core.store.index.IndexMetaDataSet;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStore;
@@ -50,9 +48,11 @@ import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.core.store.query.RowIdQuery;
 
-public abstract class BaseDataStore
+public abstract class BaseDataStore implements
+		DataStore
 {
-	private final static Logger LOGGER = Logger.getLogger(BaseDataStore.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			BaseDataStore.class);
 
 	protected static final String ALT_INDEX_TABLE = "_GEOWAVE_ALT_INDEX";
 
@@ -61,8 +61,8 @@ public abstract class BaseDataStore
 	protected final DataStatisticsStore statisticsStore;
 	protected final SecondaryIndexDataStore secondaryIndexDataStore;
 	protected final AdapterIndexMappingStore indexMappingStore;
-	private final DataStoreOperations baseOperations;
-	private final DataStoreOptions baseOptions;
+	protected final DataStoreOperations baseOperations;
+	protected final DataStoreOptions baseOptions;
 
 	public BaseDataStore(
 			final IndexStore indexStore,
@@ -84,27 +84,34 @@ public abstract class BaseDataStore
 
 	public void store(
 			final PrimaryIndex index ) {
-		if (baseOptions.isPersistIndex() && !indexStore.indexExists(index.getId())) {
-			indexStore.addIndex(index);
+		if (baseOptions.isPersistIndex() && !indexStore.indexExists(
+				index.getId())) {
+			indexStore.addIndex(
+					index);
 		}
 	}
 
 	protected synchronized void store(
 			final DataAdapter<?> adapter ) {
-		if (baseOptions.isPersistAdapter() && !adapterStore.adapterExists(adapter.getAdapterId())) {
-			adapterStore.addAdapter(adapter);
+		if (baseOptions.isPersistAdapter() && !adapterStore.adapterExists(
+				adapter.getAdapterId())) {
+			adapterStore.addAdapter(
+					adapter);
 		}
 	}
 
+	@Override
 	public <T> IndexWriter<T> createWriter(
 			final DataAdapter<T> adapter,
 			final PrimaryIndex... indices )
 			throws MismatchedIndexToAdapterMapping {
-		store(adapter);
+		store(
+				adapter);
 
-		indexMappingStore.addAdapterIndexMapping(new AdapterToIndexMapping(
-				adapter.getAdapterId(),
-				indices));
+		indexMappingStore.addAdapterIndexMapping(
+				new AdapterToIndexMapping(
+						adapter.getAdapterId(),
+						indices));
 
 		final IndexWriter<T>[] writers = new IndexWriter[indices.length];
 
@@ -115,11 +122,13 @@ public abstract class BaseDataStore
 					secondaryIndexDataStore,
 					i == 0);
 
-			callbackManager.setPersistStats(baseOptions.isPersistDataStatistics());
+			callbackManager.setPersistStats(
+					baseOptions.isPersistDataStatistics());
 
 			final List<IngestCallback<T>> callbacks = new ArrayList<IngestCallback<T>>();
 
-			store(index);
+			store(
+					index);
 
 			final String indexName = index.getId().getString();
 
@@ -132,9 +141,10 @@ public abstract class BaseDataStore
 							index.getId());
 				}
 			}
-			callbacks.add(callbackManager.getIngestCallback(
-					(WritableDataAdapter<T>) adapter,
-					index));
+			callbacks.add(
+					callbackManager.getIngestCallback(
+							(WritableDataAdapter<T>) adapter,
+							index));
 
 			initOnIndexWriterCreate(
 					adapter,
@@ -166,14 +176,15 @@ public abstract class BaseDataStore
 	/*
 	 * Since this general-purpose method crosses multiple adapters, the type of
 	 * result cannot be assumed.
-	 * 
+	 *
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * mil.nga.giat.geowave.core.store.DataStore#query(mil.nga.giat.geowave.
 	 * core.store.query.QueryOptions,
 	 * mil.nga.giat.geowave.core.store.query.Query)
 	 */
+	@Override
 	public <T> CloseableIterator<T> query(
 			final QueryOptions queryOptions,
 			final Query query ) {
@@ -188,7 +199,8 @@ public abstract class BaseDataStore
 		MemoryAdapterStore tempAdapterStore;
 		try {
 			tempAdapterStore = new MemoryAdapterStore(
-					sanitizedQueryOptions.getAdaptersArray(adapterStore));
+					sanitizedQueryOptions.getAdaptersArray(
+							adapterStore));
 
 			for (final Pair<PrimaryIndex, List<DataAdapter<Object>>> indexAdapterPair : sanitizedQueryOptions
 					.getAdaptersWithMinimalSetOfIndices(
@@ -198,53 +210,60 @@ public abstract class BaseDataStore
 				final List<ByteArrayId> adapterIdsToQuery = new ArrayList<>();
 				for (final DataAdapter<Object> adapter : indexAdapterPair.getRight()) {
 					if (sanitizedQuery instanceof RowIdQuery) {
-						sanitizedQueryOptions.setLimit(-1);
-						results.add(queryRowIds(
-								adapter,
-								indexAdapterPair.getLeft(),
-								((RowIdQuery) sanitizedQuery).getRowIds(),
-								filter,
-								sanitizedQueryOptions,
-								tempAdapterStore));
+						sanitizedQueryOptions.setLimit(
+								-1);
+						results.add(
+								queryRowIds(
+										adapter,
+										indexAdapterPair.getLeft(),
+										((RowIdQuery) sanitizedQuery).getRowIds(),
+										filter,
+										sanitizedQueryOptions,
+										tempAdapterStore));
 						continue;
 					}
 					else if (sanitizedQuery instanceof DataIdQuery) {
 						final DataIdQuery idQuery = (DataIdQuery) sanitizedQuery;
 						if (idQuery.getAdapterId().equals(
 								adapter.getAdapterId())) {
-							results.add(getEntries(
-									indexAdapterPair.getLeft(),
-									idQuery.getDataIds(),
-									(DataAdapter<Object>) adapterStore.getAdapter(idQuery.getAdapterId()),
-									filter,
-									(ScanCallback<Object>) sanitizedQueryOptions.getScanCallback(),
-									sanitizedQueryOptions.getAuthorizations(),
-									sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension()));
+							results.add(
+									getEntries(
+											indexAdapterPair.getLeft(),
+											idQuery.getDataIds(),
+											(DataAdapter<Object>) adapterStore.getAdapter(
+													idQuery.getAdapterId()),
+											filter,
+											(ScanCallback<Object>) sanitizedQueryOptions.getScanCallback(),
+											sanitizedQueryOptions.getAuthorizations(),
+											sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension()));
 						}
 						continue;
 					}
 					else if (sanitizedQuery instanceof PrefixIdQuery) {
 						final PrefixIdQuery prefixIdQuery = (PrefixIdQuery) sanitizedQuery;
-						results.add(queryRowPrefix(
-								indexAdapterPair.getLeft(),
-								prefixIdQuery.getRowPrefix(),
-								sanitizedQueryOptions,
-								tempAdapterStore,
-								adapterIdsToQuery));
+						results.add(
+								queryRowPrefix(
+										indexAdapterPair.getLeft(),
+										prefixIdQuery.getRowPrefix(),
+										sanitizedQueryOptions,
+										tempAdapterStore,
+										adapterIdsToQuery));
 						continue;
 					}
-					adapterIdsToQuery.add(adapter.getAdapterId());
+					adapterIdsToQuery.add(
+							adapter.getAdapterId());
 				}
 				// supports querying multiple adapters in a single index
 				// in one query instance (one scanner) for efficiency
 				if (adapterIdsToQuery.size() > 0) {
-					results.add(queryConstraints(
-							adapterIdsToQuery,
-							indexAdapterPair.getLeft(),
-							sanitizedQuery,
-							filter,
-							sanitizedQueryOptions,
-							tempAdapterStore));
+					results.add(
+							queryConstraints(
+									adapterIdsToQuery,
+									indexAdapterPair.getLeft(),
+									sanitizedQuery,
+									filter,
+									sanitizedQueryOptions,
+									tempAdapterStore));
 				}
 			}
 
@@ -266,8 +285,9 @@ public abstract class BaseDataStore
 						}
 					}
 				},
-				Iterators.concat(new CastIterator<T>(
-						results.iterator())));
+				Iterators.concat(
+						new CastIterator<T>(
+								results.iterator())));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -289,7 +309,8 @@ public abstract class BaseDataStore
 					adapter
 				});
 
-		if (baseOptions.isUseAltIndex() && baseOperations.tableExists(altIdxTableName)) {
+		if (baseOptions.isUseAltIndex() && baseOperations.tableExists(
+				altIdxTableName)) {
 			final List<ByteArrayId> rowIds = getAltIndexRowIds(
 					altIdxTableName,
 					dataIds,
@@ -298,10 +319,14 @@ public abstract class BaseDataStore
 			if (rowIds.size() > 0) {
 
 				final QueryOptions options = new QueryOptions();
-				options.setScanCallback(callback);
-				options.setAuthorizations(authorizations);
-				options.setMaxResolutionSubsamplingPerDimension(maxResolutionSubsamplingPerDimension);
-				options.setLimit(-1);
+				options.setScanCallback(
+						callback);
+				options.setAuthorizations(
+						authorizations);
+				options.setMaxResolutionSubsamplingPerDimension(
+						maxResolutionSubsamplingPerDimension);
+				options.setLimit(
+						-1);
 
 				return queryRowIds(
 						adapter,
@@ -325,6 +350,7 @@ public abstract class BaseDataStore
 		return new CloseableIterator.Empty();
 	}
 
+	@Override
 	public boolean delete(
 			final QueryOptions queryOptions,
 			final Query query ) {
@@ -374,19 +400,23 @@ public abstract class BaseDataStore
 						indexTableName,
 						queryOptions.getAuthorizations());
 
-				final Closeable altIdxDelete = baseOptions.isUseAltIndex()
-						&& baseOperations.tableExists(altIdxTableName) ? createIndexDeleter(
-						altIdxTableName,
-						queryOptions.getAuthorizations()) : null;
+				final Closeable altIdxDelete = baseOptions.isUseAltIndex() && baseOperations.tableExists(
+						altIdxTableName)
+								? createIndexDeleter(
+										altIdxTableName,
+										queryOptions.getAuthorizations())
+								: null;
 
 				for (final DataAdapter<Object> adapter : indexAdapterPair.getRight()) {
 
 					final DataStoreCallbackManager callbackCache = new DataStoreCallbackManager(
 							statisticsStore,
 							secondaryIndexDataStore,
-							queriedAdapters.add(adapter.getAdapterId()));
+							queriedAdapters.add(
+									adapter.getAdapterId()));
 
-					callbackCache.setPersistStats(baseOptions.isPersistDataStatistics());
+					callbackCache.setPersistStats(
+							baseOptions.isPersistDataStatistics());
 
 					if (query instanceof EverythingQuery) {
 						deleteEntries(
@@ -404,8 +434,8 @@ public abstract class BaseDataStore
 							callbackCache.getDeleteCallback(
 									(WritableDataAdapter<Object>) adapter,
 									index).entryDeleted(
-									entryInfo,
-									entry);
+											entryInfo,
+											entry);
 							try {
 								addToBatch(
 										idxDeleter,
@@ -413,23 +443,29 @@ public abstract class BaseDataStore
 								if (altIdxDelete != null) {
 									addToBatch(
 											altIdxDelete,
-											Collections.singletonList(adapter.getDataId(entry)));
+											Collections.singletonList(
+													adapter.getDataId(
+															entry)));
 								}
 							}
 							catch (final Exception e) {
 								LOGGER.error(
 										"Failed deletion",
 										e);
-								aOk.set(false);
+								aOk.set(
+										false);
 							}
 						}
 					};
 
 					CloseableIterator<?> dataIt = null;
-					queryOptions.setScanCallback(callback);
-					final List<ByteArrayId> adapterIds = Collections.singletonList(adapter.getAdapterId());
+					queryOptions.setScanCallback(
+							callback);
+					final List<ByteArrayId> adapterIds = Collections.singletonList(
+							adapter.getAdapterId());
 					if (query instanceof RowIdQuery) {
-						queryOptions.setLimit(-1);
+						queryOptions.setLimit(
+								-1);
 						dataIt = queryRowIds(
 								adapter,
 								index,
@@ -504,9 +540,11 @@ public abstract class BaseDataStore
 			throws IOException {
 		final String tableName = index.getId().getString();
 		final String altIdxTableName = tableName + ALT_INDEX_TABLE;
-		final String adapterId = StringUtils.stringFromBinary(adapter.getAdapterId().getBytes());
+		final String adapterId = StringUtils.stringFromBinary(
+				adapter.getAdapterId().getBytes());
 
-		try (final CloseableIterator<DataStatistics<?>> it = statisticsStore.getDataStatistics(adapter.getAdapterId())) {
+		try (final CloseableIterator<DataStatistics<?>> it = statisticsStore.getDataStatistics(
+				adapter.getAdapterId())) {
 
 			while (it.hasNext()) {
 				final DataStatistics stats = it.next();
@@ -524,7 +562,8 @@ public abstract class BaseDataStore
 				tableName,
 				adapterId,
 				additionalAuthorizations);
-		if (baseOptions.isUseAltIndex() && baseOperations.tableExists(altIdxTableName)) {
+		if (baseOptions.isUseAltIndex() && baseOperations.tableExists(
+				altIdxTableName)) {
 			deleteAll(
 					altIdxTableName,
 					adapterId,
