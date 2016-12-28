@@ -1,11 +1,9 @@
 package mil.nga.giat.geowave.test;
 
-import java.io.IOException;
-
-import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.log4j.Logger;
-import org.apache.thrift.transport.TTransportException;
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
 
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.GenericStoreFactory;
@@ -15,9 +13,11 @@ import mil.nga.giat.geowave.test.annotation.GeoWaveTestStore.GeoWaveStoreType;
 public class CassandraStoreTestEnvironment extends
 		StoreTestEnvironment
 {
-	private static final GenericStoreFactory<DataStore> STORE_FACTORY = null; // new CassandraDataStoreFactory();
+	private static final GenericStoreFactory<DataStore> STORE_FACTORY = null; // new
+																				// CassandraDataStoreFactory();
 	private static CassandraStoreTestEnvironment singletonInstance = null;
-	private String customConfigYaml = null;
+
+	private Cluster cluster;
 
 	public static synchronized CassandraStoreTestEnvironment getInstance() {
 		if (singletonInstance == null) {
@@ -26,17 +26,13 @@ public class CassandraStoreTestEnvironment extends
 		return singletonInstance;
 	}
 
-	private final static Logger LOGGER = Logger.getLogger(
-			CassandraStoreTestEnvironment.class);
+	private final static Logger LOGGER = Logger.getLogger(CassandraStoreTestEnvironment.class);
 
 	private CassandraStoreTestEnvironment() {}
 
 	@Override
 	protected void initOptions(
-			final StoreFactoryOptions options ) {
-		// get the file path for the custom config here
-		// customConfigYaml = ((CassandraOptions) options).getConfigYaml();
-	}
+			final StoreFactoryOptions options ) {}
 
 	@Override
 	protected GenericStoreFactory<DataStore> getDataStoreFactory() {
@@ -46,32 +42,29 @@ public class CassandraStoreTestEnvironment extends
 	@Override
 	public void setup() {
 		try {
-			// start embedded cluster if necessary
-			if (customConfigYaml != null) {
-				EmbeddedCassandraServerHelper.startEmbeddedCassandra(customConfigYaml);
-			}
-			else {
-				EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-			}
+			cluster = Cluster.builder()
+					.addContactPoint("127.0.0.1") 	// default listen address
+					.withPort(9160) 				// default rpc port
+					.build();
+			Session session = cluster.connect();
+
+			LOGGER.info("Opened connection to cassandra cluster!");
 			
-			EmbeddedCassandraServerHelper.cleanEmbeddedCassandra(); // reset embedded data
+			session.close();
 		}
-		catch (ConfigurationException | TTransportException | IOException | InterruptedException e) {
-			LOGGER.error(
-					"Failed to start embedded Cassandra server",
-					e);
+		catch (Exception e) {
+			// TODO: handle exception
 		}
 	}
 
 	@Override
 	public void tearDown() {
 		try {
-			EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+			cluster.close();
 		}
-		catch (final Exception e) {
-			LOGGER.warn(
-					"Unable to clear embedded cassandra server",
-					e);
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
