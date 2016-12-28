@@ -7,34 +7,46 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
+import org.apache.cassandra.io.sstable.CQLSSTableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
-import com.amazonaws.services.dynamodbv2.model.BatchWriteItemRequest;
-import com.amazonaws.services.dynamodbv2.model.BatchWriteItemResult;
-import com.amazonaws.services.dynamodbv2.model.WriteRequest;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.MoreExecutors;
 
 import mil.nga.giat.geowave.core.store.base.Writer;
+import mil.nga.giat.geowave.datastore.cassandra.operations.CassandraOperations;
 
 public class CassandraWriter implements
-		Writer<WriteRequest>
+		Writer<Insert>
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(
 			CassandraWriter.class);
-	private static final int NUM_ITEMS = 25;
+	private static final int NUM_INSERTS = 1000;
+	private static final int INGEST_THREAD_POOL = 16;
+	private ExecutorService executor = MoreExecutors.getExitingExecutorService(
+			(ThreadPoolExecutor) Executors.newFixedThreadPool(
+					INGEST_THREAD_POOL));
 
-	private final List<WriteRequest> batchedItems = new ArrayList<>();
+
+	private final List<Insert> batchedInserts = new ArrayList<>();
+	private PreparedStatement preparedInsert;
 	private final String tableName;
-	private final AmazonDynamoDBAsyncClient client;
+	private final CassandraOperations operations;
 
 	public CassandraWriter(
 			final String tableName,
-			final AmazonDynamoDBAsyncClient client ) {
+			final CassandraOperations operations ) {
 		this.tableName = tableName;
-		this.client = client;
+		this.operations = operations;
 	}
 
 	@Override
@@ -45,8 +57,8 @@ public class CassandraWriter implements
 
 	@Override
 	public void write(
-			final Iterable<WriteRequest> items ) {
-		for (final WriteRequest item : items) {
+			final Iterable<Insert> inserts ) {
+		for (final Insert item : inserts) {
 			write(
 					item);
 		}
@@ -54,24 +66,32 @@ public class CassandraWriter implements
 
 	@Override
 	public void write(
-			final WriteRequest item ) {
-		synchronized (batchedItems) {
-			if (batchedItems.size() >= NUM_ITEMS) {
+			final Insert insert ) {
+		synchronized (batchedInserts) {
+			if (batchedInserts.size() >= NUM_INSERTS) {
 				do {
 					writeBatch(
 							true);
 				}
-				while (batchedItems.size() >= NUM_ITEMS);
+				while (batchedInserts.size() >= NUM_INSERTS);
 			}
 			else {
-				batchedItems.add(
-						item);
+				batchedInserts.add(
+						insert);
 			}
 		}
 	}
+	
+	private Insert getInsert(){
+		
+	}
 
-	private void writeBatch(
+	private synchronized void writeBatch(
 			final boolean async ) {
+		if (preparedInsert == null){
+			preparedInsert = operations.getSession().prepare(getInsert());
+		}
+		operations.getSession().executeAsync(preparedInsert);
 		final List<WriteRequest> batch;
 
 		if (batchedItems.size() <= NUM_ITEMS) {
@@ -145,4 +165,18 @@ public class CassandraWriter implements
 		}
 	}
 
+	//callback class
+	private static class IngestCallback implements FutureCallback<ResultSet>{
+
+	    @Override
+	    public void onSuccess(ResultSet result) {
+	        //placeholder: put any logging or on success logic here.
+	    }
+
+	    @Override
+	    public void onFailure(Throwable t) {
+	        //go ahead and wrap in a runtime exception for this case, but you can do logging or start counting errors.
+	        throw new RuntimeException(t);
+	    }
+	}
 }

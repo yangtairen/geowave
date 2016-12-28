@@ -1,20 +1,22 @@
 package mil.nga.giat.geowave.datastore.cassandra.metadata;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Select.Where;
+import com.datastax.driver.core.schemabuilder.Create;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Persistable;
@@ -23,7 +25,7 @@ import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.metadata.AbstractGeowavePersistence;
 import mil.nga.giat.geowave.datastore.cassandra.operations.CassandraOperations;
 
-public class AbstractCassandraPersistence<T extends Persistable> extends
+abstract public class AbstractCassandraPersistence<T extends Persistable> extends
 		AbstractGeowavePersistence<T>
 {
 	private static final String PRIMARY_ID_KEY = "I";
@@ -32,13 +34,8 @@ public class AbstractCassandraPersistence<T extends Persistable> extends
 
 	private final static Logger LOGGER = Logger.getLogger(
 			AbstractCassandraPersistence.class);
-	protected static final String[] METADATA_CFS = new String[] {
-		CassandraAdapterIndexMappingStore.ADAPTER_INDEX_CF,
-		CassandraAdapterStore.ADAPTER_CF,
-		CassandraDataStatisticsStore.STATISTICS_CF,
-		CassandraIndexStore.INDEX_CF
-	};
 	protected final CassandraOperations operations;
+	private static Map<String, Boolean> tableExistsCache = new HashMap<>();
 
 	public AbstractCassandraPersistence(
 			final CassandraOperations operations ) {
@@ -89,7 +86,25 @@ public class AbstractCassandraPersistence<T extends Persistable> extends
 				id,
 				secondaryId,
 				object);
-		final Insert insert = operations.getInsert(getTablename());
+		if (!tableExists()) {
+			// create table
+			final Create create = operations.getCreateTable(
+					getTablename());
+			create.addPartitionKey(
+					PRIMARY_ID_KEY,
+					DataType.blob());
+			create.addColumn(
+					SECONDARY_ID_KEY,
+					DataType.blob());
+			create.addColumn(
+					VALUE_KEY,
+					DataType.blob());
+			tableExistsCache.put(
+					getTablename(),
+					true);
+		}
+		final Insert insert = operations.getInsert(
+				getTablename());
 		insert.value(
 				PRIMARY_ID_KEY,
 				ByteBuffer.wrap(
@@ -109,33 +124,38 @@ public class AbstractCassandraPersistence<T extends Persistable> extends
 				insert);
 	}
 
+	private boolean tableExists() {
+		Boolean tableExists = tableExistsCache.get(
+				getTablename());
+		if (tableExists == null) {
+			tableExists = operations.tableExists(
+					getTablename());
+			tableExistsCache.put(
+					getTablename(),
+					tableExists);
+		}
+		return tableExists;
+	}
+
 	protected CloseableIterator<T> getAllObjectsWithSecondaryId(
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
-		final Insert insert = operations.getInsert(getTablename());
-		
-				if (!operations.tableExists(
-						getTablename())) {
-					return new CloseableIterator.Wrapper<>(
-							Iterators.emptyIterator());
-				}
-			operations.getSession().execute(QueryBuilder.eq("", ""));
-		final ScanResult result = client.scan(
-				new ScanRequest(
-						dynamodbOperations.getQualifiedTableName(
-								getTablename())).addScanFilterEntry(
+		if (!tableExists()) {
+			return new CloseableIterator.Wrapper<>(
+					Iterators.emptyIterator());
+		}
+		final ResultSet results = operations.getSession().execute(
+				operations.getSelect(
+						getTablename(),
+						VALUE_KEY).where(
+								QueryBuilder.eq(
 										SECONDARY_ID_KEY,
-										new Condition()
-												.withAttributeValueList(
-														new AttributeValue().withB(
-																ByteBuffer.wrap(
-																		secondaryId.getBytes())))
-												.withComparisonOperator(
-														ComparisonOperator.EQ)));
+										ByteBuffer.wrap(
+												secondaryId.getBytes()))));
 		return new CloseableIterator.Wrapper<T>(
-				Lists.transform(
-						result.getItems(),
-						new EntryToValueFunction()).iterator());
+				Iterators.transform(
+						results.iterator(),
+						new EntryToValueFunction()));
 	}
 
 	@Override
@@ -154,31 +174,30 @@ public class AbstractCassandraPersistence<T extends Persistable> extends
 		if (cacheResult != null) {
 			return (T) cacheResult;
 		}
-		final List<Row> results = getResults(
+		final Iterator<Row> results = getResults(
 				primaryId,
 				secondaryId,
 				authorizations);
-		final Iterator<Row> it = results.iterator();
-		if (!it.hasNext()) {
+		if (!results.hasNext()) {
 			LOGGER.warn(
 					"Object '" + getCombinedId(
 							primaryId,
 							secondaryId).getString() + "' not found");
 			return null;
 		}
-		final Row entry = it.next();
+		final Row entry = results.next();
 		return entryToValue(
 				entry);
 	}
 
 	protected CloseableIterator<T> getObjects(
 			final String... authorizations ) {
-		final List<Row> results = getFullResults(
+		final Iterator<Row> results = getFullResults(
 				authorizations);
 		return new CloseableIterator.Wrapper<T>(
-				Lists.transform(
+				Iterators.transform(
 						results,
-						new EntryToValueFunction()).iterator());
+						new EntryToValueFunction()));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -186,7 +205,8 @@ public class AbstractCassandraPersistence<T extends Persistable> extends
 			final Row entry ) {
 		final T result = (T) PersistenceUtils.fromBinary(
 				entry.get(
-						VALUE_KEY).getB().array(),
+						VALUE_KEY,
+						ByteBuffer.class).array(),
 				Persistable.class);
 		if (result != null) {
 			addObjectToCache(
@@ -199,7 +219,7 @@ public class AbstractCassandraPersistence<T extends Persistable> extends
 		return result;
 	}
 
-	private List<Map<String, AttributeValue>> getFullResults(
+	private Iterator<Row> getFullResults(
 			final String... authorizations ) {
 		return getResults(
 				null,
@@ -207,77 +227,32 @@ public class AbstractCassandraPersistence<T extends Persistable> extends
 				authorizations);
 	}
 
-	protected List<Map<String, AttributeValue>> getResults(
+	protected Iterator<Row> getResults(
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
-		final String tableName = dynamodbOperations.getQualifiedTableName(
-				getTablename());
-		final Boolean tableExists = tableExistsCache.get(
-				tableName);
-		if ((tableExists == null) || !tableExists) {
-			try {
-				if (!dynamodbOperations.tableExists(
-						tableName)) {
-					return Collections.EMPTY_LIST;
-				}
-			}
-			catch (final IOException e) {
-				LOGGER.warn(
-						"unable to check table existence",
-						e);
-				return Collections.EMPTY_LIST;
-			}
+		if (!tableExists()) {
+			return Iterators.emptyIterator();
 		}
+		final Select select = operations.getSelect(
+				getTablename(),
+				VALUE_KEY);
 		if (primaryId != null) {
-			final QueryRequest query = new QueryRequest(
-					tableName);
+			final Where where = select.where(
+					QueryBuilder.eq(
+							PRIMARY_ID_KEY,
+							ByteBuffer.wrap(
+									primaryId.getBytes())));
 			if (secondaryId != null) {
-				query.addQueryFilterEntry(
-						SECONDARY_ID_KEY,
-						new Condition()
-								.withAttributeValueList(
-										new AttributeValue().withB(
-												ByteBuffer.wrap(
-														secondaryId.getBytes())))
-								.withComparisonOperator(
-										ComparisonOperator.EQ));
+				where.and(
+						QueryBuilder.eq(
+								SECONDARY_ID_KEY,
+								ByteBuffer.wrap(
+										secondaryId.getBytes())));
 			}
-			query.addKeyConditionsEntry(
-					PRIMARY_ID_KEY,
-					new Condition()
-							.withAttributeValueList(
-									new AttributeValue().withB(
-											ByteBuffer.wrap(
-													primaryId.getBytes())))
-							.withComparisonOperator(
-									ComparisonOperator.EQ));
-			final QueryResult result = client.query(
-					query);
-			return result.getItems();
 		}
-
-		final ScanRequest scan = new ScanRequest(
-				tableName);
-		// scan.addScanFilterEntry(
-		// TYPE_KEY,
-		// new Condition().withAttributeValueList(
-		// new AttributeValue(
-		// getPersistenceTypeName())).withComparisonOperator(ComparisonOperator.EQ));
-		if (secondaryId != null) {
-			scan.addScanFilterEntry(
-					SECONDARY_ID_KEY,
-					new Condition()
-							.withAttributeValueList(
-									new AttributeValue().withB(
-											ByteBuffer.wrap(
-													secondaryId.getBytes())))
-							.withComparisonOperator(
-									ComparisonOperator.EQ));
-		}
-		final ScanResult result = client.scan(
-				scan);
-		return result.getItems();
+		return operations.getSession().execute(
+				select).iterator();
 	}
 
 	public boolean deleteObjects(
@@ -307,15 +282,14 @@ public class AbstractCassandraPersistence<T extends Persistable> extends
 				secondaryId) != null) {
 			return true;
 		}
-		final List<Map<String, AttributeValue>> results = getResults(
+		final Iterator<Row> results = getResults(
 				primaryId,
 				secondaryId);
 
-		final Iterator<Map<String, AttributeValue>> it = results.iterator();
-		if (it.hasNext()) {
+		if (results.hasNext()) {
 			// may as well cache the result
 			return (entryToValue(
-					it.next()) != null);
+					results.next()) != null);
 		}
 		else {
 			return false;
@@ -324,12 +298,12 @@ public class AbstractCassandraPersistence<T extends Persistable> extends
 	}
 
 	private class EntryToValueFunction implements
-			Function<Map<String, AttributeValue>, T>
+			Function<Row, T>
 	{
 
 		@Override
 		public T apply(
-				final Map<String, AttributeValue> entry ) {
+				final Row entry ) {
 			return entryToValue(
 					entry);
 		}

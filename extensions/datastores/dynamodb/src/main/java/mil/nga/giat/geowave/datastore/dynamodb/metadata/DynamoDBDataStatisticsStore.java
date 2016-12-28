@@ -27,11 +27,6 @@ public class DynamoDBDataStatisticsStore extends
 {
 	private final static Logger LOGGER = Logger.getLogger(
 			DynamoDBDataStatisticsStore.class);
-	// this is fairly arbitrary at the moment because it is the only custom
-	// iterator added
-	private static final int STATS_COMBINER_PRIORITY = 10;
-	private static final int STATS_MULTI_VISIBILITY_COMBINER_PRIORITY = 15;
-	private static final String STATISTICS_COMBINER_NAME = "STATS_COMBINER";
 	private static final String STATISTICS_CF = "STATS";
 
 	public DynamoDBDataStatisticsStore(
