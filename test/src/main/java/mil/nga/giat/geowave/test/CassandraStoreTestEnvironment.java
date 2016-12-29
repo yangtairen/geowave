@@ -42,14 +42,16 @@ public class CassandraStoreTestEnvironment extends
 	@Override
 	public void setup() {
 		try {
-			cluster = Cluster.builder()
-					.addContactPoint("127.0.0.1") 	// default listen address
-					.withPort(9160) 				// default rpc port
+			cluster = Cluster.builder().addContactPoint(
+					"127.0.0.1") // default listen address
+					.withPort(
+							9160)
+					// default rpc port
 					.build();
 			Session session = cluster.connect();
 
 			LOGGER.info("Opened connection to cassandra cluster!");
-			
+
 			session.close();
 		}
 		catch (Exception e) {
