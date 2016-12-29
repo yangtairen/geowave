@@ -360,20 +360,6 @@
 					</sourceDirectories>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>cassandra-maven-plugin</artifactId>
-				<version>3.5</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>start</goal>
-							<goal>stop</goal>
-						</goals>
-					</execution>
-				</executions>
-
-			</plugin>
 		</plugins>
 	</build>
 	<profiles>
@@ -381,8 +367,57 @@
 			<id>cassandra</id>
 			<properties>
 				<guava.version>16.0.1</guava.version>
-				<testStoreType>CASSANDRA</testStoreType>
 			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>cassandra-maven-plugin</artifactId>
+						<version>3.5</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>start</goal>
+									<goal>stop</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<version>2.18.1</version>
+						<executions>
+							<execution>
+								<configuration>
+									<environmentVariables>
+										<LD_LIBRARY_PATH>${gdal.dir}</LD_LIBRARY_PATH>
+										<PATH>${gdal.dir}${path.separator}${env.PATH}</PATH>
+									</environmentVariables>
+									<systemPropertyVariables>
+										<testStoreType>CASSANDRA</testStoreType>
+										<log4j.configuration>file:${project.build.testOutputDirectory}/log4j-test.properties</log4j.configuration>
+									</systemPropertyVariables>
+									<!-- Sonar currently just supports surefire so "trick" Sonar into 
+										thinking they are surefire reports -->
+									<reportsDirectory>${sonar.surefire.reportsPath}</reportsDirectory>
+									<argLine>${test.args} ${jacoco.failsafe.argline}</argLine>
+									<excludes>
+										<exclude>**/*IT.java</exclude>
+									</excludes>
+									<includes>
+										<include>**/*ITSuite.java</include>
+									</includes>
+								</configuration>
+								<goals>
+									<goal>integration-test</goal>
+									<goal>verify</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>
