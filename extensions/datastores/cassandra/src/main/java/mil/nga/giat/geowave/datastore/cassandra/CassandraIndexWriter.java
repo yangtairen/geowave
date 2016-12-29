@@ -3,10 +3,7 @@ package mil.nga.giat.geowave.datastore.cassandra;
 import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
@@ -19,19 +16,19 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
 import mil.nga.giat.geowave.core.store.index.DataStoreIndexWriter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
+import mil.nga.giat.geowave.datastore.cassandra.operations.CassandraOperations;
 
 public class CassandraIndexWriter<T> extends
-		DataStoreIndexWriter<T, WriteRequest>
+		DataStoreIndexWriter<T, CassandraRow>
 {
 	public static final Integer PARTITIONS = 32;
-	protected final AmazonDynamoDBAsyncClient client;
-	protected final DynamoDBOperations dynamodbOperations;
+	protected final CassandraOperations operations;
 	private static long counter = 0;
 
 	public CassandraIndexWriter(
 			final DataAdapter<T> adapter,
 			final PrimaryIndex index,
-			final DynamoDBOperations operations,
+			final CassandraOperations operations,
 			final IngestCallback<T> callback,
 			final Closeable closable ) {
 		super(
@@ -41,55 +38,23 @@ public class CassandraIndexWriter<T> extends
 				null,
 				callback,
 				closable);
-		this.client = operations.getClient();
-		this.dynamodbOperations = operations;
+		this.operations = operations;
 	}
 
 	@Override
 	protected void ensureOpen() {
 		if (writer == null) {
-			writer = dynamodbOperations.createWriter(
+			writer = operations.createWriter(
 					StringUtils.stringFromBinary(
 							index.getId().getBytes()),
 					true);
 		}
 	}
 
-	@Override
-	public List<ByteArrayId> write(
-			final T entry,
-			final VisibilityWriter<T> visibilityWriter ) {
-
-		DataStoreEntryInfo entryInfo;
-		synchronized (this) {
-
-			ensureOpen();
-			if (writer == null) {
-				return Collections.emptyList();
-			}
-			entryInfo = DataStoreUtils.getIngestInfo(
-					(WritableDataAdapter<T>) adapter,
-					index,
-					entry,
-					DataStoreUtils.UNCONSTRAINED_VISIBILITY);
-			if (entryInfo == null) {
-				return Collections.EMPTY_LIST;
-			}
-			writer.write(
-					getWriteRequests(
-							adapterId,
-							entryInfo));
-			callback.entryIngested(
-					entryInfo,
-					entry);
-		}
-		return entryInfo.getRowIds();
-	}
-
-	private static <T> List<WriteRequest> getWriteRequests(
+	private static <T> List<CassandraRow> getRows(
 			final byte[] adapterId,
 			final DataStoreEntryInfo ingestInfo ) {
-		final List<WriteRequest> mutations = new ArrayList<WriteRequest>();
+		final List<CassandraRow> rows = new ArrayList<CassandraRow>();
 		final List<byte[]> fieldInfoBytesList = new ArrayList<>();
 		int totalLength = 0;
 		for (final FieldInfo<?> fieldInfo : ingestInfo.getFieldInfo()) {
@@ -110,7 +75,6 @@ public class CassandraIndexWriter<T> extends
 					bytes);
 		}
 		for (final ByteArrayId insertionId : ingestInfo.getInsertionIds()) {
-			final Map<String, AttributeValue> map = new HashMap<String, AttributeValue>();
 			final ByteBuffer idBuffer = ByteBuffer.allocate(
 					ingestInfo.getDataId().length + adapterId.length + 4);
 			idBuffer.putInt(
@@ -120,39 +84,35 @@ public class CassandraIndexWriter<T> extends
 			idBuffer.put(
 					adapterId);
 			idBuffer.rewind();
-			map.put(
-					DynamoDBDataModel.GW_ID_KEY,
-					new AttributeValue().withB(
-							idBuffer));
-			map.put(
-					DynamoDBDataModel.GW_PARTITION_ID_KEY,
-					new AttributeValue().withN(
-							Long.toString(
-									counter++ % PARTITIONS)));
-			map.put(
-					DynamoDBDataModel.GW_IDX_KEY,
-					new AttributeValue().withB(
-							ByteBuffer.wrap(
-									insertionId.getBytes())));
 			allFields.rewind();
-			map.put(
-					DynamoDBDataModel.GW_VALUE_KEY,
-					new AttributeValue().withB(
-							allFields));
-			mutations.add(
-					new WriteRequest(
-							new PutRequest(
-									map)));
+			rows.add(
+					new CassandraRow(
+							new byte[] {
+								(byte) (counter++ % PARTITIONS)
+							},
+							idBuffer.array(),
+							insertionId.getBytes(),
+							allFields.array()));
 		}
-		return mutations;
+		return rows;
 	}
 
 	@Override
 	protected DataStoreEntryInfo getEntryInfo(
 			final T entry,
 			final VisibilityWriter<T> visibilityWriter ) {
-		// TODO Auto-generated method stub
-		return null;
+		final DataStoreEntryInfo entryInfo = DataStoreUtils.getIngestInfo(
+				(WritableDataAdapter<T>) adapter,
+				index,
+				entry,
+				DataStoreUtils.UNCONSTRAINED_VISIBILITY);
+		if (entryInfo != null) {
+			writer.write(
+					getRows(
+							adapterId,
+							entryInfo));
+		}
+		return entryInfo;
 	}
 
 }

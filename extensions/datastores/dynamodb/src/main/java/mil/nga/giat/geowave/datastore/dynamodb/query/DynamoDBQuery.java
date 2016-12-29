@@ -2,7 +2,6 @@ package mil.nga.giat.geowave.datastore.dynamodb.query;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -119,7 +118,6 @@ abstract public class DynamoDBQuery
 					queries);
 		}
 		else {
-			System.err.println(ranges.size());
 			ranges.forEach(
 					(r -> requests.addAll(
 							addQueryRanges(
@@ -162,8 +160,7 @@ abstract public class DynamoDBQuery
 												r.getStart().getBytes())),
 								new AttributeValue().withB(
 										ByteBuffer.wrap(
-												getNextPrefix(
-														r.getEnd().getBytes())))));
+												r.getEndAsNextPrefix().getBytes()))));
 	}
 
 	private static List<QueryRequest> getPartitionRequests(
@@ -188,29 +185,6 @@ abstract public class DynamoDBQuery
 			final QueryRequest queryRequest ) {
 		return dynamodbOperations.getClient().query(
 				queryRequest).getItems();
-	}
-
-	private static byte[] getNextPrefix(
-			final byte[] rowKeyPrefix ) {
-		int offset = rowKeyPrefix.length;
-		while (offset > 0) {
-			if (rowKeyPrefix[offset - 1] != (byte) 0xFF) {
-				break;
-			}
-			offset--;
-		}
-
-		if (offset == 0) {
-			return new byte[0];
-		}
-
-		final byte[] newStopRow = Arrays.copyOfRange(
-				rowKeyPrefix,
-				0,
-				offset);
-		// And increment the last one
-		newStopRow[newStopRow.length - 1]++;
-		return newStopRow;
 	}
 
 	public String[] getAdditionalAuthorizations() {

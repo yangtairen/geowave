@@ -35,8 +35,7 @@ abstract public class AbstractCassandraPersistence<T extends Persistable> extend
 	private final static Logger LOGGER = Logger.getLogger(
 			AbstractCassandraPersistence.class);
 	protected final CassandraOperations operations;
-	private static Map<String, Boolean> tableExistsCache = new HashMap<>();
-
+	
 	public AbstractCassandraPersistence(
 			final CassandraOperations operations ) {
 		super(
@@ -86,7 +85,7 @@ abstract public class AbstractCassandraPersistence<T extends Persistable> extend
 				id,
 				secondaryId,
 				object);
-		if (!tableExists()) {
+		if (!operations.tableExists(getTablename())) {
 			// create table
 			final Create create = operations.getCreateTable(
 					getTablename());
@@ -99,9 +98,6 @@ abstract public class AbstractCassandraPersistence<T extends Persistable> extend
 			create.addColumn(
 					VALUE_KEY,
 					DataType.blob());
-			tableExistsCache.put(
-					getTablename(),
-					true);
 		}
 		final Insert insert = operations.getInsert(
 				getTablename());
@@ -124,23 +120,11 @@ abstract public class AbstractCassandraPersistence<T extends Persistable> extend
 				insert);
 	}
 
-	private boolean tableExists() {
-		Boolean tableExists = tableExistsCache.get(
-				getTablename());
-		if (tableExists == null) {
-			tableExists = operations.tableExists(
-					getTablename());
-			tableExistsCache.put(
-					getTablename(),
-					tableExists);
-		}
-		return tableExists;
-	}
 
 	protected CloseableIterator<T> getAllObjectsWithSecondaryId(
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
-		if (!tableExists()) {
+		if (!operations.tableExists(getTablename())) {
 			return new CloseableIterator.Wrapper<>(
 					Iterators.emptyIterator());
 		}
@@ -231,7 +215,7 @@ abstract public class AbstractCassandraPersistence<T extends Persistable> extend
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
-		if (!tableExists()) {
+		if (!operations.tableExists(getTablename())) {
 			return Iterators.emptyIterator();
 		}
 		final Select select = operations.getSelect(

@@ -19,6 +19,7 @@ public class CassandraSecondaryIndexDataStoreFactory extends
 
 		final CassandraOperations cassandraOperations = createOperations(
 				(CassandraRequiredOptions) options);
+		//TODO secondary index
 		return null;
 	}
 }

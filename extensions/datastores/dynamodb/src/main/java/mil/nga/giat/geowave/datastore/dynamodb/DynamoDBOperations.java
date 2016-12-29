@@ -124,9 +124,9 @@ public class DynamoDBOperations implements
 								.withProvisionedThroughput(
 										new ProvisionedThroughput(
 												Long.valueOf(
-														10),
+														options.getReadCapacity()),
 												Long.valueOf(
-														10))));
+														options.getWriteCapacity()))));
 				tableExistsCache.put(
 						qName,
 						true);

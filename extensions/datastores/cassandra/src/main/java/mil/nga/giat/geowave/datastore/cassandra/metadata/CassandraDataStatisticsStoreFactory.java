@@ -3,6 +3,7 @@ package mil.nga.giat.geowave.datastore.cassandra.metadata;
 import mil.nga.giat.geowave.core.store.StoreFactoryOptions;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.datastore.cassandra.AbstractCassandraStoreFactory;
+import mil.nga.giat.geowave.datastore.cassandra.operations.CassandraOperations;
 import mil.nga.giat.geowave.datastore.cassandra.operations.config.CassandraRequiredOptions;
 
 public class CassandraDataStatisticsStoreFactory extends
@@ -16,7 +17,9 @@ public class CassandraDataStatisticsStoreFactory extends
 			throw new AssertionError(
 					"Expected " + CassandraRequiredOptions.class.getSimpleName());
 		}
-		final CassandraRequiredOptions opts = (CassandraRequiredOptions) options;
-		return null;
+		final CassandraOperations cassandraOperations = createOperations(
+				(CassandraRequiredOptions) options);
+		return new CassandraDataStatisticsStore(
+				cassandraOperations);
 	}
 }

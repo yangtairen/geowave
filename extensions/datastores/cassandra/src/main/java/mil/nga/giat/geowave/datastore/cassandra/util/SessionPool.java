@@ -1,6 +1,5 @@
 package mil.nga.giat.geowave.datastore.cassandra.util;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,8 +21,7 @@ public class SessionPool
 	private final Map<String, Session> sessionCache = new HashMap<String, Session>();
 
 	public synchronized Session getSession(
-			final String contactPoints )
-			throws IOException {
+			final String contactPoints ) {
 		Session session = sessionCache.get(
 				contactPoints);
 		if (session == null) {

@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.datastore.dynamodb.query;
+package mil.nga.giat.geowave.datastore.cassandra.query;
 
 import java.util.Iterator;
 import java.util.List;
@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.google.common.collect.Iterators;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -27,22 +26,22 @@ import mil.nga.giat.geowave.core.store.query.ConstraintsQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
-import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBDataModel;
-import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBOperations;
+import mil.nga.giat.geowave.datastore.cassandra.CassandraRow;
+import mil.nga.giat.geowave.datastore.cassandra.operations.CassandraOperations;
 
 /**
- * This class represents basic numeric contraints applied to an DynamoDB Query
+ * This class represents basic numeric contraints applied to an Cassandra Query
  *
  */
-public class DynamoDBConstraintsQuery extends
-		DynamoDBFilteredIndexQuery
+public class CassandraConstraintsQuery extends
+		CassandraFilteredIndexQuery
 {
 	private static final int MAX_RANGE_DECOMPOSITION = -1;
 	protected final ConstraintsQuery base;
 	private boolean queryFiltersEnabled;
 
-	public DynamoDBConstraintsQuery(
-			final DynamoDBOperations dynamodbOperations,
+	public CassandraConstraintsQuery(
+			final CassandraOperations operations,
 			final List<ByteArrayId> adapterIds,
 			final PrimaryIndex index,
 			final Query query,
@@ -55,7 +54,7 @@ public class DynamoDBConstraintsQuery extends
 			final DifferingFieldVisibilityEntryCount visibilityCounts,
 			final String[] authorizations ) {
 		this(
-				dynamodbOperations,
+				operations,
 				adapterIds,
 				index,
 				query != null ? query.getIndexConstraints(
@@ -72,8 +71,8 @@ public class DynamoDBConstraintsQuery extends
 				authorizations);
 	}
 
-	public DynamoDBConstraintsQuery(
-			final DynamoDBOperations dynamodbOperations,
+	public CassandraConstraintsQuery(
+			final CassandraOperations operations,
 			final List<ByteArrayId> adapterIds,
 			final PrimaryIndex index,
 			final List<MultiDimensionalNumericData> constraints,
@@ -88,7 +87,7 @@ public class DynamoDBConstraintsQuery extends
 			final String[] authorizations ) {
 
 		super(
-				dynamodbOperations,
+				operations,
 				adapterIds,
 				index,
 				queryFilters,
@@ -137,7 +136,7 @@ public class DynamoDBConstraintsQuery extends
 	@Override
 	protected Iterator initIterator(
 			final AdapterStore adapterStore,
-			final Iterator<Map<String, AttributeValue>> results ) {
+			final Iterator<CassandraRow> results ) {
 		if (isAggregation()) {
 			// aggregate the stats to a single value here
 			Mergeable mergedAggregationResult = null;
@@ -146,20 +145,17 @@ public class DynamoDBConstraintsQuery extends
 			}
 			else {
 				while (results.hasNext()) {
-					final Map<String, AttributeValue> input = results.next();
-					if (input.get(
-							DynamoDBDataModel.GW_VALUE_KEY) != null) {
+					final CassandraRow input = results.next();
+					if (input.getValue() != null) {
 						if (mergedAggregationResult == null) {
 							mergedAggregationResult = PersistenceUtils.fromBinary(
-									input.get(
-											DynamoDBDataModel.GW_VALUE_KEY).getB().array(),
+									input.getValue(),
 									Mergeable.class);
 						}
 						else {
 							mergedAggregationResult.merge(
 									PersistenceUtils.fromBinary(
-											input.get(
-													DynamoDBDataModel.GW_VALUE_KEY).getB().array(),
+											input.getValue(),
 											Mergeable.class));
 						}
 					}

@@ -3,7 +3,6 @@ package mil.nga.giat.geowave.datastore.dynamodb;
 import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,37 +57,6 @@ public class DynamoDBIndexWriter<T> extends
 							index.getId().getBytes()),
 					true);
 		}
-	}
-
-	@Override
-	public List<ByteArrayId> write(
-			final T entry,
-			final VisibilityWriter<T> visibilityWriter ) {
-
-		DataStoreEntryInfo entryInfo;
-		synchronized (this) {
-
-			ensureOpen();
-			if (writer == null) {
-				return Collections.emptyList();
-			}
-			entryInfo = DataStoreUtils.getIngestInfo(
-					(WritableDataAdapter<T>) adapter,
-					index,
-					entry,
-					DataStoreUtils.UNCONSTRAINED_VISIBILITY);
-			if (entryInfo == null) {
-				return Collections.EMPTY_LIST;
-			}
-			writer.write(
-					getWriteRequests(
-							adapterId,
-							entryInfo));
-			callback.entryIngested(
-					entryInfo,
-					entry);
-		}
-		return entryInfo.getRowIds();
 	}
 
 	private static <T> List<WriteRequest> getWriteRequests(
@@ -156,8 +124,18 @@ public class DynamoDBIndexWriter<T> extends
 	protected DataStoreEntryInfo getEntryInfo(
 			final T entry,
 			final VisibilityWriter<T> visibilityWriter ) {
-		// TODO Auto-generated method stub
-		return null;
+		final DataStoreEntryInfo entryInfo = DataStoreUtils.getIngestInfo(
+				(WritableDataAdapter<T>) adapter,
+				index,
+				entry,
+				DataStoreUtils.UNCONSTRAINED_VISIBILITY);
+		if (entryInfo != null) {
+			writer.write(
+					getWriteRequests(
+							adapterId,
+							entryInfo));
+		}
+		return entryInfo;
 	}
 
 }

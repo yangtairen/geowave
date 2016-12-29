@@ -169,7 +169,6 @@ public class DynamoDBDataStore extends
 				sanitizedQueryOptions.getLimit());
 	}
 
-	@SuppressFBWarnings(value = "DLS_DEAD_LOCAL_STORE", justification = "i is part of loop condition")
 	@Override
 	protected CloseableIterator<Object> getEntryRows(
 			final PrimaryIndex index,
