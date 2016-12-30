@@ -382,6 +382,13 @@
 								</goals>
 							</execution>
 						</executions>
+						<configuration>
+							<startNativeTransport>true</startNativeTransport>
+							<!-- <rpcPort>9160</rpcPort>
+							<jmxPort>7199</jmxPort>
+							<storagePort>7000</storagePort>
+							<stopPort>8081</stopPort> -->
+						</configuration>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>

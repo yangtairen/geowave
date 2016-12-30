@@ -13,11 +13,11 @@ import mil.nga.giat.geowave.test.annotation.GeoWaveTestStore.GeoWaveStoreType;
 public class CassandraStoreTestEnvironment extends
 		StoreTestEnvironment
 {
-	private static final GenericStoreFactory<DataStore> STORE_FACTORY = null; // new
-																				// CassandraDataStoreFactory();
+	private static GenericStoreFactory<DataStore> STORE_FACTORY;
 	private static CassandraStoreTestEnvironment singletonInstance = null;
 
 	private Cluster cluster;
+	private Session session;
 
 	public static synchronized CassandraStoreTestEnvironment getInstance() {
 		if (singletonInstance == null) {
@@ -42,26 +42,54 @@ public class CassandraStoreTestEnvironment extends
 	@Override
 	public void setup() {
 		try {
-			cluster = Cluster.builder().addContactPoint(
-					"127.0.0.1") // default listen address
-					.withPort(
-							9160)
-					// default rpc port
-					.build();
-			Session session = cluster.connect();
+			if (cluster == null) {
+				cluster = Cluster.builder().addContactPoint(
+						"127.0.0.1").build();
+			}
+
+			session = cluster.connect();
+
+			STORE_FACTORY = new GenericStoreFactory<DataStore>() {
+
+				@Override
+				public String getType() {
+					// TODO Auto-generated method stub
+					return "cassandra";
+				}
+
+				@Override
+				public String getDescription() {
+					// TODO Auto-generated method stub
+					return "Cassandra test store";
+				}
+
+				@Override
+				public DataStore createStore(
+						StoreFactoryOptions options ) {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public StoreFactoryOptions createOptionsInstance() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+			};
 
 			LOGGER.info("Opened connection to cassandra cluster!");
-
-			session.close();
 		}
 		catch (Exception e) {
-			// TODO: handle exception
+			LOGGER.error(
+					"Failed to connect to Cassandra test cluster",
+					e);
 		}
 	}
 
 	@Override
 	public void tearDown() {
 		try {
+			session.close();
 			cluster.close();
 		}
 		catch (Exception e) {
