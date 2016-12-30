@@ -29,8 +29,7 @@ public class DynamoDBAdapterStore extends
 	@Override
 	public void addAdapter(
 			final DataAdapter<?> adapter ) {
-		addObject(
-				adapter);
+		addObject(adapter);
 	}
 
 	@Override

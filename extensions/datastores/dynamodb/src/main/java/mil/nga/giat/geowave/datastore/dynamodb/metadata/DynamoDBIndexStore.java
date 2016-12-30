@@ -21,8 +21,7 @@ public class DynamoDBIndexStore extends
 	@Override
 	public void addIndex(
 			final Index<?, ?> index ) {
-		addObject(
-				index);
+		addObject(index);
 	}
 
 	@Override

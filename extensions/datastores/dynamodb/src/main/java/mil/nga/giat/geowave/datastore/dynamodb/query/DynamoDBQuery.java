@@ -20,9 +20,9 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.data.visibility.DifferingFieldVisibilityEntryCount;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBDataModel;
 import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBIndexWriter;
 import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBOperations;
+import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBRow;
 
 /**
  * This class is used internally to perform query operations against an DynamoDB
@@ -31,8 +31,7 @@ import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBOperations;
  */
 abstract public class DynamoDBQuery
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			DynamoDBQuery.class);
+	private final static Logger LOGGER = Logger.getLogger(DynamoDBQuery.class);
 	protected final List<ByteArrayId> adapterIds;
 	protected final PrimaryIndex index;
 	protected final Pair<List<String>, DataAdapter<?>> fieldIdsAdapterPair;
@@ -88,36 +87,35 @@ abstract public class DynamoDBQuery
 				StringUtils.stringFromBinary(
 						index.getId().getBytes()));
 		final List<QueryRequest> requests = new ArrayList<>();
-		if ((ranges != null) && (ranges.size() == 1)) {
-
-			final List<QueryRequest> queries = getPartitionRequests(
-					tableName);
-			final ByteArrayRange r = ranges.get(
-					0);
-			if (r.isSingleValue()) {
-				for (final QueryRequest query : queries) {
-					query.addQueryFilterEntry(
-							DynamoDBDataModel.GW_IDX_KEY,
-							new Condition()
-									.withAttributeValueList(
-											new AttributeValue().withB(
-													ByteBuffer.wrap(
-															r.getStart().getBytes())))
-									.withComparisonOperator(
-											ComparisonOperator.EQ));
+		if (ranges != null) {
+			if (ranges.size() == 1) {
+				final List<QueryRequest> queries = getPartitionRequests(
+						tableName);
+				final ByteArrayRange r = ranges.get(
+						0);
+				if (r.isSingleValue()) {
+					for (final QueryRequest query : queries) {
+						query.addQueryFilterEntry(
+								DynamoDBRow.GW_IDX_KEY,
+								new Condition()
+										.withAttributeValueList(
+												new AttributeValue().withB(
+														ByteBuffer.wrap(
+																r.getStart().getBytes())))
+										.withComparisonOperator(
+												ComparisonOperator.EQ));
+					}
 				}
-			}
-			else {
-				for (final QueryRequest query : queries) {
-					addQueryRange(
-							r,
-							query);
+				else {
+					for (final QueryRequest query : queries) {
+						addQueryRange(
+								r,
+								query);
+					}
 				}
+				requests.addAll(
+						queries);
 			}
-			requests.addAll(
-					queries);
-		}
-		else {
 			ranges.forEach(
 					(r -> requests.addAll(
 							addQueryRanges(
@@ -138,8 +136,7 @@ abstract public class DynamoDBQuery
 	private List<QueryRequest> addQueryRanges(
 			final String tableName,
 			final ByteArrayRange r ) {
-		final List<QueryRequest> retVal = getPartitionRequests(
-				tableName);
+		final List<QueryRequest> retVal = getPartitionRequests(tableName);
 		for (final QueryRequest queryRequest : retVal) {
 			addQueryRange(
 					r,
@@ -152,15 +149,11 @@ abstract public class DynamoDBQuery
 			final ByteArrayRange r,
 			final QueryRequest query ) {
 		query.addKeyConditionsEntry(
-				DynamoDBDataModel.GW_IDX_KEY,
+				DynamoDBRow.GW_IDX_KEY,
 				new Condition().withComparisonOperator(
 						ComparisonOperator.BETWEEN).withAttributeValueList(
-								new AttributeValue().withB(
-										ByteBuffer.wrap(
-												r.getStart().getBytes())),
-								new AttributeValue().withB(
-										ByteBuffer.wrap(
-												r.getEndAsNextPrefix().getBytes()))));
+						new AttributeValue().withB(ByteBuffer.wrap(r.getStart().getBytes())),
+						new AttributeValue().withB(ByteBuffer.wrap(r.getEndAsNextPrefix().getBytes()))));
 	}
 
 	private static List<QueryRequest> getPartitionRequests(
@@ -168,15 +161,12 @@ abstract public class DynamoDBQuery
 		final List<QueryRequest> requests = new ArrayList<>(
 				DynamoDBIndexWriter.PARTITIONS);
 		for (int p = 0; p < DynamoDBIndexWriter.PARTITIONS; p++) {
-			requests.add(
-					new QueryRequest(
-							tableName).addKeyConditionsEntry(
-									DynamoDBDataModel.GW_PARTITION_ID_KEY,
-									new Condition().withComparisonOperator(
-											ComparisonOperator.EQ).withAttributeValueList(
-													new AttributeValue().withN(
-															Integer.toString(
-																	p)))));
+			requests.add(new QueryRequest(
+					tableName).addKeyConditionsEntry(
+					DynamoDBRow.GW_PARTITION_ID_KEY,
+					new Condition().withComparisonOperator(
+							ComparisonOperator.EQ).withAttributeValueList(
+							new AttributeValue().withN(Integer.toString(p)))));
 		}
 		return requests;
 	}

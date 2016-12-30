@@ -23,12 +23,10 @@ public class HBaseDataStoreFactory extends
 		}
 		final HBaseRequiredOptions opts = (HBaseRequiredOptions) options;
 		if (opts.getAdditionalOptions() == null) {
-			opts.setAdditionalOptions(
-					new HBaseOptions());
+			opts.setAdditionalOptions(new HBaseOptions());
 		}
 
-		final BasicHBaseOperations hbaseOperations = createOperations(
-				opts);
+		final BasicHBaseOperations hbaseOperations = createOperations(opts);
 		return new HBaseDataStore(
 				new HBaseIndexStore(
 						hbaseOperations),

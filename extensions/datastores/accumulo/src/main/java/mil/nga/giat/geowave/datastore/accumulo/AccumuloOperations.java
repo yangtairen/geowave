@@ -144,7 +144,7 @@ public interface AccumuloOperations extends
 	public Writer createWriter(
 			final String tableName,
 			final boolean createTable );
-	
+
 	public String getTableNameSpace();
 
 	/**

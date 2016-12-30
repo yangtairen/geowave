@@ -9,8 +9,7 @@ abstract public class AbstractDynamoDBStoreFactory<T> extends
 		AbstractDynamoDBFactory implements
 		GenericStoreFactory<T>
 {
-	private final static Logger LOGGER = LoggerFactory.getLogger(
-			AbstractDynamoDBStoreFactory.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(AbstractDynamoDBStoreFactory.class);
 
 	protected DynamoDBOperations createOperations(
 			final DynamoDBOptions options ) {

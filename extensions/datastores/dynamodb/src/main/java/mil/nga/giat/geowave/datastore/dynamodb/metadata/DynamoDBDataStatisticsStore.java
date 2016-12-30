@@ -25,8 +25,7 @@ public class DynamoDBDataStatisticsStore extends
 		AbstractDynamoDBPersistence<DataStatistics<?>> implements
 		DataStatisticsStore
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			DynamoDBDataStatisticsStore.class);
+	private final static Logger LOGGER = Logger.getLogger(DynamoDBDataStatisticsStore.class);
 	private static final String STATISTICS_CF = "STATS";
 
 	public DynamoDBDataStatisticsStore(
@@ -40,8 +39,7 @@ public class DynamoDBDataStatisticsStore extends
 			final DataStatistics<?> statistics ) {
 		// because we're using the combiner, we should simply be able to add the
 		// object
-		addObject(
-				statistics);
+		addObject(statistics);
 
 		// TODO if we do allow caching after we add a statistic to DynamoDB we
 		// do need to make sure we update our cache, but for now we aren't using
@@ -102,12 +100,9 @@ public class DynamoDBDataStatisticsStore extends
 	@Override
 	protected DataStatistics<?> entryToValue(
 			final Map<String, AttributeValue> entry ) {
-		final DataStatistics<?> stats = super.entryToValue(
-				entry);
+		final DataStatistics<?> stats = super.entryToValue(entry);
 		if (stats != null) {
-			stats.setDataAdapterId(
-					getSecondaryId(
-							entry));
+			stats.setDataAdapterId(getSecondaryId(entry));
 		}
 		return stats;
 	}
@@ -130,15 +125,13 @@ public class DynamoDBDataStatisticsStore extends
 		removeStatistics(
 				statistics.getDataAdapterId(),
 				statistics.getStatisticsId());
-		addObject(
-				statistics);
+		addObject(statistics);
 	}
 
 	@Override
 	public CloseableIterator<DataStatistics<?>> getAllDataStatistics(
 			final String... authorizations ) {
-		return getObjects(
-				authorizations);
+		return getObjects(authorizations);
 	}
 
 	@Override

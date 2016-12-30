@@ -22,8 +22,7 @@ public class DynamoDBTestEnvironment extends
 		return singletonInstance;
 	}
 
-	private final static Logger LOGGER = Logger.getLogger(
-			DynamoDBTestEnvironment.class);
+	private final static Logger LOGGER = Logger.getLogger(DynamoDBTestEnvironment.class);
 
 	private DynamoDBTestEnvironment() {}
 
@@ -46,8 +45,7 @@ public class DynamoDBTestEnvironment extends
 	@Override
 	protected void initOptions(
 			final StoreFactoryOptions options ) {
-		((DynamoDBOptions) options).setEndpoint(
-				"http://localhost:8000");
+		((DynamoDBOptions) options).setEndpoint("http://localhost:8000");
 	}
 
 	@Override

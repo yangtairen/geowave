@@ -10,6 +10,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -24,16 +25,16 @@ import mil.nga.giat.geowave.core.store.filter.FilterList;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.FilteredIndexQuery;
+import mil.nga.giat.geowave.core.store.util.NativeEntryIteratorWrapper;
 import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBOperations;
-import mil.nga.giat.geowave.datastore.dynamodb.util.DynamoDBEntryIteratorWrapper;
+import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBRow;
 
 public abstract class DynamoDBFilteredIndexQuery extends
 		DynamoDBQuery implements
 		FilteredIndexQuery
 {
 	protected List<QueryFilter> clientFilters;
-	private final static Logger LOGGER = Logger.getLogger(
-			DynamoDBFilteredIndexQuery.class);
+	private final static Logger LOGGER = Logger.getLogger(DynamoDBFilteredIndexQuery.class);
 	protected final ScanCallback<?> scanCallback;
 
 	public DynamoDBFilteredIndexQuery(
@@ -59,8 +60,7 @@ public abstract class DynamoDBFilteredIndexQuery extends
 					0,
 					clientDedupeFilter);
 		}
-		clientFilters.addAll(
-				queryFilters);
+		clientFilters.addAll(queryFilters);
 		this.scanCallback = scanCallback;
 	}
 
@@ -79,18 +79,13 @@ public abstract class DynamoDBFilteredIndexQuery extends
 			final Integer limit ) {
 		boolean exists = false;
 		try {
-			exists = dynamodbOperations.tableExists(
-					StringUtils.stringFromBinary(
-							index.getId().getBytes()));
+			exists = dynamodbOperations.tableExists(StringUtils.stringFromBinary(index.getId().getBytes()));
 		}
 		catch (final IOException e) {
-			LOGGER.error(
-					"e");
+			LOGGER.error("e");
 		}
 		if (!exists) {
-			LOGGER.warn(
-					"Table does not exist " + StringUtils.stringFromBinary(
-							index.getId().getBytes()));
+			LOGGER.warn("Table does not exist " + StringUtils.stringFromBinary(index.getId().getBytes()));
 			return new CloseableIterator.Empty();
 		}
 
@@ -99,8 +94,7 @@ public abstract class DynamoDBFilteredIndexQuery extends
 				limit);
 
 		if (results == null) {
-			LOGGER.error(
-					"Could not get scanner instance, getScanner returned null");
+			LOGGER.error("Could not get scanner instance, getScanner returned null");
 			return new CloseableIterator.Empty();
 		}
 		Iterator it = initIterator(
@@ -118,15 +112,27 @@ public abstract class DynamoDBFilteredIndexQuery extends
 	protected Iterator initIterator(
 			final AdapterStore adapterStore,
 			final Iterator<Map<String, AttributeValue>> results ) {
-		return new DynamoDBEntryIteratorWrapper(
+		return new NativeEntryIteratorWrapper<>(
 				adapterStore,
 				index,
-				results,
-				clientFilters.isEmpty() ? null : clientFilters.size() == 1 ? clientFilters.get(
-						0)
+				Iterators.transform(
+						results,
+						new WrapAsNativeRow()),
+				clientFilters.isEmpty() ? null : clientFilters.size() == 1 ? clientFilters.get(0)
 						: new FilterList<QueryFilter>(
 								clientFilters),
 				scanCallback);
 	}
 
+	public static class WrapAsNativeRow implements
+			Function<Map<String, AttributeValue>, DynamoDBRow>
+	{
+		@Override
+		public DynamoDBRow apply(
+				final Map<String, AttributeValue> input ) {
+			return new DynamoDBRow(
+					input);
+		}
+
+	}
 }

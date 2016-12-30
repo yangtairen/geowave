@@ -34,12 +34,11 @@ import mil.nga.giat.geowave.datastore.dynamodb.query.DynamoDBRowIdsQuery;
 import mil.nga.giat.geowave.datastore.dynamodb.query.DynamoDBRowPrefixQuery;
 
 public class DynamoDBDataStore extends
-		BaseDataStore 
+		BaseDataStore
 {
 	public final static String TYPE = "dynamodb";
 
-	private final static Logger LOGGER = Logger.getLogger(
-			DynamoDBDataStore.class);
+	private final static Logger LOGGER = Logger.getLogger(DynamoDBDataStore.class);
 	private DynamoDBOperations dynamodbOperations;
 
 	public DynamoDBDataStore(
@@ -227,6 +226,6 @@ public class DynamoDBDataStore extends
 			DataAdapter<T> adapter,
 			ByteArrayId primaryIndexId ) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

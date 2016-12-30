@@ -20,8 +20,7 @@ public class DynamoDBDataStoreFactory extends
 		}
 		final DynamoDBOptions opts = (DynamoDBOptions) options;
 
-		final DynamoDBOperations dynamodbOperations = createOperations(
-				opts);
+		final DynamoDBOperations dynamodbOperations = createOperations(opts);
 		return new DynamoDBDataStore(
 				dynamodbOperations);
 

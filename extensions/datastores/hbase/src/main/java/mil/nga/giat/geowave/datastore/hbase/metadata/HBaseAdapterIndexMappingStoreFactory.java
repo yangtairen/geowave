@@ -19,12 +19,10 @@ public class HBaseAdapterIndexMappingStoreFactory extends
 		}
 		final HBaseRequiredOptions opts = (HBaseRequiredOptions) options;
 		if (opts.getAdditionalOptions() == null) {
-			opts.setAdditionalOptions(
-					new HBaseOptions());
+			opts.setAdditionalOptions(new HBaseOptions());
 		}
 		return new HBaseAdapterIndexMappingStore(
-				createOperations(
-						opts));
+				createOperations(opts));
 	}
 
 }

@@ -18,8 +18,7 @@ public class DynamoDBDataStatisticsStoreFactory extends
 		}
 		final DynamoDBOptions opts = (DynamoDBOptions) options;
 		return new DynamoDBDataStatisticsStore(
-				createOperations(
-						opts));
+				createOperations(opts));
 	}
 
 }

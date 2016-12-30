@@ -146,16 +146,16 @@ public class CassandraConstraintsQuery extends
 			else {
 				while (results.hasNext()) {
 					final CassandraRow input = results.next();
-					if (input.getValue() != null) {
+					if (input.getRawValue() != null) {
 						if (mergedAggregationResult == null) {
 							mergedAggregationResult = PersistenceUtils.fromBinary(
-									input.getValue(),
+									input.getRawValue(),
 									Mergeable.class);
 						}
 						else {
 							mergedAggregationResult.merge(
 									PersistenceUtils.fromBinary(
-											input.getValue(),
+											input.getRawValue(),
 											Mergeable.class));
 						}
 					}

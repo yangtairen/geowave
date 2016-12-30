@@ -3,6 +3,7 @@ package mil.nga.giat.geowave.datastore.cassandra.query;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.collections.iterators.EmptyIterator;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
@@ -81,30 +82,32 @@ abstract public class CassandraQuery
 		final List<ByteArrayRange> ranges = getRanges();
 		final String tableName = StringUtils.stringFromBinary(
 				index.getId().getBytes());
-		if ((ranges != null) && (ranges.size() == 1)) {
-			final ByteArrayRange r = ranges.get(
-					0);
-			if (r.isSingleValue()) {
-				final RowRead rowRead = cassandraOperations.getRowRead(
-						tableName);
-				rowRead.setRow(
-						r.getStart().getBytes());
-				return Iterators.singletonIterator(
-						rowRead.result());
+		if (ranges != null) {
+			if (ranges.size() == 1) {
+				final ByteArrayRange r = ranges.get(
+						0);
+				if (r.isSingleValue()) {
+					final RowRead rowRead = cassandraOperations.getRowRead(
+							tableName);
+					rowRead.setRow(
+							r.getStart().getBytes());
+					return Iterators.singletonIterator(
+							rowRead.result());
+				}
+				else {
+					final BatchedRangeRead rangeRead = cassandraOperations.getBatchedRangeRead(
+							tableName);
+					rangeRead.addQueryRange(
+							r);
+					return rangeRead.results();
+				}
 			}
-			else {
-				final BatchedRangeRead rangeRead = cassandraOperations.getBatchedRangeRead(
-						tableName);
-				rangeRead.addQueryRange(
-						r);
-				return rangeRead.results();
-			}
+			final BatchedRangeRead rangeRead = cassandraOperations.getBatchedRangeRead(
+					tableName,
+					ranges);
+			return rangeRead.results();
 		}
-		final BatchedRangeRead rangeRead = cassandraOperations.getBatchedRangeRead(
-				tableName,
-				ranges);
-		return rangeRead.results();
-
+		return EmptyIterator.INSTANCE;
 	}
 
 	public String[] getAdditionalAuthorizations() {

@@ -9,7 +9,10 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.schemabuilder.Create;
 
-public class CassandraRow
+import mil.nga.giat.geowave.core.store.entities.NativeGeoWaveRow;
+
+public class CassandraRow implements
+		NativeGeoWaveRow
 {
 	private static enum ColumnType {
 		PARTITION_KEY(
@@ -113,19 +116,19 @@ public class CassandraRow
 				CassandraField.GW_VALUE_KEY.getFieldName()).array();
 	}
 
-	public byte[] getPartitionId() {
+	public byte[] getRawPartitionId() {
 		return partitionId;
 	}
 
-	public byte[] getId() {
+	public byte[] getRawId() {
 		return id;
 	}
 
-	public byte[] getIdx() {
+	public byte[] getRawIdx() {
 		return idx;
 	}
 
-	public byte[] getValue() {
+	public byte[] getRawValue() {
 		return value;
 	}
 
@@ -154,5 +157,23 @@ public class CassandraRow
 						value),
 				ByteBuffer.class);
 		return retVal;
+	}
+
+	@Override
+	public ByteBuffer getAdapterAndDataId() {
+		return ByteBuffer.wrap(
+				id);
+	}
+
+	@Override
+	public ByteBuffer getValue() {
+		return ByteBuffer.wrap(
+				value);
+	}
+
+	@Override
+	public ByteBuffer getIndex() {
+		return ByteBuffer.wrap(
+				idx);
 	}
 }

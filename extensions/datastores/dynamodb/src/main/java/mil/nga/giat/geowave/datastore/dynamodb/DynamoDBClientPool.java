@@ -12,6 +12,7 @@ public class DynamoDBClientPool
 	private static DynamoDBClientPool singletonInstance;
 	private static final int DEFAULT_RETRY_THREADS = 4;
 	protected static ExecutorService DYNAMO_RETRY_POOL = Executors.newFixedThreadPool(DEFAULT_RETRY_THREADS);
+
 	public static synchronized DynamoDBClientPool getInstance() {
 		if (singletonInstance == null) {
 			singletonInstance = new DynamoDBClientPool();
@@ -23,11 +24,9 @@ public class DynamoDBClientPool
 
 	public synchronized AmazonDynamoDBAsyncClient getClient(
 			final DynamoDBOptions options ) {
-		AmazonDynamoDBAsyncClient client = clientCache.get(
-				options);
+		AmazonDynamoDBAsyncClient client = clientCache.get(options);
 		if (client == null) {
-			client = new AmazonDynamoDBAsyncClient().withEndpoint(
-					options.getEndpoint());
+			client = new AmazonDynamoDBAsyncClient().withEndpoint(options.getEndpoint());
 			clientCache.put(
 					options,
 					client);

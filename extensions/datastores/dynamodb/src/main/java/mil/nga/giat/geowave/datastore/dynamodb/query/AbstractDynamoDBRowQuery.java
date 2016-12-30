@@ -6,14 +6,17 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
 
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.data.visibility.DifferingFieldVisibilityEntryCount;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.util.NativeEntryIteratorWrapper;
 import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBOperations;
-import mil.nga.giat.geowave.datastore.dynamodb.util.DynamoDBEntryIteratorWrapper;
+import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBRow;
 
 /**
  * Represents a query operation by an DynamoDB row. This abstraction is
@@ -23,8 +26,7 @@ import mil.nga.giat.geowave.datastore.dynamodb.util.DynamoDBEntryIteratorWrapper
 abstract public class AbstractDynamoDBRowQuery<T> extends
 		DynamoDBQuery
 {
-	private static final Logger LOGGER = Logger.getLogger(
-			AbstractDynamoDBRowQuery.class);
+	private static final Logger LOGGER = Logger.getLogger(AbstractDynamoDBRowQuery.class);
 	protected final ScanCallback<T> scanCallback;
 
 	public AbstractDynamoDBRowQuery(
@@ -48,13 +50,27 @@ abstract public class AbstractDynamoDBRowQuery<T> extends
 				maxResolutionSubsamplingPerDimension,
 				getScannerLimit());
 		return new CloseableIterator.Wrapper<T>(
-				new DynamoDBEntryIteratorWrapper(
+				new NativeEntryIteratorWrapper<>(
 						adapterStore,
 						index,
-						results,
+						Iterators.transform(
+								results,
+								new WrapAsNativeRow()),
 						null,
 						this.scanCallback));
 	}
 
 	abstract protected Integer getScannerLimit();
+
+	public static class WrapAsNativeRow implements
+			Function<Map<String, AttributeValue>, DynamoDBRow>
+	{
+		@Override
+		public DynamoDBRow apply(
+				final Map<String, AttributeValue> input ) {
+			return new DynamoDBRow(
+					input);
+		}
+
+	}
 }

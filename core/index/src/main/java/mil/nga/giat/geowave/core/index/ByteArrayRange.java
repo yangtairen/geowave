@@ -58,8 +58,7 @@ public class ByteArrayRange implements
 
 	public ByteArrayId getEndAsNextPrefix() {
 		return new ByteArrayId(
-				getNextPrefix(
-						end.getBytes()));
+				getNextPrefix(end.getBytes()));
 	}
 
 	public boolean isSingleValue() {
@@ -94,8 +93,7 @@ public class ByteArrayRange implements
 				return false;
 			}
 		}
-		else if (!end.equals(
-				other.end)) {
+		else if (!end.equals(other.end)) {
 			return false;
 		}
 		if (singleValue != other.singleValue) {
@@ -106,8 +104,7 @@ public class ByteArrayRange implements
 				return false;
 			}
 		}
-		else if (!start.equals(
-				other.start)) {
+		else if (!start.equals(other.start)) {
 			return false;
 		}
 		return true;
@@ -115,28 +112,21 @@ public class ByteArrayRange implements
 
 	public boolean intersects(
 			final ByteArrayRange other ) {
-		return (((getStart().compareTo(
-				other.getEnd())) <= 0)
-				&& ((getEnd().compareTo(
-						other.getStart())) >= 0));
+		return (((getStart().compareTo(other.getEnd())) <= 0) && ((getEnd().compareTo(other.getStart())) >= 0));
 	}
 
 	public ByteArrayRange intersection(
 			final ByteArrayRange other ) {
 		return new ByteArrayRange(
-				start.compareTo(
-						other.start) <= 0 ? other.start : start,
-				end.compareTo(
-						other.end) >= 0 ? other.end : end);
+				start.compareTo(other.start) <= 0 ? other.start : start,
+				end.compareTo(other.end) >= 0 ? other.end : end);
 	}
 
 	public ByteArrayRange union(
 			final ByteArrayRange other ) {
 		return new ByteArrayRange(
-				start.compareTo(
-						other.start) <= 0 ? start : other.start,
-				end.compareTo(
-						other.end) >= 0 ? end : other.end);
+				start.compareTo(other.start) <= 0 ? start : other.start,
+				end.compareTo(other.end) >= 0 ? end : other.end);
 	}
 
 	@Override
@@ -157,26 +147,19 @@ public class ByteArrayRange implements
 			final List<ByteArrayRange> ranges,
 			final MergeOperation op ) {
 		// sort order so the first range can consume following ranges
-		Collections.<ByteArrayRange> sort(
-				ranges);
+		Collections.<ByteArrayRange> sort(ranges);
 		final List<ByteArrayRange> result = new ArrayList<ByteArrayRange>();
 		for (int i = 0; i < ranges.size();) {
-			ByteArrayRange r1 = ranges.get(
-					i);
+			ByteArrayRange r1 = ranges.get(i);
 			int j = i + 1;
 			for (; j < ranges.size(); j++) {
-				final ByteArrayRange r2 = ranges.get(
-						j);
-				if (r1.intersects(
-						r2)) {
-					if (op.equals(
-							MergeOperation.UNION)) {
-						r1 = r1.union(
-								r2);
+				final ByteArrayRange r2 = ranges.get(j);
+				if (r1.intersects(r2)) {
+					if (op.equals(MergeOperation.UNION)) {
+						r1 = r1.union(r2);
 					}
 					else {
-						r1 = r1.intersection(
-								r2);
+						r1 = r1.intersection(r2);
 					}
 				}
 				else {
@@ -184,8 +167,7 @@ public class ByteArrayRange implements
 				}
 			}
 			i = j;
-			result.add(
-					r1);
+			result.add(r1);
 		}
 		return result;
 	}

@@ -21,9 +21,9 @@ import mil.nga.giat.geowave.core.store.filter.FilterList;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.FilteredIndexQuery;
+import mil.nga.giat.geowave.core.store.util.NativeEntryIteratorWrapper;
 import mil.nga.giat.geowave.datastore.cassandra.CassandraRow;
 import mil.nga.giat.geowave.datastore.cassandra.operations.CassandraOperations;
-import mil.nga.giat.geowave.datastore.cassandra.util.CassandraEntryIteratorWrapper;
 
 public abstract class CassandraFilteredIndexQuery extends
 		CassandraQuery implements
@@ -109,7 +109,7 @@ public abstract class CassandraFilteredIndexQuery extends
 	protected Iterator initIterator(
 			final AdapterStore adapterStore,
 			final Iterator<CassandraRow> results ) {
-		return new CassandraEntryIteratorWrapper(
+		return new NativeEntryIteratorWrapper<>(
 				adapterStore,
 				index,
 				results,

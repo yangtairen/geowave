@@ -18,8 +18,7 @@ public class DynamoDBAdapterStoreFactory extends
 		}
 		final DynamoDBOptions opts = (DynamoDBOptions) options;
 		return new DynamoDBAdapterStore(
-				createOperations(
-						opts));
+				createOperations(opts));
 	}
 
 }

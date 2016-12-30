@@ -9,9 +9,9 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.data.visibility.DifferingFieldVisibilityEntryCount;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.util.NativeEntryIteratorWrapper;
 import mil.nga.giat.geowave.datastore.cassandra.CassandraRow;
 import mil.nga.giat.geowave.datastore.cassandra.operations.CassandraOperations;
-import mil.nga.giat.geowave.datastore.cassandra.util.CassandraEntryIteratorWrapper;
 
 /**
  * Represents a query operation for a Cassandra row. This abstraction is
@@ -46,7 +46,7 @@ abstract public class AbstractCassandraRowQuery<T> extends
 				maxResolutionSubsamplingPerDimension,
 				getScannerLimit());
 		return new CloseableIterator.Wrapper<T>(
-				new CassandraEntryIteratorWrapper(
+				new NativeEntryIteratorWrapper<>(
 						adapterStore,
 						index,
 						results,

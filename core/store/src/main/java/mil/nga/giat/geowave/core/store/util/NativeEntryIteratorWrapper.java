@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.datastore.cassandra.util;
+package mil.nga.giat.geowave.core.store.util;
 
 import java.util.Iterator;
 
@@ -6,18 +6,16 @@ import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
+import mil.nga.giat.geowave.core.store.entities.NativeGeoWaveRow;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.core.store.util.EntryIteratorWrapper;
-import mil.nga.giat.geowave.datastore.cassandra.CassandraRow;
 
-public class CassandraEntryIteratorWrapper<T> extends
+public class NativeEntryIteratorWrapper<T> extends
 		EntryIteratorWrapper<T>
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			CassandraEntryIteratorWrapper.class);
+	private final static Logger LOGGER = Logger.getLogger(NativeEntryIteratorWrapper.class);
 
-	public CassandraEntryIteratorWrapper(
+	public NativeEntryIteratorWrapper(
 			final AdapterStore adapterStore,
 			final PrimaryIndex index,
 			final Iterator scannerIt,
@@ -31,7 +29,7 @@ public class CassandraEntryIteratorWrapper<T> extends
 				null);
 	}
 
-	public CassandraEntryIteratorWrapper(
+	public NativeEntryIteratorWrapper(
 			final AdapterStore adapterStore,
 			final PrimaryIndex index,
 			final Iterator scannerIt,
@@ -52,21 +50,19 @@ public class CassandraEntryIteratorWrapper<T> extends
 			final QueryFilter clientFilter,
 			final PrimaryIndex index,
 			final boolean wholeRowEncoding ) {
-		CassandraRow entry = null;
+		NativeGeoWaveRow entry = null;
 		try {
-			entry = (CassandraRow) row;
+			entry = (NativeGeoWaveRow) row;
 		}
 		catch (final ClassCastException e) {
-			LOGGER.error(
-					"Row is not an accumulo row entry.");
+			LOGGER.error("Row is not a native geowave row entry.");
 			return null;
 		}
-		return CassandraUtil.decodeRow(
+		return DataStoreUtils.decodeRow(
 				entry,
 				adapterStore,
 				clientFilter,
 				index,
 				scanCallback);
 	}
-
 }

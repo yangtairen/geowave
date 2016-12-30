@@ -18,8 +18,7 @@ public class DynamoDBIndexStoreFactory extends
 		}
 		final DynamoDBOptions opts = (DynamoDBOptions) options;
 		return new DynamoDBIndexStore(
-				createOperations(
-						opts));
+				createOperations(opts));
 	}
 
 }
