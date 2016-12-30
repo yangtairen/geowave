@@ -38,8 +38,7 @@ public class BatchedRangeRead
 
 	public void addQueryRange(
 			final ByteArrayRange range ) {
-		ranges.add(
-				range);
+		ranges.add(range);
 	}
 
 	public Iterator<CassandraRow> results() {

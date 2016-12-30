@@ -17,8 +17,7 @@ import mil.nga.giat.geowave.datastore.cassandra.operations.CassandraOperations;
 public class CassandraWriter implements
 		Writer<CassandraRow>
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(
-			CassandraWriter.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CassandraWriter.class);
 	private final Object MUTEX = new Object();
 	private PreparedStatement preparedInsert;
 	private BatchedWrite batchedWrite;
@@ -42,8 +41,7 @@ public class CassandraWriter implements
 	public void write(
 			final Iterable<CassandraRow> rows ) {
 		for (final CassandraRow row : rows) {
-			write(
-					row);
+			write(row);
 		}
 	}
 
@@ -57,20 +55,16 @@ public class CassandraWriter implements
 
 				batchedWrite = operations.getBatchedWrite();
 			}
-			batchedWrite.insert(
-					row.bindInsertion(
-							preparedInsert));
+			batchedWrite.insert(row.bindInsertion(preparedInsert));
 		}
 	}
 
 	private Insert getUnboundInsert() {
-		final Insert insert = operations.getInsert(
-				tableName);
+		final Insert insert = operations.getInsert(tableName);
 		for (final CassandraField f : CassandraField.values()) {
 			insert.value(
 					f.getFieldName(),
-					QueryBuilder.bindMarker(
-							f.getBindMarkerName()));
+					QueryBuilder.bindMarker(f.getBindMarkerName()));
 		}
 		return insert;
 	}

@@ -30,8 +30,7 @@ public abstract class CassandraFilteredIndexQuery extends
 		FilteredIndexQuery
 {
 	protected List<QueryFilter> clientFilters;
-	private final static Logger LOGGER = Logger.getLogger(
-			CassandraFilteredIndexQuery.class);
+	private final static Logger LOGGER = Logger.getLogger(CassandraFilteredIndexQuery.class);
 	protected final ScanCallback<?> scanCallback;
 
 	public CassandraFilteredIndexQuery(
@@ -57,8 +56,7 @@ public abstract class CassandraFilteredIndexQuery extends
 					0,
 					clientDedupeFilter);
 		}
-		clientFilters.addAll(
-				queryFilters);
+		clientFilters.addAll(queryFilters);
 		this.scanCallback = scanCallback;
 	}
 
@@ -75,13 +73,9 @@ public abstract class CassandraFilteredIndexQuery extends
 			final AdapterStore adapterStore,
 			final double[] maxResolutionSubsamplingPerDimension,
 			final Integer limit ) {
-		final boolean exists = cassandraOperations.tableExists(
-				StringUtils.stringFromBinary(
-						index.getId().getBytes()));
+		final boolean exists = cassandraOperations.tableExists(StringUtils.stringFromBinary(index.getId().getBytes()));
 		if (!exists) {
-			LOGGER.warn(
-					"Table does not exist " + StringUtils.stringFromBinary(
-							index.getId().getBytes()));
+			LOGGER.warn("Table does not exist " + StringUtils.stringFromBinary(index.getId().getBytes()));
 			return new CloseableIterator.Empty();
 		}
 
@@ -90,8 +84,7 @@ public abstract class CassandraFilteredIndexQuery extends
 				limit);
 
 		if (results == null) {
-			LOGGER.error(
-					"Could not get scanner instance, getScanner returned null");
+			LOGGER.error("Could not get scanner instance, getScanner returned null");
 			return new CloseableIterator.Empty();
 		}
 		Iterator it = initIterator(
@@ -113,8 +106,7 @@ public abstract class CassandraFilteredIndexQuery extends
 				adapterStore,
 				index,
 				results,
-				clientFilters.isEmpty() ? null : clientFilters.size() == 1 ? clientFilters.get(
-						0)
+				clientFilters.isEmpty() ? null : clientFilters.size() == 1 ? clientFilters.get(0)
 						: new FilterList<QueryFilter>(
 								clientFilters),
 				scanCallback);

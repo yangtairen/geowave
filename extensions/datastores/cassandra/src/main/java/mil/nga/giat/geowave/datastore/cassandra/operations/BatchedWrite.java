@@ -24,20 +24,17 @@ public class BatchedWrite extends
 
 	public void insert(
 			final BoundStatement insert ) {
-		final BatchStatement currentBatch = addStatement(
-				insert);
+		final BatchStatement currentBatch = addStatement(insert);
 		synchronized (currentBatch) {
 			if (currentBatch.size() >= batchSize) {
-				writeBatch(
-						currentBatch);
+				writeBatch(currentBatch);
 			}
 		}
 	}
 
 	private void writeBatch(
 			final BatchStatement batch ) {
-		final ResultSetFuture future = session.executeAsync(
-				batch);
+		final ResultSetFuture future = session.executeAsync(batch);
 		Futures.addCallback(
 				future,
 				new IngestCallback(),
@@ -50,8 +47,7 @@ public class BatchedWrite extends
 			throws Exception {
 		for (final BatchStatement batch : batches.values()) {
 			synchronized (batch) {
-				writeBatch(
-						batch);
+				writeBatch(batch);
 			}
 		}
 	}

@@ -45,8 +45,7 @@ public class CassandraIndexWriter<T> extends
 	protected void ensureOpen() {
 		if (writer == null) {
 			writer = operations.createWriter(
-					StringUtils.stringFromBinary(
-							index.getId().getBytes()),
+					StringUtils.stringFromBinary(index.getId().getBytes()),
 					true);
 		}
 	}
@@ -58,41 +57,30 @@ public class CassandraIndexWriter<T> extends
 		final List<byte[]> fieldInfoBytesList = new ArrayList<>();
 		int totalLength = 0;
 		for (final FieldInfo<?> fieldInfo : ingestInfo.getFieldInfo()) {
-			final ByteBuffer fieldInfoBytes = ByteBuffer.allocate(
-					4 + fieldInfo.getWrittenValue().length);
-			fieldInfoBytes.putInt(
-					fieldInfo.getWrittenValue().length);
-			fieldInfoBytes.put(
-					fieldInfo.getWrittenValue());
-			fieldInfoBytesList.add(
-					fieldInfoBytes.array());
+			final ByteBuffer fieldInfoBytes = ByteBuffer.allocate(4 + fieldInfo.getWrittenValue().length);
+			fieldInfoBytes.putInt(fieldInfo.getWrittenValue().length);
+			fieldInfoBytes.put(fieldInfo.getWrittenValue());
+			fieldInfoBytesList.add(fieldInfoBytes.array());
 			totalLength += fieldInfoBytes.array().length;
 		}
-		final ByteBuffer allFields = ByteBuffer.allocate(
-				totalLength);
+		final ByteBuffer allFields = ByteBuffer.allocate(totalLength);
 		for (final byte[] bytes : fieldInfoBytesList) {
-			allFields.put(
-					bytes);
+			allFields.put(bytes);
 		}
 		for (final ByteArrayId insertionId : ingestInfo.getInsertionIds()) {
-			final ByteBuffer idBuffer = ByteBuffer.allocate(
-					ingestInfo.getDataId().length + adapterId.length + 4);
-			idBuffer.putInt(
-					ingestInfo.getDataId().length);
-			idBuffer.put(
-					ingestInfo.getDataId());
-			idBuffer.put(
-					adapterId);
+			final ByteBuffer idBuffer = ByteBuffer.allocate(ingestInfo.getDataId().length + adapterId.length + 4);
+			idBuffer.putInt(ingestInfo.getDataId().length);
+			idBuffer.put(ingestInfo.getDataId());
+			idBuffer.put(adapterId);
 			idBuffer.rewind();
 			allFields.rewind();
-			rows.add(
-					new CassandraRow(
-							new byte[] {
-								(byte) (counter++ % PARTITIONS)
-							},
-							idBuffer.array(),
-							insertionId.getBytes(),
-							allFields.array()));
+			rows.add(new CassandraRow(
+					new byte[] {
+						(byte) (counter++ % PARTITIONS)
+					},
+					idBuffer.array(),
+					insertionId.getBytes(),
+					allFields.array()));
 		}
 		return rows;
 	}
@@ -107,10 +95,9 @@ public class CassandraIndexWriter<T> extends
 				entry,
 				DataStoreUtils.UNCONSTRAINED_VISIBILITY);
 		if (entryInfo != null) {
-			writer.write(
-					getRows(
-							adapterId,
-							entryInfo));
+			writer.write(getRows(
+					adapterId,
+					entryInfo));
 		}
 		return entryInfo;
 	}

@@ -57,10 +57,8 @@ public class CassandraConstraintsQuery extends
 				operations,
 				adapterIds,
 				index,
-				query != null ? query.getIndexConstraints(
-						index.getIndexStrategy()) : null,
-				query != null ? query.createFilters(
-						index.getIndexModel()) : null,
+				query != null ? query.getIndexConstraints(index.getIndexStrategy()) : null,
+				query != null ? query.createFilters(index.getIndexModel()) : null,
 				clientDedupeFilter,
 				scanCallback,
 				aggregation,
@@ -153,16 +151,14 @@ public class CassandraConstraintsQuery extends
 									Mergeable.class);
 						}
 						else {
-							mergedAggregationResult.merge(
-									PersistenceUtils.fromBinary(
-											input.getRawValue(),
-											Mergeable.class));
+							mergedAggregationResult.merge(PersistenceUtils.fromBinary(
+									input.getRawValue(),
+									Mergeable.class));
 						}
 					}
 				}
 			}
-			return Iterators.singletonIterator(
-					mergedAggregationResult);
+			return Iterators.singletonIterator(mergedAggregationResult);
 		}
 		else {
 			return super.initIterator(

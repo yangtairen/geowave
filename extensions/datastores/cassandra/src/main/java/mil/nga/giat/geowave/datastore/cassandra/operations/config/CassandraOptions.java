@@ -9,9 +9,10 @@ public class CassandraOptions extends
 {
 	@Parameter(names = "--batchWriteSize", description = "The number of inserts in a batch write.")
 	private int batchWriteSize = 25000;
-	
-//	@Parameter(names = "--writeThreads", description = "The max number of concurrent threads on write.")
-//	private int writeThreads = 16;
+
+	// @Parameter(names = "--writeThreads", description =
+	// "The max number of concurrent threads on write.")
+	// private int writeThreads = 16;
 
 	public int getBatchWriteSize() {
 		return batchWriteSize;

@@ -49,12 +49,10 @@ public class CassandraOperations implements
 	private final String gwNamespace;
 	private final static int WRITE_RESPONSE_THREAD_SIZE = 16;
 	private final static int READ_RESPONSE_THREAD_SIZE = 16;
-	protected final static ExecutorService WRITE_RESPONSE_THREADS = MoreExecutors.getExitingExecutorService(
-			(ThreadPoolExecutor) Executors.newFixedThreadPool(
-					WRITE_RESPONSE_THREAD_SIZE));
-	protected final static ExecutorService READ_RESPONSE_THREADS = MoreExecutors.getExitingExecutorService(
-			(ThreadPoolExecutor) Executors.newFixedThreadPool(
-					READ_RESPONSE_THREAD_SIZE));
+	protected final static ExecutorService WRITE_RESPONSE_THREADS = MoreExecutors
+			.getExitingExecutorService((ThreadPoolExecutor) Executors.newFixedThreadPool(WRITE_RESPONSE_THREAD_SIZE));
+	protected final static ExecutorService READ_RESPONSE_THREADS = MoreExecutors
+			.getExitingExecutorService((ThreadPoolExecutor) Executors.newFixedThreadPool(READ_RESPONSE_THREAD_SIZE));
 
 	private final Map<String, PreparedStatement> preparedRangeReadsPerTable = new HashMap<>();
 	private final Map<String, PreparedStatement> preparedRowReadPerTable = new HashMap<>();
@@ -79,12 +77,11 @@ public class CassandraOperations implements
 	@Override
 	public boolean tableExists(
 			final String tableName ) {
-		Boolean tableExists = tableExistsCache.get(
-				tableName);
+		Boolean tableExists = tableExistsCache.get(tableName);
 		if (tableExists == null) {
 			tableExists = session.getCluster().getMetadata().getKeyspace(
 					gwNamespace).getTable(
-							tableName) != null;
+					tableName) != null;
 			tableExistsCache.put(
 					tableName,
 					tableExists);
@@ -106,8 +103,7 @@ public class CassandraOperations implements
 	public void executeCreateTable(
 			final Create create,
 			final String tableName ) {
-		session.execute(
-				create);
+		session.execute(create);
 		tableExistsCache.put(
 				tableName,
 				true);
@@ -125,8 +121,8 @@ public class CassandraOperations implements
 			final String... columns ) {
 		return QueryBuilder.select(
 				columns).from(
-						gwNamespace,
-						table);
+				gwNamespace,
+				table);
 	}
 
 	public BaseDataStoreOptions getOptions() {
@@ -144,24 +140,19 @@ public class CassandraOperations implements
 			final List<ByteArrayRange> ranges ) {
 		PreparedStatement preparedRead;
 		synchronized (preparedRangeReadsPerTable) {
-			preparedRead = preparedRangeReadsPerTable.get(
-					tableName);
+			preparedRead = preparedRangeReadsPerTable.get(tableName);
 			if (preparedRead == null) {
-				final Select select = getSelect(
-						tableName);
-				select
-						.where(
-								QueryBuilder.gte(
-										CassandraRow.CassandraField.GW_IDX_KEY.getFieldName(),
-										QueryBuilder.bindMarker(
-												CassandraRow.CassandraField.GW_IDX_KEY.getLowerBoundBindMarkerName())))
-						.and(
-								QueryBuilder.lt(
-										CassandraRow.CassandraField.GW_IDX_KEY.getFieldName(),
-										QueryBuilder.bindMarker(
-												CassandraRow.CassandraField.GW_IDX_KEY.getUpperBoundBindMarkerName())));
-				preparedRead = session.prepare(
-						select);
+				final Select select = getSelect(tableName);
+				select.where(
+						QueryBuilder.gte(
+								CassandraRow.CassandraField.GW_IDX_KEY.getFieldName(),
+								QueryBuilder.bindMarker(CassandraRow.CassandraField.GW_IDX_KEY
+										.getLowerBoundBindMarkerName()))).and(
+						QueryBuilder.lt(
+								CassandraRow.CassandraField.GW_IDX_KEY.getFieldName(),
+								QueryBuilder.bindMarker(CassandraRow.CassandraField.GW_IDX_KEY
+										.getUpperBoundBindMarkerName())));
+				preparedRead = session.prepare(select);
 				preparedRangeReadsPerTable.put(
 						tableName,
 						preparedRead);
@@ -186,18 +177,13 @@ public class CassandraOperations implements
 			final byte[] rowIdx ) {
 		PreparedStatement preparedRead;
 		synchronized (preparedRangeReadsPerTable) {
-			preparedRead = preparedRangeReadsPerTable.get(
-					tableName);
+			preparedRead = preparedRangeReadsPerTable.get(tableName);
 			if (preparedRead == null) {
-				final Select select = getSelect(
-						tableName);
-				select.where(
-						QueryBuilder.eq(
-								CassandraRow.CassandraField.GW_IDX_KEY.getFieldName(),
-								QueryBuilder.bindMarker(
-										CassandraRow.CassandraField.GW_IDX_KEY.getBindMarkerName())));
-				preparedRead = session.prepare(
-						select);
+				final Select select = getSelect(tableName);
+				select.where(QueryBuilder.eq(
+						CassandraRow.CassandraField.GW_IDX_KEY.getFieldName(),
+						QueryBuilder.bindMarker(CassandraRow.CassandraField.GW_IDX_KEY.getBindMarkerName())));
+				preparedRead = session.prepare(select);
 				preparedRangeReadsPerTable.put(
 						tableName,
 						preparedRead);
@@ -264,13 +250,10 @@ public class CassandraOperations implements
 				tableName,
 				this);
 		if (createTable) {
-			if (!tableExists(
-					tableName)) {
-				final Create create = getCreateTable(
-						tableName);
+			if (!tableExists(tableName)) {
+				final Create create = getCreateTable(tableName);
 				for (final CassandraField f : CassandraField.values()) {
-					f.addColumn(
-							create);
+					f.addColumn(create);
 				}
 				executeCreateTable(
 						create,
@@ -290,8 +273,7 @@ public class CassandraOperations implements
 		@Override
 		public CompletableFuture<ResultSet> apply(
 				final ListenableFuture<ResultSet> input ) {
-			return CompletableFuturesExtra.toCompletableFuture(
-					input);
+			return CompletableFuturesExtra.toCompletableFuture(input);
 		}
 	}
 }

@@ -47,17 +47,22 @@
 		</dependency>
 		<dependency>
 			<groupId>mil.nga.giat</groupId>
+			<artifactId>geowave-datastore-bigtable</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>mil.nga.giat</groupId>
+			<artifactId>geowave-datastore-cassandra</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>mil.nga.giat</groupId>
 			<artifactId>geowave-datastore-dynamodb</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>mil.nga.giat</groupId>
 			<artifactId>geowave-datastore-hbase</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>mil.nga.giat</groupId>
-			<artifactId>geowave-datastore-bigtable</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -379,6 +384,14 @@
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>cassandra-maven-plugin</artifactId>
 						<version>3.5</version>
+						<configuration>
+							<startNativeTransport>true</startNativeTransport>
+							<loadAfterFirstStart>false</loadAfterFirstStart>
+							<!-- <rpcPort>9160</rpcPort>
+							<jmxPort>7199</jmxPort>
+							<storagePort>7000</storagePort>
+							<stopPort>8081</stopPort> -->
+						</configuration>
 						<executions>
 							<execution>
 								<goals>
@@ -387,13 +400,6 @@
 								</goals>
 							</execution>
 						</executions>
-						<configuration>
-							<startNativeTransport>true</startNativeTransport>
-							<!-- <rpcPort>9160</rpcPort>
-							<jmxPort>7199</jmxPort>
-							<storagePort>7000</storagePort>
-							<stopPort>8081</stopPort> -->
-						</configuration>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>

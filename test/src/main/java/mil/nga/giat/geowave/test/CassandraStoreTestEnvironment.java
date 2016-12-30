@@ -8,12 +8,13 @@ import com.datastax.driver.core.Session;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.GenericStoreFactory;
 import mil.nga.giat.geowave.core.store.StoreFactoryOptions;
+import mil.nga.giat.geowave.datastore.cassandra.CassandraDataStoreFactory;
 import mil.nga.giat.geowave.test.annotation.GeoWaveTestStore.GeoWaveStoreType;
 
 public class CassandraStoreTestEnvironment extends
 		StoreTestEnvironment
 {
-	private static GenericStoreFactory<DataStore> STORE_FACTORY;
+	private static GenericStoreFactory<DataStore> STORE_FACTORY = new CassandraDataStoreFactory();
 	private static CassandraStoreTestEnvironment singletonInstance = null;
 
 	private Cluster cluster;
@@ -32,7 +33,9 @@ public class CassandraStoreTestEnvironment extends
 
 	@Override
 	protected void initOptions(
-			final StoreFactoryOptions options ) {}
+			final StoreFactoryOptions options ) {
+
+	}
 
 	@Override
 	protected GenericStoreFactory<DataStore> getDataStoreFactory() {
@@ -48,34 +51,6 @@ public class CassandraStoreTestEnvironment extends
 			}
 
 			session = cluster.connect();
-
-			STORE_FACTORY = new GenericStoreFactory<DataStore>() {
-
-				@Override
-				public String getType() {
-					// TODO Auto-generated method stub
-					return "cassandra";
-				}
-
-				@Override
-				public String getDescription() {
-					// TODO Auto-generated method stub
-					return "Cassandra test store";
-				}
-
-				@Override
-				public DataStore createStore(
-						StoreFactoryOptions options ) {
-					// TODO Auto-generated method stub
-					return null;
-				}
-
-				@Override
-				public StoreFactoryOptions createOptionsInstance() {
-					// TODO Auto-generated method stub
-					return null;
-				}
-			};
 
 			LOGGER.info("Opened connection to cassandra cluster!");
 		}
@@ -93,8 +68,9 @@ public class CassandraStoreTestEnvironment extends
 			cluster.close();
 		}
 		catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error(
+					"Error shutting down Cassandra test cluster",
+					e);
 		}
 	}
 
