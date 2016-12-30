@@ -6,6 +6,7 @@ import java.util.function.BiConsumer;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.schemabuilder.Create;
 
 public class CassandraRow
@@ -98,6 +99,18 @@ public class CassandraRow
 		this.id = id;
 		this.idx = idx;
 		this.value = value;
+	}
+
+	public CassandraRow(
+			final Row row ) {
+		partitionId = row.getBytes(
+				CassandraField.GW_PARTITION_ID_KEY.getFieldName()).array();
+		id = row.getBytes(
+				CassandraField.GW_ID_KEY.getFieldName()).array();
+		idx = row.getBytes(
+				CassandraField.GW_IDX_KEY.getFieldName()).array();
+		value = row.getBytes(
+				CassandraField.GW_VALUE_KEY.getFieldName()).array();
 	}
 
 	public byte[] getPartitionId() {

@@ -101,10 +101,8 @@ abstract public class CassandraQuery
 			}
 		}
 		final BatchedRangeRead rangeRead = cassandraOperations.getBatchedRangeRead(
-				tableName);
-		ranges.forEach(
-				(r -> rangeRead.addQueryRange(
-						r)));
+				tableName,
+				ranges);
 		return rangeRead.results();
 
 	}

@@ -1,21 +1,38 @@
 package mil.nga.giat.geowave.datastore.cassandra.operations;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.StreamSupport;
 
+import com.aol.cyclops.control.LazyReact;
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.spotify.futures.CompletableFuturesExtra;
 
+import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.store.BaseDataStoreOptions;
+import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.datastore.cassandra.CassandraRow;
@@ -123,7 +140,8 @@ public class CassandraOperations implements
 	}
 
 	public BatchedRangeRead getBatchedRangeRead(
-			final String tableName ) {
+			final String tableName,
+			final List<ByteArrayRange> ranges ) {
 		PreparedStatement preparedRead;
 		synchronized (preparedRangeReadsPerTable) {
 			preparedRead = preparedRangeReadsPerTable.get(
@@ -152,11 +170,20 @@ public class CassandraOperations implements
 
 		return new BatchedRangeRead(
 				preparedRead,
-				this);
+				this,
+				ranges);
+	}
+
+	public BatchedRangeRead getBatchedRangeRead(
+			final String tableName ) {
+		return getBatchedRangeRead(
+				tableName,
+				new ArrayList<>());
 	}
 
 	public RowRead getRowRead(
-			final String tableName ) {
+			final String tableName,
+			final byte[] rowIdx ) {
 		PreparedStatement preparedRead;
 		synchronized (preparedRangeReadsPerTable) {
 			preparedRead = preparedRangeReadsPerTable.get(
@@ -179,7 +206,55 @@ public class CassandraOperations implements
 
 		return new RowRead(
 				preparedRead,
-				this);
+				this,
+				rowIdx);
+
+	}
+
+	public RowRead getRowRead(
+			final String tableName ) {
+		return getRowRead(
+				tableName,
+				null);
+	}
+
+	public CloseableIterator<CassandraRow> executeQuery(
+			final Statement... statements ) {
+		// first create a list of asynchronous query executions
+		final List<ResultSetFuture> futures = Lists.newArrayListWithExpectedSize(
+				statements.length);
+		for (final Statement s : statements) {
+			futures.add(
+					session.executeAsync(
+							s));
+		}
+		// convert the list of futures to an asynchronously as completed
+		// iterator on cassandra rows
+		final com.aol.cyclops.internal.react.stream.CloseableIterator<CassandraRow> results = new LazyReact()
+				.fromStreamFutures(
+						Lists.transform(
+								futures,
+								new ListenableFutureToCompletableFuture()).stream())
+				.flatMap(
+						r -> StreamSupport.stream(
+								r.spliterator(),
+								false))
+				.map(
+						r -> new CassandraRow(
+								r))
+				.iterator();
+		// now convert cyclops-react closeable iterator to a geowave closeable
+		// iterator
+		return new CloseableIteratorWrapper<CassandraRow>(
+				new Closeable() {
+
+					@Override
+					public void close()
+							throws IOException {
+						results.close();
+					}
+				},
+				results);
 	}
 
 	public Writer createWriter(
@@ -209,4 +284,14 @@ public class CassandraOperations implements
 	public void deleteAll()
 			throws Exception {}
 
+	private static class ListenableFutureToCompletableFuture implements
+			Function<ListenableFuture<ResultSet>, CompletableFuture<ResultSet>>
+	{
+		@Override
+		public CompletableFuture<ResultSet> apply(
+				final ListenableFuture<ResultSet> input ) {
+			return CompletableFuturesExtra.toCompletableFuture(
+					input);
+		}
+	}
 }
