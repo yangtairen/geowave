@@ -25,7 +25,7 @@ public class SessionPool
 		Session session = sessionCache.get(contactPoints);
 		if (session == null) {
 			session = Cluster.builder().addContactPoints(
-					contactPoints.split(",")).build().newSession();
+					contactPoints.split(",")).build().connect();
 			sessionCache.put(
 					contactPoints,
 					session);

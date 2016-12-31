@@ -9,6 +9,8 @@ import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.GenericStoreFactory;
 import mil.nga.giat.geowave.core.store.StoreFactoryOptions;
 import mil.nga.giat.geowave.datastore.cassandra.CassandraDataStoreFactory;
+import mil.nga.giat.geowave.datastore.cassandra.operations.config.CassandraRequiredOptions;
+import mil.nga.giat.geowave.datastore.hbase.operations.config.HBaseRequiredOptions;
 import mil.nga.giat.geowave.test.annotation.GeoWaveTestStore.GeoWaveStoreType;
 
 public class CassandraStoreTestEnvironment extends
@@ -34,7 +36,7 @@ public class CassandraStoreTestEnvironment extends
 	@Override
 	protected void initOptions(
 			final StoreFactoryOptions options ) {
-
+		((CassandraRequiredOptions) options).setContactPoint("127.0.0.1");
 	}
 
 	@Override
@@ -44,21 +46,21 @@ public class CassandraStoreTestEnvironment extends
 
 	@Override
 	public void setup() {
-		try {
-			if (cluster == null) {
-				cluster = Cluster.builder().addContactPoint(
-						"127.0.0.1").build();
-			}
-
-			session = cluster.connect();
-
-			LOGGER.info("Opened connection to cassandra cluster!");
-		}
-		catch (Exception e) {
-			LOGGER.error(
-					"Failed to connect to Cassandra test cluster",
-					e);
-		}
+//		try {
+//			if (cluster == null) {
+//				cluster = Cluster.builder().addContactPoint(
+//						"127.0.0.1").build();
+//			}
+//
+//			session = cluster.connect();
+//
+//			LOGGER.info("Opened connection to cassandra cluster!");
+//		}
+//		catch (Exception e) {
+//			LOGGER.error(
+//					"Failed to connect to Cassandra test cluster",
+//					e);
+//		}
 	}
 
 	@Override
