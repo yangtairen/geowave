@@ -37,6 +37,7 @@ public class GeoWaveBasicSpatialVectorIT extends
 	@GeoWaveTestStore(value = {
 		GeoWaveStoreType.ACCUMULO,
 		GeoWaveStoreType.BIGTABLE,
+		GeoWaveStoreType.DYNAMODB,
 		GeoWaveStoreType.HBASE
 	})
 	protected DataStorePluginOptions dataStore;
