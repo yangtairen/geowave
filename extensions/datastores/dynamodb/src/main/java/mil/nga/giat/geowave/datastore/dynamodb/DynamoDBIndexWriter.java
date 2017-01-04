@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import com.amazonaws.services.dynamodbv2.model.PutRequest;
 import com.amazonaws.services.dynamodbv2.model.WriteRequest;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
@@ -32,6 +34,8 @@ public class DynamoDBIndexWriter<T> extends
 	protected final DynamoDBOperations dynamodbOperations;
 	private static long counter = 0;
 
+	private HashSet<String> insertions;
+
 	public DynamoDBIndexWriter(
 			final DataAdapter<T> adapter,
 			final PrimaryIndex index,
@@ -47,6 +51,7 @@ public class DynamoDBIndexWriter<T> extends
 				closable);
 		this.client = operations.getClient();
 		this.dynamodbOperations = operations;
+		this.insertions = new HashSet<String>();
 	}
 
 	@Override
@@ -112,9 +117,24 @@ public class DynamoDBIndexWriter<T> extends
 				entry,
 				DataStoreUtils.UNCONSTRAINED_VISIBILITY);
 		if (entryInfo != null) {
-			writer.write(getWriteRequests(
-					adapterId,
-					entryInfo));
+			boolean dup = false;
+
+			for (ByteArrayId id : entryInfo.getInsertionIds()) {
+				String insertId = ByteArrayUtils.byteArrayToString(id.getBytes());
+
+				if (insertions.add(insertId) == false) {
+					dup = true;
+					System.err.println("Duplicate insert ID: " + insertId);
+					System.err.println("Index = " + ByteArrayUtils.byteArrayToString(index.getId().getBytes()));
+					break;
+				}
+			}
+
+			if (!dup) {
+				writer.write(getWriteRequests(
+						adapterId,
+						entryInfo));
+			}
 		}
 		return entryInfo;
 	}
