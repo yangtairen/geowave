@@ -34,7 +34,7 @@ public class DynamoDBIndexWriter<T> extends
 	protected final DynamoDBOperations dynamodbOperations;
 	private static long counter = 0;
 
-	private HashSet<String> insertions;
+	private static HashSet<String> dupCheck = new HashSet<String>();
 
 	public DynamoDBIndexWriter(
 			final DataAdapter<T> adapter,
@@ -51,7 +51,8 @@ public class DynamoDBIndexWriter<T> extends
 				closable);
 		this.client = operations.getClient();
 		this.dynamodbOperations = operations;
-		this.insertions = new HashSet<String>();
+
+		dupCheck.clear();
 	}
 
 	@Override
@@ -67,6 +68,7 @@ public class DynamoDBIndexWriter<T> extends
 			final byte[] adapterId,
 			final DataStoreEntryInfo ingestInfo ) {
 		final List<WriteRequest> mutations = new ArrayList<WriteRequest>();
+
 		final List<byte[]> fieldInfoBytesList = new ArrayList<>();
 		int totalLength = 0;
 		for (final FieldInfo<?> fieldInfo : ingestInfo.getFieldInfo()) {
@@ -87,22 +89,31 @@ public class DynamoDBIndexWriter<T> extends
 			idBuffer.put(ingestInfo.getDataId());
 			idBuffer.put(adapterId);
 			idBuffer.rewind();
-			map.put(
-					DynamoDBRow.GW_ID_KEY,
-					new AttributeValue().withB(idBuffer));
-			map.put(
-					DynamoDBRow.GW_PARTITION_ID_KEY,
-					new AttributeValue().withN(Long.toString(counter++ % PARTITIONS)));
-			map.put(
-					DynamoDBRow.GW_IDX_KEY,
-					new AttributeValue().withB(ByteBuffer.wrap(insertionId.getBytes())));
-			allFields.rewind();
-			map.put(
-					DynamoDBRow.GW_VALUE_KEY,
-					new AttributeValue().withB(allFields));
-			mutations.add(new WriteRequest(
-					new PutRequest(
-							map)));
+
+			// KAM: TEST ONLY - DUP CHECK
+			String uniqueId = ByteArrayUtils.byteArrayToString(idBuffer.array());
+
+			if (dupCheck.add(uniqueId) == false) {
+				System.err.println("Duplicate unique ID: " + uniqueId);
+			}
+			else {
+				map.put(
+						DynamoDBRow.GW_ID_KEY,
+						new AttributeValue().withB(idBuffer));
+				map.put(
+						DynamoDBRow.GW_PARTITION_ID_KEY,
+						new AttributeValue().withN(Long.toString(counter++ % PARTITIONS)));
+				map.put(
+						DynamoDBRow.GW_IDX_KEY,
+						new AttributeValue().withB(ByteBuffer.wrap(insertionId.getBytes())));
+				allFields.rewind();
+				map.put(
+						DynamoDBRow.GW_VALUE_KEY,
+						new AttributeValue().withB(allFields));
+				mutations.add(new WriteRequest(
+						new PutRequest(
+								map)));
+			}
 		}
 		return mutations;
 	}
@@ -116,26 +127,13 @@ public class DynamoDBIndexWriter<T> extends
 				index,
 				entry,
 				DataStoreUtils.UNCONSTRAINED_VISIBILITY);
+
 		if (entryInfo != null) {
-			boolean dup = false;
-
-			for (ByteArrayId id : entryInfo.getInsertionIds()) {
-				String insertId = ByteArrayUtils.byteArrayToString(id.getBytes());
-
-				if (insertions.add(insertId) == false) {
-					dup = true;
-					System.err.println("Duplicate insert ID: " + insertId);
-					System.err.println("Index = " + ByteArrayUtils.byteArrayToString(index.getId().getBytes()));
-					break;
-				}
-			}
-
-			if (!dup) {
-				writer.write(getWriteRequests(
-						adapterId,
-						entryInfo));
-			}
+			writer.write(getWriteRequests(
+					adapterId,
+					entryInfo));
 		}
+
 		return entryInfo;
 	}
 
