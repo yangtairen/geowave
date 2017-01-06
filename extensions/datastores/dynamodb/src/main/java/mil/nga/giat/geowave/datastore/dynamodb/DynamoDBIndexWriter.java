@@ -84,36 +84,50 @@ public class DynamoDBIndexWriter<T> extends
 		}
 		for (final ByteArrayId insertionId : ingestInfo.getInsertionIds()) {
 			final Map<String, AttributeValue> map = new HashMap<String, AttributeValue>();
+			final ByteBuffer keyBuffer = ByteBuffer.allocate(insertionId.getBytes().length
+					+ ingestInfo.getDataId().length + adapterId.length);
+			keyBuffer.put(insertionId.getBytes());
+			keyBuffer.put(ingestInfo.getDataId());
+			keyBuffer.put(adapterId);
+			keyBuffer.rewind();
+
+			// KAM: TEST ONLY - DUP CHECK
+			// String uniqueId =
+			// ByteArrayUtils.byteArrayToString(idBuffer.array());
+			//
+			// if (dupCheck.add(uniqueId) == false) {
+			// System.err.println("Duplicate unique ID: " + uniqueId);
+			// }
+			// else {
+			map.put(
+					DynamoDBRow.GW_PARTITION_ID_KEY,
+					new AttributeValue().withN(Long.toString(counter++ % PARTITIONS)));
+
+			map.put(
+					DynamoDBRow.GW_IDX_KEY,
+					new AttributeValue().withB(keyBuffer));
+
+			PutRequest putRequest = new PutRequest(
+					map);
+
 			final ByteBuffer idBuffer = ByteBuffer.allocate(ingestInfo.getDataId().length + adapterId.length + 4);
 			idBuffer.putInt(ingestInfo.getDataId().length);
 			idBuffer.put(ingestInfo.getDataId());
 			idBuffer.put(adapterId);
 			idBuffer.rewind();
 
-			// KAM: TEST ONLY - DUP CHECK
-			String uniqueId = ByteArrayUtils.byteArrayToString(idBuffer.array());
+			putRequest.addItemEntry(
+					DynamoDBRow.GW_ID_KEY,
+					new AttributeValue().withB(idBuffer));
 
-			if (dupCheck.add(uniqueId) == false) {
-				System.err.println("Duplicate unique ID: " + uniqueId);
-			}
-			else {
-				map.put(
-						DynamoDBRow.GW_ID_KEY,
-						new AttributeValue().withB(idBuffer));
-				map.put(
-						DynamoDBRow.GW_PARTITION_ID_KEY,
-						new AttributeValue().withN(Long.toString(counter++ % PARTITIONS)));
-				map.put(
-						DynamoDBRow.GW_IDX_KEY,
-						new AttributeValue().withB(ByteBuffer.wrap(insertionId.getBytes())));
-				allFields.rewind();
-				map.put(
-						DynamoDBRow.GW_VALUE_KEY,
-						new AttributeValue().withB(allFields));
-				mutations.add(new WriteRequest(
-						new PutRequest(
-								map)));
-			}
+			allFields.rewind();
+			putRequest.addItemEntry(
+					DynamoDBRow.GW_VALUE_KEY,
+					new AttributeValue().withB(allFields));
+
+			mutations.add(new WriteRequest(
+					putRequest));
+			// }
 		}
 		return mutations;
 	}
