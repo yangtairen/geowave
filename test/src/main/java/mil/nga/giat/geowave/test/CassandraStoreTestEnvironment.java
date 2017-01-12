@@ -355,7 +355,7 @@ public class CassandraStoreTestEnvironment extends
 		try {
 			// it seems sometimes one of the nodes processes is still holding
 			// onto a file, so wait a short time to be able to reliably clean up
-			Thread.sleep(1000);
+			Thread.sleep(5000);
 		}
 		catch (final InterruptedException e) {
 			LOGGER.warn(
