@@ -91,14 +91,6 @@ public class DynamoDBIndexWriter<T> extends
 			keyBuffer.put(adapterId);
 			keyBuffer.rewind();
 
-			// KAM: TEST ONLY - DUP CHECK
-			// String uniqueId =
-			// ByteArrayUtils.byteArrayToString(idBuffer.array());
-			//
-			// if (dupCheck.add(uniqueId) == false) {
-			// System.err.println("Duplicate unique ID: " + uniqueId);
-			// }
-			// else {
 			map.put(
 					DynamoDBRow.GW_PARTITION_ID_KEY,
 					new AttributeValue().withN(Long.toString(counter++ % PARTITIONS)));
@@ -127,7 +119,6 @@ public class DynamoDBIndexWriter<T> extends
 
 			mutations.add(new WriteRequest(
 					putRequest));
-			// }
 		}
 		return mutations;
 	}
