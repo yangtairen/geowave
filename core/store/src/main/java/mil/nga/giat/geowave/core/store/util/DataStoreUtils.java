@@ -804,6 +804,36 @@ public class DataStoreUtils
 		return null;
 	}
 
+	// TODO: this doesn't account for varying visibilities, so this is
+	// potentially only temporary
+	public static ByteBuffer serializeFields(
+			DataStoreEntryInfo ingestInfo ) {
+		final List<byte[]> fieldInfoBytesList = new ArrayList<>();
+		int totalLength = 0;
+		// TODO potentially another hack, but if there is only one field, don't
+		// need to write the length
+		if (ingestInfo.getFieldInfo().size() == 1) {
+			byte[] value = ingestInfo.getFieldInfo().get(
+					0).getWrittenValue();
+			fieldInfoBytesList.add(value);
+			totalLength += value.length;
+		}
+		else {
+			for (final FieldInfo<?> fieldInfo : ingestInfo.getFieldInfo()) {
+				final ByteBuffer fieldInfoBytes = ByteBuffer.allocate(4 + fieldInfo.getWrittenValue().length);
+				fieldInfoBytes.putInt(fieldInfo.getWrittenValue().length);
+				fieldInfoBytes.put(fieldInfo.getWrittenValue());
+				fieldInfoBytesList.add(fieldInfoBytes.array());
+				totalLength += fieldInfoBytes.array().length;
+			}
+		}
+		final ByteBuffer allFields = ByteBuffer.allocate(totalLength);
+		for (final byte[] bytes : fieldInfoBytesList) {
+			allFields.put(bytes);
+		}
+		return allFields;
+	}
+
 	public static ByteArrayId ensureUniqueId(
 			final byte[] id,
 			final boolean hasMetadata ) {

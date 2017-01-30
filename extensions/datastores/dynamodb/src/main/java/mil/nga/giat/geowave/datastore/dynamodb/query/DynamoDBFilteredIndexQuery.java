@@ -37,7 +37,8 @@ public abstract class DynamoDBFilteredIndexQuery extends
 		FilteredIndexQuery
 {
 	protected List<QueryFilter> clientFilters;
-	private final static Logger LOGGER = Logger.getLogger(DynamoDBFilteredIndexQuery.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			DynamoDBFilteredIndexQuery.class);
 	protected final ScanCallback<?, DynamoDBRow> scanCallback;
 
 	public DynamoDBFilteredIndexQuery(
@@ -63,7 +64,8 @@ public abstract class DynamoDBFilteredIndexQuery extends
 					0,
 					clientDedupeFilter);
 		}
-		clientFilters.addAll(queryFilters);
+		clientFilters.addAll(
+				queryFilters);
 		this.scanCallback = scanCallback;
 	}
 
@@ -82,13 +84,19 @@ public abstract class DynamoDBFilteredIndexQuery extends
 			final Integer limit ) {
 		boolean exists = false;
 		try {
-			exists = dynamodbOperations.tableExists(StringUtils.stringFromBinary(index.getId().getBytes()));
+			exists = dynamodbOperations.tableExists(
+					StringUtils.stringFromBinary(
+							index.getId().getBytes()));
 		}
 		catch (final IOException e) {
-			LOGGER.error("e");
+			LOGGER.error(
+					"table doesn't exist",
+					e);
 		}
 		if (!exists) {
-			LOGGER.warn("Table does not exist " + StringUtils.stringFromBinary(index.getId().getBytes()));
+			LOGGER.warn(
+					"Table does not exist " + StringUtils.stringFromBinary(
+							index.getId().getBytes()));
 			return new CloseableIterator.Empty();
 		}
 
@@ -97,12 +105,15 @@ public abstract class DynamoDBFilteredIndexQuery extends
 				limit);
 
 		if (results == null) {
-			LOGGER.error("Could not get scanner instance, getScanner returned null");
+			LOGGER.error(
+					"Could not get scanner instance, getScanner returned null");
 			return new CloseableIterator.Empty();
 		}
 		Iterator it = initIterator(
 				adapterStore,
-				results);
+				Iterators.transform(
+						results,
+						new WrapAsNativeRow()));
 		if ((limit != null) && (limit > 0)) {
 			it = Iterators.limit(
 					it,
@@ -114,17 +125,18 @@ public abstract class DynamoDBFilteredIndexQuery extends
 
 	protected Iterator initIterator(
 			final AdapterStore adapterStore,
-			final Iterator<Map<String, AttributeValue>> results ) {
+			final Iterator<DynamoDBRow> results ) {
 		final List<QueryFilter> filters = getAllFiltersList();
-		final QueryFilter queryFilter = filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0)
+		final QueryFilter queryFilter = filters.isEmpty() ? null : filters.size() == 1 ? filters.get(
+				0)
 				: new FilterList<QueryFilter>(
 						filters);
 
 		final Map<ByteArrayId, RowMergingDataAdapter> mergingAdapters = new HashMap<ByteArrayId, RowMergingDataAdapter>();
 		for (final ByteArrayId adapterId : adapterIds) {
-			final DataAdapter adapter = adapterStore.getAdapter(adapterId);
-			if ((adapter instanceof RowMergingDataAdapter)
-					&& (((RowMergingDataAdapter) adapter).getTransform() != null)) {
+			final DataAdapter adapter = adapterStore.getAdapter(
+					adapterId);
+			if ((adapter instanceof RowMergingDataAdapter) && (((RowMergingDataAdapter) adapter).getTransform() != null)) {
 				mergingAdapters.put(
 						adapterId,
 						(RowMergingDataAdapter) adapter);
@@ -154,7 +166,8 @@ public abstract class DynamoDBFilteredIndexQuery extends
 		// This method is so that it can be overridden to also add distributed
 		// filter list
 		final List<QueryFilter> filters = new ArrayList<QueryFilter>();
-		filters.addAll(clientFilters);
+		filters.addAll(
+				clientFilters);
 		return filters;
 	}
 

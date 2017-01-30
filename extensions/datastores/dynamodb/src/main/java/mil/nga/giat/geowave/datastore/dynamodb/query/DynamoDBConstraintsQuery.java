@@ -40,7 +40,7 @@ public class DynamoDBConstraintsQuery extends
 		DynamoDBFilteredIndexQuery
 {
 	private static final Logger LOGGER = Logger.getLogger(DynamoDBConstraintsQuery.class);
-	private static final int MAX_RANGE_DECOMPOSITION = -1;
+	private static final int MAX_RANGE_DECOMPOSITION = 1;
 	protected final ConstraintsQuery base;
 	private boolean queryFiltersEnabled;
 

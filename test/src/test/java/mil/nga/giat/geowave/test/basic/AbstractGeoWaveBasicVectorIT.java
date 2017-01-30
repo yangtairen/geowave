@@ -16,11 +16,14 @@ import org.junit.BeforeClass;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureBoundingBoxStatistics;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureNumericRangeStatistics;
+import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.ingest.GeoWaveData;
@@ -102,7 +105,7 @@ abstract public class AbstractGeoWaveBasicVectorIT
 		final mil.nga.giat.geowave.core.store.DataStore geowaveStore = getDataStorePluginOptions().createDataStore();
 		// this file is the filtered dataset (using the previous file as a
 		// filter) so use it to ensure the query worked
-		final DistributableQuery query = TestUtils.resourceToQuery(savedFilterResource);
+		final DistributableQuery query = new SpatialQuery(new GeometryFactory().toGeometry(new Envelope(-180, 180, -90 ,90)));//TestUtils.resourceToQuery(savedFilterResource);
 		try (final CloseableIterator<?> actualResults = (index == null) ? geowaveStore.query(
 				new QueryOptions(),
 				query) : geowaveStore.query(

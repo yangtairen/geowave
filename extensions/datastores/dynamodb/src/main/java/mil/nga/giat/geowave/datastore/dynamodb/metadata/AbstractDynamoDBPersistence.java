@@ -40,9 +40,11 @@ import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBOperations;
 public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 		AbstractGeowavePersistence<T>
 {
-	private final static Logger LOGGER = Logger.getLogger(AbstractDynamoDBPersistence.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			AbstractDynamoDBPersistence.class);
 	private static final String PRIMARY_ID_KEY = "I";
 	private static final String SECONDARY_ID_KEY = "S";
+	private static final String TIMESTAMP_KEY = "T";
 	private static final String VALUE_KEY = "V";
 
 	private final AmazonDynamoDBAsyncClient client;
@@ -59,7 +61,8 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 
 	protected ByteArrayId getSecondaryId(
 			final Map<String, AttributeValue> map ) {
-		final AttributeValue v = map.get(SECONDARY_ID_KEY);
+		final AttributeValue v = map.get(
+				SECONDARY_ID_KEY);
 		if (v != null) {
 			return new ByteArrayId(
 					v.getB().array());
@@ -69,7 +72,8 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 
 	protected ByteArrayId getPrimaryId(
 			final Map<String, AttributeValue> map ) {
-		final AttributeValue v = map.get(PRIMARY_ID_KEY);
+		final AttributeValue v = map.get(
+				PRIMARY_ID_KEY);
 		if (v != null) {
 			return new ByteArrayId(
 					v.getB().array());
@@ -79,7 +83,8 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 
 	protected ByteArrayId getPersistenceTypeName(
 			final Map<String, AttributeValue> map ) {
-		final AttributeValue v = map.get(PRIMARY_ID_KEY);
+		final AttributeValue v = map.get(
+				PRIMARY_ID_KEY);
 		if (v != null) {
 			return new ByteArrayId(
 					v.getB().array());
@@ -100,49 +105,81 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 		final Map<String, AttributeValue> map = new HashMap<>();
 		map.put(
 				PRIMARY_ID_KEY,
-				new AttributeValue().withB(ByteBuffer.wrap(id.getBytes())));
+				new AttributeValue().withB(
+						ByteBuffer.wrap(
+								id.getBytes())));
 		if (secondaryId != null) {
 			map.put(
 					SECONDARY_ID_KEY,
-					new AttributeValue().withB(ByteBuffer.wrap(secondaryId.getBytes())));
+					new AttributeValue().withB(
+							ByteBuffer.wrap(
+									secondaryId.getBytes())));
 		}
 		map.put(
+				TIMESTAMP_KEY,
+				new AttributeValue().withN(
+						Long.toString(
+								System.currentTimeMillis())));
+		map.put(
 				VALUE_KEY,
-				new AttributeValue().withB(ByteBuffer.wrap(PersistenceUtils.toBinary(object))));
+				new AttributeValue().withB(
+						ByteBuffer.wrap(
+								PersistenceUtils.toBinary(
+										object))));
 
-		final String tableName = dynamodbOperations.getQualifiedTableName(getTablename());
-		final Boolean tableExists = tableExistsCache.get(tableName);
+		final String tableName = dynamodbOperations.getQualifiedTableName(
+				getTablename());
+		final Boolean tableExists = tableExistsCache.get(
+				tableName);
 		if ((tableExists == null) || !tableExists) {
 			TableUtils.createTableIfNotExists(
 					client,
-					new CreateTableRequest().withTableName(
-							tableName).withAttributeDefinitions(
-							new AttributeDefinition(
-									PRIMARY_ID_KEY,
-									ScalarAttributeType.B)).withKeySchema(
-							new KeySchemaElement(
-									PRIMARY_ID_KEY,
-									KeyType.HASH)).withProvisionedThroughput(
-							new ProvisionedThroughput(
-									Long.valueOf(10),
-									Long.valueOf(10))));
+					new CreateTableRequest()
+							.withTableName(
+									tableName)
+							.withAttributeDefinitions(
+									new AttributeDefinition(
+											PRIMARY_ID_KEY,
+											ScalarAttributeType.B))
+							.withKeySchema(
+									new KeySchemaElement(
+											PRIMARY_ID_KEY,
+											KeyType.HASH))
+							.withAttributeDefinitions(
+									new AttributeDefinition(
+											TIMESTAMP_KEY,
+											ScalarAttributeType.N))
+							.withKeySchema(
+									new KeySchemaElement(
+											TIMESTAMP_KEY,
+											KeyType.RANGE))
+							.withProvisionedThroughput(
+									new ProvisionedThroughput(
+											Long.valueOf(
+													10),
+											Long.valueOf(
+													10))));
 			tableExistsCache.put(
 					tableName,
 					true);
 		}
-		client.putItem(new PutItemRequest(
-				tableName,
-				map));
+		client.putItem(
+				new PutItemRequest(
+						tableName,
+						map));
 	}
 
 	protected CloseableIterator<T> getAllObjectsWithSecondaryId(
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
-		final String tableName = dynamodbOperations.getQualifiedTableName(getTablename());
-		final Boolean tableExists = tableExistsCache.get(tableName);
+		final String tableName = dynamodbOperations.getQualifiedTableName(
+				getTablename());
+		final Boolean tableExists = tableExistsCache.get(
+				tableName);
 		if ((tableExists == null) || !tableExists) {
 			try {
-				if (!dynamodbOperations.tableExists(tableName)) {
+				if (!dynamodbOperations.tableExists(
+						tableName)) {
 					return new CloseableIterator.Wrapper<>(
 							Iterators.emptyIterator());
 				}
@@ -155,16 +192,20 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 						Iterators.emptyIterator());
 			}
 		}
-		final ScanResult result = client.scan(new ScanRequest(
-				dynamodbOperations.getQualifiedTableName(getTablename())).addScanFilterEntry(
-				SECONDARY_ID_KEY,
-				new Condition().withAttributeValueList(
-						new AttributeValue().withB(ByteBuffer.wrap(secondaryId.getBytes()))).withComparisonOperator(
-						ComparisonOperator.EQ)));
+		final ScanResult result = client.scan(
+				new ScanRequest(
+						dynamodbOperations.getQualifiedTableName(
+								getTablename())).addScanFilterEntry(
+										SECONDARY_ID_KEY,
+										new Condition().withAttributeValueList(
+												new AttributeValue().withB(
+														ByteBuffer.wrap(
+																secondaryId.getBytes())))
+												.withComparisonOperator(
+														ComparisonOperator.EQ)));
 		return new CloseableIterator.Wrapper<T>(
-				Lists.transform(
-						result.getItems(),
-						new EntryToValueFunction()).iterator());
+				getNativeIteratorWrapper(
+						result.getItems().iterator()));
 	}
 
 	@Override
@@ -189,22 +230,24 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 				authorizations);
 		final Iterator<Map<String, AttributeValue>> it = results.iterator();
 		if (!it.hasNext()) {
-			LOGGER.warn("Object '" + getCombinedId(
-					primaryId,
-					secondaryId).getString() + "' not found");
+			LOGGER.warn(
+					"Object '" + getCombinedId(
+							primaryId,
+							secondaryId).getString() + "' not found");
 			return null;
 		}
 		final Map<String, AttributeValue> entry = it.next();
-		return entryToValue(entry);
+		return entryToValue(
+				entry);
 	}
 
 	protected CloseableIterator<T> getObjects(
 			final String... authorizations ) {
-		final List<Map<String, AttributeValue>> results = getFullResults(authorizations);
+		final List<Map<String, AttributeValue>> results = getFullResults(
+				authorizations);
 		return new CloseableIterator.Wrapper<T>(
-				Lists.transform(
-						results,
-						new EntryToValueFunction()).iterator());
+				getNativeIteratorWrapper(
+						results.iterator()));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -216,8 +259,10 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 				Persistable.class);
 		if (result != null) {
 			addObjectToCache(
-					getPrimaryId(result),
-					getSecondaryId(result),
+					getPrimaryId(
+							result),
+					getSecondaryId(
+							result),
 					result);
 		}
 		return result;
@@ -235,11 +280,14 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
-		final String tableName = dynamodbOperations.getQualifiedTableName(getTablename());
-		final Boolean tableExists = tableExistsCache.get(tableName);
+		final String tableName = dynamodbOperations.getQualifiedTableName(
+				getTablename());
+		final Boolean tableExists = tableExistsCache.get(
+				tableName);
 		if ((tableExists == null) || !tableExists) {
 			try {
-				if (!dynamodbOperations.tableExists(tableName)) {
+				if (!dynamodbOperations.tableExists(
+						tableName)) {
 					return Collections.EMPTY_LIST;
 				}
 			}
@@ -256,18 +304,23 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 			if (secondaryId != null) {
 				query.addQueryFilterEntry(
 						SECONDARY_ID_KEY,
-						new Condition()
-								.withAttributeValueList(
-										new AttributeValue().withB(ByteBuffer.wrap(secondaryId.getBytes())))
+						new Condition().withAttributeValueList(
+								new AttributeValue().withB(
+										ByteBuffer.wrap(
+												secondaryId.getBytes())))
 								.withComparisonOperator(
 										ComparisonOperator.EQ));
 			}
 			query.addKeyConditionsEntry(
 					PRIMARY_ID_KEY,
 					new Condition().withAttributeValueList(
-							new AttributeValue().withB(ByteBuffer.wrap(primaryId.getBytes()))).withComparisonOperator(
-							ComparisonOperator.EQ));
-			final QueryResult result = client.query(query);
+							new AttributeValue().withB(
+									ByteBuffer.wrap(
+											primaryId.getBytes())))
+							.withComparisonOperator(
+									ComparisonOperator.EQ));
+			final QueryResult result = client.query(
+					query);
 			return result.getItems();
 		}
 
@@ -281,13 +334,15 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 		if (secondaryId != null) {
 			scan.addScanFilterEntry(
 					SECONDARY_ID_KEY,
-					new Condition()
-							.withAttributeValueList(
-									new AttributeValue().withB(ByteBuffer.wrap(secondaryId.getBytes())))
+					new Condition().withAttributeValueList(
+							new AttributeValue().withB(
+									ByteBuffer.wrap(
+											secondaryId.getBytes())))
 							.withComparisonOperator(
 									ComparisonOperator.EQ));
 		}
-		final ScanResult result = client.scan(scan);
+		final ScanResult result = client.scan(
+				scan);
 		return result.getItems();
 	}
 
@@ -325,7 +380,8 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 		final Iterator<Map<String, AttributeValue>> it = results.iterator();
 		if (it.hasNext()) {
 			// may as well cache the result
-			return (entryToValue(it.next()) != null);
+			return (entryToValue(
+					it.next()) != null);
 		}
 		else {
 			return false;
@@ -333,14 +389,37 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 
 	}
 
-	private class EntryToValueFunction implements
-			Function<Map<String, AttributeValue>, T>
+	protected Iterator<T> getNativeIteratorWrapper(
+			final Iterator<Map<String, AttributeValue>> results ) {
+		return new NativeIteratorWrapper(
+				results);
+	}
+
+	private class NativeIteratorWrapper implements
+			Iterator<T>
 	{
+		final private Iterator<Map<String, AttributeValue>> it;
+
+		private NativeIteratorWrapper(
+				final Iterator<Map<String, AttributeValue>> it ) {
+			this.it = it;
+		}
 
 		@Override
-		public T apply(
-				final Map<String, AttributeValue> entry ) {
-			return entryToValue(entry);
+		public boolean hasNext() {
+			return it.hasNext();
+		}
+
+		@Override
+		public T next() {
+			final Map<String, AttributeValue> row = it.next();
+			return entryToValue(
+					row);
+		}
+
+		@Override
+		public void remove() {
+			it.remove();
 		}
 
 	}
