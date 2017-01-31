@@ -22,7 +22,8 @@ import mil.nga.giat.geowave.core.store.base.Writer;
 public class DynamoDBWriter implements
 		Writer<WriteRequest>
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(DynamoDBWriter.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(
+			DynamoDBWriter.class);
 	private static final int NUM_ITEMS = 25;
 
 	private final List<WriteRequest> batchedItems = new ArrayList<>();
@@ -46,7 +47,8 @@ public class DynamoDBWriter implements
 	public void write(
 			final Iterable<WriteRequest> items ) {
 		for (final WriteRequest item : items) {
-			write(item);
+			write(
+					item);
 		}
 	}
 
@@ -54,14 +56,14 @@ public class DynamoDBWriter implements
 	public void write(
 			final WriteRequest item ) {
 		synchronized (batchedItems) {
+			batchedItems.add(
+					item);
 			if (batchedItems.size() >= NUM_ITEMS) {
 				do {
-					writeBatch(true);
+					writeBatch(
+							true);
 				}
 				while (batchedItems.size() >= NUM_ITEMS);
-			}
-			else {
-				batchedItems.add(item);
 			}
 		}
 	}
@@ -76,7 +78,7 @@ public class DynamoDBWriter implements
 		else {
 			batch = batchedItems.subList(
 					0,
-					NUM_ITEMS);
+					NUM_ITEMS + 1);
 		}
 		final Map<String, List<WriteRequest>> writes = new HashMap<>();
 		writes.put(
@@ -108,9 +110,11 @@ public class DynamoDBWriter implements
 		// });
 		// }
 		// else {
-		final BatchWriteItemResult response = client.batchWriteItem(new BatchWriteItemRequest(
-				writes));
-		retry(response.getUnprocessedItems());
+		final BatchWriteItemResult response = client.batchWriteItem(
+				new BatchWriteItemRequest(
+						writes));
+		retry(
+				response.getUnprocessedItems());
 		// }
 		batch.clear();
 	}
@@ -132,7 +136,8 @@ public class DynamoDBWriter implements
 	public void flush() {
 		synchronized (batchedItems) {
 			do {
-				writeBatch(false);
+				writeBatch(
+						false);
 			}
 			while (!batchedItems.isEmpty());
 		}

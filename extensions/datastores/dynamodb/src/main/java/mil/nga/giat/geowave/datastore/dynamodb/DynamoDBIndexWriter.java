@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +31,6 @@ public class DynamoDBIndexWriter<T> extends
 	protected final DynamoDBOperations dynamodbOperations;
 	private static long counter = 0;
 
-	private static HashSet<String> dupCheck = new HashSet<String>();
-
 	public DynamoDBIndexWriter(
 			final DataAdapter<T> adapter,
 			final PrimaryIndex index,
@@ -49,8 +46,6 @@ public class DynamoDBIndexWriter<T> extends
 				closable);
 		this.client = operations.getClient();
 		this.dynamodbOperations = operations;
-
-		dupCheck.clear();
 	}
 
 	@Override

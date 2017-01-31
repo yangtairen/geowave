@@ -26,9 +26,8 @@ import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.amazonaws.services.dynamodbv2.model.ScanRequest;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
 import com.amazonaws.services.dynamodbv2.util.TableUtils;
-import com.google.common.base.Function;
+import com.amazonaws.services.dynamodbv2.util.TableUtils.TableNeverTransitionedToStateException;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Persistable;
@@ -129,39 +128,53 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 
 		final String tableName = dynamodbOperations.getQualifiedTableName(
 				getTablename());
-		final Boolean tableExists = tableExistsCache.get(
-				tableName);
-		if ((tableExists == null) || !tableExists) {
-			TableUtils.createTableIfNotExists(
-					client,
-					new CreateTableRequest()
-							.withTableName(
-									tableName)
-							.withAttributeDefinitions(
-									new AttributeDefinition(
-											PRIMARY_ID_KEY,
-											ScalarAttributeType.B))
-							.withKeySchema(
-									new KeySchemaElement(
-											PRIMARY_ID_KEY,
-											KeyType.HASH))
-							.withAttributeDefinitions(
-									new AttributeDefinition(
-											TIMESTAMP_KEY,
-											ScalarAttributeType.N))
-							.withKeySchema(
-									new KeySchemaElement(
-											TIMESTAMP_KEY,
-											KeyType.RANGE))
-							.withProvisionedThroughput(
-									new ProvisionedThroughput(
-											Long.valueOf(
-													10),
-											Long.valueOf(
-													10))));
-			tableExistsCache.put(
-					tableName,
-					true);
+		synchronized (tableExistsCache) {
+			final Boolean tableExists = tableExistsCache.get(
+					tableName);
+			if ((tableExists == null) || !tableExists) {
+				final boolean tableCreated = TableUtils.createTableIfNotExists(
+						client,
+						new CreateTableRequest()
+								.withTableName(
+										tableName)
+								.withAttributeDefinitions(
+										new AttributeDefinition(
+												PRIMARY_ID_KEY,
+												ScalarAttributeType.B))
+								.withKeySchema(
+										new KeySchemaElement(
+												PRIMARY_ID_KEY,
+												KeyType.HASH))
+								.withAttributeDefinitions(
+										new AttributeDefinition(
+												TIMESTAMP_KEY,
+												ScalarAttributeType.N))
+								.withKeySchema(
+										new KeySchemaElement(
+												TIMESTAMP_KEY,
+												KeyType.RANGE))
+								.withProvisionedThroughput(
+										new ProvisionedThroughput(
+												Long.valueOf(
+														5),
+												Long.valueOf(
+														5))));
+				if (tableCreated) {
+					try {
+						TableUtils.waitUntilActive(
+								client,
+								tableName);
+					}
+					catch (TableNeverTransitionedToStateException | InterruptedException e) {
+						LOGGER.error(
+								"Unable to wait for active table '" + tableName + "'",
+								e);
+					}
+				}
+				tableExistsCache.put(
+						tableName,
+						true);
+			}
 		}
 		client.putItem(
 				new PutItemRequest(
@@ -197,10 +210,11 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 						dynamodbOperations.getQualifiedTableName(
 								getTablename())).addScanFilterEntry(
 										SECONDARY_ID_KEY,
-										new Condition().withAttributeValueList(
-												new AttributeValue().withB(
-														ByteBuffer.wrap(
-																secondaryId.getBytes())))
+										new Condition()
+												.withAttributeValueList(
+														new AttributeValue().withB(
+																ByteBuffer.wrap(
+																		secondaryId.getBytes())))
 												.withComparisonOperator(
 														ComparisonOperator.EQ)));
 		return new CloseableIterator.Wrapper<T>(
@@ -304,19 +318,21 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 			if (secondaryId != null) {
 				query.addQueryFilterEntry(
 						SECONDARY_ID_KEY,
-						new Condition().withAttributeValueList(
-								new AttributeValue().withB(
-										ByteBuffer.wrap(
-												secondaryId.getBytes())))
+						new Condition()
+								.withAttributeValueList(
+										new AttributeValue().withB(
+												ByteBuffer.wrap(
+														secondaryId.getBytes())))
 								.withComparisonOperator(
 										ComparisonOperator.EQ));
 			}
 			query.addKeyConditionsEntry(
 					PRIMARY_ID_KEY,
-					new Condition().withAttributeValueList(
-							new AttributeValue().withB(
-									ByteBuffer.wrap(
-											primaryId.getBytes())))
+					new Condition()
+							.withAttributeValueList(
+									new AttributeValue().withB(
+											ByteBuffer.wrap(
+													primaryId.getBytes())))
 							.withComparisonOperator(
 									ComparisonOperator.EQ));
 			final QueryResult result = client.query(
@@ -334,10 +350,11 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 		if (secondaryId != null) {
 			scan.addScanFilterEntry(
 					SECONDARY_ID_KEY,
-					new Condition().withAttributeValueList(
-							new AttributeValue().withB(
-									ByteBuffer.wrap(
-											secondaryId.getBytes())))
+					new Condition()
+							.withAttributeValueList(
+									new AttributeValue().withB(
+											ByteBuffer.wrap(
+													secondaryId.getBytes())))
 							.withComparisonOperator(
 									ComparisonOperator.EQ));
 		}

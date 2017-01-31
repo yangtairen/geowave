@@ -132,8 +132,8 @@ public class GeoWaveBasicSpatialVectorIT extends
 					new URL[] {
 						new File(
 								HAIL_EXPECTED_POLYGON_FILTER_RESULTS_FILE).toURI().toURL(),
-						new File(
-								TORNADO_TRACKS_EXPECTED_POLYGON_FILTER_RESULTS_FILE).toURI().toURL()
+//						new File(
+//								TORNADO_TRACKS_EXPECTED_POLYGON_FILTER_RESULTS_FILE).toURI().toURL()
 					},
 					TestUtils.DEFAULT_SPATIAL_INDEX,
 					"polygon constraint only");

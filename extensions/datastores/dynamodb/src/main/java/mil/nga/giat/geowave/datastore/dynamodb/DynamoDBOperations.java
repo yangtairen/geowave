@@ -19,6 +19,7 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.amazonaws.services.dynamodbv2.model.TableStatus;
 import com.amazonaws.services.dynamodbv2.util.TableUtils;
+import com.amazonaws.services.dynamodbv2.util.TableUtils.TableNeverTransitionedToStateException;
 
 import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.base.Writer;
@@ -26,7 +27,8 @@ import mil.nga.giat.geowave.core.store.base.Writer;
 public class DynamoDBOperations implements
 		DataStoreOperations
 {
-	private final Logger LOGGER = LoggerFactory.getLogger(DynamoDBOperations.class);
+	private final Logger LOGGER = LoggerFactory.getLogger(
+			DynamoDBOperations.class);
 	private final AmazonDynamoDBAsyncClient client;
 	private final String gwNamespace;
 	private final DynamoDBOptions options;
@@ -60,8 +62,12 @@ public class DynamoDBOperations implements
 			throws IOException {
 		try {
 			return TableStatus.ACTIVE.name().equals(
-					client.describeTable(
-							getQualifiedTableName(tableName)).getTable().getTableStatus());
+					client
+							.describeTable(
+									getQualifiedTableName(
+											tableName))
+							.getTable()
+							.getTableStatus());
 		}
 		catch (final AmazonDynamoDBException e) {
 			LOGGER.info(
@@ -76,9 +82,11 @@ public class DynamoDBOperations implements
 			throws Exception {
 		final ListTablesResult tables = client.listTables();
 		for (final String tableName : tables.getTableNames()) {
-			if ((gwNamespace == null) || tableName.startsWith(gwNamespace)) {
-				client.deleteTable(new DeleteTableRequest(
-						tableName));
+			if ((gwNamespace == null) || tableName.startsWith(
+					gwNamespace)) {
+				client.deleteTable(
+						new DeleteTableRequest(
+								tableName));
 			}
 		}
 	}
@@ -86,35 +94,57 @@ public class DynamoDBOperations implements
 	public Writer createWriter(
 			final String tableName,
 			final boolean createTable ) {
-		final String qName = getQualifiedTableName(tableName);
+		final String qName = getQualifiedTableName(
+				tableName);
 		final DynamoDBWriter writer = new DynamoDBWriter(
 				qName,
 				client);
 		if (createTable) {
-			final Boolean tableExists = tableExistsCache.get(qName);
-			if ((tableExists == null) || !tableExists) {
-				TableUtils.createTableIfNotExists(
-						client,
-						new CreateTableRequest().withTableName(
-								qName).withAttributeDefinitions(
-								new AttributeDefinition(
-										DynamoDBRow.GW_PARTITION_ID_KEY,
-										ScalarAttributeType.N),
-								new AttributeDefinition(
-										DynamoDBRow.GW_RANGE_KEY,
-										ScalarAttributeType.B)).withKeySchema(
-								new KeySchemaElement(
-										DynamoDBRow.GW_PARTITION_ID_KEY,
-										KeyType.HASH),
-								new KeySchemaElement(
-										DynamoDBRow.GW_RANGE_KEY,
-										KeyType.RANGE)).withProvisionedThroughput(
-								new ProvisionedThroughput(
-										Long.valueOf(options.getReadCapacity()),
-										Long.valueOf(options.getWriteCapacity()))));
-				tableExistsCache.put(
-						qName,
-						true);
+			synchronized (tableExistsCache) {
+				final Boolean tableExists = tableExistsCache.get(
+						qName);
+				if ((tableExists == null) || !tableExists) {
+					boolean tableCreated = TableUtils.createTableIfNotExists(
+							client,
+							new CreateTableRequest()
+									.withTableName(
+											qName)
+									.withAttributeDefinitions(
+											new AttributeDefinition(
+													DynamoDBRow.GW_PARTITION_ID_KEY,
+													ScalarAttributeType.N),
+											new AttributeDefinition(
+													DynamoDBRow.GW_RANGE_KEY,
+													ScalarAttributeType.B))
+									.withKeySchema(
+											new KeySchemaElement(
+													DynamoDBRow.GW_PARTITION_ID_KEY,
+													KeyType.HASH),
+											new KeySchemaElement(
+													DynamoDBRow.GW_RANGE_KEY,
+													KeyType.RANGE))
+									.withProvisionedThroughput(
+											new ProvisionedThroughput(
+													Long.valueOf(
+															options.getReadCapacity()),
+													Long.valueOf(
+															options.getWriteCapacity()))));
+					if (tableCreated) {
+						try {
+							TableUtils.waitUntilActive(
+									client,
+									qName);
+						}
+						catch (TableNeverTransitionedToStateException | InterruptedException e) {
+							LOGGER.error(
+									"Unable to wait for active table '" + tableName + "'",
+									e);
+						}
+					}
+					tableExistsCache.put(
+							qName,
+							true);
+				}
 			}
 		}
 		return writer;

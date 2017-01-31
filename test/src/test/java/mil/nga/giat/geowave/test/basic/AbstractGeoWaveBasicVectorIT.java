@@ -105,7 +105,7 @@ abstract public class AbstractGeoWaveBasicVectorIT
 		final mil.nga.giat.geowave.core.store.DataStore geowaveStore = getDataStorePluginOptions().createDataStore();
 		// this file is the filtered dataset (using the previous file as a
 		// filter) so use it to ensure the query worked
-		final DistributableQuery query = new SpatialQuery(new GeometryFactory().toGeometry(new Envelope(-180, 180, -90 ,90)));//TestUtils.resourceToQuery(savedFilterResource);
+		final DistributableQuery query = TestUtils.resourceToQuery(savedFilterResource);
 		try (final CloseableIterator<?> actualResults = (index == null) ? geowaveStore.query(
 				new QueryOptions(),
 				query) : geowaveStore.query(
