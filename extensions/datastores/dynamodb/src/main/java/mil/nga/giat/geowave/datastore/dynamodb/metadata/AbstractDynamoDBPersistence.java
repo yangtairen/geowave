@@ -250,9 +250,8 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 							secondaryId).getString() + "' not found");
 			return null;
 		}
-		final Map<String, AttributeValue> entry = it.next();
-		return entryToValue(
-				entry);
+		return getNativeIteratorWrapper(
+				results.iterator()).next();
 	}
 
 	protected CloseableIterator<T> getObjects(

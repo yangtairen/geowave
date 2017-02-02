@@ -240,8 +240,7 @@ abstract public class AbstractGeoWaveBasicVectorIT
 			final PrimaryIndex index,
 			final boolean multithreaded ) {
 		// In the multithreaded case, only test min/max and count. Stats will be
-		// ingested
-		// in a different order and will not match.
+		// ingested/ in a different order and will not match.
 		final LocalFileIngestPlugin<SimpleFeature> localFileIngest = new GeoToolsVectorDataStoreIngestPlugin(
 				Filter.INCLUDE);
 		final Map<ByteArrayId, StatisticsCache> statsCache = new HashMap<ByteArrayId, StatisticsCache>();

@@ -15,6 +15,7 @@ import com.amazonaws.services.dynamodbv2.model.WriteRequest;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
@@ -60,7 +61,8 @@ public class DynamoDBIndexWriter<T> extends
 
 	private static <T> List<WriteRequest> getWriteRequests(
 			final byte[] adapterId,
-			final DataStoreEntryInfo ingestInfo ) {
+			final DataStoreEntryInfo ingestInfo ,
+			boolean ensureUniqueId) {
 		final List<WriteRequest> mutations = new ArrayList<WriteRequest>();
 
 		final ByteBuffer allFields = DataStoreUtils.serializeFields(
@@ -68,18 +70,27 @@ public class DynamoDBIndexWriter<T> extends
 		for (final ByteArrayId insertionId : ingestInfo.getInsertionIds()) {
 			final Map<String, AttributeValue> map = new HashMap<String, AttributeValue>();
 			final byte[] insertionIdBytes = insertionId.getBytes();
+			byte[] uniqueDataId;
+			if (ensureUniqueId) {
+				uniqueDataId = DataStoreUtils.ensureUniqueId(
+						ingestInfo.getDataId(),
+						false).getBytes();
+			}
+			else {
+				uniqueDataId = ingestInfo.getDataId();
+			}
 			final ByteBuffer rangeKeyBuffer = ByteBuffer.allocate(
-					insertionIdBytes.length + ingestInfo.getDataId().length + adapterId.length + 8);
+					insertionIdBytes.length + uniqueDataId.length + adapterId.length + 8);
 			rangeKeyBuffer.put(
 					insertionIdBytes);
 			rangeKeyBuffer.put(
 					adapterId);
 			rangeKeyBuffer.put(
-					ingestInfo.getDataId());
+					uniqueDataId);
 			rangeKeyBuffer.putInt(
 					adapterId.length);
 			rangeKeyBuffer.putInt(
-					ingestInfo.getDataId().length);
+					uniqueDataId.length);
 			rangeKeyBuffer.rewind();
 
 			map.put(
@@ -119,7 +130,9 @@ public class DynamoDBIndexWriter<T> extends
 			writer.write(
 					getWriteRequests(
 							adapterId,
-							entryInfo));
+							entryInfo,
+							(adapter instanceof RowMergingDataAdapter)
+							&& (((RowMergingDataAdapter) adapter).getTransform() != null)));
 		}
 
 		return entryInfo;

@@ -16,6 +16,8 @@ import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.amazonaws.services.dynamodbv2.model.QueryRequest;
 import com.amazonaws.services.dynamodbv2.model.QueryResult;
+import com.amazonaws.services.dynamodbv2.model.ScanRequest;
+import com.amazonaws.services.dynamodbv2.model.ScanResult;
 import com.google.common.collect.Iterators;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -27,6 +29,8 @@ import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBIndexWriter;
 import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBOperations;
 import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBRow;
+import mil.nga.giat.geowave.datastore.dynamodb.util.LazyPaginatedQuery;
+import mil.nga.giat.geowave.datastore.dynamodb.util.LazyPaginatedScan;
 
 /**
  * This class is used internally to perform query operations against an DynamoDB
@@ -87,20 +91,12 @@ abstract public class DynamoDBQuery
 	protected Iterator<Map<String, AttributeValue>> getResults(
 			final double[] maxResolutionSubsamplingPerDimension,
 			final Integer limit ) {
-		try {
-			Thread.sleep(
-					5000);
-		}
-		catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		final List<ByteArrayRange> ranges = getRanges();
 		final String tableName = dynamodbOperations.getQualifiedTableName(
 				StringUtils.stringFromBinary(
 						index.getId().getBytes()));
-		final List<QueryRequest> requests = new ArrayList<>();
-		if (ranges != null) {
+		if ((ranges != null) && !ranges.isEmpty()) {
+			final List<QueryRequest> requests = new ArrayList<>();
 			if (ranges.size() == 1) {
 				final List<QueryRequest> queries = getPartitionRequests(
 						tableName);
@@ -134,12 +130,20 @@ abstract public class DynamoDBQuery
 							addQueryRanges(
 									tableName,
 									r))));
+
+			return Iterators.concat(
+					requests.parallelStream().map(
+							this::executeQueryRequest).iterator());
 		}
-
-		return Iterators.concat(
-				requests.parallelStream().map(
-						this::executeQueryRequest).iterator());
-
+		// query everything
+		final ScanRequest request = new ScanRequest(
+				tableName);
+		final ScanResult scanResult = dynamodbOperations.getClient().scan(
+				request);
+		return new LazyPaginatedScan(
+				scanResult,
+				request,
+				dynamodbOperations.getClient());
 	}
 
 	private List<QueryRequest> addQueryRanges(
@@ -192,7 +196,7 @@ abstract public class DynamoDBQuery
 			final QueryRequest queryRequest ) {
 		final QueryResult result = dynamodbOperations.getClient().query(
 				queryRequest);
-		return new LazyQueryPagination(
+		return new LazyPaginatedQuery(
 				result,
 				queryRequest,
 				dynamodbOperations.getClient());
@@ -200,43 +204,5 @@ abstract public class DynamoDBQuery
 
 	public String[] getAdditionalAuthorizations() {
 		return authorizations;
-	}
-
-	private static class LazyQueryPagination extends
-			LazyIteratorChain<Map<String, AttributeValue>>
-	{
-		private QueryResult currentResult;
-		private final QueryRequest request;
-		private final AmazonDynamoDBAsyncClient dynamoDBClient;
-
-		public LazyQueryPagination(
-				final QueryResult currentResult,
-				final QueryRequest request,
-				final AmazonDynamoDBAsyncClient dynamoDBClient ) {
-			this.currentResult = currentResult;
-			this.request = request;
-			this.dynamoDBClient = dynamoDBClient;
-		}
-
-		@Override
-		protected Iterator<? extends Map<String, AttributeValue>> nextIterator(
-				final int count ) {
-			// the first iterator should be the initial results
-			if (count == 1) {
-				return currentResult.getItems().iterator();
-			}
-			// subsequent chained iterators will be obtained from dynamoDB
-			// pagination
-			if (currentResult.getLastEvaluatedKey() == null || currentResult.getLastEvaluatedKey().isEmpty()) {
-				return null;
-			}
-			else {
-				request.setExclusiveStartKey(
-						currentResult.getLastEvaluatedKey());
-				currentResult = dynamoDBClient.query(
-						request);
-				return currentResult.getItems().iterator();
-			}
-		}
 	}
 }

@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.google.common.base.Function;
 
 import mil.nga.giat.geowave.core.store.entities.NativeGeoWaveRow;
 
@@ -23,6 +24,10 @@ public class DynamoDBRow implements
 	public DynamoDBRow(
 			final Map<String, AttributeValue> objMap ) {
 		this.objMap = objMap;
+	}
+
+	public Map<String, AttributeValue> getAttributeMapping() {
+		return objMap;
 	}
 
 	@Override
@@ -45,6 +50,9 @@ public class DynamoDBRow implements
 
 	@Override
 	public byte[] getFieldMask() {
+		if(!objMap.containsKey(GW_FIELD_MASK_KEY)){
+			return null;
+		}
 		return objMap.get(
 				GW_FIELD_MASK_KEY).getB().array();
 	}
@@ -74,6 +82,19 @@ public class DynamoDBRow implements
 					adapterId);
 			rangeKey.get(
 					dataId);
+			rangeKey.rewind();
 		}
+	}
+
+	public static class GuavaRowTranslationHelper implements
+			Function<Map<String, AttributeValue>, DynamoDBRow>
+	{
+		@Override
+		public DynamoDBRow apply(
+				final Map<String, AttributeValue> input ) {
+			return new DynamoDBRow(
+					input);
+		}
+
 	}
 }

@@ -11,7 +11,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -31,6 +30,7 @@ import mil.nga.giat.geowave.core.store.util.MergingEntryIterator;
 import mil.nga.giat.geowave.core.store.util.NativeEntryIteratorWrapper;
 import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBOperations;
 import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBRow;
+import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBRow.GuavaRowTranslationHelper;
 
 public abstract class DynamoDBFilteredIndexQuery extends
 		DynamoDBQuery implements
@@ -113,7 +113,7 @@ public abstract class DynamoDBFilteredIndexQuery extends
 				adapterStore,
 				Iterators.transform(
 						results,
-						new WrapAsNativeRow()));
+						new GuavaRowTranslationHelper()));
 		if ((limit != null) && (limit > 0)) {
 			it = Iterators.limit(
 					it,
@@ -136,7 +136,8 @@ public abstract class DynamoDBFilteredIndexQuery extends
 		for (final ByteArrayId adapterId : adapterIds) {
 			final DataAdapter adapter = adapterStore.getAdapter(
 					adapterId);
-			if ((adapter instanceof RowMergingDataAdapter) && (((RowMergingDataAdapter) adapter).getTransform() != null)) {
+			if ((adapter instanceof RowMergingDataAdapter)
+					&& (((RowMergingDataAdapter) adapter).getTransform() != null)) {
 				mergingAdapters.put(
 						adapterId,
 						(RowMergingDataAdapter) adapter);
@@ -169,17 +170,5 @@ public abstract class DynamoDBFilteredIndexQuery extends
 		filters.addAll(
 				clientFilters);
 		return filters;
-	}
-
-	public static class WrapAsNativeRow implements
-			Function<Map<String, AttributeValue>, DynamoDBRow>
-	{
-		@Override
-		public DynamoDBRow apply(
-				final Map<String, AttributeValue> input ) {
-			return new DynamoDBRow(
-					input);
-		}
-
 	}
 }

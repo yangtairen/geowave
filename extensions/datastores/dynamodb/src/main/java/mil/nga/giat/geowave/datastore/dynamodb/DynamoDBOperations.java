@@ -2,7 +2,11 @@ package mil.nga.giat.geowave.datastore.dynamodb;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,19 +14,29 @@ import org.slf4j.LoggerFactory;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
 import com.amazonaws.services.dynamodbv2.model.AmazonDynamoDBException;
 import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
+import com.amazonaws.services.dynamodbv2.model.DeleteItemResult;
 import com.amazonaws.services.dynamodbv2.model.DeleteTableRequest;
 import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
+import com.amazonaws.services.dynamodbv2.model.ScanRequest;
+import com.amazonaws.services.dynamodbv2.model.ScanResult;
 import com.amazonaws.services.dynamodbv2.model.TableStatus;
 import com.amazonaws.services.dynamodbv2.util.TableUtils;
 import com.amazonaws.services.dynamodbv2.util.TableUtils.TableNeverTransitionedToStateException;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Maps;
 
+import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.base.Writer;
+import mil.nga.giat.geowave.datastore.dynamodb.DynamoDBRow.GuavaRowTranslationHelper;
+import mil.nga.giat.geowave.datastore.dynamodb.util.LazyPaginatedScan;
 
 public class DynamoDBOperations implements
 		DataStoreOperations
@@ -40,7 +54,6 @@ public class DynamoDBOperations implements
 		client = DynamoDBClientPool.getInstance().getClient(
 				options);
 		gwNamespace = options.getGeowaveNamespace();
-
 	}
 
 	public DynamoDBOptions getOptions() {
@@ -54,6 +67,49 @@ public class DynamoDBOperations implements
 	public String getQualifiedTableName(
 			final String tableName ) {
 		return gwNamespace == null ? tableName : gwNamespace + "_" + tableName;
+	}
+
+	public Iterator<DynamoDBRow> getRows(
+			final String tableName,
+			final byte[][] dataIds,
+			final byte[] adapterId,
+			final String... additionalAuthorizations ) {
+		final String qName = getQualifiedTableName(
+				tableName);
+		final ByteArrayId adapterIdObj = new ByteArrayId(
+				adapterId);
+		final Set<ByteArrayId> dataIdsSet = new HashSet<ByteArrayId>(
+				dataIds.length);
+		for (int i = 0; i < dataIds.length; i++) {
+			dataIdsSet.add(
+					new ByteArrayId(
+							dataIds[i]));
+		}
+		final ScanRequest request = new ScanRequest(
+				qName);
+		final ScanResult scanResult = client.scan(
+				request);
+		final Iterator<DynamoDBRow> everything = Iterators.transform(
+				new LazyPaginatedScan(
+						scanResult,
+						request,
+						client),
+				new GuavaRowTranslationHelper());
+		return Iterators.filter(
+				everything,
+				new Predicate<DynamoDBRow>() {
+
+					@Override
+					public boolean apply(
+							final DynamoDBRow input ) {
+						return dataIdsSet.contains(
+								new ByteArrayId(
+										input.getDataId()))
+								&& new ByteArrayId(
+										input.getAdapterId()).equals(
+												adapterIdObj);
+					}
+				});
 	}
 
 	@Override
@@ -91,6 +147,28 @@ public class DynamoDBOperations implements
 		}
 	}
 
+	public boolean deleteRow(
+			final String tableName,
+			final DynamoDBRow row,
+			final String... additionalAuthorizations ) {
+		DeleteItemResult result = client.deleteItem(
+				getQualifiedTableName(
+						tableName),
+				Maps.filterEntries(
+						row.getAttributeMapping(),
+						new Predicate<Entry<String, AttributeValue>>() {
+							@Override
+							public boolean apply(
+									final Entry<String, AttributeValue> input ) {
+								return DynamoDBRow.GW_PARTITION_ID_KEY.equals(
+										input.getKey())
+										|| DynamoDBRow.GW_RANGE_KEY.equals(
+												input.getKey());
+							}
+						}));
+		return result != null && result.getAttributes() != null && !result.getAttributes().isEmpty();
+	}
+
 	public Writer createWriter(
 			final String tableName,
 			final boolean createTable ) {
@@ -104,7 +182,7 @@ public class DynamoDBOperations implements
 				final Boolean tableExists = tableExistsCache.get(
 						qName);
 				if ((tableExists == null) || !tableExists) {
-					boolean tableCreated = TableUtils.createTableIfNotExists(
+					final boolean tableCreated = TableUtils.createTableIfNotExists(
 							client,
 							new CreateTableRequest()
 									.withTableName(
