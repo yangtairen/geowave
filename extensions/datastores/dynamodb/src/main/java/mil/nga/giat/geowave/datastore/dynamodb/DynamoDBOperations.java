@@ -45,7 +45,7 @@ public class DynamoDBOperations implements
 	private final AmazonDynamoDBAsyncClient client;
 	private final String gwNamespace;
 	private final DynamoDBOptions options;
-	private static Map<String, Boolean> tableExistsCache = new HashMap<>();
+	public static Map<String, Boolean> tableExistsCache = new HashMap<>();
 
 	public DynamoDBOperations(
 			final DynamoDBOptions options ) {
@@ -132,6 +132,7 @@ public class DynamoDBOperations implements
 						tableName));
 			}
 		}
+		tableExistsCache.clear();
 	}
 
 	public boolean deleteRow(

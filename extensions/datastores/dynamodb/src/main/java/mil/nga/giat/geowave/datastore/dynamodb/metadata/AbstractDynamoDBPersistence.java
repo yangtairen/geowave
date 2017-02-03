@@ -47,7 +47,6 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 
 	private final AmazonDynamoDBAsyncClient client;
 	private final DynamoDBOperations dynamodbOperations;
-	private static Map<String, Boolean> tableExistsCache = new HashMap<>();
 
 	public AbstractDynamoDBPersistence(
 			final DynamoDBOperations ops ) {
@@ -114,8 +113,8 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 				new AttributeValue().withB(ByteBuffer.wrap(PersistenceUtils.toBinary(object))));
 
 		final String tableName = dynamodbOperations.getQualifiedTableName(getTablename());
-		synchronized (tableExistsCache) {
-			final Boolean tableExists = tableExistsCache.get(tableName);
+		synchronized (DynamoDBOperations.tableExistsCache) {
+			final Boolean tableExists = DynamoDBOperations.tableExistsCache.get(tableName);
 			if ((tableExists == null) || !tableExists) {
 				final boolean tableCreated = TableUtils.createTableIfNotExists(
 						client,
@@ -148,7 +147,7 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 								e);
 					}
 				}
-				tableExistsCache.put(
+				DynamoDBOperations.tableExistsCache.put(
 						tableName,
 						true);
 			}
@@ -162,7 +161,7 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
 		final String tableName = dynamodbOperations.getQualifiedTableName(getTablename());
-		final Boolean tableExists = tableExistsCache.get(tableName);
+		final Boolean tableExists = DynamoDBOperations.tableExistsCache.get(tableName);
 		if ((tableExists == null) || !tableExists) {
 			try {
 				if (!dynamodbOperations.tableExists(tableName)) {
@@ -255,7 +254,7 @@ public abstract class AbstractDynamoDBPersistence<T extends Persistable> extends
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
 		final String tableName = dynamodbOperations.getQualifiedTableName(getTablename());
-		final Boolean tableExists = tableExistsCache.get(tableName);
+		final Boolean tableExists = DynamoDBOperations.tableExistsCache.get(tableName);
 		if ((tableExists == null) || !tableExists) {
 			try {
 				if (!dynamodbOperations.tableExists(tableName)) {

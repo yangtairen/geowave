@@ -96,7 +96,7 @@ abstract public class DynamoDBQuery
 						index.getId().getBytes()));
 		if ((ranges != null) && !ranges.isEmpty()) {
 			final List<QueryRequest> requests = new ArrayList<>();
-			if (ranges.size() == 1) {
+			if (ranges.size() == 1&& (adapterIds.size() == 1)) {
 				final List<QueryRequest> queries = getPartitionRequests(
 						tableName);
 				final ByteArrayRange r = ranges.get(

@@ -110,22 +110,7 @@ public class DynamoDBWriter implements
 		// });
 		// }
 		// else {
-		Set<AttributeValue> rs = new HashSet<>();
-		for (List<WriteRequest> wl : writes.values()) {
-			for (WriteRequest w : wl) {
-				// AttributeValue v1 =
-				// w.getPutRequest().getItem().get(DynamoDBRow.GW_PARTITION_ID_KEY);
-				AttributeValue v2 = w.getPutRequest().getItem().get(
-						DynamoDBRow.GW_RANGE_KEY);
-				if (!rs.add(v2)) {
-					byte[] v2b = v2.getB().array();
 
-					System.err.println("crap" + new ByteArrayId(
-							v2b).getHexString() + "  " + new String(
-							v2b));
-				}
-			}
-		}
 		final BatchWriteItemResult response = client.batchWriteItem(new BatchWriteItemRequest(
 				writes));
 		retry(response.getUnprocessedItems());
