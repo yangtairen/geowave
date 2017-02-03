@@ -39,8 +39,7 @@ import mil.nga.giat.geowave.datastore.dynamodb.util.LazyPaginatedScan;
  */
 abstract public class DynamoDBQuery
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			DynamoDBQuery.class);
+	private final static Logger LOGGER = Logger.getLogger(DynamoDBQuery.class);
 	protected final List<ByteArrayId> adapterIds;
 	protected final PrimaryIndex index;
 	protected final Pair<List<String>, DataAdapter<?>> fieldIdsAdapterPair;
@@ -149,8 +148,7 @@ abstract public class DynamoDBQuery
 	private List<QueryRequest> addQueryRanges(
 			final String tableName,
 			final ByteArrayRange r ) {
-		final List<QueryRequest> retVal = getPartitionRequests(
-				tableName);
+		final List<QueryRequest> retVal = getPartitionRequests(tableName);
 		for (final QueryRequest queryRequest : retVal) {
 			addQueryRange(
 					r,
@@ -166,12 +164,8 @@ abstract public class DynamoDBQuery
 				DynamoDBRow.GW_RANGE_KEY,
 				new Condition().withComparisonOperator(
 						ComparisonOperator.BETWEEN).withAttributeValueList(
-								new AttributeValue().withB(
-										ByteBuffer.wrap(
-												r.getStart().getBytes())),
-								new AttributeValue().withB(
-										ByteBuffer.wrap(
-												r.getEndAsNextPrefix().getBytes()))));
+						new AttributeValue().withB(ByteBuffer.wrap(r.getStart().getBytes())),
+						new AttributeValue().withB(ByteBuffer.wrap(r.getEndAsNextPrefix().getBytes()))));
 	}
 
 	private static List<QueryRequest> getPartitionRequests(
@@ -179,15 +173,12 @@ abstract public class DynamoDBQuery
 		final List<QueryRequest> requests = new ArrayList<>(
 				DynamoDBIndexWriter.PARTITIONS);
 		for (long p = 0; p < (DynamoDBIndexWriter.PARTITIONS); p++) {
-			requests.add(
-					new QueryRequest(
-							tableName).addKeyConditionsEntry(
-									DynamoDBRow.GW_PARTITION_ID_KEY,
-									new Condition().withComparisonOperator(
-											ComparisonOperator.EQ).withAttributeValueList(
-													new AttributeValue().withN(
-															Long.toString(
-																	p)))));
+			requests.add(new QueryRequest(
+					tableName).addKeyConditionsEntry(
+					DynamoDBRow.GW_PARTITION_ID_KEY,
+					new Condition().withComparisonOperator(
+							ComparisonOperator.EQ).withAttributeValueList(
+							new AttributeValue().withN(Long.toString(p)))));
 		}
 		return requests;
 	}

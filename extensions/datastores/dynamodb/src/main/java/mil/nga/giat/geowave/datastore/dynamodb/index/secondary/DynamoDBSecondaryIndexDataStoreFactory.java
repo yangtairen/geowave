@@ -17,8 +17,7 @@ public class DynamoDBSecondaryIndexDataStoreFactory extends
 					"Expected " + DynamoDBOptions.class.getSimpleName());
 		}
 
-		final DynamoDBOperations dynamoDBOperations = createOperations(
-				(DynamoDBOptions) options);
+		final DynamoDBOperations dynamoDBOperations = createOperations((DynamoDBOptions) options);
 		return new DynamoDBSecondaryIndexDataStore(
 				dynamoDBOperations);
 	}

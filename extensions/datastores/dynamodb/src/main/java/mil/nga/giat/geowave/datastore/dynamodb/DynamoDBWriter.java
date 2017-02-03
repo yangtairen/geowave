@@ -26,8 +26,7 @@ import mil.nga.giat.geowave.core.store.base.Writer;
 public class DynamoDBWriter implements
 		Writer<WriteRequest>
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(
-			DynamoDBWriter.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DynamoDBWriter.class);
 	private static final int NUM_ITEMS = 25;
 
 	private final List<WriteRequest> batchedItems = new ArrayList<>();
@@ -51,8 +50,7 @@ public class DynamoDBWriter implements
 	public void write(
 			final Iterable<WriteRequest> items ) {
 		for (final WriteRequest item : items) {
-			write(
-					item);
+			write(item);
 		}
 	}
 
@@ -60,12 +58,10 @@ public class DynamoDBWriter implements
 	public void write(
 			final WriteRequest item ) {
 		synchronized (batchedItems) {
-			batchedItems.add(
-					item);
+			batchedItems.add(item);
 			if (batchedItems.size() >= NUM_ITEMS) {
 				do {
-					writeBatch(
-							true);
+					writeBatch(true);
 				}
 				while (batchedItems.size() >= NUM_ITEMS);
 			}
@@ -115,22 +111,24 @@ public class DynamoDBWriter implements
 		// }
 		// else {
 		Set<AttributeValue> rs = new HashSet<>();
-		for (List<WriteRequest> wl : writes.values()){
-			for (WriteRequest w :wl){
-//				AttributeValue v1 = w.getPutRequest().getItem().get(DynamoDBRow.GW_PARTITION_ID_KEY);
-				AttributeValue v2 = w.getPutRequest().getItem().get(DynamoDBRow.GW_RANGE_KEY);
-				if(!rs.add(v2)){
+		for (List<WriteRequest> wl : writes.values()) {
+			for (WriteRequest w : wl) {
+				// AttributeValue v1 =
+				// w.getPutRequest().getItem().get(DynamoDBRow.GW_PARTITION_ID_KEY);
+				AttributeValue v2 = w.getPutRequest().getItem().get(
+						DynamoDBRow.GW_RANGE_KEY);
+				if (!rs.add(v2)) {
 					byte[] v2b = v2.getB().array();
-					
-					System.err.println("crap" + new ByteArrayId(v2b).getHexString() + "  " + new String(v2b));
+
+					System.err.println("crap" + new ByteArrayId(
+							v2b).getHexString() + "  " + new String(
+							v2b));
 				}
 			}
 		}
-		final BatchWriteItemResult response = client.batchWriteItem(
-				new BatchWriteItemRequest(
-						writes));
-		retry(
-				response.getUnprocessedItems());
+		final BatchWriteItemResult response = client.batchWriteItem(new BatchWriteItemRequest(
+				writes));
+		retry(response.getUnprocessedItems());
 		// }
 		batch.clear();
 	}
@@ -152,8 +150,7 @@ public class DynamoDBWriter implements
 	public void flush() {
 		synchronized (batchedItems) {
 			do {
-				writeBatch(
-						false);
+				writeBatch(false);
 			}
 			while (!batchedItems.isEmpty());
 		}

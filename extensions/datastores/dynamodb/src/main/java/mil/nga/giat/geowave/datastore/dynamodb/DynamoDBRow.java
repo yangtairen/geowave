@@ -50,7 +50,7 @@ public class DynamoDBRow implements
 
 	@Override
 	public byte[] getFieldMask() {
-		if(!objMap.containsKey(GW_FIELD_MASK_KEY)){
+		if (!objMap.containsKey(GW_FIELD_MASK_KEY)) {
 			return null;
 		}
 		return objMap.get(
@@ -68,20 +68,16 @@ public class DynamoDBRow implements
 			final ByteBuffer rangeKey = objMap.get(
 					GW_RANGE_KEY).getB();
 			final int size = rangeKey.remaining();
-			rangeKey.position(
-					size - 8);
+			rangeKey.position(size - 8);
 			final int adapterIdLength = rangeKey.getInt();
 			final int dataIdLength = rangeKey.getInt();
 			idx = new byte[size - adapterIdLength - dataIdLength - 8];
 			adapterId = new byte[adapterIdLength];
 			dataId = new byte[dataIdLength];
 			rangeKey.rewind();
-			rangeKey.get(
-					idx);
-			rangeKey.get(
-					adapterId);
-			rangeKey.get(
-					dataId);
+			rangeKey.get(idx);
+			rangeKey.get(adapterId);
+			rangeKey.get(dataId);
 			rangeKey.rewind();
 		}
 	}

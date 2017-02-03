@@ -81,7 +81,9 @@ public class GeoWaveBasicRasterIT
 	public void testNoDataMergeStrategy()
 			throws IOException {
 		final String coverageName = "testNoDataMergeStrategy";
-		final int tileSize = 64; // 256 fails on bigtable exceeding maximum size, 128 fails on DynamoDB exceeding maximum size
+		final int tileSize = 64; // 256 fails on bigtable exceeding maximum
+									// size, 128 fails on DynamoDB exceeding
+									// maximum size
 		final double westLon = 0;
 		final double eastLon = 45;
 		final double southLat = 0;

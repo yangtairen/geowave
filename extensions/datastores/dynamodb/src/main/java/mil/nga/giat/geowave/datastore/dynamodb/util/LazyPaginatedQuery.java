@@ -39,10 +39,8 @@ public class LazyPaginatedQuery extends
 			return null;
 		}
 		else {
-			request.setExclusiveStartKey(
-					currentResult.getLastEvaluatedKey());
-			currentResult = dynamoDBClient.query(
-					request);
+			request.setExclusiveStartKey(currentResult.getLastEvaluatedKey());
+			currentResult = dynamoDBClient.query(request);
 			return currentResult.getItems().iterator();
 		}
 	}

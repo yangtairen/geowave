@@ -175,6 +175,7 @@ public class DynamoDBDataStatisticsStore extends
 				adapterId,
 				authorizations);
 	}
+
 	/**
 	 * This function converts results and merges data statistic elements
 	 * together that have the same id.
@@ -185,6 +186,7 @@ public class DynamoDBDataStatisticsStore extends
 		return new StatisticsNativeIteratorWrapper(
 				results);
 	}
+
 	/**
 	 * A special version of NativeIteratorWrapper (defined in the parent) which
 	 * will combine records that have the same dataid & statsId
@@ -192,11 +194,11 @@ public class DynamoDBDataStatisticsStore extends
 	private class StatisticsNativeIteratorWrapper implements
 			Iterator<DataStatistics<?>>
 	{
-		final private Iterator<Map<String, AttributeValue> > it;
+		final private Iterator<Map<String, AttributeValue>> it;
 		private DataStatistics<?> nextVal = null;
 
 		public StatisticsNativeIteratorWrapper(
-				final Iterator<Map<String, AttributeValue> > resultIterator ) {
+				final Iterator<Map<String, AttributeValue>> resultIterator ) {
 			it = resultIterator;
 		}
 
