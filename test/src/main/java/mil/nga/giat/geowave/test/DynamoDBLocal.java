@@ -154,6 +154,12 @@ public class DynamoDBLocal
 		cmdLine.addArgument("-inMemory");
 		cmdLine.addArgument("-port");
 		cmdLine.addArgument(HOST_PORT);
+		System.setProperty(
+				"aws.accessKeyId",
+				"dummy");
+		System.setProperty(
+				"aws.secretKey",
+				"dummy");
 
 		// Using a result handler makes the emulator run async
 		DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
