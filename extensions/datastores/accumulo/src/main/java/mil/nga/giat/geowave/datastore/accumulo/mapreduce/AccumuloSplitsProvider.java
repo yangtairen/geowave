@@ -19,6 +19,7 @@ import org.apache.accumulo.core.client.TableOfflineException;
 import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.core.client.impl.TabletLocator;
 import org.apache.accumulo.core.client.mock.MockInstance;
+import org.apache.accumulo.core.client.mock.impl.MockTabletLocator;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
@@ -59,7 +60,8 @@ import org.apache.accumulo.core.data.impl.KeyExtent;
 public class AccumuloSplitsProvider extends
 		SplitsProvider
 {
-	private final static Logger LOGGER = Logger.getLogger(AccumuloSplitsProvider.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			AccumuloSplitsProvider.class);
 
 	@Override
 	protected TreeSet<IntermediateSplitInfo> populateIntermediateSplits(
@@ -80,20 +82,23 @@ public class AccumuloSplitsProvider extends
 			accumuloOperations = (AccumuloOperations) operations;
 		}
 		else {
-			LOGGER.error("AccumuloSplitsProvider requires AccumuloOperations object.");
+			LOGGER.error(
+					"AccumuloSplitsProvider requires AccumuloOperations object.");
 			return splits;
 		}
 
-		if ((query != null) && !query.isSupported(index)) {
+		if ((query != null) && !query.isSupported(
+				index)) {
 			return splits;
 		}
 		Range fullrange;
 		try {
-			fullrange = unwrapRange(getRangeMax(
-					index,
-					adapterStore,
-					statsStore,
-					authorizations));
+			fullrange = unwrapRange(
+					getRangeMax(
+							index,
+							adapterStore,
+							statsStore,
+							authorizations));
 		}
 		catch (final Exception e) {
 			fullrange = new Range();
@@ -108,32 +113,40 @@ public class AccumuloSplitsProvider extends
 		final NumericIndexStrategy indexStrategy = index.getIndexStrategy();
 		final TreeSet<Range> ranges;
 		if (query != null) {
-			final List<MultiDimensionalNumericData> indexConstraints = query.getIndexConstraints(indexStrategy);
+			final List<MultiDimensionalNumericData> indexConstraints = query.getIndexConstraints(
+					indexStrategy);
 			if ((maxSplits != null) && (maxSplits > 0)) {
-				ranges = AccumuloUtils.byteArrayRangesToAccumuloRanges(DataStoreUtils.constraintsToByteArrayRanges(
-						indexConstraints,
-						indexStrategy,
-						maxSplits));
+				ranges = AccumuloUtils.byteArrayRangesToAccumuloRanges(
+						DataStoreUtils.constraintsToByteArrayRanges(
+								indexConstraints,
+								indexStrategy,
+								maxSplits));
 			}
 			else {
-				ranges = AccumuloUtils.byteArrayRangesToAccumuloRanges(DataStoreUtils.constraintsToByteArrayRanges(
-						indexConstraints,
-						indexStrategy,
-						-1));
+				ranges = AccumuloUtils.byteArrayRangesToAccumuloRanges(
+						DataStoreUtils.constraintsToByteArrayRanges(
+								indexConstraints,
+								indexStrategy,
+								-1));
 			}
 			if (ranges.size() == 1) {
 				final Range range = ranges.first();
 				if (range.isInfiniteStartKey() || range.isInfiniteStopKey()) {
-					ranges.remove(range);
-					ranges.add(fullrange.clip(range));
+					ranges.remove(
+							range);
+					ranges.add(
+							fullrange.clip(
+									range));
 				}
 			}
 		}
 		else {
 			ranges = new TreeSet<Range>();
-			ranges.add(fullrange);
+			ranges.add(
+					fullrange);
 			if (LOGGER.isTraceEnabled()) {
-				LOGGER.trace("Protected range: " + fullrange);
+				LOGGER.trace(
+						"Protected range: " + fullrange);
 			}
 		}
 		// get the metadata information for these ranges
@@ -141,16 +154,23 @@ public class AccumuloSplitsProvider extends
 		TabletLocator tl;
 		try {
 			final Instance instance = accumuloOperations.getInstance();
-			final String tableId = Tables.getTableId(
-					instance,
-					tableName);
+			final String tableId;
+			final Object clientContextOrCredentials;
+			if (instance instanceof MockInstance) {
+				tableId = "";
+				tl = new MockTabletLocator();
+				clientContextOrCredentials = null;
+			}
+			else {
+				tableId = Tables.getTableId(
+						instance,
+						tableName);
+				final Credentials credentials = new Credentials(
+						accumuloOperations.getUsername(),
+						new PasswordToken(
+								accumuloOperations.getPassword()));
 
-			final Credentials credentials = new Credentials(
-					accumuloOperations.getUsername(),
-					new PasswordToken(
-							accumuloOperations.getPassword()));
-
-			// @formatter:off
+				// @formatter:off
 				/*if[accumulo.api=1.6]
 				tl = getTabletLocator(
 						instance,
@@ -163,8 +183,8 @@ public class AccumuloSplitsProvider extends
 				tl = getTabletLocator(
 						clientContext,
 						tableId);
-
-				final Object clientContextOrCredentials = clientContext;
+				clientContextOrCredentials = clientContext;
+			}
 				/*end[accumulo.api=1.6]*/
 				// @formatter:on
 			// its possible that the cache could contain complete, but
@@ -193,8 +213,10 @@ public class AccumuloSplitsProvider extends
 					}
 				}
 				tserverBinnedRanges.clear();
-				LOGGER.warn("Unable to locate bins for specified ranges. Retrying.");
-				UtilWaitThread.sleep(150);
+				LOGGER.warn(
+						"Unable to locate bins for specified ranges. Retrying.");
+				UtilWaitThread.sleep(
+						150);
 				tl.invalidateCache();
 			}
 		}
@@ -210,12 +232,14 @@ public class AccumuloSplitsProvider extends
 					":",
 					2)[0];
 
-			String location = hostNameCache.get(ipAddress);
+			String location = hostNameCache.get(
+					ipAddress);
 			if (location == null) {
 				// HP Fortify "Often Misused: Authentication"
 				// These methods are not being used for
 				// authentication
-				final InetAddress inetAddress = InetAddress.getByName(ipAddress);
+				final InetAddress inetAddress = InetAddress.getByName(
+						ipAddress);
 				location = inetAddress.getHostName();
 				hostNameCache.put(
 						ipAddress,
@@ -227,9 +251,12 @@ public class AccumuloSplitsProvider extends
 				final List<RangeLocationPair> rangeList = new ArrayList<RangeLocationPair>();
 				for (final Range range : extentRanges.getValue()) {
 
-					final Range clippedRange = keyExtent.clip(range);
-					if (!(fullrange.beforeStartKey(clippedRange.getEndKey()) || fullrange.afterEndKey(clippedRange
-							.getStartKey()))) {
+					final Range clippedRange = keyExtent.clip(
+							range);
+					if (!(fullrange.beforeStartKey(
+							clippedRange.getEndKey())
+							|| fullrange.afterEndKey(
+									clippedRange.getStartKey()))) {
 						final double cardinality = getCardinality(
 								getHistStats(
 										index,
@@ -238,27 +265,33 @@ public class AccumuloSplitsProvider extends
 										statsStore,
 										statsCache,
 										authorizations),
-								wrapRange(clippedRange));
-						rangeList.add(new AccumuloRangeLocationPair(
-								wrapRange(clippedRange),
-								location,
-								cardinality < 1 ? 1.0 : cardinality));
+								wrapRange(
+										clippedRange));
+						rangeList.add(
+								new AccumuloRangeLocationPair(
+										wrapRange(
+												clippedRange),
+										location,
+										cardinality < 1 ? 1.0 : cardinality));
 					}
 					else {
-						LOGGER.info("Query split outside of range");
+						LOGGER.info(
+								"Query split outside of range");
 					}
 					if (LOGGER.isTraceEnabled()) {
-						LOGGER.warn("Clipped range: " + rangeList.get(
-								rangeList.size() - 1).getRange());
+						LOGGER.warn(
+								"Clipped range: " + rangeList.get(
+										rangeList.size() - 1).getRange());
 					}
 				}
 				if (!rangeList.isEmpty()) {
 					splitInfo.put(
 							index,
 							rangeList);
-					splits.add(new IntermediateSplitInfo(
-							splitInfo,
-							this));
+					splits.add(
+							new IntermediateSplitInfo(
+									splitInfo,
+									this));
 				}
 			}
 		}
@@ -277,7 +310,8 @@ public class AccumuloSplitsProvider extends
 		if (range instanceof AccumuloRowRange) {
 			return ((AccumuloRowRange) range).getRange();
 		}
-		LOGGER.error("AccumuloSplitsProvider requires use of AccumuloRowRange type.");
+		LOGGER.error(
+				"AccumuloSplitsProvider requires use of AccumuloRowRange type.");
 		return null;
 	}
 
