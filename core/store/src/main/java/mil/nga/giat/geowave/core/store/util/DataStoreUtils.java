@@ -317,25 +317,6 @@ public class DataStoreUtils
 				: tableNamespace + "_" + unqualifiedTableName;
 	}
 
-	public static List<IndexedAdapterPersistenceEncoding> getEncodings(
-			final PrimaryIndex index,
-			final AdapterPersistenceEncoding encoding ) {
-		final List<ByteArrayId> ids = encoding.getInsertionIds(
-				index);
-		final ArrayList<IndexedAdapterPersistenceEncoding> encodings = new ArrayList<IndexedAdapterPersistenceEncoding>();
-		for (final ByteArrayId id : ids) {
-			encodings.add(
-					new IndexedAdapterPersistenceEncoding(
-							encoding.getAdapterId(),
-							encoding.getDataId(),
-							id,
-							ids.size(),
-							encoding.getCommonData(),
-							encoding.getUnknownData(),
-							encoding.getAdapterExtendedData()));
-		}
-		return encodings;
-	}
 
 	/**
 	 *
@@ -352,8 +333,7 @@ public class DataStoreUtils
 		final AdapterPersistenceEncoding encodedData = dataWriter.encode(
 				entry,
 				indexModel);
-		final List<ByteArrayId> insertionIds = encodedData.getInsertionIds(
-				index);
+		final InsertionIds insertionIds = encodedData.getInsertionIds(index);
 		final List<ByteArrayId> rowIds = new ArrayList<ByteArrayId>(
 				insertionIds.size());
 
@@ -410,9 +390,7 @@ public class DataStoreUtils
 		final AdapterPersistenceEncoding encodedData = dataWriter.encode(
 				entry,
 				indexModel);
-		final InsertionIds insertionIds = encodedData.getInsertionIds(
-				index);
-		insertionIds
+		final InsertionIds insertionIds = encodedData.getInsertionIds(index);
 		final List<ByteArrayId> rowIds = new ArrayList<ByteArrayId>(
 				insertionIds.size());
 		final PersistentDataset extendedData = encodedData.getAdapterExtendedData();

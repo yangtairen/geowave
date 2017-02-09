@@ -57,41 +57,45 @@ public class CommonIndexedPersistenceEncoding extends
 	/**
 	 * Given an index, convert this persistent encoding to a set of insertion
 	 * IDs for that index
-	 * 
+	 *
 	 * @param index
 	 *            the index
 	 * @return The insertions IDs for this object in the index
 	 */
 	public InsertionIds getInsertionIds(
 			final PrimaryIndex index ) {
-		final MultiDimensionalNumericData boxRangeData = getNumericData(index.getIndexModel().getDimensions());
+		final MultiDimensionalNumericData boxRangeData = getNumericData(
+				index.getIndexModel().getDimensions());
 		final InsertionIds untrimmedResult = index.getIndexStrategy().getInsertionIds(
 				boxRangeData);
-		 Collection<SinglePartitionInsertionIds> partitionInsertionIds = untrimmedResult.getPartitionKeys();
-		 for (SinglePartitionInsertionIds id : partitionInsertionIds){
-		if (id.getSortKeys() != null && id.getSortKeys().size() > 3) {
-			// need at least 4 quadrants in a quadtree to create a
-			// concave shape where the mbr overlaps an area that the
-			// underlying polygon doesn't
-			Iterator<ByteArrayId> sortKeysIt = id.getSortKeys().iterator();
-			ByteArrayId partitionKey = id.getPartitionKey();
-			while (sortKeysIt.hasNext()) {
-				final ByteArrayId sortKey = sortKeysIt.next();
-				// final MultiDimensionalNumericData md =
-				// correctForNormalizationError(index.getIndexStrategy().getRangeForId(insertionId));
-				// used to check the result of the index strategy
-				if (LOGGER.isDebugEnabled() && checkCoverage(
-						boxRangeData,
-						index.getIndexStrategy().getRangeForId(partitionKey,
-								sortKey))) {
-					LOGGER.error("Index strategy produced an unmatching tile during encoding and storing an entry");
-				}
-				if (!overlaps(
-						index.getIndexStrategy().getRangeForId(
-								partitionKey,
-								sortKey).getDataPerDimension(),
-						index)) {
-					sortKeysIt.remove();
+		for (final SinglePartitionInsertionIds insertionId : untrimmedResult.getPartitionKeys()) {
+			final ByteArrayId partitionKey = insertionId.getPartitionKey();
+			final int size = insertionId.getSortKeys().size();
+			if (size > 3) {
+				// need at least 4 quadrants in a quadtree to create a
+				// concave shape where the mbr overlaps an area that the
+				// underlying polygon doesn't
+				final Iterator<ByteArrayId> it = insertionId.getSortKeys().iterator();
+				while (it.hasNext()) {
+					final ByteArrayId sortKey = it.next();
+					// final MultiDimensionalNumericData md =
+					// correctForNormalizationError(index.getIndexStrategy().getRangeForId(insertionId));
+					// used to check the result of the index strategy
+					if (LOGGER.isDebugEnabled() && checkCoverage(
+							boxRangeData,
+							index.getIndexStrategy().getRangeForId(
+									partitionKey,
+									sortKey))) {
+						LOGGER.error(
+								"Index strategy produced an unmatching tile during encoding and storing an entry");
+					}
+					if (!overlaps(
+							index.getIndexStrategy().getRangeForId(
+									partitionKey,
+									sortKey).getDataPerDimension(),
+							index)) {
+						it.remove();
+					}
 				}
 			}
 		}
@@ -102,7 +106,7 @@ public class CommonIndexedPersistenceEncoding extends
 	/**
 	 * Tool can be used custom index strategies to check if the tiles actual
 	 * intersect with the provided bounding box.
-	 * 
+	 *
 	 * @param boxRangeData
 	 * @param innerTile
 	 * @return
@@ -134,7 +138,7 @@ public class CommonIndexedPersistenceEncoding extends
 	 * Given an ordered set of dimensions, convert this persistent encoding
 	 * common index data into a MultiDimensionalNumericData object that can then
 	 * be used by the Index
-	 * 
+	 *
 	 * @param dimensions
 	 * @return
 	 */
@@ -146,7 +150,7 @@ public class CommonIndexedPersistenceEncoding extends
 			final NumericDimensionField[] dimensions ) {
 		final NumericData[] dataPerDimension = new NumericData[dimensions.length];
 		for (int d = 0; d < dimensions.length; d++) {
-			CommonIndexValue val = getCommonData().getValue(
+			final CommonIndexValue val = getCommonData().getValue(
 					dimensions[d].getFieldId());
 			if (val != null) {
 				dataPerDimension[d] = dimensions[d].getNumericData(
@@ -194,8 +198,8 @@ public class CommonIndexedPersistenceEncoding extends
 		@SuppressWarnings("rawtypes")
 		final NumericDimensionDefinition[] dimensions = index.getIndexStrategy().getOrderedDimensionDefinitions();
 		final NumericDimensionField[] fields = index.getIndexModel().getDimensions();
-		Map<Class, NumericDimensionField> dimensionTypeToFieldMap = new HashMap<>();
-		for (NumericDimensionField field : fields) {
+		final Map<Class, NumericDimensionField> dimensionTypeToFieldMap = new HashMap<>();
+		for (final NumericDimensionField field : fields) {
 			dimensionTypeToFieldMap.put(
 					field.getBaseDefinition().getClass(),
 					field);
@@ -222,7 +226,7 @@ public class CommonIndexedPersistenceEncoding extends
 			else {
 				baseDefinitionCls = dimensions[d].getClass();
 			}
-			NumericDimensionField field = dimensionTypeToFieldMap.get(
+			final NumericDimensionField field = dimensionTypeToFieldMap.get(
 					baseDefinitionCls);
 			if (field != null) {
 				final ByteArrayId fieldId = field.getFieldId();
@@ -244,11 +248,11 @@ public class CommonIndexedPersistenceEncoding extends
 		}
 
 		for (final Entry<ByteArrayId, DimensionRangePair> entry : fieldsRangeData.entrySet()) {
-			PersistentDataset<CommonIndexValue> commonData = getCommonData();
+			final PersistentDataset<CommonIndexValue> commonData = getCommonData();
 			if (commonData != null) {
-				CommonIndexValue value = commonData.getValue(
+				final CommonIndexValue value = commonData.getValue(
 						entry.getKey());
-				if (value != null && !value.overlaps(
+				if ((value != null) && !value.overlaps(
 						entry.getValue().dimensions,
 						entry.getValue().dataPerDimension)) {
 					return false;
