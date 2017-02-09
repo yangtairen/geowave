@@ -159,11 +159,11 @@ public class CompoundHierarchicalIndexStrategyWrapper implements
 	}
 
 	@Override
-	public MultiDimensionalNumericData getRangeForId(
-			final ByteArrayId insertionId ) {
+	public MultiDimensionalNumericData getRangeForSortKey(
+			final ByteArrayId sortKey ) {
 		return parentStrategies.get(
 				0).getRangeForId(
-				insertionId);
+						sortKey);
 	}
 
 	@Override

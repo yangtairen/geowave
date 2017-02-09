@@ -54,7 +54,7 @@ public class NumericIndexStrategyWrapper implements
 	}
 
 	@Override
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
 			final IndexMetaData... hints ) {
 		return indexStrategy.getQueryRanges(
@@ -63,7 +63,7 @@ public class NumericIndexStrategyWrapper implements
 	}
 
 	@Override
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
 			final int maxRangeDecomposition,
 			final IndexMetaData... hints ) {
@@ -74,7 +74,7 @@ public class NumericIndexStrategyWrapper implements
 	}
 
 	@Override
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			final MultiDimensionalNumericData indexedData ) {
 		return indexStrategy.getInsertionIds(indexedData);
 	}
@@ -102,7 +102,7 @@ public class NumericIndexStrategyWrapper implements
 	}
 
 	@Override
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			final MultiDimensionalNumericData indexedData,
 			final int maxDuplicateInsertionIds ) {
 		return indexStrategy.getInsertionIds(

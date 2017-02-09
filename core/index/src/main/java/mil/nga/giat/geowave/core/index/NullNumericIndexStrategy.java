@@ -41,7 +41,7 @@ public class NullNumericIndexStrategy implements
 	}
 
 	@Override
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
 			final IndexMetaData... hints ) {
 		return getQueryRanges(
@@ -50,17 +50,17 @@ public class NullNumericIndexStrategy implements
 	}
 
 	@Override
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
 			final int maxRangeDecomposition,
 			final IndexMetaData... hints ) {
 		// a null return here should be interpreted as negative to positive
 		// infinite
-		return null;
+		return new QueryRanges(null, null);
 	}
 
 	@Override
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			final MultiDimensionalNumericData indexedData ) {
 		return getInsertionIds(
 				indexedData,
@@ -100,14 +100,14 @@ public class NullNumericIndexStrategy implements
 	}
 
 	@Override
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			final MultiDimensionalNumericData indexedData,
 			final int maxDuplicateInsertionIds ) {
-		// return a single empty ID
+		// return a single empty sort key as the ID
 		final List<ByteArrayId> retVal = new ArrayList<ByteArrayId>();
 		retVal.add(new ByteArrayId(
 				new byte[] {}));
-		return retVal;
+		return new InsertionIds(null, retVal);
 	}
 
 	@Override

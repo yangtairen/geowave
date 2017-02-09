@@ -10,10 +10,12 @@ import java.util.Set;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
+import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinateRanges;
 import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinates;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
+import mil.nga.giat.geowave.core.index.QueryRanges;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.dimension.NumericDimensionDefinition;
 import mil.nga.giat.geowave.core.index.dimension.bin.BinRange;
@@ -46,7 +48,7 @@ public class SingleTierSubStrategy implements
 	}
 
 	@Override
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
 			final IndexMetaData... hints ) {
 		return getQueryRanges(
@@ -55,7 +57,7 @@ public class SingleTierSubStrategy implements
 	}
 
 	@Override
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
 			final int maxRangeDecomposition,
 			final IndexMetaData... hints ) {
@@ -94,7 +96,7 @@ public class SingleTierSubStrategy implements
 	}
 
 	@Override
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			final MultiDimensionalNumericData indexedData ) {
 		return getInsertionIds(
 				indexedData,
@@ -102,7 +104,7 @@ public class SingleTierSubStrategy implements
 	}
 
 	@Override
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			final MultiDimensionalNumericData indexedData,
 			final int maxDuplicateInsertionIds ) {
 		// we need to duplicate per bin so we can't adhere to max duplication

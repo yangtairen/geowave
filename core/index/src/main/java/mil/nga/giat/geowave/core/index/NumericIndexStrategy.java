@@ -21,7 +21,7 @@ public interface NumericIndexStrategy extends
 	 *         associated bin ID if that dimension is continuous
 	 */
 	public MultiDimensionalCoordinates getCoordinatesPerDimension(
-			ByteArrayId insertionId );
+			ByteArrayId sortKey );
 
 	/**
 	 * Return an integer coordinate range in each dimension for the given data
@@ -60,6 +60,6 @@ public interface NumericIndexStrategy extends
 	 * 
 	 * @return the byte offset prior to the dimensional index
 	 */
-	public int getByteOffsetFromDimensionalIndex();
+	public int getPartitionKeyLength();
 
 }

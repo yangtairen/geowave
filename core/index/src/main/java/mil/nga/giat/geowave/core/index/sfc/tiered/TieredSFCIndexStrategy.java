@@ -26,10 +26,12 @@ import mil.nga.giat.geowave.core.index.Coordinate;
 import mil.nga.giat.geowave.core.index.CoordinateRange;
 import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
+import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinateRanges;
 import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinates;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
+import mil.nga.giat.geowave.core.index.QueryRanges;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.dimension.NumericDimensionDefinition;
 import mil.nga.giat.geowave.core.index.dimension.bin.BinRange;
@@ -107,7 +109,7 @@ public class TieredSFCIndexStrategy implements
 	}
 
 	@Override
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
 			final int maxRangeDecomposition,
 			final IndexMetaData... hints ) {
@@ -184,7 +186,7 @@ public class TieredSFCIndexStrategy implements
 	 * @return a List of query ranges
 	 */
 	@Override
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
 			final IndexMetaData... hints ) {
 		return getQueryRanges(
@@ -201,7 +203,7 @@ public class TieredSFCIndexStrategy implements
 	 * @return a List of insertion ID's
 	 */
 	@Override
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			final MultiDimensionalNumericData indexedData ) {
 		return internalGetInsertionIds(
 				indexedData,
@@ -224,7 +226,7 @@ public class TieredSFCIndexStrategy implements
 	}
 
 	@Override
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			final MultiDimensionalNumericData indexedData,
 			final int maxDuplicateInsertionIdsPerDimension ) {
 		return internalGetInsertionIds(

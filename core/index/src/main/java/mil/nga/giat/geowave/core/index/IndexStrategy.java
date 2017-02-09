@@ -17,7 +17,7 @@ public interface IndexStrategy<QueryRangeType extends QueryConstraints, EntryRan
 	 *            defines the numeric range for the query
 	 * @return a List of query ranges
 	 */
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			QueryRangeType indexedRange,
 			IndexMetaData... hints );
 
@@ -31,7 +31,7 @@ public interface IndexStrategy<QueryRangeType extends QueryConstraints, EntryRan
 	 *            decomposition, this is a best attempt and not a guarantee
 	 * @return a List of query ranges
 	 */
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			QueryRangeType indexedRange,
 			int maxEstimatedRangeDecomposition,
 			IndexMetaData... hints );
@@ -44,7 +44,7 @@ public interface IndexStrategy<QueryRangeType extends QueryConstraints, EntryRan
 	 *            defines the numeric data to be indexed
 	 * @return a List of insertion ID's
 	 */
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			EntryRangeType indexedData );
 
 	/**
@@ -57,7 +57,7 @@ public interface IndexStrategy<QueryRangeType extends QueryConstraints, EntryRan
 	 *            this is a best attempt and not a guarantee
 	 * @return a List of insertion ID's
 	 */
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			EntryRangeType indexedData,
 			int maxEstimatedDuplicateIds );
 
@@ -70,7 +70,7 @@ public interface IndexStrategy<QueryRangeType extends QueryConstraints, EntryRan
 	 *         the start and exclusive on the end for the range
 	 */
 	public EntryRangeType getRangeForId(
-			ByteArrayId insertionId );
+			InsertionIds insertionId );
 
 	/**
 	 * 
@@ -86,7 +86,7 @@ public interface IndexStrategy<QueryRangeType extends QueryConstraints, EntryRan
 	 * 
 	 * @return the set of natural splits
 	 */
-	public Set<ByteArrayId> getNaturalSplits();
+	public Set<ByteArrayId> getPartitionKeys();
 
 	public List<IndexMetaData> createMetaData();
 

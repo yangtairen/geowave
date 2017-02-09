@@ -26,7 +26,7 @@ public class CompoundIndexStrategy implements
 		NumericIndexStrategy
 {
 
-	private NumericIndexStrategy subStrategy1;
+	private PartitionIndexStrategy subStrategy1;
 	private NumericIndexStrategy subStrategy2;
 	private NumericDimensionDefinition[] baseDefinitions;
 	private double[] highestPrecision;
@@ -36,26 +36,20 @@ public class CompoundIndexStrategy implements
 	private int metaDataSplit = -1;
 
 	public CompoundIndexStrategy(
-			final NumericIndexStrategy subStrategy1,
+			final PartitionIndexStrategy subStrategy1,
 			final NumericIndexStrategy subStrategy2 ) {
 		this.subStrategy1 = subStrategy1;
 		this.subStrategy2 = subStrategy2;
 		init();
-		defaultNumberOfRanges = (int) Math.ceil(Math.pow(
-				2,
-				getNumberOfDimensions()));
+		defaultNumberOfRanges = (int) Math.ceil(
+				Math.pow(
+						2,
+						getNumberOfDimensions()));
 	}
 
 	protected CompoundIndexStrategy() {}
 
-	public NumericIndexStrategy[] getSubStrategies() {
-		return new NumericIndexStrategy[] {
-			subStrategy1,
-			subStrategy2
-		};
-	}
-
-	public NumericIndexStrategy getPrimarySubStrategy() {
+	public PartitionIndexStrategy getPrimarySubStrategy() {
 		return subStrategy1;
 	}
 
@@ -65,24 +59,33 @@ public class CompoundIndexStrategy implements
 
 	@Override
 	public byte[] toBinary() {
-		final byte[] delegateBinary1 = PersistenceUtils.toBinary(subStrategy1);
-		final byte[] delegateBinary2 = PersistenceUtils.toBinary(subStrategy2);
-		final ByteBuffer buf = ByteBuffer.allocate(4 + delegateBinary1.length + delegateBinary2.length);
-		buf.putInt(delegateBinary1.length);
-		buf.put(delegateBinary1);
-		buf.put(delegateBinary2);
+		final byte[] delegateBinary1 = PersistenceUtils.toBinary(
+				subStrategy1);
+		final byte[] delegateBinary2 = PersistenceUtils.toBinary(
+				subStrategy2);
+		final ByteBuffer buf = ByteBuffer.allocate(
+				4 + delegateBinary1.length + delegateBinary2.length);
+		buf.putInt(
+				delegateBinary1.length);
+		buf.put(
+				delegateBinary1);
+		buf.put(
+				delegateBinary2);
 		return buf.array();
 	}
 
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buf = ByteBuffer.wrap(bytes);
+		final ByteBuffer buf = ByteBuffer.wrap(
+				bytes);
 		final int delegateBinary1Length = buf.getInt();
 		final byte[] delegateBinary1 = new byte[delegateBinary1Length];
-		buf.get(delegateBinary1);
+		buf.get(
+				delegateBinary1);
 		final byte[] delegateBinary2 = new byte[bytes.length - delegateBinary1Length - 4];
-		buf.get(delegateBinary2);
+		buf.get(
+				delegateBinary2);
 		subStrategy1 = PersistenceUtils.fromBinary(
 				delegateBinary1,
 				NumericIndexStrategy.class);
@@ -90,9 +93,10 @@ public class CompoundIndexStrategy implements
 				delegateBinary2,
 				NumericIndexStrategy.class);
 		init();
-		defaultNumberOfRanges = (int) Math.ceil(Math.pow(
-				2,
-				getNumberOfDimensions()));
+		defaultNumberOfRanges = (int) Math.ceil(
+				Math.pow(
+						2,
+						getNumberOfDimensions()));
 	}
 
 	/**
@@ -129,10 +133,14 @@ public class CompoundIndexStrategy implements
 			final ByteArrayId id1,
 			final ByteArrayId id2 ) {
 		final byte[] bytes = new byte[id1.getBytes().length + id2.getBytes().length + 4];
-		final ByteBuffer buf = ByteBuffer.wrap(bytes);
-		buf.put(id1.getBytes());
-		buf.put(id2.getBytes());
-		buf.putInt(id1.getBytes().length);
+		final ByteBuffer buf = ByteBuffer.wrap(
+				bytes);
+		buf.put(
+				id1.getBytes());
+		buf.put(
+				id2.getBytes());
+		buf.putInt(
+				id1.getBytes().length);
 		return new ByteArrayId(
 				bytes);
 	}
@@ -147,12 +155,16 @@ public class CompoundIndexStrategy implements
 	 */
 	public ByteArrayId[] decomposeByteArrayId(
 			final ByteArrayId id ) {
-		final ByteBuffer buf = ByteBuffer.wrap(id.getBytes());
-		final int id1Length = buf.getInt(id.getBytes().length - 4);
+		final ByteBuffer buf = ByteBuffer.wrap(
+				id.getBytes());
+		final int id1Length = buf.getInt(
+				id.getBytes().length - 4);
 		final byte[] bytes1 = new byte[id1Length];
 		final byte[] bytes2 = new byte[id.getBytes().length - id1Length - 4];
-		buf.get(bytes1);
-		buf.get(bytes2);
+		buf.get(
+				bytes1);
+		buf.get(
+				bytes2);
 		return new ByteArrayId[] {
 			new ByteArrayId(
 					bytes1),
@@ -168,9 +180,10 @@ public class CompoundIndexStrategy implements
 				ids1.size() * ids2.size());
 		for (final ByteArrayId id1 : ids1) {
 			for (final ByteArrayId id2 : ids2) {
-				ids.add(composeByteArrayId(
-						id1,
-						id2));
+				ids.add(
+						composeByteArrayId(
+								id1,
+								id2));
 			}
 		}
 		return ids;
@@ -200,14 +213,15 @@ public class CompoundIndexStrategy implements
 				final ByteArrayRange range = composeByteArrayRange(
 						range1,
 						range2);
-				ranges.add(range);
+				ranges.add(
+						range);
 			}
 		}
 		return ranges;
 	}
 
 	@Override
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
 			final IndexMetaData... hints ) {
 		return getQueryRanges(
@@ -217,13 +231,14 @@ public class CompoundIndexStrategy implements
 	}
 
 	@Override
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
 			final int maxEstimatedRangeDecomposition,
 			final IndexMetaData... hints ) {
-		final MultiDimensionalNumericData[] ranges = getRangesForIndexedRange(indexedRange);
-		final List<ByteArrayRange> rangeForStrategy1;
-		final List<ByteArrayRange> rangeForStrategy2;
+		final MultiDimensionalNumericData[] ranges = getRangesForIndexedRange(
+				indexedRange);
+		final QueryRanges rangeForStrategy1;
+		final QueryRanges rangeForStrategy2;
 		if (maxEstimatedRangeDecomposition < 1) {
 			rangeForStrategy1 = subStrategy1.getQueryRanges(
 					ranges[0],
@@ -265,7 +280,7 @@ public class CompoundIndexStrategy implements
 	}
 
 	@Override
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			final MultiDimensionalNumericData indexedData ) {
 		return getInsertionIds(
 				indexedData,
@@ -273,16 +288,19 @@ public class CompoundIndexStrategy implements
 	}
 
 	@Override
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			final MultiDimensionalNumericData indexedData,
 			final int maxEstimatedDuplicateIds ) {
-		final int maxEstDuplicatesPerStrategy = (int) Math.sqrt(maxEstimatedDuplicateIds);
-		final MultiDimensionalNumericData[] ranges = getRangesForIndexedRange(indexedData);
-		final List<ByteArrayId> rangeForStrategy1 = subStrategy1.getInsertionIds(
+		final int maxEstDuplicatesPerStrategy = (int) Math.sqrt(
+				maxEstimatedDuplicateIds);
+		final MultiDimensionalNumericData[] ranges = getRangesForIndexedRange(
+				indexedData);
+		final InsertionIds rangeForStrategy1 = subStrategy1.getInsertionIds(
 				ranges[0],
 				maxEstDuplicatesPerStrategy);
-		final int maxEstDuplicatesStrategy2 = maxEstimatedDuplicateIds / rangeForStrategy1.size();
-		final List<ByteArrayId> rangeForStrategy2 = subStrategy2.getInsertionIds(
+		final int maxEstDuplicatesStrategy2 = maxEstimatedDuplicateIds
+				/ rangeForStrategy1.getCompositeInsertionIds().size();
+		final InsertionIds rangeForStrategy2 = subStrategy2.getInsertionIds(
 				ranges[1],
 				maxEstDuplicatesStrategy2);
 		final List<ByteArrayId> range = composeByteArrayIds(
@@ -291,12 +309,15 @@ public class CompoundIndexStrategy implements
 		return range;
 	}
 
-	private MultiDimensionalNumericData[] getRangesForId(
-			final ByteArrayId insertionId ) {
-		final ByteArrayId[] insertionIds = decomposeByteArrayId(insertionId);
+	private MultiDimensionalNumericData[] getRangesForSortKey(
+			final ByteArrayId sortKet ) {
+		final ByteArrayId[] insertionIds = decomposeByteArrayId(
+				insertionId);
 		return new MultiDimensionalNumericData[] {
-			subStrategy1.getRangeForId(insertionIds[0]),
-			subStrategy2.getRangeForId(insertionIds[1])
+			subStrategy1.getRangeForId(
+					insertionIds[0]),
+			subStrategy2.getRangeForId(
+					insertionIds[1])
 		};
 	}
 
@@ -326,8 +347,9 @@ public class CompoundIndexStrategy implements
 
 	@Override
 	public MultiDimensionalNumericData getRangeForId(
-			final ByteArrayId insertionId ) {
-		final MultiDimensionalNumericData[] rangesForId = getRangesForId(insertionId);
+			final ByteArrayId sortKey ) {
+		final MultiDimensionalNumericData[] rangesForId = getRangesForId(
+				sortKey);
 		final NumericData[] data1 = rangesForId[0].getDataPerDimension();
 		final NumericData[] data2 = rangesForId[1].getDataPerDimension();
 		final NumericData[] dataPerDimension = new NumericData[baseDefinitions.length];
@@ -346,16 +368,21 @@ public class CompoundIndexStrategy implements
 	@Override
 	public MultiDimensionalCoordinates getCoordinatesPerDimension(
 			final ByteArrayId insertionId ) {
-		final ByteArrayId[] insertionIds = decomposeByteArrayId(insertionId);
-		final MultiDimensionalCoordinates coordinates1 = subStrategy1.getCoordinatesPerDimension(insertionIds[0]);
-		final MultiDimensionalCoordinates coordinates2 = subStrategy2.getCoordinatesPerDimension(insertionIds[1]);
+		final ByteArrayId[] insertionIds = decomposeByteArrayId(
+				insertionId);
+		final MultiDimensionalCoordinates coordinates1 = subStrategy1.getCoordinatesPerDimension(
+				insertionIds[0]);
+		final MultiDimensionalCoordinates coordinates2 = subStrategy2.getCoordinatesPerDimension(
+				insertionIds[1]);
 		final Coordinate[] coordinates = new Coordinate[baseDefinitions.length];
 		for (int i = 0; i < baseDefinitions.length; i++) {
 			if (strategy1Mappings[i] >= 0) {
-				coordinates[i] = coordinates1.getCoordinate(strategy1Mappings[i]);
+				coordinates[i] = coordinates1.getCoordinate(
+						strategy1Mappings[i]);
 			}
 			if (strategy2Mappings[i] >= 0) {
-				coordinates[i] = coordinates2.getCoordinate(strategy2Mappings[i]);
+				coordinates[i] = coordinates2.getCoordinate(
+						strategy2Mappings[i]);
 			}
 		}
 		return new MultiDimensionalCoordinates(
@@ -379,7 +406,8 @@ public class CompoundIndexStrategy implements
 
 		int dimsPosition = 0;
 		for (final NumericDimensionDefinition definition : strategy1Definitions) {
-			definitions.add(definition);
+			definitions.add(
+					definition);
 			strategy1Mappings[dimsPosition] = dimsPosition;
 			strategy2Mappings[dimsPosition] = -1;
 			precision[dimsPosition] = strategy1HighestPrecision[dimsPosition];
@@ -387,7 +415,8 @@ public class CompoundIndexStrategy implements
 		}
 		int twosDefsPosition = 0;
 		for (final NumericDimensionDefinition definition : strategy2Definitions) {
-			final int pos = definitions.indexOf(definition);
+			final int pos = definitions.indexOf(
+					definition);
 			if (pos >= 0) {
 				strategy2Mappings[pos] = twosDefsPosition;
 				precision[pos] = Math.max(
@@ -397,14 +426,16 @@ public class CompoundIndexStrategy implements
 			else {
 				strategy2Mappings[dimsPosition] = twosDefsPosition;
 				strategy1Mappings[dimsPosition] = -1;
-				definitions.add(definition);
+				definitions.add(
+						definition);
 				precision[dimsPosition] = strategy2HighestPrecision[twosDefsPosition];
 				dimsPosition++;
 			}
 			twosDefsPosition++;
 		}
 
-		baseDefinitions = definitions.toArray(new NumericDimensionDefinition[definitions.size()]);
+		baseDefinitions = definitions.toArray(
+				new NumericDimensionDefinition[definitions.size()]);
 		highestPrecision = Arrays.copyOfRange(
 				precision,
 				0,
@@ -420,7 +451,8 @@ public class CompoundIndexStrategy implements
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = (prime * result) + Arrays.hashCode(baseDefinitions);
+		result = (prime * result) + Arrays.hashCode(
+				baseDefinitions);
 		result = (prime * result) + defaultNumberOfRanges;
 		result = (prime * result) + ((subStrategy1 == null) ? 0 : subStrategy1.hashCode());
 		result = (prime * result) + ((subStrategy2 == null) ? 0 : subStrategy2.hashCode());
@@ -453,7 +485,8 @@ public class CompoundIndexStrategy implements
 				return false;
 			}
 		}
-		else if (!subStrategy1.equals(other.subStrategy1)) {
+		else if (!subStrategy1.equals(
+				other.subStrategy1)) {
 			return false;
 		}
 		if (subStrategy2 == null) {
@@ -461,7 +494,8 @@ public class CompoundIndexStrategy implements
 				return false;
 			}
 		}
-		else if (!subStrategy2.equals(other.subStrategy2)) {
+		else if (!subStrategy2.equals(
+				other.subStrategy2)) {
 			return false;
 		}
 		return true;
@@ -469,7 +503,8 @@ public class CompoundIndexStrategy implements
 
 	@Override
 	public String getId() {
-		return StringUtils.intToString(hashCode());
+		return StringUtils.intToString(
+				hashCode());
 	}
 
 	@Override
@@ -495,15 +530,17 @@ public class CompoundIndexStrategy implements
 	public List<IndexMetaData> createMetaData() {
 		final List<IndexMetaData> result = new ArrayList<IndexMetaData>();
 		for (final IndexMetaData metaData : subStrategy1.createMetaData()) {
-			result.add(new CompoundIndexMetaDataWrapper(
-					metaData,
-					0));
+			result.add(
+					new CompoundIndexMetaDataWrapper(
+							metaData,
+							0));
 		}
 		metaDataSplit = result.size();
 		for (final IndexMetaData metaData : subStrategy2.createMetaData()) {
-			result.add(new CompoundIndexMetaDataWrapper(
-					metaData,
-					1));
+			result.add(
+					new CompoundIndexMetaDataWrapper(
+							metaData,
+							1));
 		}
 		return result;
 	}
@@ -543,19 +580,24 @@ public class CompoundIndexStrategy implements
 	public static ByteArrayId extractByteArrayId(
 			final ByteArrayId id,
 			final int index ) {
-		final ByteBuffer buf = ByteBuffer.wrap(id.getBytes());
-		final int id1Length = buf.getInt(id.getBytes().length - 4);
+		final ByteBuffer buf = ByteBuffer.wrap(
+				id.getBytes());
+		final int id1Length = buf.getInt(
+				id.getBytes().length - 4);
 
 		if (index == 0) {
 			final byte[] bytes1 = new byte[id1Length];
-			buf.get(bytes1);
+			buf.get(
+					bytes1);
 			return new ByteArrayId(
 					bytes1);
 		}
 
 		final byte[] bytes2 = new byte[id.getBytes().length - id1Length - 4];
-		buf.position(id1Length);
-		buf.get(bytes2);
+		buf.position(
+				id1Length);
+		buf.get(
+				bytes2);
 		return new ByteArrayId(
 				bytes2);
 
@@ -590,19 +632,25 @@ public class CompoundIndexStrategy implements
 
 		@Override
 		public byte[] toBinary() {
-			final byte[] metaBytes = PersistenceUtils.toBinary(metaData);
-			final ByteBuffer buf = ByteBuffer.allocate(4 + metaBytes.length);
-			buf.put(metaBytes);
-			buf.putInt(index);
+			final byte[] metaBytes = PersistenceUtils.toBinary(
+					metaData);
+			final ByteBuffer buf = ByteBuffer.allocate(
+					4 + metaBytes.length);
+			buf.put(
+					metaBytes);
+			buf.putInt(
+					index);
 			return buf.array();
 		}
 
 		@Override
 		public void fromBinary(
 				final byte[] bytes ) {
-			final ByteBuffer buf = ByteBuffer.wrap(bytes);
+			final ByteBuffer buf = ByteBuffer.wrap(
+					bytes);
 			final byte[] metaBytes = new byte[bytes.length - 4];
-			buf.get(metaBytes);
+			buf.get(
+					metaBytes);
 			metaData = PersistenceUtils.fromBinary(
 					metaBytes,
 					IndexMetaData.class);
@@ -614,40 +662,43 @@ public class CompoundIndexStrategy implements
 				final Mergeable merge ) {
 			if (merge instanceof CompoundIndexMetaDataWrapper) {
 				final CompoundIndexMetaDataWrapper compound = (CompoundIndexMetaDataWrapper) merge;
-				metaData.merge(compound.metaData);
+				metaData.merge(
+						compound.metaData);
 			}
 		}
 
 		@Override
 		public void insertionIdsAdded(
 				final List<ByteArrayId> ids ) {
-			metaData.insertionIdsAdded(Lists.transform(
-					ids,
-					new Function<ByteArrayId, ByteArrayId>() {
-						@Override
-						public ByteArrayId apply(
-								final ByteArrayId input ) {
-							return extractByteArrayId(
-									input,
-									index);
-						}
-					}));
+			metaData.insertionIdsAdded(
+					Lists.transform(
+							ids,
+							new Function<ByteArrayId, ByteArrayId>() {
+								@Override
+								public ByteArrayId apply(
+										final ByteArrayId input ) {
+									return extractByteArrayId(
+											input,
+											index);
+								}
+							}));
 		}
 
 		@Override
 		public void insertionIdsRemoved(
 				final List<ByteArrayId> ids ) {
-			metaData.insertionIdsRemoved(Lists.transform(
-					ids,
-					new Function<ByteArrayId, ByteArrayId>() {
-						@Override
-						public ByteArrayId apply(
-								final ByteArrayId input ) {
-							return extractByteArrayId(
-									input,
-									index);
-						}
-					}));
+			metaData.insertionIdsRemoved(
+					Lists.transform(
+							ids,
+							new Function<ByteArrayId, ByteArrayId>() {
+								@Override
+								public ByteArrayId apply(
+										final ByteArrayId input ) {
+									return extractByteArrayId(
+											input,
+											index);
+								}
+							}));
 		}
 	}
 
@@ -669,10 +720,12 @@ public class CompoundIndexStrategy implements
 				final CoordinateRange[][] coordinateRangesPerDimensions = new CoordinateRange[baseDefinitions.length][];
 				for (int i = 0; i < baseDefinitions.length; i++) {
 					if (strategy1Mappings[i] >= 0) {
-						coordinateRangesPerDimensions[i] = range1.getRangeForDimension(strategy1Mappings[i]);
+						coordinateRangesPerDimensions[i] = range1.getRangeForDimension(
+								strategy1Mappings[i]);
 					}
 					else if (strategy2Mappings[i] >= 0) {
-						coordinateRangesPerDimensions[i] = range2.getRangeForDimension(strategy2Mappings[i]);
+						coordinateRangesPerDimensions[i] = range2.getRangeForDimension(
+								strategy2Mappings[i]);
 					}
 				}
 				retVal[r++] = new MultiDimensionalCoordinateRanges(
