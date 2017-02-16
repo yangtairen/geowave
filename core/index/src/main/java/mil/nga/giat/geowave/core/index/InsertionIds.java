@@ -11,6 +11,16 @@ public class InsertionIds
 	private List<ByteArrayId> sortKeys;
 
 	public InsertionIds(
+			final ByteArrayId partitionKey,
+			final InsertionIds insertionId2 ) {
+		this(
+				new InsertionIds(
+						partitionKey,
+						(List<ByteArrayId>) null),
+				insertionId2);
+	}
+
+	public InsertionIds(
 			final InsertionIds insertionId1,
 			final InsertionIds insertionId2 ) {
 		partitionKey = new ByteArrayId(

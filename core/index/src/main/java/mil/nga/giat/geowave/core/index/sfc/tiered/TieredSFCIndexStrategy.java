@@ -234,7 +234,7 @@ public class TieredSFCIndexStrategy implements
 				BigInteger.valueOf(maxDuplicateInsertionIdsPerDimension));
 	}
 
-	private List<ByteArrayId> internalGetInsertionIds(
+	private InsertionIds internalGetInsertionIds(
 			final MultiDimensionalNumericData indexedData,
 			final BigInteger maxDuplicateInsertionIds ) {
 		final BinnedNumericDataset[] ranges = BinnedNumericDataset.applyBins(
@@ -242,7 +242,7 @@ public class TieredSFCIndexStrategy implements
 				baseDefinitions);
 		// place each of these indices into a single row ID at a tier that will
 		// fit its min and max
-		final List<ByteArrayId> rowIds = new ArrayList<ByteArrayId>(
+		final List<ByteArrayId> sortKeys = new ArrayList<ByteArrayId>(
 				ranges.length);
 		for (final BinnedNumericDataset range : ranges) {
 			rowIds.addAll(getRowIds(
@@ -448,7 +448,7 @@ public class TieredSFCIndexStrategy implements
 		return baseDefinitions;
 	}
 
-	synchronized private List<ByteArrayId> getRowIds(
+	synchronized private InsertionIds getRowIds(
 			final BinnedNumericDataset index,
 			final BigInteger maxEstimatedDuplicateIds ) {
 		// most times this should be a single row ID, but if the lowest
@@ -476,7 +476,7 @@ public class TieredSFCIndexStrategy implements
 		return new ArrayList<ByteArrayId>();
 	}
 
-	protected static List<ByteArrayId> getRowIdsAtTier(
+	protected static InsertionIds getRowIdsAtTier(
 			final BinnedNumericDataset index,
 			final byte tierId,
 			final SpaceFillingCurve sfc,
@@ -819,5 +819,39 @@ public class TieredSFCIndexStrategy implements
 						id.getBytes()[0]).intValue()]--;
 			}
 		}
+	}
+
+	@Override
+	public int getPartitionKeyLength() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public MultiDimensionalNumericData getRangeForId(
+			InsertionIds insertionId ) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ByteArrayId getInsertionPartitionKey(
+			MultiDimensionalNumericData insertionData ) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Set<ByteArrayId> getQueryPartitionKeys(
+			MultiDimensionalNumericData queryData,
+			IndexMetaData... hints ) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Set<ByteArrayId> getPartitionKeys() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

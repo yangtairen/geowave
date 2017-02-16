@@ -59,7 +59,7 @@ public class AccumuloIndexWriter<T> extends
 						accumuloOptions.isCreateTable(),
 						true,
 						accumuloOptions.isEnableBlockCache(),
-						index.getIndexStrategy().getNaturalSplits());
+						index.getIndexStrategy().getPartitionKeys());
 			}
 			catch (final TableNotFoundException e) {
 				LOGGER.error(

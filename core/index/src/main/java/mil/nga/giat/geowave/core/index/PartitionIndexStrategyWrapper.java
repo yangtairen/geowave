@@ -9,47 +9,47 @@ import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 
 public class PartitionIndexStrategyWrapper implements NumericIndexStrategy
 {
-	private PartitionIndexStrategy partitionIndexStrategy;
+	private PartitionIndexStrategy<MultiDimensionalNumericData, MultiDimensionalNumericData> partitionIndexStrategy;
 
 	public PartitionIndexStrategyWrapper(
-			PartitionIndexStrategy partitionIndexStrategy ) {
+			final PartitionIndexStrategy<MultiDimensionalNumericData, MultiDimensionalNumericData> partitionIndexStrategy ) {
 		this.partitionIndexStrategy = partitionIndexStrategy;
 	}
 
 	@Override
 	public QueryRanges getQueryRanges(
-			MultiDimensionalNumericData indexedRange,
-			IndexMetaData... hints ) {
+			final MultiDimensionalNumericData indexedRange,
+			final IndexMetaData... hints ) {
 		return null;
 	}
 
 	@Override
 	public QueryRanges getQueryRanges(
-			MultiDimensionalNumericData indexedRange,
-			int maxEstimatedRangeDecomposition,
-			IndexMetaData... hints ) {
+			final MultiDimensionalNumericData indexedRange,
+			final int maxEstimatedRangeDecomposition,
+			final IndexMetaData... hints ) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public InsertionIds getInsertionIds(
-			MultiDimensionalNumericData indexedData ) {
+			final MultiDimensionalNumericData indexedData ) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public InsertionIds getInsertionIds(
-			MultiDimensionalNumericData indexedData,
-			int maxEstimatedDuplicateIds ) {
+			final MultiDimensionalNumericData indexedData,
+			final int maxEstimatedDuplicateIds ) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public MultiDimensionalNumericData getRangeForId(
-			InsertionIds insertionId ) {
+			final InsertionIds insertionId ) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -79,7 +79,7 @@ public class PartitionIndexStrategyWrapper implements NumericIndexStrategy
 
 	@Override
 	public void fromBinary(
-			byte[] bytes ) {
+			final byte[] bytes ) {
 		partitionIndexStrategy = PersistenceUtils.fromBinary(
 				bytes,
 				PartitionIndexStrategy.class);
@@ -87,14 +87,14 @@ public class PartitionIndexStrategyWrapper implements NumericIndexStrategy
 
 	@Override
 	public MultiDimensionalCoordinates getCoordinatesPerDimension(
-			ByteArrayId sortKey ) {
+			final ByteArrayId sortKey ) {
 		return new MultiDimensionalCoordinates();
 	}
 
 	@Override
 	public MultiDimensionalCoordinateRanges[] getCoordinateRangesPerDimension(
-			MultiDimensionalNumericData dataRange,
-			IndexMetaData... hints ) {
+			final MultiDimensionalNumericData dataRange,
+			final IndexMetaData... hints ) {
 		return null;
 	}
 
@@ -111,5 +111,19 @@ public class PartitionIndexStrategyWrapper implements NumericIndexStrategy
 	@Override
 	public int getPartitionKeyLength() {
 		return partitionIndexStrategy.getPartitionKeyLength();
+	}
+
+	@Override
+	public ByteArrayId getInsertionPartitionKey(
+			final MultiDimensionalNumericData insertionData ) {
+		return partitionIndexStrategy.getInsertionPartitionKey(insertionData);
+	}
+
+	@Override
+	public Set<ByteArrayId> getQueryPartitionKeys(
+			final MultiDimensionalNumericData queryData,
+			final IndexMetaData... hints ) {
+		return partitionIndexStrategy.getQueryPartitionKeys(
+				queryData, hints);
 	}
 }

@@ -80,7 +80,7 @@ public class NullNumericIndexStrategy implements
 
 	@Override
 	public MultiDimensionalNumericData getRangeForId(
-			final ByteArrayId insertionId ) {
+			final InsertionIds insertionId ) {
 		// a null return here should be interpreted as negative to positive
 		// infinite
 		return null;
@@ -111,12 +111,12 @@ public class NullNumericIndexStrategy implements
 	}
 
 	@Override
-	public Set<ByteArrayId> getNaturalSplits() {
+	public Set<ByteArrayId> getPartitionKeys() {
 		return null;
 	}
 
 	@Override
-	public int getByteOffsetFromDimensionalIndex() {
+	public int getPartitionKeyLength() {
 		return 0;
 	}
 
@@ -132,6 +132,19 @@ public class NullNumericIndexStrategy implements
 		return new MultiDimensionalCoordinateRanges[] {
 			new MultiDimensionalCoordinateRanges()
 		};
+	}
+
+	@Override
+	public ByteArrayId getInsertionPartitionKey(
+			MultiDimensionalNumericData insertionData ) {
+		return null;
+	}
+
+	@Override
+	public Set<ByteArrayId> getQueryPartitionKeys(
+			MultiDimensionalNumericData queryData,
+			IndexMetaData... hints ) {
+		return null;
 	}
 
 }

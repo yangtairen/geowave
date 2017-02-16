@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
@@ -53,10 +55,10 @@ public class SecondaryIndexDataManager<T> implements
 					indexedAttributeFieldId);
 			// get indexed value(s) for current field
 			@SuppressWarnings("unchecked")
-			final List<ByteArrayId> secondaryIndexInsertionIds = secondaryIndex.getIndexStrategy().getInsertionIds(
+			final InsertionIds secondaryIndexInsertionIds = secondaryIndex.getIndexStrategy().getInsertionIds(
 					Arrays.asList(indexedAttributeFieldInfo));
 			// loop insertionIds
-			for (final ByteArrayId insertionId : secondaryIndexInsertionIds) {
+			for (final ByteArrayId insertionId : secondaryIndexInsertionIds.getCompositeInsertionIds()) {
 				final ByteArrayId primaryIndexRowId = entryInfo.getRowIds().get(
 						0);
 				final ByteArrayId attributeVisibility = new ByteArrayId(
@@ -129,10 +131,10 @@ public class SecondaryIndexDataManager<T> implements
 					indexedAttributeFieldId);
 			// get indexed value(s) for current field
 			@SuppressWarnings("unchecked")
-			final List<ByteArrayId> secondaryIndexRowIds = secondaryIndex.getIndexStrategy().getInsertionIds(
+			final InsertionIds secondaryIndexRowIds = secondaryIndex.getIndexStrategy().getInsertionIds(
 					Arrays.asList(indexedAttributeFieldInfo));
 			// loop insertionIds
-			for (final ByteArrayId secondaryIndexRowId : secondaryIndexRowIds) {
+			for (final ByteArrayId secondaryIndexRowId : secondaryIndexRowIds.getCompositeInsertionIds()) {
 				final ByteArrayId primaryIndexRowId = entryInfo.getRowIds().get(
 						0);
 				final ByteArrayId dataId = new ByteArrayId(

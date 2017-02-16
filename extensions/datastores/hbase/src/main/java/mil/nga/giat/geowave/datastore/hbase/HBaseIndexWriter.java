@@ -96,7 +96,7 @@ public class HBaseIndexWriter<T> extends
 							adapter.getAdapterId().getString()
 						},
 						options.isCreateTable(),
-						index.getIndexStrategy().getNaturalSplits());
+						index.getIndexStrategy().getPartitionKeys());
 			}
 			catch (final IOException e) {
 				LOGGER.error(

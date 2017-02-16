@@ -1,17 +1,17 @@
 package mil.nga.giat.geowave.core.index;
 
-import java.util.List;
+import java.util.Set;
 
-import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 
-public interface PartitionIndexStrategy extends
-		Persistable
+public interface PartitionIndexStrategy<QueryRangeType extends QueryConstraints, EntryRangeType> extends
+		IndexStrategy
 {
 	public ByteArrayId getInsertionPartitionKey(
-			MultiDimensionalNumericData insertionData );
+			EntryRangeType insertionData );
 
-	public List<ByteArrayId> getQueryPartitionKeys(
-			MultiDimensionalNumericData queryData );
+	public Set<ByteArrayId> getQueryPartitionKeys(
+			QueryRangeType queryData,
+			IndexMetaData... hints  );
 	/***
 	 * Get the offset in bytes before the dimensional index. This can accounts
 	 * for tier IDs and bin IDs
@@ -19,4 +19,7 @@ public interface PartitionIndexStrategy extends
 	 * @return the byte offset prior to the dimensional index
 	 */
 	public int getPartitionKeyLength();
+	
+	public Set<ByteArrayId> getPartitionKeys();
+
 }

@@ -7,7 +7,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
-import mil.nga.giat.geowave.core.index.IndexStrategy;
+import mil.nga.giat.geowave.core.index.SortedIndexStrategy;
 import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.adapter.statistics.AbstractDataStatistics;
@@ -39,7 +39,7 @@ public class IndexMetaDataSet<T> extends
 	public IndexMetaDataSet(
 			final ByteArrayId adapterId,
 			final ByteArrayId indexId,
-			final IndexStrategy<?, ?> indexStrategy ) {
+			final SortedIndexStrategy<?, ?> indexStrategy ) {
 		super(
 				adapterId,
 				composeId(indexId));

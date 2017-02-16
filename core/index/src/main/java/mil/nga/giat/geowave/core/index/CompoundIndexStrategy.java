@@ -3,6 +3,7 @@ package mil.nga.giat.geowave.core.index;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -10,9 +11,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 import mil.nga.giat.geowave.core.index.dimension.NumericDimensionDefinition;
-import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 
 /**
  * Class that implements a compound index strategy. It's a wrapper around two
@@ -26,21 +25,18 @@ public class CompoundIndexStrategy implements
 		NumericIndexStrategy
 {
 
-	private PartitionIndexStrategy subStrategy1;
+	private PartitionIndexStrategy<MultiDimensionalNumericData, MultiDimensionalNumericData> subStrategy1;
 	private NumericIndexStrategy subStrategy2;
 	private NumericDimensionDefinition[] baseDefinitions;
 	private double[] highestPrecision;
-	private int[] strategy1Mappings;
-	private int[] strategy2Mappings;
 	private int defaultNumberOfRanges;
 	private int metaDataSplit = -1;
 
 	public CompoundIndexStrategy(
-			final PartitionIndexStrategy subStrategy1,
+			final PartitionIndexStrategy<MultiDimensionalNumericData, MultiDimensionalNumericData> subStrategy1,
 			final NumericIndexStrategy subStrategy2 ) {
 		this.subStrategy1 = subStrategy1;
 		this.subStrategy2 = subStrategy2;
-		init();
 		defaultNumberOfRanges = (int) Math.ceil(
 				Math.pow(
 						2,
@@ -49,7 +45,7 @@ public class CompoundIndexStrategy implements
 
 	protected CompoundIndexStrategy() {}
 
-	public PartitionIndexStrategy getPrimarySubStrategy() {
+	public PartitionIndexStrategy<MultiDimensionalNumericData, MultiDimensionalNumericData> getPrimarySubStrategy() {
 		return subStrategy1;
 	}
 
@@ -88,27 +84,14 @@ public class CompoundIndexStrategy implements
 				delegateBinary2);
 		subStrategy1 = PersistenceUtils.fromBinary(
 				delegateBinary1,
-				NumericIndexStrategy.class);
+				PartitionIndexStrategy.class);
 		subStrategy2 = PersistenceUtils.fromBinary(
 				delegateBinary2,
 				NumericIndexStrategy.class);
-		init();
 		defaultNumberOfRanges = (int) Math.ceil(
 				Math.pow(
 						2,
 						getNumberOfDimensions()));
-	}
-
-	/**
-	 * Get the number of dimensions of each sub-strategy
-	 *
-	 * @return an array with the number of dimensions for each sub-strategy
-	 */
-	public int[] getNumberOfDimensionsPerIndexStrategy() {
-		return new int[] {
-			subStrategy1.getOrderedDimensionDefinitions().length,
-			subStrategy2.getOrderedDimensionDefinitions().length
-		};
 	}
 
 	/**
@@ -172,54 +155,6 @@ public class CompoundIndexStrategy implements
 					bytes2)
 		};
 	}
-
-	private List<ByteArrayId> composeByteArrayIds(
-			final List<ByteArrayId> ids1,
-			final List<ByteArrayId> ids2 ) {
-		final List<ByteArrayId> ids = new ArrayList<>(
-				ids1.size() * ids2.size());
-		for (final ByteArrayId id1 : ids1) {
-			for (final ByteArrayId id2 : ids2) {
-				ids.add(
-						composeByteArrayId(
-								id1,
-								id2));
-			}
-		}
-		return ids;
-	}
-
-	private ByteArrayRange composeByteArrayRange(
-			final ByteArrayRange rangeOfStrategy1,
-			final ByteArrayRange rangeOfStrategy2 ) {
-		final ByteArrayId start = composeByteArrayId(
-				rangeOfStrategy1.getStart(),
-				rangeOfStrategy2.getStart());
-		final ByteArrayId end = composeByteArrayId(
-				rangeOfStrategy1.getEnd(),
-				rangeOfStrategy2.getEnd());
-		return new ByteArrayRange(
-				start,
-				end);
-	}
-
-	private List<ByteArrayRange> getByteArrayRanges(
-			final List<ByteArrayRange> ranges1,
-			final List<ByteArrayRange> ranges2 ) {
-		final List<ByteArrayRange> ranges = new ArrayList<>(
-				ranges1.size() * ranges2.size());
-		for (final ByteArrayRange range1 : ranges1) {
-			for (final ByteArrayRange range2 : ranges2) {
-				final ByteArrayRange range = composeByteArrayRange(
-						range1,
-						range2);
-				ranges.add(
-						range);
-			}
-		}
-		return ranges;
-	}
-
 	@Override
 	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
@@ -235,48 +170,20 @@ public class CompoundIndexStrategy implements
 			final MultiDimensionalNumericData indexedRange,
 			final int maxEstimatedRangeDecomposition,
 			final IndexMetaData... hints ) {
-		final MultiDimensionalNumericData[] ranges = getRangesForIndexedRange(
-				indexedRange);
-		final QueryRanges rangeForStrategy1;
-		final QueryRanges rangeForStrategy2;
-		if (maxEstimatedRangeDecomposition < 1) {
-			rangeForStrategy1 = subStrategy1.getQueryRanges(
-					ranges[0],
-					extractHints(
-							hints,
-							0));
-			rangeForStrategy2 = subStrategy2.getQueryRanges(
-					ranges[1],
-					extractHints(
-							hints,
-							1));
-		}
-		else {
-			// for partitioning it works alright to just use permute ranges from
-			// both sub-strategies but in general this could be too much
+		final Set<ByteArrayId> partitionIds = subStrategy1.getQueryPartitionKeys(
+				indexedRange,
+				extractHints(
+						hints,
+						0));
+		final QueryRanges queryRanges = subStrategy2.getQueryRanges(
+				indexedRange,
+				extractHints(
+						hints,
+						1));
 
-			// final int maxEstRangeDecompositionPerStrategy = (int) Math.ceil(
-			// Math.sqrt(
-			// maxEstimatedRangeDecomposition));
-			rangeForStrategy1 = subStrategy1.getQueryRanges(
-					ranges[0],
-					maxEstimatedRangeDecomposition,
-					extractHints(
-							hints,
-							0));
-			// final int maxEstRangeDecompositionStrategy2 =
-			// maxEstimatedRangeDecomposition / rangeForStrategy1.size();
-			rangeForStrategy2 = subStrategy2.getQueryRanges(
-					ranges[1],
-					maxEstimatedRangeDecomposition,
-					extractHints(
-							hints,
-							1));
-		}
-		final List<ByteArrayRange> range = getByteArrayRanges(
-				rangeForStrategy1,
-				rangeForStrategy2);
-		return range;
+		return new QueryRanges(
+				partitionIds,
+				queryRanges);
 	}
 
 	@Override
@@ -291,78 +198,21 @@ public class CompoundIndexStrategy implements
 	public InsertionIds getInsertionIds(
 			final MultiDimensionalNumericData indexedData,
 			final int maxEstimatedDuplicateIds ) {
-		final int maxEstDuplicatesPerStrategy = (int) Math.sqrt(
-				maxEstimatedDuplicateIds);
-		final MultiDimensionalNumericData[] ranges = getRangesForIndexedRange(
+		final ByteArrayId partitionKey = subStrategy1.getInsertionPartitionKey(
 				indexedData);
-		final InsertionIds rangeForStrategy1 = subStrategy1.getInsertionIds(
-				ranges[0],
-				maxEstDuplicatesPerStrategy);
-		final int maxEstDuplicatesStrategy2 = maxEstimatedDuplicateIds
-				/ rangeForStrategy1.getCompositeInsertionIds().size();
-		final InsertionIds rangeForStrategy2 = subStrategy2.getInsertionIds(
-				ranges[1],
-				maxEstDuplicatesStrategy2);
-		final List<ByteArrayId> range = composeByteArrayIds(
-				rangeForStrategy1,
-				rangeForStrategy2);
-		return range;
-	}
-
-	private MultiDimensionalNumericData[] getRangesForSortKey(
-			final ByteArrayId sortKet ) {
-		final ByteArrayId[] insertionIds = decomposeByteArrayId(
-				insertionId);
-		return new MultiDimensionalNumericData[] {
-			subStrategy1.getRangeForId(
-					insertionIds[0]),
-			subStrategy2.getRangeForId(
-					insertionIds[1])
-		};
-	}
-
-	private MultiDimensionalNumericData[] getRangesForIndexedRange(
-			final MultiDimensionalNumericData indexedRange ) {
-		final NumericData[] datasets = indexedRange.getDataPerDimension();
-
-		final int[] numDimensionsPerStrategy = getNumberOfDimensionsPerIndexStrategy();
-
-		final NumericData[] datasetForStrategy1 = new NumericData[numDimensionsPerStrategy[0]];
-		final NumericData[] datasetForStrategy2 = new NumericData[numDimensionsPerStrategy[1]];
-		for (int i = 0; i < datasets.length; i++) {
-			if (strategy1Mappings[i] >= 0) {
-				datasetForStrategy1[strategy1Mappings[i]] = datasets[i];
-			}
-			if (strategy2Mappings[i] >= 0) {
-				datasetForStrategy2[strategy2Mappings[i]] = datasets[i];
-			}
-		}
-		return new MultiDimensionalNumericData[] {
-			new BasicNumericDataset(
-					datasetForStrategy1),
-			new BasicNumericDataset(
-					datasetForStrategy2)
-		};
+		final InsertionIds insertionIds2 = subStrategy2.getInsertionIds(
+				indexedData,
+				maxEstimatedDuplicateIds);
+		return new InsertionIds(
+				partitionKey,
+				insertionIds2);
 	}
 
 	@Override
 	public MultiDimensionalNumericData getRangeForId(
-			final ByteArrayId sortKey ) {
-		final MultiDimensionalNumericData[] rangesForId = getRangesForId(
-				sortKey);
-		final NumericData[] data1 = rangesForId[0].getDataPerDimension();
-		final NumericData[] data2 = rangesForId[1].getDataPerDimension();
-		final NumericData[] dataPerDimension = new NumericData[baseDefinitions.length];
-		for (int i = 0; i < dataPerDimension.length; i++) {
-			if (strategy1Mappings[i] >= 0) {
-				dataPerDimension[i] = data1[strategy1Mappings[i]];
-			}
-			if (strategy2Mappings[i] >= 0) {
-				dataPerDimension[i] = data2[strategy2Mappings[i]];
-			}
-		}
-		return new BasicNumericDataset(
-				dataPerDimension);
+			final InsertionIds insertionId ) {
+		return subStrategy2.getRangeForId(
+				insertionId);
 	}
 
 	@Override
@@ -370,76 +220,8 @@ public class CompoundIndexStrategy implements
 			final ByteArrayId insertionId ) {
 		final ByteArrayId[] insertionIds = decomposeByteArrayId(
 				insertionId);
-		final MultiDimensionalCoordinates coordinates1 = subStrategy1.getCoordinatesPerDimension(
-				insertionIds[0]);
-		final MultiDimensionalCoordinates coordinates2 = subStrategy2.getCoordinatesPerDimension(
+		return subStrategy2.getCoordinatesPerDimension(
 				insertionIds[1]);
-		final Coordinate[] coordinates = new Coordinate[baseDefinitions.length];
-		for (int i = 0; i < baseDefinitions.length; i++) {
-			if (strategy1Mappings[i] >= 0) {
-				coordinates[i] = coordinates1.getCoordinate(
-						strategy1Mappings[i]);
-			}
-			if (strategy2Mappings[i] >= 0) {
-				coordinates[i] = coordinates2.getCoordinate(
-						strategy2Mappings[i]);
-			}
-		}
-		return new MultiDimensionalCoordinates(
-				ByteArrayUtils.combineArrays(
-						coordinates1.getMultiDimensionalId(),
-						coordinates2.getMultiDimensionalId()),
-				coordinates);
-	}
-
-	private void init() {
-		final NumericDimensionDefinition[] strategy1Definitions = subStrategy1.getOrderedDimensionDefinitions();
-		final NumericDimensionDefinition[] strategy2Definitions = subStrategy2.getOrderedDimensionDefinitions();
-		final double[] strategy1HighestPrecision = subStrategy1.getHighestPrecisionIdRangePerDimension();
-		final double[] strategy2HighestPrecision = subStrategy2.getHighestPrecisionIdRangePerDimension();
-
-		final List<NumericDimensionDefinition> definitions = new ArrayList<NumericDimensionDefinition>(
-				strategy1Definitions.length + strategy2Definitions.length);
-		final double precision[] = new double[strategy1Definitions.length + strategy2Definitions.length];
-		strategy1Mappings = new int[precision.length];
-		strategy2Mappings = new int[precision.length];
-
-		int dimsPosition = 0;
-		for (final NumericDimensionDefinition definition : strategy1Definitions) {
-			definitions.add(
-					definition);
-			strategy1Mappings[dimsPosition] = dimsPosition;
-			strategy2Mappings[dimsPosition] = -1;
-			precision[dimsPosition] = strategy1HighestPrecision[dimsPosition];
-			dimsPosition++;
-		}
-		int twosDefsPosition = 0;
-		for (final NumericDimensionDefinition definition : strategy2Definitions) {
-			final int pos = definitions.indexOf(
-					definition);
-			if (pos >= 0) {
-				strategy2Mappings[pos] = twosDefsPosition;
-				precision[pos] = Math.max(
-						precision[pos],
-						strategy2HighestPrecision[twosDefsPosition]);
-			}
-			else {
-				strategy2Mappings[dimsPosition] = twosDefsPosition;
-				strategy1Mappings[dimsPosition] = -1;
-				definitions.add(
-						definition);
-				precision[dimsPosition] = strategy2HighestPrecision[twosDefsPosition];
-				dimsPosition++;
-			}
-			twosDefsPosition++;
-		}
-
-		baseDefinitions = definitions.toArray(
-				new NumericDimensionDefinition[definitions.size()]);
-		highestPrecision = Arrays.copyOfRange(
-				precision,
-				0,
-				baseDefinitions.length);
 	}
 
 	@Override
@@ -513,17 +295,36 @@ public class CompoundIndexStrategy implements
 	}
 
 	@Override
-	public Set<ByteArrayId> getNaturalSplits() {
-		// because substrategy one is prefixing substrategy2, just use the
-		// splits associated with substrategy1
-		return subStrategy1.getNaturalSplits();
+	public Set<ByteArrayId> getPartitionKeys() {
+		final Set<ByteArrayId> partitionKeys1 = subStrategy1.getPartitionKeys();
+		final Set<ByteArrayId> partitionKeys2 = subStrategy2.getPartitionKeys();
+		Set<ByteArrayId> partitionKeys;
+		if ((partitionKeys1 == null) || partitionKeys1.isEmpty()) {
+			partitionKeys = partitionKeys2;
+		}
+		else if ((partitionKeys2 == null) || partitionKeys2.isEmpty()) {
+			partitionKeys = partitionKeys1;
+		}
+		else {
+			// use all permutations of range keys
+			partitionKeys = new HashSet<ByteArrayId>(
+					partitionKeys1.size() * partitionKeys2.size());
+			for (final ByteArrayId partitionKey1 : partitionKeys1) {
+				for (final ByteArrayId partitionKey2 : partitionKeys2) {
+					partitionKeys.add(
+							new ByteArrayId(
+									ByteArrayUtils.combineArrays(
+											partitionKey1.getBytes(),
+											partitionKey2.getBytes())));
+				}
+			}
+		}
+		return partitionKeys;
 	}
 
 	@Override
-	public int getByteOffsetFromDimensionalIndex() {
-		// TODO: this only makes sense if substrategy 1 contributes no
-		// dimensional index component
-		return subStrategy1.getByteOffsetFromDimensionalIndex() + subStrategy2.getByteOffsetFromDimensionalIndex();
+	public int getPartitionKeyLength() {
+		return subStrategy1.getPartitionKeyLength() + subStrategy2.getPartitionKeyLength();
 	}
 
 	@Override
@@ -706,35 +507,56 @@ public class CompoundIndexStrategy implements
 	public MultiDimensionalCoordinateRanges[] getCoordinateRangesPerDimension(
 			final MultiDimensionalNumericData dataRange,
 			final IndexMetaData... hints ) {
-		final MultiDimensionalCoordinateRanges[] ranges1 = subStrategy1.getCoordinateRangesPerDimension(
+		return subStrategy2.getCoordinateRangesPerDimension(
 				dataRange,
 				hints);
-		final MultiDimensionalCoordinateRanges[] ranges2 = subStrategy2.getCoordinateRangesPerDimension(
-				dataRange,
-				hints);
-		MultiDimensionalCoordinateRanges[] retVal = new MultiDimensionalCoordinateRanges[ranges1.length
-				* ranges2.length];
-		int r = 0;
-		for (final MultiDimensionalCoordinateRanges range1 : ranges1) {
-			for (final MultiDimensionalCoordinateRanges range2 : ranges2) {
-				final CoordinateRange[][] coordinateRangesPerDimensions = new CoordinateRange[baseDefinitions.length][];
-				for (int i = 0; i < baseDefinitions.length; i++) {
-					if (strategy1Mappings[i] >= 0) {
-						coordinateRangesPerDimensions[i] = range1.getRangeForDimension(
-								strategy1Mappings[i]);
-					}
-					else if (strategy2Mappings[i] >= 0) {
-						coordinateRangesPerDimensions[i] = range2.getRangeForDimension(
-								strategy2Mappings[i]);
-					}
-				}
-				retVal[r++] = new MultiDimensionalCoordinateRanges(
-						ByteArrayUtils.combineArrays(
-								range1.getMultiDimensionalId(),
-								range2.getMultiDimensionalId()),
-						coordinateRangesPerDimensions);
+	}
+
+	@Override
+	public ByteArrayId getInsertionPartitionKey(
+			final MultiDimensionalNumericData insertionData ) {
+		final ByteArrayId partitionKey1 = subStrategy1.getInsertionPartitionKey(
+				insertionData);
+		final ByteArrayId partitionKey2 = subStrategy2.getInsertionPartitionKey(
+				insertionData);
+		if (partitionKey1 == null) {
+			return partitionKey2;
+		}
+		if (partitionKey2 == null) {
+			return partitionKey1;
+		}
+		return new ByteArrayId(
+				ByteArrayUtils.combineArrays(
+						partitionKey1.getBytes(),
+						partitionKey2.getBytes()));
+	}
+
+	@Override
+	public Set<ByteArrayId> getQueryPartitionKeys(
+			final MultiDimensionalNumericData queryData,
+			final IndexMetaData... hints ) {
+		final Set<ByteArrayId> partitionKeys1 = subStrategy1.getQueryPartitionKeys(
+				queryData,hints);
+		final Set<ByteArrayId> partitionKeys2 = subStrategy2.getQueryPartitionKeys(
+				queryData,hints);
+		if (partitionKeys1 == null || partitionKeys1.isEmpty()) {
+			return partitionKeys2;
+		}
+		if (partitionKeys2 == null || partitionKeys2.isEmpty()) {
+			return partitionKeys1;
+		}
+		//return all permutations of partitionKeys
+		Set<ByteArrayId> partitionKeys = new HashSet<ByteArrayId>(
+				partitionKeys1.size() * partitionKeys2.size());
+		for (final ByteArrayId partitionKey1 : partitionKeys1) {
+			for (final ByteArrayId partitionKey2 : partitionKeys2) {
+				partitionKeys.add(
+						new ByteArrayId(
+								ByteArrayUtils.combineArrays(
+										partitionKey1.getBytes(),
+										partitionKey2.getBytes())));
 			}
 		}
-		return retVal;
+		return partitionKeys;
 	}
 }

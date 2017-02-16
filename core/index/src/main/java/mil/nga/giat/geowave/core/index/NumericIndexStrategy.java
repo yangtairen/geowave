@@ -8,7 +8,8 @@ import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
  * 
  */
 public interface NumericIndexStrategy extends
-		IndexStrategy<MultiDimensionalNumericData, MultiDimensionalNumericData>
+		SortedIndexStrategy<MultiDimensionalNumericData, MultiDimensionalNumericData>,
+		PartitionIndexStrategy<MultiDimensionalNumericData, MultiDimensionalNumericData>
 {
 
 	/**

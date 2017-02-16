@@ -1,9 +1,12 @@
 package mil.nga.giat.geowave.core.index;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
 public class QueryRanges
@@ -14,24 +17,24 @@ public class QueryRanges
 		private List<ByteArrayRange> sortKeyRanges;
 
 		public PartitionSortKeyRanges(
-				ByteArrayId partitionKey,
-				List<ByteArrayRange> sortKeyRanges ) {
+				final ByteArrayId partitionKey,
+				final List<ByteArrayRange> sortKeyRanges ) {
 			this.partitionKey = partitionKey;
 			this.sortKeyRanges = sortKeyRanges;
 		}
 
 		public PartitionSortKeyRanges(
-				ByteArrayId partitionKey ) {
+				final ByteArrayId partitionKey ) {
 			this.partitionKey = partitionKey;
 		}
 
 		public PartitionSortKeyRanges(
-				List<ByteArrayRange> sortKeyRanges ) {
+				final List<ByteArrayRange> sortKeyRanges ) {
 			this.sortKeyRanges = sortKeyRanges;
 		}
 	}
 
-	private final List<PartitionSortKeyRanges> partitions;
+	private final Collection<PartitionSortKeyRanges> partitions;
 	private List<ByteArrayRange> compositeQueryRanges;
 
 	public QueryRanges() {
@@ -40,31 +43,60 @@ public class QueryRanges
 	}
 
 	public QueryRanges(
-			final List<ByteArrayId> partitionIds,
+			final Set<ByteArrayId> partitionKeys,
 			final QueryRanges queryRanges ) {
-		if (queryRanges2 == null){
-			this.partitions
-			
+		if ((queryRanges == null) || (queryRanges.partitions == null) || queryRanges.partitions.isEmpty()) {
+			partitions = fromPartitionKeys(
+					partitionKeys);
 		}
-		this.partitions = new ArrayList<>();
-		for (PartitionSortKeyRanges sortKeyRange1 : queryRanges1.partitions){
-				partitions.add(new PartitionSortKeyRanges(partitionKey));
-			}
-			for (PartitionSortKeyRanges sortKeyRange2 : queryRanges2.partitions){
-				
+		else if ((partitionKeys == null) || partitionKeys.isEmpty()) {
+			partitions = queryRanges.partitions;
+		}
+		else {
+			partitions = new ArrayList<>(
+					partitionKeys.size() * queryRanges.partitions.size());
+			for (final ByteArrayId partitionKey : partitionKeys) {
+				for (final PartitionSortKeyRanges sortKeyRange : queryRanges.partitions) {
+					ByteArrayId newPartitionKey;
+					if (partitionKey == null) {
+						newPartitionKey = sortKeyRange.partitionKey;
+					}
+					else if (sortKeyRange.partitionKey == null) {
+						newPartitionKey = partitionKey;
+					}
+					else {
+						newPartitionKey = new ByteArrayId(
+								ByteArrayUtils.combineArrays(
+										partitionKey.getBytes(),
+										sortKeyRange.partitionKey.getBytes()));
+					}
+					partitions.add(
+							new PartitionSortKeyRanges(
+									newPartitionKey,
+									sortKeyRange.sortKeyRanges));
+				}
 			}
 		}
 	}
 
 	public QueryRanges(
-			List<PartitionSortKeyRanges> partitions ) {
+			final Collection<PartitionSortKeyRanges> partitions ) {
 		this.partitions = partitions;
 	}
 
 	public QueryRanges(
-			List<ByteArrayId> partitionIds ) {
-		this.partitions = Lists.transform(
-				partitionIds,
+			final Set<ByteArrayId> partitionKeys ) {
+		partitions = fromPartitionKeys(
+				partitionKeys);
+	}
+
+	private static Collection<PartitionSortKeyRanges> fromPartitionKeys(
+			final Set<ByteArrayId> partitionKeys ) {
+		if (partitionKeys == null) {
+			return null;
+		}
+		return Collections2.transform(
+				partitionKeys,
 				new Function<ByteArrayId, PartitionSortKeyRanges>() {
 					@Override
 					public PartitionSortKeyRanges apply(
@@ -75,7 +107,7 @@ public class QueryRanges
 				});
 	}
 
-	public List<PartitionSortKeyRanges> getPartitions() {
+	public Collection<PartitionSortKeyRanges> getPartitions() {
 		return partitions;
 	}
 
@@ -91,7 +123,7 @@ public class QueryRanges
 			return compositeQueryRanges;
 		}
 		final List<ByteArrayRange> internalQueryRanges = new ArrayList<>();
-		for (PartitionSortKeyRanges partition : partitions) {
+		for (final PartitionSortKeyRanges partition : partitions) {
 			if ((partition.sortKeyRanges == null) || partition.sortKeyRanges.isEmpty()) {
 				internalQueryRanges.add(
 						new ByteArrayRange(

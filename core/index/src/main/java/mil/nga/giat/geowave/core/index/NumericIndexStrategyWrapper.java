@@ -81,7 +81,7 @@ public class NumericIndexStrategyWrapper implements
 
 	@Override
 	public MultiDimensionalNumericData getRangeForId(
-			final ByteArrayId insertionId ) {
+			final InsertionIds insertionId ) {
 		return indexStrategy.getRangeForId(insertionId);
 	}
 
@@ -111,13 +111,13 @@ public class NumericIndexStrategyWrapper implements
 	}
 
 	@Override
-	public Set<ByteArrayId> getNaturalSplits() {
-		return indexStrategy.getNaturalSplits();
+	public Set<ByteArrayId> getPartitionKeys() {
+		return indexStrategy.getPartitionKeys();
 	}
 
 	@Override
-	public int getByteOffsetFromDimensionalIndex() {
-		return indexStrategy.getByteOffsetFromDimensionalIndex();
+	public int getPartitionKeyLength() {
+		return indexStrategy.getPartitionKeyLength();
 	}
 
 	@Override
@@ -132,5 +132,19 @@ public class NumericIndexStrategyWrapper implements
 		return indexStrategy.getCoordinateRangesPerDimension(
 				dataRange,
 				hints);
+	}
+
+	@Override
+	public ByteArrayId getInsertionPartitionKey(
+			MultiDimensionalNumericData insertionData ) {
+		return indexStrategy.getInsertionPartitionKey(insertionData);
+	}
+
+	@Override
+	public Set<ByteArrayId> getQueryPartitionKeys(
+			MultiDimensionalNumericData queryData,
+			IndexMetaData... hints ) {
+		return indexStrategy.getQueryPartitionKeys(
+				queryData, hints);
 	}
 }
