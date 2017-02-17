@@ -72,6 +72,8 @@ public class DataStoreUtils
 	})
 	public static final UniformVisibilityWriter UNCONSTRAINED_VISIBILITY = new UniformVisibilityWriter(
 			new UnconstrainedVisibilityHandler());
+	
+	public static final byte[] EMTPY_VISIBILITY = new byte[] {};
 
 	public static List<ByteArrayId> getUniqueDimensionFields(
 			final CommonIndexModel model ) {

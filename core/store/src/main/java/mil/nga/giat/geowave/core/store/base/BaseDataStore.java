@@ -780,102 +780,25 @@ public abstract class BaseDataStore implements
 			return null;
 		}
 
-		final List<FlattenedFieldInfo> flattenedFieldInfoList = new ArrayList<FlattenedFieldInfo>();
-		final CommonIndexModel indexModel = index.getIndexModel();
-		final ByteBuffer input = ByteBuffer.wrap(geowaveRow.getValue());
+		byte[] byteValue = geowaveRow.getValue();
+		byte[] fieldMask = geowaveRow.getFieldMask();
 
-		// this in particular is a terrible hack to find raster data
-		if (decodePackage.getDataAdapter().getFieldIdForPosition(
-				indexModel,
-				indexModel.getDimensions().length).equals(
-				new ByteArrayId(
-						"image"))) {
-			final ByteArrayId fieldId = new ByteArrayId(
-					"image");
-			final FieldReader<?> reader = decodePackage.getDataAdapter().getReader(
-					fieldId);
-			final byte[] bytes = input.array();
-			final PersistentValue<Object> val = new PersistentValue<Object>(
-					fieldId,
-					reader.readField(bytes));
-			decodePackage.getExtendedData().addValue(
-					val);
-			decodePackage.getFieldInfo().add(
-					DataStoreUtils.getFieldInfo(
-							val,
-							bytes,
-							new byte[] {}));
+		if (fieldSubsetBitmask != null) {
+			final byte[] newBitmask = BitmaskUtils.generateANDBitmask(
+					fieldMask,
+					fieldSubsetBitmask);
+			byteValue = BitmaskUtils.constructNewValue(
+					byteValue,
+					fieldMask,
+					newBitmask);
+			fieldMask = newBitmask;
 		}
-		else {
-			// Get the list of valid field positions from the row's field mask
-			List<Integer> fieldPositions = BitmaskUtils.getFieldPositions(geowaveRow.getFieldMask());
 
-			// Collect the valid fields
-			int fieldIndex = 0;
-			while (input.hasRemaining()) {
-				final int fieldLength = input.getInt();
-
-				final byte[] fieldValueBytes = new byte[fieldLength];
-				input.get(fieldValueBytes);
-
-				if (fieldPositions.contains(fieldIndex)) {
-					flattenedFieldInfoList.add(new FlattenedFieldInfo(
-							fieldIndex,
-							fieldValueBytes));
-				}
-
-				fieldIndex++;
-			}
-
-			// below this likely needs some work
-			final Set<ByteArrayId> visitedFieldIds = new HashSet<>();
-			for (final FlattenedFieldInfo flatInfo : flattenedFieldInfoList) {
-				final ByteArrayId fieldId = decodePackage.getDataAdapter().getFieldIdForPosition(
-						indexModel,
-						flatInfo.getFieldPosition());
-				if (!visitedFieldIds.contains(fieldId)) {
-					visitedFieldIds.add(fieldId);
-					final FieldReader<? extends CommonIndexValue> indexFieldReader = indexModel.getReader(fieldId);
-					if (indexFieldReader != null) {
-						final CommonIndexValue indexValue = indexFieldReader.readField(flatInfo.getValue());
-						final PersistentValue<CommonIndexValue> val = new PersistentValue<CommonIndexValue>(
-								fieldId,
-								indexValue);
-						decodePackage.getIndexData().addValue(
-								val);
-						decodePackage.getFieldInfo().add(
-								DataStoreUtils.getFieldInfo(
-										val,
-										flatInfo.getValue(),
-										new byte[] {}));
-					}
-					else {
-						final FieldReader<?> extFieldReader = decodePackage.getDataAdapter().getReader(
-								fieldId);
-						if (extFieldReader != null) {
-							final Object value = extFieldReader.readField(flatInfo.getValue());
-							final PersistentValue<Object> val = new PersistentValue<Object>(
-									fieldId,
-									value);
-							decodePackage.getExtendedData().addValue(
-									val);
-							decodePackage.getFieldInfo().add(
-									DataStoreUtils.getFieldInfo(
-											val,
-											flatInfo.getValue(),
-											new byte[] {}));
-						}
-						else {
-							LOGGER.error("field reader not found for data entry, the value may be ignored");
-							decodePackage.getUnknownData().addValue(
-									new PersistentValue<byte[]>(
-											fieldId,
-											flatInfo.getValue()));
-						}
-					}
-				}
-			}
-		}
+		readFieldInfo(
+				decodePackage,
+				fieldMask,
+				DataStoreUtils.EMTPY_VISIBILITY, // 
+				byteValue);
 
 		return getDecodedRow(
 				geowaveRow,
@@ -889,13 +812,11 @@ public abstract class BaseDataStore implements
 	 */
 	protected void readFieldInfo(
 			final DecodePackage decodePackage,
-			final byte[] compositeFieldIdBytes,
+			final byte[] fieldMask,
 			final byte[] commonVisiblity,
 			final byte[] byteValue ) {
-		final ByteArrayId compositeFieldId = new ByteArrayId(
-				compositeFieldIdBytes);
 		final List<FlattenedFieldInfo> fieldInfos = DataStoreUtils.decomposeFlattenedFields(
-				compositeFieldId.getBytes(),
+				fieldMask,
 				byteValue,
 				commonVisiblity,
 				-1).getFieldsRead();

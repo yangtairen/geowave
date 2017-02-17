@@ -11,10 +11,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NavigableMap;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.Delete;
@@ -40,7 +39,6 @@ import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.AdapterIndexMappingStore;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DuplicateEntryCount;
@@ -52,13 +50,10 @@ import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.data.DecodePackage;
-import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.filter.DedupeFilter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
-import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
-import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.IndexMetaDataSet;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
@@ -714,26 +709,25 @@ public class HBaseDataStore extends
 			ScanCallback scanCallback,
 			byte[] fieldSubsetBitmask,
 			boolean decodeRow ) {
-		if (!(inputRow instanceof Result)) {
-			return null;
-		}
-
 		if ((dataAdapter == null) && (adapterStore == null)) {
 			LOGGER.error("Could not decode row from iterator. Either adapter or adapter store must be non-null.");
 			return null;
 		}
 
+		if (!(inputRow instanceof Result)) {
+			return null;
+		}
+
 		Result row = (Result) inputRow;
+
+		// Create the general-purpose row
+		HBaseRow hbaseRow = new HBaseRow(
+				row.getRow());
 
 		// Grab the first entry's adapter ID if necessary
 		ByteArrayId adapterId = null;
 		if (dataAdapter == null) {
-			Entry<byte[], NavigableMap<byte[], NavigableMap<Long, byte[]>>> firstEntry = (Entry<byte[], NavigableMap<byte[], NavigableMap<Long, byte[]>>>) row
-					.getMap()
-					.entrySet()
-					.toArray()[0];
-			adapterId = new ByteArrayId(
-					firstEntry.getKey());
+			adapterId = new ByteArrayId(hbaseRow.getAdapterId());
 		}
 
 		DecodePackage decodePackage = new DecodePackage(
@@ -764,29 +758,26 @@ public class HBaseDataStore extends
 
 			for (final Entry<byte[], NavigableMap<Long, byte[]>> cqEntry : cfEntry.getValue().entrySet()) {
 				byte[] byteValue = cqEntry.getValue().lastEntry().getValue();
-				byte[] qualifier = cqEntry.getKey();
+				byte[] fieldMask = cqEntry.getKey();
 
 				if (fieldSubsetBitmask != null) {
 					final byte[] newBitmask = BitmaskUtils.generateANDBitmask(
-							qualifier,
+							fieldMask,
 							fieldSubsetBitmask);
 					byteValue = BitmaskUtils.constructNewValue(
 							byteValue,
-							qualifier,
+							fieldMask,
 							newBitmask);
-					qualifier = newBitmask;
+					fieldMask = newBitmask;
 				}
 
 				readFieldInfo(
 						decodePackage,
-						qualifier,
-						new byte[] {},
+						fieldMask,
+						DataStoreUtils.EMTPY_VISIBILITY,
 						byteValue);
 			}
 		}
-
-		HBaseRow hbaseRow = new HBaseRow(
-				row.getRow());
 
 		return getDecodedRow(
 				hbaseRow,
