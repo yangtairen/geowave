@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
+import mil.nga.giat.geowave.core.index.QueryRanges;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
@@ -162,12 +163,12 @@ public class HBaseUtils
 				visibility);
 	}
 
-	public static List<ByteArrayRange> constraintsToByteArrayRanges(
+	public static QueryRanges constraintsToByteArrayRanges(
 			final MultiDimensionalNumericData constraints,
 			final NumericIndexStrategy indexStrategy,
 			final int maxRanges ) {
 		if ((constraints == null) || constraints.isEmpty()) {
-			return new ArrayList<ByteArrayRange>(); // implies in negative and
+			return null; // implies in negative and
 			// positive infinity
 		}
 		else {

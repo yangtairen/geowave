@@ -118,17 +118,6 @@ public class HashKeyIndexStrategyTest
 	}
 
 	@Test
-	public void testNumberOfDimensionsPerIndexStrategy() {
-		final int[] numDimensionsPerStrategy = compoundIndexStrategy.getNumberOfDimensionsPerIndexStrategy();
-		Assert.assertEquals(
-				0,
-				numDimensionsPerStrategy[0]);
-		Assert.assertEquals(
-				2,
-				numDimensionsPerStrategy[1]);
-	}
-
-	@Test
 	public void testGetNumberOfDimensions() {
 		final int numDimensions = compoundIndexStrategy.getNumberOfDimensions();
 		Assert.assertEquals(
@@ -150,7 +139,7 @@ public class HashKeyIndexStrategyTest
 					dimension1Range,
 					dimension2Range
 				});
-		for (ByteArrayId id : compoundIndexStrategy.getInsertionIds(sfcIndexedRange)) {
+		for (ByteArrayId id : compoundIndexStrategy.getInsertionIds(sfcIndexedRange).getCompositeInsertionIds()) {
 			MultiDimensionalCoordinates coords = compoundIndexStrategy.getCoordinatesPerDimension(id);
 			assertTrue(coords.getCoordinate(
 					0).getCoordinate() > 0);
