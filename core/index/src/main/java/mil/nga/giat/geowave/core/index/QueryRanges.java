@@ -11,30 +11,30 @@ import com.google.common.collect.Lists;
 
 public class QueryRanges
 {
-	private static class PartitionSortKeyRanges
+	public static class PartitionAndSortKeyRanges
 	{
 		private ByteArrayId partitionKey;
 		private List<ByteArrayRange> sortKeyRanges;
 
-		public PartitionSortKeyRanges(
+		public PartitionAndSortKeyRanges(
 				final ByteArrayId partitionKey,
 				final List<ByteArrayRange> sortKeyRanges ) {
 			this.partitionKey = partitionKey;
 			this.sortKeyRanges = sortKeyRanges;
 		}
 
-		public PartitionSortKeyRanges(
+		public PartitionAndSortKeyRanges(
 				final ByteArrayId partitionKey ) {
 			this.partitionKey = partitionKey;
 		}
 
-		public PartitionSortKeyRanges(
+		public PartitionAndSortKeyRanges(
 				final List<ByteArrayRange> sortKeyRanges ) {
 			this.sortKeyRanges = sortKeyRanges;
 		}
 	}
 
-	private final Collection<PartitionSortKeyRanges> partitions;
+	private final Collection<PartitionAndSortKeyRanges> partitions;
 	private List<ByteArrayRange> compositeQueryRanges;
 
 	public QueryRanges() {
@@ -56,7 +56,7 @@ public class QueryRanges
 			partitions = new ArrayList<>(
 					partitionKeys.size() * queryRanges.partitions.size());
 			for (final ByteArrayId partitionKey : partitionKeys) {
-				for (final PartitionSortKeyRanges sortKeyRange : queryRanges.partitions) {
+				for (final PartitionAndSortKeyRanges sortKeyRange : queryRanges.partitions) {
 					ByteArrayId newPartitionKey;
 					if (partitionKey == null) {
 						newPartitionKey = sortKeyRange.partitionKey;
@@ -71,7 +71,7 @@ public class QueryRanges
 										sortKeyRange.partitionKey.getBytes()));
 					}
 					partitions.add(
-							new PartitionSortKeyRanges(
+							new PartitionAndSortKeyRanges(
 									newPartitionKey,
 									sortKeyRange.sortKeyRanges));
 				}
@@ -80,7 +80,7 @@ public class QueryRanges
 	}
 
 	public QueryRanges(
-			final Collection<PartitionSortKeyRanges> partitions ) {
+			final Collection<PartitionAndSortKeyRanges> partitions ) {
 		this.partitions = partitions;
 	}
 
@@ -90,24 +90,24 @@ public class QueryRanges
 				partitionKeys);
 	}
 
-	private static Collection<PartitionSortKeyRanges> fromPartitionKeys(
+	private static Collection<PartitionAndSortKeyRanges> fromPartitionKeys(
 			final Set<ByteArrayId> partitionKeys ) {
 		if (partitionKeys == null) {
 			return null;
 		}
 		return Collections2.transform(
 				partitionKeys,
-				new Function<ByteArrayId, PartitionSortKeyRanges>() {
+				new Function<ByteArrayId, PartitionAndSortKeyRanges>() {
 					@Override
-					public PartitionSortKeyRanges apply(
+					public PartitionAndSortKeyRanges apply(
 							ByteArrayId input ) {
-						return new PartitionSortKeyRanges(
+						return new PartitionAndSortKeyRanges(
 								input);
 					}
 				});
 	}
 
-	public Collection<PartitionSortKeyRanges> getPartitions() {
+	public Collection<PartitionAndSortKeyRanges> getPartitions() {
 		return partitions;
 	}
 
@@ -123,7 +123,7 @@ public class QueryRanges
 			return compositeQueryRanges;
 		}
 		final List<ByteArrayRange> internalQueryRanges = new ArrayList<>();
-		for (final PartitionSortKeyRanges partition : partitions) {
+		for (final PartitionAndSortKeyRanges partition : partitions) {
 			if ((partition.sortKeyRanges == null) || partition.sortKeyRanges.isEmpty()) {
 				internalQueryRanges.add(
 						new ByteArrayRange(

@@ -74,15 +74,18 @@ public class NumericIndexStrategyWrapper implements
 	}
 
 	@Override
-	public InsertionIds getInsertionIds(
+	public InsertionIds[] getInsertionIds(
 			final MultiDimensionalNumericData indexedData ) {
 		return indexStrategy.getInsertionIds(indexedData);
 	}
 
 	@Override
 	public MultiDimensionalNumericData getRangeForId(
-			final InsertionIds insertionId ) {
-		return indexStrategy.getRangeForId(insertionId);
+			ByteArrayId partitionKey,
+			ByteArrayId sortKey  ) {
+		return indexStrategy.getRangeForId(
+				 partitionKey,
+				 sortKey );
 	}
 
 	@Override
@@ -102,7 +105,7 @@ public class NumericIndexStrategyWrapper implements
 	}
 
 	@Override
-	public InsertionIds getInsertionIds(
+	public InsertionIds[] getInsertionIds(
 			final MultiDimensionalNumericData indexedData,
 			final int maxDuplicateInsertionIds ) {
 		return indexStrategy.getInsertionIds(

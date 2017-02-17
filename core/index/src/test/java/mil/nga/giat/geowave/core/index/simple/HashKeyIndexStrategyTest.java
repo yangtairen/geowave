@@ -13,6 +13,7 @@ import java.util.Set;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.CompoundIndexStrategy;
+import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinates;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
@@ -83,8 +84,10 @@ public class HashKeyIndexStrategyTest
 							dimension1Range,
 							dimension2Range
 						});
-				for (ByteArrayId id : hashIdexStrategy.getInsertionIds(sfcIndexedRange)) {
-					Long count = counts.get(id);
+				for (ByteArrayId id : hashIdexStrategy.getInsertionIds(
+						sfcIndexedRange)) {
+					Long count = counts.get(
+							id);
 					long nextcount = count == null ? 1 : count + 1;
 					counts.put(
 							id,
@@ -101,17 +104,21 @@ public class HashKeyIndexStrategyTest
 					mean - count,
 					2);
 		}
-		double sd = Math.sqrt(diff / counts.size());
-		assertTrue(sd < mean * 0.18);
+		double sd = Math.sqrt(
+				diff / counts.size());
+		assertTrue(
+				sd < mean * 0.18);
 	}
 
 	@Test
 	public void testBinaryEncoding() {
-		final byte[] bytes = PersistenceUtils.toBinary(compoundIndexStrategy);
+		final byte[] bytes = PersistenceUtils.toBinary(
+				compoundIndexStrategy);
 		final CompoundIndexStrategy deserializedStrategy = PersistenceUtils.fromBinary(
 				bytes,
 				CompoundIndexStrategy.class);
-		final byte[] bytes2 = PersistenceUtils.toBinary(deserializedStrategy);
+		final byte[] bytes2 = PersistenceUtils.toBinary(
+				deserializedStrategy);
 		Assert.assertArrayEquals(
 				bytes,
 				bytes2);
@@ -139,35 +146,42 @@ public class HashKeyIndexStrategyTest
 					dimension1Range,
 					dimension2Range
 				});
-		for (ByteArrayId id : compoundIndexStrategy.getInsertionIds(sfcIndexedRange).getCompositeInsertionIds()) {
-			MultiDimensionalCoordinates coords = compoundIndexStrategy.getCoordinatesPerDimension(id);
-			assertTrue(coords.getCoordinate(
-					0).getCoordinate() > 0);
-			assertTrue(coords.getCoordinate(
-					1).getCoordinate() > 0);
-			MultiDimensionalNumericData nd = compoundIndexStrategy.getRangeForId(id);
-			assertEquals(
-					20.02,
-					nd.getMaxValuesPerDimension()[0],
-					0.1);
-			assertEquals(
-					30.59,
-					nd.getMaxValuesPerDimension()[1],
-					0.2);
-			assertEquals(
-					20.01,
-					nd.getMinValuesPerDimension()[0],
-					0.1);
-			assertEquals(
-					30.57,
-					nd.getMinValuesPerDimension()[1],
-					0.2);
+		InsertionIds id = compoundIndexStrategy.getInsertionIds(
+				sfcIndexedRange);
+		for (ByteArrayId compositeId : id.getCompositeInsertionIds()) {
+			MultiDimensionalCoordinates coords = compoundIndexStrategy.getCoordinatesPerDimension(
+					compositeId);
+			assertTrue(
+					coords.getCoordinate(
+							0).getCoordinate() > 0);
+			assertTrue(
+					coords.getCoordinate(
+							1).getCoordinate() > 0);
 		}
+		MultiDimensionalNumericData nd = compoundIndexStrategy.getRangeForId(
+				id);
+		assertEquals(
+				20.02,
+				nd.getMaxValuesPerDimension()[0],
+				0.1);
+		assertEquals(
+				30.59,
+				nd.getMaxValuesPerDimension()[1],
+				0.2);
+		assertEquals(
+				20.01,
+				nd.getMinValuesPerDimension()[0],
+				0.1);
+		assertEquals(
+				30.57,
+				nd.getMinValuesPerDimension()[1],
+				0.2);
 	}
 
 	@Test
 	public void testGetQueryRangesWithMaximumNumberOfRanges() {
-		final List<ByteArrayRange> sfcIndexRanges = sfcIndexStrategy.getQueryRanges(sfcIndexedRange);
+		final List<ByteArrayRange> sfcIndexRanges = sfcIndexStrategy.getQueryRanges(
+				sfcIndexedRange).getCompositeQueryRanges();
 		final List<ByteArrayRange> ranges = new ArrayList<>();
 		for (int i = 0; i < 3; i++) {
 			for (final ByteArrayRange r2 : sfcIndexRanges) {
@@ -183,17 +197,23 @@ public class HashKeyIndexStrategyTest
 									(byte) i
 								}),
 						r2.getEnd());
-				ranges.add(new ByteArrayRange(
-						start,
-						end));
+				ranges.add(
+						new ByteArrayRange(
+								start,
+								end));
 			}
 		}
 		final Set<ByteArrayRange> testRanges = new HashSet<>(
 				ranges);
 		final Set<ByteArrayRange> compoundIndexRanges = new HashSet<>(
-				compoundIndexStrategy.getQueryRanges(sfcIndexedRange));
-		Assert.assertTrue(testRanges.containsAll(compoundIndexRanges));
-		Assert.assertTrue(compoundIndexRanges.containsAll(testRanges));
+				compoundIndexStrategy.getQueryRanges(
+						sfcIndexedRange).getCompositeQueryRanges());
+		Assert.assertTrue(
+				testRanges.containsAll(
+						compoundIndexRanges));
+		Assert.assertTrue(
+				compoundIndexRanges.containsAll(
+						testRanges));
 	}
 
 }

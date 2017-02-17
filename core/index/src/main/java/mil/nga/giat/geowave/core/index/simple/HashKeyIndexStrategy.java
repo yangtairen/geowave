@@ -207,7 +207,7 @@ public class HashKeyIndexStrategy implements
 	}
 
 	@Override
-	public int getByteOffsetFromDimensionalIndex() {
+	public int getPartitionKeyLength() {
 		if ((keySet != null) && !keySet.isEmpty()) {
 			return keySet.get(
 					0).getStart().getBytes().length;

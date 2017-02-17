@@ -76,17 +76,6 @@ public class RoundRobinKeyIndexStrategyTest
 	}
 
 	@Test
-	public void testNumberOfDimensionsPerIndexStrategy() {
-		final int[] numDimensionsPerStrategy = compoundIndexStrategy.getNumberOfDimensionsPerIndexStrategy();
-		Assert.assertEquals(
-				0,
-				numDimensionsPerStrategy[0]);
-		Assert.assertEquals(
-				2,
-				numDimensionsPerStrategy[1]);
-	}
-
-	@Test
 	public void testGetNumberOfDimensions() {
 		final int numDimensions = compoundIndexStrategy.getNumberOfDimensions();
 		Assert.assertEquals(
@@ -96,7 +85,7 @@ public class RoundRobinKeyIndexStrategyTest
 
 	@Test
 	public void testGetQueryRangesWithMaximumNumberOfRanges() {
-		final List<ByteArrayRange> sfcIndexRanges = sfcIndexStrategy.getQueryRanges(sfcIndexedRange);
+		final List<ByteArrayRange> sfcIndexRanges = sfcIndexStrategy.getQueryRanges(sfcIndexedRange).getCompositeQueryRanges();
 		final List<ByteArrayRange> ranges = new ArrayList<>();
 		for (int i = 0; i < 3; i++) {
 			for (final ByteArrayRange r2 : sfcIndexRanges) {
@@ -120,7 +109,7 @@ public class RoundRobinKeyIndexStrategyTest
 		final Set<ByteArrayRange> testRanges = new HashSet<>(
 				ranges);
 		final Set<ByteArrayRange> compoundIndexRanges = new HashSet<>(
-				compoundIndexStrategy.getQueryRanges(sfcIndexedRange));
+				compoundIndexStrategy.getQueryRanges(sfcIndexedRange).getCompositeQueryRanges());
 		Assert.assertTrue(testRanges.containsAll(compoundIndexRanges));
 		Assert.assertTrue(compoundIndexRanges.containsAll(testRanges));
 	}
@@ -161,7 +150,7 @@ public class RoundRobinKeyIndexStrategyTest
 
 		final List<ByteArrayId> ids2 = sfcIndexStrategy.getInsertionIds(
 				sfcIndexedRange,
-				1);
+				1).getCompositeInsertionIds();
 		for (int i = 0; i < 3; i++) {
 			for (final ByteArrayId id2 : ids2) {
 				ids.add(compoundIndexStrategy.composeByteArrayId(
@@ -177,7 +166,7 @@ public class RoundRobinKeyIndexStrategyTest
 		final Set<ByteArrayId> compoundIndexIds = new HashSet<>(
 				compoundIndexStrategy.getInsertionIds(
 						sfcIndexedRange,
-						8));
+						8).getCompositeInsertionIds());
 		Assert.assertTrue(testIds.containsAll(compoundIndexIds));
 
 		final MultiDimensionalCoordinates sfcIndexCoordinatesPerDim = sfcIndexStrategy.getCoordinatesPerDimension(ids2

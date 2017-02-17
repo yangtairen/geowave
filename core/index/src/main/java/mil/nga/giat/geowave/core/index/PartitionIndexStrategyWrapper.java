@@ -33,14 +33,14 @@ public class PartitionIndexStrategyWrapper implements NumericIndexStrategy
 	}
 
 	@Override
-	public InsertionIds getInsertionIds(
+	public InsertionIds[] getInsertionIds(
 			final MultiDimensionalNumericData indexedData ) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public InsertionIds getInsertionIds(
+	public InsertionIds[] getInsertionIds(
 			final MultiDimensionalNumericData indexedData,
 			final int maxEstimatedDuplicateIds ) {
 		// TODO Auto-generated method stub
@@ -49,7 +49,8 @@ public class PartitionIndexStrategyWrapper implements NumericIndexStrategy
 
 	@Override
 	public MultiDimensionalNumericData getRangeForId(
-			final InsertionIds insertionId ) {
+			ByteArrayId partitionKey,
+			ByteArrayId sortKey  ) {
 		// TODO Auto-generated method stub
 		return null;
 	}

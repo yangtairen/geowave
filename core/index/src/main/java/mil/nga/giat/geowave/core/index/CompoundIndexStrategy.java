@@ -7,9 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-
 import mil.nga.giat.geowave.core.index.dimension.NumericDimensionDefinition;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 
@@ -155,6 +152,7 @@ public class CompoundIndexStrategy implements
 					bytes2)
 		};
 	}
+
 	@Override
 	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
@@ -187,7 +185,7 @@ public class CompoundIndexStrategy implements
 	}
 
 	@Override
-	public InsertionIds getInsertionIds(
+	public InsertionIds[] getInsertionIds(
 			final MultiDimensionalNumericData indexedData ) {
 		return getInsertionIds(
 				indexedData,
@@ -195,24 +193,33 @@ public class CompoundIndexStrategy implements
 	}
 
 	@Override
-	public InsertionIds getInsertionIds(
+	public InsertionIds[] getInsertionIds(
 			final MultiDimensionalNumericData indexedData,
 			final int maxEstimatedDuplicateIds ) {
 		final ByteArrayId partitionKey = subStrategy1.getInsertionPartitionKey(
 				indexedData);
-		final InsertionIds insertionIds2 = subStrategy2.getInsertionIds(
+		final InsertionIds[] insertionIds2 = subStrategy2.getInsertionIds(
 				indexedData,
 				maxEstimatedDuplicateIds);
-		return new InsertionIds(
-				partitionKey,
-				insertionIds2);
+		if (insertionIds2 == null || insertionIds2.length == 0){
+			return new InsertionIds[]{new InsertionIds(
+					partitionKey,
+					(ByteArrayId)null)};
+		}
+		InsertionIds[] retVal = new InsertionIds[insertionIds2.length];
+		for (int i = 0; i < insertionIds2.length; i++){
+			retVal[i] = new InsertionIds(partitionKey, insertionIds2[i]);
+		}
+		return retVal;
 	}
 
 	@Override
 	public MultiDimensionalNumericData getRangeForId(
-			final InsertionIds insertionId ) {
+			final ByteArrayId partitionKey,
+			final ByteArrayId sortKey ) {
 		return subStrategy2.getRangeForId(
-				insertionId);
+				partitionKey,
+				sortKey);
 	}
 
 	@Override
@@ -334,14 +341,16 @@ public class CompoundIndexStrategy implements
 			result.add(
 					new CompoundIndexMetaDataWrapper(
 							metaData,
-							0));
+							subStrategy1.getPartitionKeyLength(),
+							(byte) 0));
 		}
 		metaDataSplit = result.size();
 		for (final IndexMetaData metaData : subStrategy2.createMetaData()) {
 			result.add(
 					new CompoundIndexMetaDataWrapper(
 							metaData,
-							1));
+							subStrategy1.getPartitionKeyLength(),
+							(byte) 1));
 		}
 		return result;
 	}
@@ -371,40 +380,6 @@ public class CompoundIndexStrategy implements
 	}
 
 	/**
-	 * Get the ByteArrayId for each sub-strategy from the ByteArrayId for the
-	 * compound index strategy
-	 *
-	 * @param id
-	 *            the compound ByteArrayId
-	 * @return the ByteArrayId for each sub-strategy
-	 */
-	public static ByteArrayId extractByteArrayId(
-			final ByteArrayId id,
-			final int index ) {
-		final ByteBuffer buf = ByteBuffer.wrap(
-				id.getBytes());
-		final int id1Length = buf.getInt(
-				id.getBytes().length - 4);
-
-		if (index == 0) {
-			final byte[] bytes1 = new byte[id1Length];
-			buf.get(
-					bytes1);
-			return new ByteArrayId(
-					bytes1);
-		}
-
-		final byte[] bytes2 = new byte[id.getBytes().length - id1Length - 4];
-		buf.position(
-				id1Length);
-		buf.get(
-				bytes2);
-		return new ByteArrayId(
-				bytes2);
-
-	}
-
-	/**
 	 *
 	 * Delegate Metadata item for an underlying index. For
 	 * CompoundIndexStrategy, this delegate wraps the meta data for one of the
@@ -413,19 +388,21 @@ public class CompoundIndexStrategy implements
 	 * 'update' operation.
 	 *
 	 */
-	private static class CompoundIndexMetaDataWrapper implements
+	protected static class CompoundIndexMetaDataWrapper implements
 			IndexMetaData,
 			Persistable
 	{
 
 		private IndexMetaData metaData;
-		private int index;
+		private int partition1Length;
+		private byte index;
 
-		public CompoundIndexMetaDataWrapper() {}
+		protected CompoundIndexMetaDataWrapper() {}
 
 		public CompoundIndexMetaDataWrapper(
 				final IndexMetaData metaData,
-				final int index ) {
+				final int partition1Length,
+				final byte index ) {
 			super();
 			this.metaData = metaData;
 			this.index = index;
@@ -436,10 +413,10 @@ public class CompoundIndexStrategy implements
 			final byte[] metaBytes = PersistenceUtils.toBinary(
 					metaData);
 			final ByteBuffer buf = ByteBuffer.allocate(
-					4 + metaBytes.length);
+					1 + metaBytes.length);
 			buf.put(
 					metaBytes);
-			buf.putInt(
+			buf.put(
 					index);
 			return buf.array();
 		}
@@ -449,13 +426,13 @@ public class CompoundIndexStrategy implements
 				final byte[] bytes ) {
 			final ByteBuffer buf = ByteBuffer.wrap(
 					bytes);
-			final byte[] metaBytes = new byte[bytes.length - 4];
+			final byte[] metaBytes = new byte[bytes.length - 1];
 			buf.get(
 					metaBytes);
 			metaData = PersistenceUtils.fromBinary(
 					metaBytes,
 					IndexMetaData.class);
-			index = buf.getInt();
+			index = buf.get();
 		}
 
 		@Override
@@ -470,36 +447,43 @@ public class CompoundIndexStrategy implements
 
 		@Override
 		public void insertionIdsAdded(
-				final List<ByteArrayId> ids ) {
+				final InsertionIds insertionIds ) {
 			metaData.insertionIdsAdded(
-					Lists.transform(
-							ids,
-							new Function<ByteArrayId, ByteArrayId>() {
-								@Override
-								public ByteArrayId apply(
-										final ByteArrayId input ) {
-									return extractByteArrayId(
-											input,
-											index);
-								}
-							}));
+					fixInsertionIdForSubstrategy(
+							insertionIds));
+		}
+
+		private InsertionIds fixInsertionIdForSubstrategy(
+				final InsertionIds insertionIds ) {
+			if ((partition1Length > 0) && ((insertionIds.getPartitionKey().getBytes().length - partition1Length) > 0)) {
+				if (index == 0) {
+					return new InsertionIds(
+							new ByteArrayId(
+									Arrays.copyOfRange(
+											insertionIds.getPartitionKey().getBytes(),
+											0,
+											partition1Length)),
+							insertionIds.getSortKeys());
+				}
+				else {
+					return new InsertionIds(
+							new ByteArrayId(
+									Arrays.copyOfRange(
+											insertionIds.getPartitionKey().getBytes(),
+											partition1Length,
+											insertionIds.getPartitionKey().getBytes().length)),
+							insertionIds.getSortKeys());
+				}
+			}
+			return insertionIds;
 		}
 
 		@Override
 		public void insertionIdsRemoved(
-				final List<ByteArrayId> ids ) {
+				final InsertionIds insertionIds ) {
 			metaData.insertionIdsRemoved(
-					Lists.transform(
-							ids,
-							new Function<ByteArrayId, ByteArrayId>() {
-								@Override
-								public ByteArrayId apply(
-										final ByteArrayId input ) {
-									return extractByteArrayId(
-											input,
-											index);
-								}
-							}));
+					fixInsertionIdForSubstrategy(
+							insertionIds));
 		}
 	}
 
@@ -536,17 +520,19 @@ public class CompoundIndexStrategy implements
 			final MultiDimensionalNumericData queryData,
 			final IndexMetaData... hints ) {
 		final Set<ByteArrayId> partitionKeys1 = subStrategy1.getQueryPartitionKeys(
-				queryData,hints);
+				queryData,
+				hints);
 		final Set<ByteArrayId> partitionKeys2 = subStrategy2.getQueryPartitionKeys(
-				queryData,hints);
-		if (partitionKeys1 == null || partitionKeys1.isEmpty()) {
+				queryData,
+				hints);
+		if ((partitionKeys1 == null) || partitionKeys1.isEmpty()) {
 			return partitionKeys2;
 		}
-		if (partitionKeys2 == null || partitionKeys2.isEmpty()) {
+		if ((partitionKeys2 == null) || partitionKeys2.isEmpty()) {
 			return partitionKeys1;
 		}
-		//return all permutations of partitionKeys
-		Set<ByteArrayId> partitionKeys = new HashSet<ByteArrayId>(
+		// return all permutations of partitionKeys
+		final Set<ByteArrayId> partitionKeys = new HashSet<ByteArrayId>(
 				partitionKeys1.size() * partitionKeys2.size());
 		for (final ByteArrayId partitionKey1 : partitionKeys1) {
 			for (final ByteArrayId partitionKey2 : partitionKeys2) {

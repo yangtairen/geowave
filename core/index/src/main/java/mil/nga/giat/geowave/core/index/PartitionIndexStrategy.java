@@ -6,7 +6,7 @@ import java.util.Set;
 public interface PartitionIndexStrategy<QueryRangeType extends QueryConstraints, EntryRangeType> extends
 		IndexStrategy
 {
-	public ByteArrayId getInsertionPartitionKey(
+	public ByteArrayId[] getInsertionPartitionKeys(
 			EntryRangeType insertionData );
 
 	public Set<ByteArrayId> getQueryPartitionKeys(

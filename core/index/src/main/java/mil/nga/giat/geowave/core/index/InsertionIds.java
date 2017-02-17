@@ -12,6 +12,14 @@ public class InsertionIds
 
 	public InsertionIds(
 			final ByteArrayId partitionKey,
+			final ByteArrayId sortKey ) {
+		this.partitionKey = partitionKey;
+		sortKeys = sortKey == null ? null : Arrays.asList(
+				sortKey);
+	}
+
+	public InsertionIds(
+			final ByteArrayId partitionKey,
 			final InsertionIds insertionId2 ) {
 		this(
 				new InsertionIds(
