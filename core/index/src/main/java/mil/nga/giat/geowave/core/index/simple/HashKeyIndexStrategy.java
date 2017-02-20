@@ -4,19 +4,15 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Sets;
+
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
-import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinateRanges;
-import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinates;
-import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
+import mil.nga.giat.geowave.core.index.PartitionIndexStrategy;
 import mil.nga.giat.geowave.core.index.StringUtils;
-import mil.nga.giat.geowave.core.index.dimension.NumericDimensionDefinition;
-import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 
 /**
@@ -48,10 +44,10 @@ import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
  *
  */
 public class HashKeyIndexStrategy implements
-		NumericIndexStrategy
+		PartitionIndexStrategy<MultiDimensionalNumericData, MultiDimensionalNumericData>
 {
 
-	private final List<ByteArrayRange> keySet = new ArrayList<ByteArrayRange>();
+	private final List<ByteArrayId> keys = new ArrayList<ByteArrayId>();
 
 	public HashKeyIndexStrategy() {
 		this(
@@ -60,23 +56,25 @@ public class HashKeyIndexStrategy implements
 
 	public HashKeyIndexStrategy(
 			final int size ) {
-		init(size);
+		init(
+				size);
 	}
 
 	private void init(
 			final int size ) {
-		keySet.clear();
+		keys.clear();
 		if (size > 256) {
-			final ByteBuffer buf = ByteBuffer.allocate(4);
+			final ByteBuffer buf = ByteBuffer.allocate(
+					4);
 			for (int i = 0; i < size; i++) {
-				buf.putInt(i);
+				buf.putInt(
+						i);
 				final ByteArrayId id = new ByteArrayId(
 						Arrays.copyOf(
 								buf.array(),
 								4));
-				keySet.add(new ByteArrayRange(
-						id,
-						id));
+				keys.add(
+						id);
 				buf.rewind();
 			}
 		}
@@ -86,94 +84,24 @@ public class HashKeyIndexStrategy implements
 						new byte[] {
 							(byte) i
 						});
-				keySet.add(new ByteArrayRange(
-						id,
-						id));
+				keys.add(
+						id);
 			}
 		}
 	}
 
-	/**
-	 * Always returns all possible ranges
-	 *
-	 * {@inheritDoc}
-	 */
-	@Override
-	public List<ByteArrayRange> getQueryRanges(
-			final MultiDimensionalNumericData indexedRange,
-			final IndexMetaData... hints ) {
-		return keySet;
-	}
-
-	/**
-	 * Always returns all possible ranges
-	 */
-	@Override
-	public List<ByteArrayRange> getQueryRanges(
-			final MultiDimensionalNumericData indexedRange,
-			final int maxEstimatedRangeDecomposition,
-			final IndexMetaData... hints ) {
-		return keySet;
-	}
-
-	/**
-	 * Returns an insertion id selected round-robin from a predefined pool
-	 *
-	 */
-	@Override
-	public List<ByteArrayId> getInsertionIds(
-			final MultiDimensionalNumericData indexedData ) {
-		final long hashCode = Math.abs(hashCode(
-				indexedData.getMaxValuesPerDimension(),
-				hashCode(
-						indexedData.getMinValuesPerDimension(),
-						1)));
-		final int position = (int) (hashCode % keySet.size());
-
-		return Collections.singletonList(keySet.get(
-				position).getStart());
-	}
-
-	/**
-	 * Returns all of the insertion ids for the range. Since this index strategy
-	 * doensn't use binning, it will return the ByteArrayId of every value in
-	 * the range (i.e. if you are storing a range using this index strategy,
-	 * your data will be replicated for every integer value in the range).
-	 *
-	 * {@inheritDoc}
-	 */
-	@Override
-	public List<ByteArrayId> getInsertionIds(
-			final MultiDimensionalNumericData indexedData,
-			final int maxEstimatedDuplicateIds ) {
-		return getInsertionIds(indexedData);
-	}
-
-	@Override
-	public NumericDimensionDefinition[] getOrderedDimensionDefinitions() {
-		return new NumericDimensionDefinition[0];
-	}
-
-	@Override
-	public MultiDimensionalNumericData getRangeForId(
-			final ByteArrayId insertionId ) {
-		return new BasicNumericDataset();
-	}
-
-	@Override
-	public double[] getHighestPrecisionIdRangePerDimension() {
-		return new double[0];
-	}
-
 	@Override
 	public String getId() {
-		return StringUtils.intToString(hashCode());
+		return StringUtils.intToString(
+				hashCode());
 	}
 
 	@Override
 	public byte[] toBinary() {
-		final ByteBuffer buf = ByteBuffer.allocate(4);
-		buf.putInt(keySet.size());
+		final ByteBuffer buf = ByteBuffer.allocate(
+				4);
+		buf.putInt(
+				keys.size());
 		return buf.array();
 
 	}
@@ -181,36 +109,35 @@ public class HashKeyIndexStrategy implements
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buf = ByteBuffer.wrap(bytes);
-		init(buf.getInt());
+		final ByteBuffer buf = ByteBuffer.wrap(
+				bytes);
+		init(
+				buf.getInt());
 	}
 
 	@Override
-	public Set<ByteArrayId> getNaturalSplits() {
-		final Set<ByteArrayId> naturalSplits = new HashSet<ByteArrayId>();
-		for (final ByteArrayRange range : keySet) {
-			naturalSplits.add(range.getStart());
-		}
-		return naturalSplits;
+	public Set<ByteArrayId> getPartitionKeys() {
+		return Sets.newHashSet(
+				keys);
 	}
 
 	private static long hashCode(
 			final double a1[],
 			final long start ) {
-
 		long result = start;
 		for (final double element : a1) {
-			final long bits = Double.doubleToLongBits(element);
+			final long bits = Double.doubleToLongBits(
+					element);
 			result = (31 * result) + (bits ^ (bits >>> 32));
 		}
 		return result;
 	}
 
 	@Override
-	public int getByteOffsetFromDimensionalIndex() {
-		if ((keySet != null) && !keySet.isEmpty()) {
-			return keySet.get(
-					0).getStart().getBytes().length;
+	public int getPartitionKeyLength() {
+		if ((keys != null) && !keys.isEmpty()) {
+			return keys.get(
+					0).getBytes().length;
 		}
 		return 0;
 	}
@@ -220,18 +147,33 @@ public class HashKeyIndexStrategy implements
 		return Collections.emptyList();
 	}
 
+	/**
+	 * Returns an insertion id selected round-robin from a predefined pool
+	 *
+	 */
 	@Override
-	public MultiDimensionalCoordinates getCoordinatesPerDimension(
-			final ByteArrayId insertionId ) {
-		return new MultiDimensionalCoordinates();
+	public Set<ByteArrayId> getInsertionPartitionKeys(
+			final MultiDimensionalNumericData insertionData ) {
+		final long hashCode = Math.abs(
+				hashCode(
+						insertionData.getMaxValuesPerDimension(),
+						hashCode(
+								insertionData.getMinValuesPerDimension(),
+								1)));
+		final int position = (int) (hashCode % keys.size());
+
+		return Collections.singleton(
+				keys.get(
+						position));
 	}
 
+	/**
+	 * always return all keys
+	 */
 	@Override
-	public MultiDimensionalCoordinateRanges[] getCoordinateRangesPerDimension(
-			final MultiDimensionalNumericData dataRange,
+	public Set<ByteArrayId> getQueryPartitionKeys(
+			final MultiDimensionalNumericData queryData,
 			final IndexMetaData... hints ) {
-		return new MultiDimensionalCoordinateRanges[] {
-			new MultiDimensionalCoordinateRanges()
-		};
+		return getPartitionKeys();
 	}
 }

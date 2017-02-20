@@ -219,7 +219,7 @@ public class AccumuloDataStore extends
 							((RowMergingDataAdapter<?, ?>) adapter),
 							accumuloOperations,
 							accumuloOptions,
-							index.getIndexStrategy().getNaturalSplits(),
+							index.getIndexStrategy().getPartitionKeys(),
 							indexName);
 				}
 			}

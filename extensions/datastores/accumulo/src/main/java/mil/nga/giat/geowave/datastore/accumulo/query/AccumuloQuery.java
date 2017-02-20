@@ -110,7 +110,7 @@ abstract public class AccumuloQuery extends
 					final int cardinalityToSubsample = (int) Math.round(IndexUtils.getDimensionalBitsUsed(
 							index.getIndexStrategy(),
 							maxResolutionSubsamplingPerDimension)
-							+ (8 * index.getIndexStrategy().getByteOffsetFromDimensionalIndex()));
+							+ (8 * index.getIndexStrategy().getPartitionKeyLength()));
 
 					final IteratorSetting iteratorSettings = new IteratorSetting(
 							FixedCardinalitySkippingIterator.CARDINALITY_SKIPPING_ITERATOR_PRIORITY,

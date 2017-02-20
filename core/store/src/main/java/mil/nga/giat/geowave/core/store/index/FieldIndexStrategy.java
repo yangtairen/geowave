@@ -2,7 +2,7 @@ package mil.nga.giat.geowave.core.store.index;
 
 import java.util.List;
 
-import mil.nga.giat.geowave.core.index.IndexStrategy;
+import mil.nga.giat.geowave.core.index.SortedIndexStrategy;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
 
 /**
@@ -10,7 +10,7 @@ import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
  * 
  */
 public interface FieldIndexStrategy<ConstraintType extends FilterableConstraints, FieldType> extends
-		IndexStrategy<ConstraintType, List<FieldInfo<FieldType>>>
+		SortedIndexStrategy<ConstraintType, List<FieldInfo<FieldType>>>
 {
 
 }

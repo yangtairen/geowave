@@ -29,32 +29,42 @@ public class NumericIndexStrategyWrapper implements
 
 	@Override
 	public byte[] toBinary() {
-		final byte[] idBinary = StringUtils.stringToBinary(id);
-		final byte[] delegateBinary = PersistenceUtils.toBinary(indexStrategy);
-		final ByteBuffer buf = ByteBuffer.allocate(4 + idBinary.length + delegateBinary.length);
-		buf.putInt(idBinary.length);
-		buf.put(idBinary);
-		buf.put(delegateBinary);
+		final byte[] idBinary = StringUtils.stringToBinary(
+				id);
+		final byte[] delegateBinary = PersistenceUtils.toBinary(
+				indexStrategy);
+		final ByteBuffer buf = ByteBuffer.allocate(
+				4 + idBinary.length + delegateBinary.length);
+		buf.putInt(
+				idBinary.length);
+		buf.put(
+				idBinary);
+		buf.put(
+				delegateBinary);
 		return buf.array();
 	}
 
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buf = ByteBuffer.wrap(bytes);
+		final ByteBuffer buf = ByteBuffer.wrap(
+				bytes);
 		final int idBinaryLength = buf.getInt();
 		final byte[] idBinary = new byte[idBinaryLength];
 		final byte[] delegateBinary = new byte[bytes.length - idBinaryLength - 4];
-		buf.get(idBinary);
-		buf.get(delegateBinary);
-		id = StringUtils.stringFromBinary(idBinary);
+		buf.get(
+				idBinary);
+		buf.get(
+				delegateBinary);
+		id = StringUtils.stringFromBinary(
+				idBinary);
 		indexStrategy = PersistenceUtils.fromBinary(
 				delegateBinary,
 				NumericIndexStrategy.class);
 	}
 
 	@Override
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
 			final IndexMetaData... hints ) {
 		return indexStrategy.getQueryRanges(
@@ -63,7 +73,7 @@ public class NumericIndexStrategyWrapper implements
 	}
 
 	@Override
-	public List<ByteArrayRange> getQueryRanges(
+	public QueryRanges getQueryRanges(
 			final MultiDimensionalNumericData indexedRange,
 			final int maxRangeDecomposition,
 			final IndexMetaData... hints ) {
@@ -74,21 +84,28 @@ public class NumericIndexStrategyWrapper implements
 	}
 
 	@Override
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			final MultiDimensionalNumericData indexedData ) {
-		return indexStrategy.getInsertionIds(indexedData);
+		return indexStrategy.getInsertionIds(
+				indexedData);
 	}
 
 	@Override
 	public MultiDimensionalNumericData getRangeForId(
-			final ByteArrayId insertionId ) {
-		return indexStrategy.getRangeForId(insertionId);
+			final ByteArrayId partitionKey,
+			final ByteArrayId sortKey ) {
+		return indexStrategy.getRangeForId(
+				partitionKey,
+				sortKey);
 	}
 
 	@Override
 	public MultiDimensionalCoordinates getCoordinatesPerDimension(
-			final ByteArrayId insertionId ) {
-		return indexStrategy.getCoordinatesPerDimension(insertionId);
+			final ByteArrayId partitionKey,
+			final ByteArrayId sortKey ) {
+		return indexStrategy.getCoordinatesPerDimension(
+				partitionKey,
+				sortKey);
 	}
 
 	@Override
@@ -102,7 +119,7 @@ public class NumericIndexStrategyWrapper implements
 	}
 
 	@Override
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			final MultiDimensionalNumericData indexedData,
 			final int maxDuplicateInsertionIds ) {
 		return indexStrategy.getInsertionIds(
@@ -111,13 +128,13 @@ public class NumericIndexStrategyWrapper implements
 	}
 
 	@Override
-	public Set<ByteArrayId> getNaturalSplits() {
-		return indexStrategy.getNaturalSplits();
+	public Set<ByteArrayId> getPartitionKeys() {
+		return indexStrategy.getPartitionKeys();
 	}
 
 	@Override
-	public int getByteOffsetFromDimensionalIndex() {
-		return indexStrategy.getByteOffsetFromDimensionalIndex();
+	public int getPartitionKeyLength() {
+		return indexStrategy.getPartitionKeyLength();
 	}
 
 	@Override
@@ -131,6 +148,22 @@ public class NumericIndexStrategyWrapper implements
 			final IndexMetaData... hints ) {
 		return indexStrategy.getCoordinateRangesPerDimension(
 				dataRange,
+				hints);
+	}
+
+	@Override
+	public Set<ByteArrayId> getInsertionPartitionKeys(
+			final MultiDimensionalNumericData insertionData ) {
+		return indexStrategy.getInsertionPartitionKeys(
+				insertionData);
+	}
+
+	@Override
+	public Set<ByteArrayId> getQueryPartitionKeys(
+			final MultiDimensionalNumericData queryData,
+			final IndexMetaData... hints ) {
+		return indexStrategy.getQueryPartitionKeys(
+				queryData,
 				hints);
 	}
 }
