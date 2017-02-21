@@ -33,4 +33,23 @@ public class SinglePartitionQueryRanges
 	public List<ByteArrayRange> getSortKeyRanges() {
 		return sortKeyRanges;
 	}
+	
+	public ByteArrayRange getSingleRange(){
+		ByteArrayId start = null;
+		ByteArrayId end = null;
+
+		for (final ByteArrayRange range : sortKeyRanges) {
+			if ((start == null) || (range.getStart().compareTo(
+					start) < 0)) {
+				start = range.getStart();
+			}
+			if ((end == null) || (range.getEnd().compareTo(
+					end) > 0)) {
+				end = range.getEnd();
+			}
+		}
+		return new ByteArrayRange(
+				start,
+				end);
+	}
 }

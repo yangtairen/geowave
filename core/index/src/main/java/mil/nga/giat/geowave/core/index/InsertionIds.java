@@ -6,10 +6,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class InsertionIds
+public class InsertionIds implements
+		Persistable
 {
-	private final Collection<SinglePartitionInsertionIds> partitionKeys;
+	private Collection<SinglePartitionInsertionIds> partitionKeys;
 	private List<ByteArrayId> compositeInsertionIds;
+
+	public InsertionIds() {}
 
 	public InsertionIds(
 			final List<ByteArrayId> sortKeys ) {
@@ -69,4 +72,34 @@ public class InsertionIds
 		compositeInsertionIds = internalCompositeInsertionIds;
 		return compositeInsertionIds;
 	}
+
+	public boolean contains(
+			final ByteArrayId partitionKey,
+			final ByteArrayId sortKey ) {
+		for (final SinglePartitionInsertionIds p : partitionKeys) {
+			if (((partitionKey == null) && (p.getPartitionKey() == null))
+					|| ((partitionKey != null) && partitionKey.equals(
+							p.getPartitionKey()))) {
+				// partition key matches find out if sort key is contained
+				if (sortKey == null) {
+					return true;
+				}
+				if ((p.getSortKeys() != null) && p.getSortKeys().contains(
+						sortKey)) {
+					return true;
+				}
+				return false;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public byte[] toBinary() {
+		return null;
+	}
+
+	@Override
+	public void fromBinary(
+			final byte[] bytes ) {}
 }

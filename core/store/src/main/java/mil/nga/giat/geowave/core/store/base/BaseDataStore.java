@@ -16,6 +16,8 @@ import org.apache.log4j.Logger;
 import com.google.common.collect.Iterators;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.InsertionIds;
+import mil.nga.giat.geowave.core.index.SinglePartitionInsertionIds;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.AdapterToIndexMapping;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
@@ -601,7 +603,7 @@ public abstract class BaseDataStore implements
 
 	protected abstract CloseableIterator<Object> queryRowPrefix(
 			PrimaryIndex index,
-			ByteArrayId rowPrefix,
+			ByteArrayId sortPrefix,
 			QueryOptions sanitizedQueryOptions,
 			AdapterStore tempAdapterStore,
 			List<ByteArrayId> adapterIdsToQuery );
@@ -609,7 +611,7 @@ public abstract class BaseDataStore implements
 	protected abstract CloseableIterator<Object> queryRowIds(
 			DataAdapter<Object> adapter,
 			PrimaryIndex index,
-			List<ByteArrayId> rowIds,
+			InsertionIds rowIds,
 			DedupeFilter filter,
 			QueryOptions sanitizedQueryOptions,
 			AdapterStore tempAdapterStore );

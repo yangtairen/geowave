@@ -25,7 +25,8 @@ public class PrefixIdQueryFilter implements
 	public boolean accept(
 			final CommonIndexModel indexModel,
 			final IndexedPersistenceEncoding persistenceEncoding ) {
-		ByteArrayId rowId = persistenceEncoding.getIndexInsertionId();
+		ByteArrayId partitionKey = persistenceEncoding.getInsertionPartitionKey();
+		ByteArrayId sortKey = persistenceEncoding.getInsertionSortKey();
 		return (Arrays.equals(
 				rowPrefix.getBytes(),
 				Arrays.copyOf(

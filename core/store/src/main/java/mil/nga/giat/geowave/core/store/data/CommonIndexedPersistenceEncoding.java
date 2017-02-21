@@ -1,5 +1,6 @@
 package mil.nga.giat.geowave.core.store.data;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.InsertionIds;
+import mil.nga.giat.geowave.core.index.SinglePartitionInsertionIds;
 import mil.nga.giat.geowave.core.index.dimension.NumericDimensionDefinition;
 import mil.nga.giat.geowave.core.index.sfc.SFCDimensionDefinition;
 import mil.nga.giat.geowave.core.index.sfc.data.BasicNumericDataset;
@@ -36,14 +39,16 @@ public class CommonIndexedPersistenceEncoding extends
 	public CommonIndexedPersistenceEncoding(
 			final ByteArrayId adapterId,
 			final ByteArrayId dataId,
-			final ByteArrayId indexInsertionId,
+			final ByteArrayId insertionPartitionKey,
+			final ByteArrayId insertionSortKey,
 			final int duplicateCount,
 			final PersistentDataset<CommonIndexValue> commonData,
 			final PersistentDataset<byte[]> unknownData ) {
 		super(
 				adapterId,
 				dataId,
-				indexInsertionId,
+				insertionPartitionKey,
+				insertionSortKey,
 				duplicateCount,
 				commonData,
 				unknownData);
@@ -57,36 +62,41 @@ public class CommonIndexedPersistenceEncoding extends
 	 *            the index
 	 * @return The insertions IDs for this object in the index
 	 */
-	public List<ByteArrayId> getInsertionIds(
+	public InsertionIds getInsertionIds(
 			final PrimaryIndex index ) {
 		final MultiDimensionalNumericData boxRangeData = getNumericData(index.getIndexModel().getDimensions());
-		final List<ByteArrayId> untrimmedResult = index.getIndexStrategy().getInsertionIds(
+		final InsertionIds untrimmedResult = index.getIndexStrategy().getInsertionIds(
 				boxRangeData);
-		final int size = untrimmedResult.size();
-		if (size > 3) { // need at least 4 quadrants in a quadtree to create a
+		 Collection<SinglePartitionInsertionIds> partitionInsertionIds = untrimmedResult.getPartitionKeys();
+		 for (SinglePartitionInsertionIds id : partitionInsertionIds){
+		if (id.getSortKeys() != null && id.getSortKeys().size() > 3) {
+			// need at least 4 quadrants in a quadtree to create a
 			// concave shape where the mbr overlaps an area that the
 			// underlying polygon doesn't
-			final Iterator<ByteArrayId> it = untrimmedResult.iterator();
-			while (it.hasNext()) {
-				final ByteArrayId insertionId = it.next();
+			Iterator<ByteArrayId> sortKeysIt = id.getSortKeys().iterator();
+			ByteArrayId partitionKey = id.getPartitionKey();
+			while (sortKeysIt.hasNext()) {
+				final ByteArrayId sortKey = sortKeysIt.next();
 				// final MultiDimensionalNumericData md =
 				// correctForNormalizationError(index.getIndexStrategy().getRangeForId(insertionId));
 				// used to check the result of the index strategy
 				if (LOGGER.isDebugEnabled() && checkCoverage(
 						boxRangeData,
-						index.getIndexStrategy().getRangeForId(
-								insertionId))) {
+						index.getIndexStrategy().getRangeForId(partitionKey,
+								sortKey))) {
 					LOGGER.error("Index strategy produced an unmatching tile during encoding and storing an entry");
 				}
 				if (!overlaps(
 						index.getIndexStrategy().getRangeForId(
-								insertionId).getDataPerDimension(),
+								partitionKey,
+								sortKey).getDataPerDimension(),
 						index)) {
-					it.remove();
+					sortKeysIt.remove();
 				}
 			}
 		}
-		return untrimmedResult;
+	}return untrimmedResult;
+
 	}
 
 	/**
@@ -108,10 +118,11 @@ public class CommonIndexedPersistenceEncoding extends
 			final boolean overlaps = ((i1 < j2) || DoubleMath.fuzzyEquals(
 					i1,
 					j2,
-					DOUBLE_TOLERANCE)) && ((i2 > j1) || DoubleMath.fuzzyEquals(
-					i2,
-					j1,
-					DOUBLE_TOLERANCE));
+					DOUBLE_TOLERANCE))
+					&& ((i2 > j1) || DoubleMath.fuzzyEquals(
+							i2,
+							j1,
+							DOUBLE_TOLERANCE));
 			if (!overlaps) {
 				return false;
 			}
@@ -138,7 +149,8 @@ public class CommonIndexedPersistenceEncoding extends
 			CommonIndexValue val = getCommonData().getValue(
 					dimensions[d].getFieldId());
 			if (val != null) {
-				dataPerDimension[d] = dimensions[d].getNumericData(val);
+				dataPerDimension[d] = dimensions[d].getNumericData(
+						val);
 			}
 		}
 		return new BasicNumericDataset(
@@ -210,10 +222,12 @@ public class CommonIndexedPersistenceEncoding extends
 			else {
 				baseDefinitionCls = dimensions[d].getClass();
 			}
-			NumericDimensionField field = dimensionTypeToFieldMap.get(baseDefinitionCls);
+			NumericDimensionField field = dimensionTypeToFieldMap.get(
+					baseDefinitionCls);
 			if (field != null) {
 				final ByteArrayId fieldId = field.getFieldId();
-				final DimensionRangePair fieldData = fieldsRangeData.get(fieldId);
+				final DimensionRangePair fieldData = fieldsRangeData.get(
+						fieldId);
 				if (fieldData == null) {
 					fieldsRangeData.put(
 							fieldId,
@@ -232,7 +246,8 @@ public class CommonIndexedPersistenceEncoding extends
 		for (final Entry<ByteArrayId, DimensionRangePair> entry : fieldsRangeData.entrySet()) {
 			PersistentDataset<CommonIndexValue> commonData = getCommonData();
 			if (commonData != null) {
-				CommonIndexValue value = commonData.getValue(entry.getKey());
+				CommonIndexValue value = commonData.getValue(
+						entry.getKey());
 				if (value != null && !value.overlaps(
 						entry.getValue().dimensions,
 						entry.getValue().dataPerDimension)) {
