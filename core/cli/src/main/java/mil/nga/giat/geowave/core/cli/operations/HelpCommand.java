@@ -25,15 +25,16 @@ import mil.nga.giat.geowave.core.cli.spi.OperationRegistry;
 
 @GeowaveOperation(name = "help", parentOperation = GeowaveTopLevelSection.class)
 @Parameters(commandDescription = "Get descriptions of arguments for " + "any GeoWave command")
-public class HelpCommand extends ServerResource implements
-		Command 
+public class HelpCommand extends
+		ServerResource implements
+		Command
 {
 
 	@Get("txt")
-    public String toString() {
-        return "Viewing help command page";
-    }
-	
+	public String toString() {
+		return "Viewing help command page";
+	}
+
 	@Override
 	public boolean prepare(
 			OperationParams inputParams ) {
