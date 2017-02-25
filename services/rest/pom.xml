@@ -10,11 +10,22 @@
 	<artifactId>geowave-service-rest</artifactId>
 	<name>GeoWave Services Rest</name>
 	<repositories>
-		<repository>
+		<!-- <repository>
 			<id>maven-restlet</id>
 			<name>Restlet repository</name>
 			<url>https://maven.restlet.com</url>
-		</repository>
+		</repository> -->
+		<repository>
+   <id>boundless</id>
+   <name>Boundless Maven Repository</name>
+   <url>https://repo.boundlessgeo.com/main/</url>
+   <snapshots>
+     <enabled>true</enabled>
+   </snapshots>
+   <releases>
+     <enabled>true</enabled>
+   </releases>
+  </repository>
 	</repositories>
 	<properties>
 		<restlet-version>2.3.9</restlet-version>
