@@ -10,9 +10,11 @@ public interface GeoWaveRow
 
 	public byte[] getValue();
 
-	public byte[] getIndex();
+	public byte[] getSortKey();
+	
+	public byte[] getPartitionKey();
 
-	public byte[] getRowId();
+	public byte[] getCompositeRowId();
 
 	public int getNumberOfDuplicates();
 }

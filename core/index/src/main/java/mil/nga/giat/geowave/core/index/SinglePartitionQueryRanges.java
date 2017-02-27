@@ -1,5 +1,6 @@
 package mil.nga.giat.geowave.core.index;
 
+import java.util.Collections;
 import java.util.List;
 
 public class SinglePartitionQueryRanges
@@ -26,6 +27,14 @@ public class SinglePartitionQueryRanges
 		this.sortKeyRanges = sortKeyRanges;
 		partitionKey = null;
 	}
+
+	public SinglePartitionQueryRanges(
+			final ByteArrayRange singleSortKeyRange ) {
+		this.sortKeyRanges = Collections.singletonList(
+				singleSortKeyRange);
+		partitionKey = null;
+	}
+
 	public ByteArrayId getPartitionKey() {
 		return partitionKey;
 	}
@@ -33,8 +42,8 @@ public class SinglePartitionQueryRanges
 	public List<ByteArrayRange> getSortKeyRanges() {
 		return sortKeyRanges;
 	}
-	
-	public ByteArrayRange getSingleRange(){
+
+	public ByteArrayRange getSingleRange() {
 		ByteArrayId start = null;
 		ByteArrayId end = null;
 

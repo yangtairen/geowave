@@ -3,6 +3,7 @@ package mil.nga.giat.geowave.core.store.base;
 import java.util.List;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
 
 public class DataStoreEntryInfo
@@ -36,18 +37,15 @@ public class DataStoreEntryInfo
 	}
 
 	private final byte[] dataId;
-	private final List<ByteArrayId> rowIds;
-	private final List<ByteArrayId> insertionIds;
+	private final InsertionIds insertionIds;
 	private final List<FieldInfo<?>> fieldInfo;
 
 	public DataStoreEntryInfo(
 			final byte[] dataId,
-			final List<ByteArrayId> insertionIds,
-			final List<ByteArrayId> rowIds,
+			final InsertionIds insertionIds,
 			final List<FieldInfo<?>> fieldInfo ) {
 		this.dataId = dataId;
 		this.insertionIds = insertionIds;
-		this.rowIds = rowIds;
 		this.fieldInfo = fieldInfo;
 	}
 
@@ -57,16 +55,12 @@ public class DataStoreEntryInfo
 				dataId).getString();
 	}
 
-	public List<ByteArrayId> getInsertionIds() {
+	public InsertionIds getInsertionIds() {
 		return insertionIds;
 	}
 
 	public byte[] getDataId() {
 		return dataId;
-	}
-
-	public List<ByteArrayId> getRowIds() {
-		return rowIds;
 	}
 
 	public List<FieldInfo<?>> getFieldInfo() {

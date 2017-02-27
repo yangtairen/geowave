@@ -2,6 +2,7 @@ package mil.nga.giat.geowave.core.index;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,6 +103,13 @@ public class QueryRanges
 	public QueryRanges(
 			final Collection<SinglePartitionQueryRanges> partitionRanges ) {
 		this.partitionRanges = partitionRanges;
+	}
+
+	public QueryRanges(
+			final ByteArrayRange singleSortKeyRange ) {
+		partitionRanges = Collections.singletonList(
+				new SinglePartitionQueryRanges(
+						singleSortKeyRange));
 	}
 
 	public QueryRanges(
