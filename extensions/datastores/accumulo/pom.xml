@@ -25,6 +25,12 @@
             <artifactId>geowave-core-cli</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet</artifactId>
+			<version>2.3.9</version>
+			<optional>true</optional>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.accumulo</groupId>
 			<artifactId>accumulo-minicluster</artifactId>

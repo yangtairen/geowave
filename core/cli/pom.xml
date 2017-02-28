@@ -52,6 +52,7 @@
 			<groupId>org.restlet.jse</groupId>
 			<artifactId>org.restlet</artifactId>
 			<version>${restlet-version}</version>
+			<optional>true</optional>
 		</dependency>
 	</dependencies>
 </project>

@@ -14,6 +14,21 @@
 	<artifactId>geowave-test</artifactId>
 	<name>GeoWave Integration Tests</name>
 	<description>A module for integration and functional tests of GeoWave</description>
+	
+  <repositories>
+  <repository>
+   <id>boundless</id>
+   <name>Boundless Maven Repository</name>
+   <url>https://repo.boundlessgeo.com/main/</url>
+   <snapshots>
+     <enabled>true</enabled>
+   </snapshots>
+   <releases>
+     <enabled>true</enabled>
+   </releases>
+  </repository>
+  </repositories>
+	
 	<dependencies>
 		<dependency>
 			<groupId>mil.nga.giat</groupId>
@@ -35,6 +50,16 @@
 			<groupId>mil.nga.giat</groupId>
 			<artifactId>geowave-cli-osm</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.restlet.jse</groupId>
+					<artifactId>org.restlet</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.restlet.jse</groupId>
+					<artifactId>org.restlet.ext.jackson</artifactId>
+			</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>mil.nga.giat</groupId>
@@ -120,6 +145,11 @@
 			<groupId>com.github.stefanbirkner</groupId>
 			<artifactId>system-rules</artifactId>
 			<version>1.16.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.restlet</groupId>
+			<artifactId>org.restlet</artifactId>
+			<version>1.0.8</version>
 		</dependency>
 	</dependencies>
 	<build>
