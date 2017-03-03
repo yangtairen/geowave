@@ -112,8 +112,8 @@ public class DuplicateEntryCount<T> extends
 
 	private static boolean entryHasDuplicates(
 			final DataStoreEntryInfo entryInfo ) {
-		if ((entryInfo != null) && (entryInfo.getRowIds() != null)) {
-			return entryInfo.getRowIds().size() > 1;
+		if ((entryInfo != null) && (entryInfo.getInsertionIds() != null)) {
+			return entryInfo.getInsertionIds().hasDuplicates();
 		}
 		return false;
 	}

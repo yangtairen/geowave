@@ -44,7 +44,7 @@ import mil.nga.giat.geowave.core.store.data.DecodePackage;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
 import mil.nga.giat.geowave.core.store.filter.DedupeFilter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
@@ -293,7 +293,7 @@ public abstract class BaseDataStore implements
 			final List<ByteArrayId> dataIds,
 			final DataAdapter<Object> adapter,
 			final DedupeFilter dedupeFilter,
-			final ScanCallback<Object, Object> callback,
+			final ScanCallback<Object, GeoWaveKeyValue> callback,
 			final String[] authorizations,
 			final double[] maxResolutionSubsamplingPerDimension )
 			throws IOException {
@@ -417,16 +417,15 @@ public abstract class BaseDataStore implements
 					}
 					final Deleter internalIdxDeleter = idxDeleter;
 					final Deleter internalAltIdxDeleter = altIdxDeleter;
-					final ScanCallback<Object, Object> callback = new ScanCallback<Object, Object>() {
+					final ScanCallback<Object, GeoWaveKeyValue> callback = new ScanCallback<Object, GeoWaveKeyValue>() {
 						@Override
 						public void entryScanned(
-								final DataStoreEntryInfo entryInfo,
-								final Object nativeDataStoreEntry,
-								final Object entry ) {
+								final GeoWaveKeyValue row ,
+								final Object entry) {
 							callbackCache.getDeleteCallback(
 									(WritableDataAdapter<Object>) adapter,
 									index).entryDeleted(
-									entryInfo,
+											row,
 									entry);
 							try {
 								internalIdxDeleter.delete(
@@ -654,7 +653,7 @@ public abstract class BaseDataStore implements
 				customFieldVisibilityWriter,
 				ingestInfo);
 
-		final Iterable<GeoWaveRow> rows = toGeoWaveRows(
+		final Iterable<GeoWaveKeyValue> rows = toGeoWaveRows(
 				writableAdapter,
 				index,
 				ingestInfo);
@@ -690,7 +689,7 @@ public abstract class BaseDataStore implements
 	 * 
 	 * @return list of GeoWaveRow
 	 */
-	public <T> Iterable<GeoWaveRow> toGeoWaveRows(
+	public <T> Iterable<GeoWaveKeyValue> toGeoWaveRows(
 			final WritableDataAdapter<T> writableAdapter,
 			final PrimaryIndex index,
 			final DataStoreEntryInfo ingestInfo ) {
@@ -702,7 +701,7 @@ public abstract class BaseDataStore implements
 		final boolean ensureUniqueId = (writableAdapter instanceof RowMergingDataAdapter)
 				&& (((RowMergingDataAdapter) writableAdapter).getTransform() != null);
 
-		final Iterable<GeoWaveRow> geowaveRows = getRowsFromIngest(
+		final Iterable<GeoWaveKeyValue> geowaveRows = getRowsFromIngest(
 				writableAdapter.getAdapterId().getBytes(),
 				ingestInfo,
 				fieldInfoList,
@@ -721,7 +720,7 @@ public abstract class BaseDataStore implements
 	 * @param ensureUniqueId
 	 * @return
 	 */
-	protected abstract Iterable<GeoWaveRow> getRowsFromIngest(
+	protected abstract Iterable<GeoWaveKeyValue> getRowsFromIngest(
 			final byte[] adapterId,
 			final DataStoreEntryInfo ingestInfo,
 			final List<FieldInfo<?>> fieldInfoList,
@@ -733,7 +732,7 @@ public abstract class BaseDataStore implements
 	 */
 	public abstract void write(
 			Writer writer,
-			Iterable<GeoWaveRow> rows,
+			Iterable<GeoWaveKeyValue> rows,
 			final String columnFamily );
 
 	/**
@@ -753,11 +752,11 @@ public abstract class BaseDataStore implements
 			final byte[] fieldSubsetBitmask,
 			final boolean decodeRow ) {
 		// The base case for decoding requires the input row to be a GeoWaveRow
-		if (!(inputRow instanceof GeoWaveRow)) {
+		if (!(inputRow instanceof GeoWaveKeyValue)) {
 			return null;
 		}
 
-		GeoWaveRow geowaveRow = (GeoWaveRow) inputRow;
+		GeoWaveKeyValue geowaveRow = (GeoWaveKeyValue) inputRow;
 		ByteArrayId adapterId = new ByteArrayId(
 				geowaveRow.getAdapterId());
 
@@ -871,7 +870,7 @@ public abstract class BaseDataStore implements
 	 * persistence model into the native data type
 	 */
 	protected Object getDecodedRow(
-			GeoWaveRow geowaveRow,
+			GeoWaveKeyValue geowaveRow,
 			DecodePackage decodePackage,
 			QueryFilter clientFilter,
 			ScanCallback scanCallback ) {

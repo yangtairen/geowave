@@ -3,7 +3,7 @@ package mil.nga.giat.geowave.core.store.entities;
 import java.nio.ByteBuffer;
 
 public class GeoWaveRowImpl implements
-		GeoWaveRow
+		GeoWaveKeyValue
 {
 	protected byte[] dataId = null;
 	protected byte[] adapterId = null;
@@ -16,7 +16,7 @@ public class GeoWaveRowImpl implements
 	protected GeoWaveRowImpl() {}
 
 	public GeoWaveRowImpl(
-			final byte[] compositeRowId ) {
+			final byte[] compositeInsertionId ) {
 		this(
 				compositeRowId,
 				null,
@@ -24,7 +24,7 @@ public class GeoWaveRowImpl implements
 	}
 
 	public GeoWaveRowImpl(
-			final byte[] compositeRowId,
+			final byte[] compositeInsertionId,
 			final int length ) {
 		this(
 				compositeRowId,
@@ -33,11 +33,11 @@ public class GeoWaveRowImpl implements
 	}
 
 	public GeoWaveRowImpl(
-			final byte[] compositeRowId,
+			final byte[] compositeInsertionId,
 			final int offset,
 			final int length ) {
 		this(
-				compositeRowId,
+				compositeInsertionId,
 				offset,
 				length,
 				null,
@@ -45,25 +45,25 @@ public class GeoWaveRowImpl implements
 	}
 
 	public GeoWaveRowImpl(
-			final byte[] compositeRowId,
+			final byte[] compositeInsertionId,
 			final byte[] fieldMask,
 			final byte[] value ) {
 		this(
-				compositeRowId,
+				compositeInsertionId,
 				0,
-				compositeRowId.length,
+				compositeInsertionId.length,
 				fieldMask,
 				value);
 	}
 
 	public GeoWaveRowImpl(
-			final byte[] compositeRowId,
+			final byte[] compositeInsertionId,
 			final int offset,
 			final int length,
 			final byte[] fieldMask,
 			final byte[] value ) {
 		final ByteBuffer metadataBuf = ByteBuffer.wrap(
-				compositeRowId,
+				compositeInsertionId,
 				(length + offset) - 12,
 				12);
 		final int adapterIdLength = metadataBuf.getInt();
@@ -71,7 +71,7 @@ public class GeoWaveRowImpl implements
 		final int numberOfDuplicates = metadataBuf.getInt();
 
 		final ByteBuffer buf = ByteBuffer.wrap(
-				compositeRowId,
+				compositeInsertionId,
 				offset,
 				length - 12);
 		final byte[] index = new byte[length - 12 - adapterIdLength - dataIdLength];
@@ -126,7 +126,7 @@ public class GeoWaveRowImpl implements
 				numberOfDuplicates);
 	}
 
-	public byte[] getCompositeRowId() {
+	public byte[] getCompositeInsertionId() {
 		final ByteBuffer buf = ByteBuffer.allocate(
 				12 + dataId.length + adapterId.length + index.length);
 		buf.put(

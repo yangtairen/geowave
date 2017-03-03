@@ -23,10 +23,9 @@ public class RowIdQuery implements
 			final ByteArrayId partitionKey,
 			final ByteArrayId sortKey ) {
 		rowIds = new InsertionIds(
-				Collections.singletonList(
 						new SinglePartitionInsertionIds(
 								partitionKey,
-								sortKey)));
+								sortKey));
 	}
 
 	public RowIdQuery(

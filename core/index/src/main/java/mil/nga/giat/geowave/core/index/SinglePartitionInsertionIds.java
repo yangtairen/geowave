@@ -215,8 +215,21 @@ public class SinglePartitionInsertionIds implements
 			partitionKey = null;
 		}
 		final int sSize = buf.getInt();
-		if(sSize > 0){
-			
+		if (sSize > 0) {
+			sortKeys = new ArrayList<>(
+					sSize);
+			for (int i = 0; i < sSize; i++) {
+				final int keyLength = buf.getInt();
+				final byte[] sortKey = new byte[keyLength];
+				buf.get(
+						sortKey);
+				sortKeys.add(
+						new ByteArrayId(
+								sortKey));
+			}
+		}
+		else {
+			sortKeys = null;
 		}
 	}
 

@@ -1,10 +1,14 @@
 package mil.nga.giat.geowave.core.index;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class InsertionIds implements
 		Persistable
@@ -12,7 +16,9 @@ public class InsertionIds implements
 	private Collection<SinglePartitionInsertionIds> partitionKeys;
 	private List<ByteArrayId> compositeInsertionIds;
 
-	public InsertionIds() {}
+	public InsertionIds() {
+		partitionKeys = new ArrayList<SinglePartitionInsertionIds>();
+	}
 
 	public InsertionIds(
 			final List<ByteArrayId> sortKeys ) {
@@ -52,6 +58,23 @@ public class InsertionIds implements
 
 	public Collection<SinglePartitionInsertionIds> getPartitionKeys() {
 		return partitionKeys;
+	}
+
+	public boolean hasDuplicates() {
+		if (compositeInsertionIds != null) {
+			return compositeInsertionIds.size() >= 2;
+		}
+		if ((partitionKeys == null) || partitionKeys.isEmpty()) {
+			return false;
+		}
+		if (partitionKeys.size() > 1) {
+			return true;
+		}
+		final SinglePartitionInsertionIds partition = partitionKeys.iterator().next();
+		if ((partition.getSortKeys() == null) || (partition.getSortKeys().size() <= 1)) {
+			return false;
+		}
+		return true;
 	}
 
 	public List<ByteArrayId> getCompositeInsertionIds() {
@@ -94,12 +117,83 @@ public class InsertionIds implements
 		return false;
 	}
 
-	@Override
-	public byte[] toBinary() {
+	public Pair<ByteArrayId, ByteArrayId> getFirstPartitionAndSortKeyPair() {
+		if (partitionKeys == null) {
+			return null;
+		}
+		for (final SinglePartitionInsertionIds p : partitionKeys) {
+			if ((p.getSortKeys() != null) && !p.getSortKeys().isEmpty()) {
+				return new ImmutablePair<ByteArrayId, ByteArrayId>(
+						p.getPartitionKey(),
+						p.getSortKeys().get(
+								0));
+			}
+			else if ((p.getPartitionKey() != null)) {
+				return new ImmutablePair<ByteArrayId, ByteArrayId>(
+						p.getPartitionKey(),
+						null);
+			}
+		}
 		return null;
 	}
 
 	@Override
+	public byte[] toBinary() {
+		if ((partitionKeys != null) && !partitionKeys.isEmpty()) {
+			final List<byte[]> partitionKeysBinary = new ArrayList<>(
+					partitionKeys.size());
+			int totalSize = 4;
+			for (final SinglePartitionInsertionIds id : partitionKeys) {
+				final byte[] binary = id.toBinary();
+				totalSize += (4 + binary.length);
+				partitionKeysBinary.add(
+						binary);
+			}
+			final ByteBuffer buf = ByteBuffer.allocate(
+					totalSize);
+			buf.putInt(
+					totalSize);
+			for (final byte[] binary : partitionKeysBinary) {
+				buf.putInt(
+						binary.length);
+				buf.put(
+						binary);
+			}
+			return buf.array();
+		}
+		else {
+			return ByteBuffer
+					.allocate(
+							4)
+					.putInt(
+							0)
+					.array();
+		}
+	}
+
+	@Override
 	public void fromBinary(
-			final byte[] bytes ) {}
+			final byte[] bytes ) {
+		final ByteBuffer buf = ByteBuffer.wrap(
+				bytes);
+		final int size = buf.getInt();
+		if (size > 0) {
+			partitionKeys = new ArrayList<>(
+					size);
+			for (int i = 0; i < size; i++) {
+				final int length = buf.getInt();
+				final byte[] pBytes = new byte[length];
+				buf.get(
+						pBytes);
+				final SinglePartitionInsertionIds pId = new SinglePartitionInsertionIds();
+				pId.fromBinary(
+						pBytes);
+				partitionKeys.add(
+						pId);
+			}
+		}
+		else {
+			partitionKeys = new ArrayList<>();
+		}
+	}
 }

@@ -76,6 +76,7 @@ public class RowRangeDataStatistics<T> extends
 	public void entryIngested(
 			final DataStoreEntryInfo entryInfo,
 			final T entry ) {
+		//TODO we should have a statistic that is a range per partition
 		for (final ByteArrayId ids : entryInfo.getRowIds()) {
 			final byte[] idBytes = ids.getBytes();
 			min = compare(

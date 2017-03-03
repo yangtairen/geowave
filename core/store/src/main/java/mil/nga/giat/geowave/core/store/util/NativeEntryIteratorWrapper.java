@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 
@@ -22,7 +22,7 @@ public class NativeEntryIteratorWrapper<T> extends
 			final PrimaryIndex index,
 			final Iterator scannerIt,
 			final QueryFilter clientFilter,
-			final ScanCallback<T, ? extends GeoWaveRow> scanCallback,
+			final ScanCallback<T, ? extends GeoWaveKeyValue> scanCallback,
 			final boolean decodePersistenceEncoding ) {
 		super(
 				false,
@@ -40,9 +40,9 @@ public class NativeEntryIteratorWrapper<T> extends
 			final QueryFilter clientFilter,
 			final PrimaryIndex index,
 			final boolean wholeRowEncoding ) {
-		GeoWaveRow entry = null;
+		GeoWaveKeyValue entry = null;
 		try {
-			entry = (GeoWaveRow) row;
+			entry = (GeoWaveKeyValue) row;
 		}
 		catch (final ClassCastException e) {
 			LOGGER.error("Row is not a native geowave row entry.");

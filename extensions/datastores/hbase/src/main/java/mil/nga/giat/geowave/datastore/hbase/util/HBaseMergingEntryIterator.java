@@ -25,7 +25,7 @@ import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter.RowTransform;
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRowImpl;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
@@ -81,7 +81,7 @@ public class HBaseMergingEntryIterator<T> extends
 		}
 		peekedValue = null;
 
-		final GeoWaveRow rowId = new GeoWaveRowImpl(
+		final GeoWaveKeyValue rowId = new GeoWaveRowImpl(
 				nextResult.getRow());
 		final ByteArrayId adapterId = new ByteArrayId(
 				rowId.getAdapterId());
@@ -96,7 +96,7 @@ public class HBaseMergingEntryIterator<T> extends
 			// Peek ahead to see if it needs to be merged with the next result
 			while (scannerIt.hasNext()) {
 				peekedValue = (Result) scannerIt.next();
-				final GeoWaveRow nextRowId = new GeoWaveRowImpl(
+				final GeoWaveKeyValue nextRowId = new GeoWaveRowImpl(
 						peekedValue.getRow());
 
 				if (DataStoreUtils.rowIdsMatch(
@@ -209,7 +209,7 @@ public class HBaseMergingEntryIterator<T> extends
 					new ByteArrayId(
 							CellUtil.cloneQualifier(cellToMerge)),
 					CellUtil.cloneValue(cellToMerge)));
-			GeoWaveRow tempRow = new GeoWaveRowImpl(
+			GeoWaveKeyValue tempRow = new GeoWaveRowImpl(
 					row.getRow());
 			mergedCells[cellNum] = CellUtil.createCell(
 					new GeoWaveRowImpl(

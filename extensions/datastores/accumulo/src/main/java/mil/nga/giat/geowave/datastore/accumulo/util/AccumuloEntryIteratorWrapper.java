@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.util.EntryIteratorWrapper;
@@ -37,7 +37,7 @@ public class AccumuloEntryIteratorWrapper<T> extends
 			final PrimaryIndex index,
 			final Iterator scannerIt,
 			final QueryFilter clientFilter,
-			final ScanCallback<T, GeoWaveRow> scanCallback ) {
+			final ScanCallback<T, GeoWaveKeyValue> scanCallback ) {
 		super(
 				wholeRowEncoding,
 				dataStore,

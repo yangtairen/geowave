@@ -82,7 +82,7 @@ public class MaxDuplicatesStatistics<T> extends
 			final T entry ) {
 		maxDuplicates = Math.max(
 				maxDuplicates,
-				entryInfo.getRowIds().size() - 1);
+				entryInfo.getInsertionIds().getCompositeInsertionIds().size() - 1);
 	}
 
 	@Override

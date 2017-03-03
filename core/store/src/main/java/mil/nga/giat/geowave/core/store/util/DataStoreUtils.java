@@ -46,7 +46,7 @@ import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
 import mil.nga.giat.geowave.core.store.data.visibility.UnconstrainedVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
 import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRowImpl;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
@@ -110,8 +110,8 @@ public class DataStoreUtils
 	}
 
 	public static boolean rowIdsMatch(
-			final GeoWaveRow rowId1,
-			final GeoWaveRow rowId2 ) {
+			final GeoWaveKeyValue rowId1,
+			final GeoWaveKeyValue rowId2 ) {
 		if (!Arrays.equals(
 				rowId1.getIndex(),
 				rowId2.getIndex())) {
@@ -646,7 +646,7 @@ public class DataStoreUtils
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T, R extends GeoWaveRow> T decodeRow(
+	public static <T, R extends GeoWaveKeyValue> T decodeRow(
 			final R row,
 			final AdapterStore adapterStore,
 			final QueryFilter clientFilter,
@@ -662,7 +662,7 @@ public class DataStoreUtils
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <T, R extends GeoWaveRow> T decodeRowInternal(
+	private static <T, R extends GeoWaveKeyValue> T decodeRowInternal(
 			final R row,
 			DataAdapter<T> dataAdapter,
 			final AdapterStore adapterStore,

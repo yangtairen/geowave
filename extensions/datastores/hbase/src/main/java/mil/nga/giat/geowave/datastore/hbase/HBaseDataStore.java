@@ -50,7 +50,7 @@ import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.data.DecodePackage;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
 import mil.nga.giat.geowave.core.store.filter.DedupeFilter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
@@ -628,12 +628,12 @@ public class HBaseDataStore extends
 	}
 
 	@Override
-	protected Iterable<GeoWaveRow> getRowsFromIngest(
+	protected Iterable<GeoWaveKeyValue> getRowsFromIngest(
 			byte[] adapterId,
 			DataStoreEntryInfo ingestInfo,
 			List<FieldInfo<?>> fieldInfoList,
 			boolean ensureUniqueId ) {
-		ArrayList<GeoWaveRow> rows = new ArrayList<>();
+		ArrayList<GeoWaveKeyValue> rows = new ArrayList<>();
 
 		for (ByteArrayId rowId : ingestInfo.getRowIds()) {
 			if (ensureUniqueId) {
@@ -654,11 +654,11 @@ public class HBaseDataStore extends
 	@Override
 	public void write(
 			Writer writer,
-			Iterable<GeoWaveRow> rows,
+			Iterable<GeoWaveKeyValue> rows,
 			final String columnFamily ) {
 		final List<RowMutations> mutations = new ArrayList<RowMutations>();
 
-		for (GeoWaveRow geoWaveRow : rows) {
+		for (GeoWaveKeyValue geoWaveRow : rows) {
 			HBaseRow hbaseRow = (HBaseRow) geoWaveRow;
 
 			byte[] rowId = hbaseRow.getRowId();

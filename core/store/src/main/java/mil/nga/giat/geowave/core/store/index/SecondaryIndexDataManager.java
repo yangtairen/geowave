@@ -4,9 +4,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.InsertionIds;
@@ -18,8 +18,8 @@ import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 
 /**
  * One manager associated with each primary index.
- * 
- * 
+ *
+ *
  * @param <T>
  *            The type of entity being indexed
  */
@@ -56,33 +56,36 @@ public class SecondaryIndexDataManager<T> implements
 			// get indexed value(s) for current field
 			@SuppressWarnings("unchecked")
 			final InsertionIds secondaryIndexInsertionIds = secondaryIndex.getIndexStrategy().getInsertionIds(
-					Arrays.asList(indexedAttributeFieldInfo));
+					Arrays.asList(
+							indexedAttributeFieldInfo));
 			// loop insertionIds
 			for (final ByteArrayId insertionId : secondaryIndexInsertionIds.getCompositeInsertionIds()) {
-				final ByteArrayId primaryIndexRowId = entryInfo.getRowIds().get(
-						0);
 				final ByteArrayId attributeVisibility = new ByteArrayId(
 						indexedAttributeFieldInfo.getVisibility());
 				final ByteArrayId dataId = new ByteArrayId(
 						entryInfo.getDataId());
 				switch (secondaryIndex.getSecondaryIndexType()) {
 					case JOIN:
+						final InsertionIds primaryIndexInsertionIds = entryInfo.getInsertionIds();
+						final Pair<ByteArrayId, ByteArrayId> firstPartitionAndSortKey = primaryIndexInsertionIds
+								.getFirstPartitionAndSortKeyPair();
 						secondaryIndexStore.storeJoinEntry(
 								secondaryIndex.getId(),
 								insertionId,
 								adapter.getAdapterId(),
 								indexedAttributeFieldId,
-								primaryIndexId,
-								primaryIndexRowId,
+								firstPartitionAndSortKey.getLeft(),
+								firstPartitionAndSortKey.getRight(),
 								attributeVisibility);
 						break;
 					case PARTIAL:
 						final List<FieldInfo<?>> attributes = new ArrayList<>();
 						final List<ByteArrayId> attributesToStore = secondaryIndex.getPartialFieldIds();
 						for (final ByteArrayId fieldId : attributesToStore) {
-							attributes.add(getFieldInfo(
-									entryInfo,
-									fieldId));
+							attributes.add(
+									getFieldInfo(
+											entryInfo,
+											fieldId));
 						}
 						secondaryIndexStore.storeEntry(
 								secondaryIndex.getId(),
@@ -132,30 +135,33 @@ public class SecondaryIndexDataManager<T> implements
 			// get indexed value(s) for current field
 			@SuppressWarnings("unchecked")
 			final InsertionIds secondaryIndexRowIds = secondaryIndex.getIndexStrategy().getInsertionIds(
-					Arrays.asList(indexedAttributeFieldInfo));
+					Arrays.asList(
+							indexedAttributeFieldInfo));
 			// loop insertionIds
 			for (final ByteArrayId secondaryIndexRowId : secondaryIndexRowIds.getCompositeInsertionIds()) {
-				final ByteArrayId primaryIndexRowId = entryInfo.getRowIds().get(
-						0);
 				final ByteArrayId dataId = new ByteArrayId(
 						entryInfo.getDataId());
 				switch (secondaryIndex.getSecondaryIndexType()) {
 					case JOIN:
+						final InsertionIds primaryIndexInsertionIds = entryInfo.getInsertionIds();
+						final Pair<ByteArrayId, ByteArrayId> firstPartitionAndSortKey = primaryIndexInsertionIds
+								.getFirstPartitionAndSortKeyPair();
 						secondaryIndexStore.deleteJoinEntry(
 								secondaryIndex.getId(),
 								secondaryIndexRowId,
 								adapter.getAdapterId(),
 								indexedAttributeFieldId,
-								primaryIndexId,
-								primaryIndexRowId);
+								firstPartitionAndSortKey.getLeft(),
+								firstPartitionAndSortKey.getRight());
 						break;
 					case PARTIAL:
 						final List<FieldInfo<?>> attributes = new ArrayList<>();
 						final List<ByteArrayId> attributesToDelete = secondaryIndex.getPartialFieldIds();
 						for (final ByteArrayId fieldId : attributesToDelete) {
-							attributes.add(getFieldInfo(
-									entryInfo,
-									fieldId));
+							attributes.add(
+									getFieldInfo(
+											entryInfo,
+											fieldId));
 						}
 						secondaryIndexStore.deleteEntry(
 								secondaryIndex.getId(),

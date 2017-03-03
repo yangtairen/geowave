@@ -19,7 +19,7 @@ import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter.RowTransform;
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRowImpl;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
@@ -32,15 +32,15 @@ public class MergingEntryIterator<T> extends
 	private final Map<ByteArrayId, RowMergingDataAdapter> mergingAdapters;
 	private final Map<ByteArrayId, RowTransform> transforms;
 
-	private GeoWaveRow peekedValue;
+	private GeoWaveKeyValue peekedValue;
 
 	public MergingEntryIterator(
 			final BaseDataStore dataStore,
 			final AdapterStore adapterStore,
 			final PrimaryIndex index,
-			final Iterator<GeoWaveRow> scannerIt,
+			final Iterator<GeoWaveKeyValue> scannerIt,
 			final QueryFilter clientFilter,
-			final ScanCallback<T, GeoWaveRow> scanCallback,
+			final ScanCallback<T, GeoWaveKeyValue> scanCallback,
 			final Map<ByteArrayId, RowMergingDataAdapter> mergingAdapters ) {
 		super(
 				dataStore,
@@ -59,12 +59,12 @@ public class MergingEntryIterator<T> extends
 
 		// Get next result from scanner
 		// We may have already peeked at it
-		GeoWaveRow nextResult = null;
+		GeoWaveKeyValue nextResult = null;
 		if (peekedValue != null) {
 			nextResult = peekedValue;
 		}
 		else {
-			nextResult = (GeoWaveRow) scannerIt.next();
+			nextResult = (GeoWaveKeyValue) scannerIt.next();
 		}
 		peekedValue = null;
 
@@ -72,7 +72,7 @@ public class MergingEntryIterator<T> extends
 				nextResult.getAdapterId());
 		final RowMergingDataAdapter mergingAdapter = mergingAdapters.get(adapterId);
 
-		final ArrayList<GeoWaveRow> resultsToMerge = new ArrayList<GeoWaveRow>();
+		final ArrayList<GeoWaveKeyValue> resultsToMerge = new ArrayList<GeoWaveKeyValue>();
 
 		if ((mergingAdapter != null) && (mergingAdapter.getTransform() != null)) {
 
@@ -80,7 +80,7 @@ public class MergingEntryIterator<T> extends
 
 			// Peek ahead to see if it needs to be merged with the next result
 			while (scannerIt.hasNext()) {
-				peekedValue = (GeoWaveRow) scannerIt.next();
+				peekedValue = (GeoWaveKeyValue) scannerIt.next();
 
 				if (DataStoreUtils.rowIdsMatch(
 						nextResult,
@@ -105,14 +105,14 @@ public class MergingEntryIterator<T> extends
 		return nextResult;
 	}
 
-	private GeoWaveRow mergeResults(
+	private GeoWaveKeyValue mergeResults(
 			final RowMergingDataAdapter mergingAdapter,
-			final ArrayList<GeoWaveRow> resultsToMerge ) {
+			final ArrayList<GeoWaveKeyValue> resultsToMerge ) {
 		if (resultsToMerge.isEmpty()) {
 			return null;
 		}
 		else if (resultsToMerge.size() == 1) {
-			final GeoWaveRow row = resultsToMerge.get(0);
+			final GeoWaveKeyValue row = resultsToMerge.get(0);
 			return new GeoWaveRowImpl(
 					DataStoreUtils.removeUniqueId(row.getDataId()),
 					row.getAdapterId(),
@@ -124,11 +124,11 @@ public class MergingEntryIterator<T> extends
 
 		Collections.sort(
 				resultsToMerge,
-				new Comparator<GeoWaveRow>() {
+				new Comparator<GeoWaveKeyValue>() {
 					@Override
 					public int compare(
-							final GeoWaveRow row1,
-							final GeoWaveRow row2 ) {
+							final GeoWaveKeyValue row1,
+							final GeoWaveKeyValue row2 ) {
 
 						final ByteBuffer buf1 = ByteBuffer.wrap(row1.getDataId());
 						final ByteBuffer buf2 = ByteBuffer.wrap(row2.getDataId());
@@ -145,8 +145,8 @@ public class MergingEntryIterator<T> extends
 
 				});
 
-		final Iterator<GeoWaveRow> iter = resultsToMerge.iterator();
-		GeoWaveRow mergedResult = iter.next();
+		final Iterator<GeoWaveKeyValue> iter = resultsToMerge.iterator();
+		GeoWaveKeyValue mergedResult = iter.next();
 		while (iter.hasNext()) {
 			mergedResult = merge(
 					mergingAdapter,
@@ -158,10 +158,10 @@ public class MergingEntryIterator<T> extends
 		return mergedResult;
 	}
 
-	private GeoWaveRow merge(
+	private GeoWaveKeyValue merge(
 			final RowMergingDataAdapter mergingAdapter,
-			final GeoWaveRow row,
-			final GeoWaveRow rowToMerge ) {
+			final GeoWaveKeyValue row,
+			final GeoWaveKeyValue rowToMerge ) {
 
 		RowTransform transform = transforms.get(mergingAdapter.getAdapterId());
 		if (transform == null) {

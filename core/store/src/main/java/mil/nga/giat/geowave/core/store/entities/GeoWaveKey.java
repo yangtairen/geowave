@@ -1,6 +1,6 @@
 package mil.nga.giat.geowave.core.store.entities;
 
-public interface GeoWaveRow
+public interface GeoWaveKey
 {
 	public byte[] getDataId();
 
@@ -8,13 +8,11 @@ public interface GeoWaveRow
 
 	public byte[] getFieldMask();
 
-	public byte[] getValue();
-
 	public byte[] getSortKey();
 	
 	public byte[] getPartitionKey();
 
-	public byte[] getCompositeRowId();
+	public byte[] getVisibility();
 
 	public int getNumberOfDuplicates();
 }

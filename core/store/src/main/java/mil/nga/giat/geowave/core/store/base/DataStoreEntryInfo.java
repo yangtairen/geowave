@@ -37,14 +37,17 @@ public class DataStoreEntryInfo
 	}
 
 	private final byte[] dataId;
+	private final byte[] adapterId;
 	private final InsertionIds insertionIds;
 	private final List<FieldInfo<?>> fieldInfo;
 
 	public DataStoreEntryInfo(
 			final byte[] dataId,
+			final byte[] adapterId,
 			final InsertionIds insertionIds,
 			final List<FieldInfo<?>> fieldInfo ) {
 		this.dataId = dataId;
+		this.adapterId = adapterId;
 		this.insertionIds = insertionIds;
 		this.fieldInfo = fieldInfo;
 	}

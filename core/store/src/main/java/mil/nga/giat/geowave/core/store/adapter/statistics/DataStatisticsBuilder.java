@@ -12,11 +12,12 @@ import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.callback.DeleteCallback;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
 
-public class DataStatisticsBuilder<T> implements
-		IngestCallback<T>,
-		DeleteCallback<T>,
-		ScanCallback<T, Object>
+public class DataStatisticsBuilder<T, R extends GeoWaveKeyValue> implements
+		IngestCallback<T,R>,
+		DeleteCallback<T,R>,
+		ScanCallback<T, R>
 {
 	private final StatisticsProvider<T> statisticsProvider;
 	private final Map<ByteArrayId, DataStatistics<T>> statisticsMap = new HashMap<ByteArrayId, DataStatistics<T>>();
