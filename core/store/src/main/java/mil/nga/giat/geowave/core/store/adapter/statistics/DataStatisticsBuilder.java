@@ -14,47 +14,52 @@ import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
 
-public class DataStatisticsBuilder<T, R extends GeoWaveKeyValue> implements
-		IngestCallback<T,R>,
-		DeleteCallback<T,R>,
-		ScanCallback<T, R>
+public class DataStatisticsBuilder<T> implements
+		IngestCallback<T, GeoWaveKeyValue>,
+		DeleteCallback<T, GeoWaveKeyValue>,
+		ScanCallback<T, GeoWaveKeyValue>
 {
 	private final StatisticsProvider<T> statisticsProvider;
 	private final Map<ByteArrayId, DataStatistics<T>> statisticsMap = new HashMap<ByteArrayId, DataStatistics<T>>();
 	private final ByteArrayId statisticsId;
 	private final EntryVisibilityHandler<T> visibilityHandler;
-	private static final Logger LOGGER = Logger.getLogger(DataStatistics.class);
+	private static final Logger LOGGER = Logger.getLogger(
+			DataStatistics.class);
 
 	public DataStatisticsBuilder(
 			final StatisticsProvider<T> statisticsProvider,
 			final ByteArrayId statisticsId ) {
 		this.statisticsProvider = statisticsProvider;
 		this.statisticsId = statisticsId;
-		this.visibilityHandler = statisticsProvider.getVisibilityHandler(statisticsId);
+		this.visibilityHandler = statisticsProvider.getVisibilityHandler(
+				statisticsId);
 	}
 
 	@Override
 	public void entryIngested(
-			final DataStoreEntryInfo entryInfo,
-			final T entry ) {
+			final T entry,
+			final GeoWaveKeyValue... kvs ) {
 		final ByteArrayId visibility = new ByteArrayId(
 				visibilityHandler.getVisibility(
-						entryInfo,
-						entry));
-		DataStatistics<T> statistics = statisticsMap.get(visibility);
+						entry,
+						kvs));
+		DataStatistics<T> statistics = statisticsMap.get(
+				visibility);
 		if (statistics == null) {
-			statistics = statisticsProvider.createDataStatistics(statisticsId);
+			statistics = statisticsProvider.createDataStatistics(
+					statisticsId);
 			if (statistics == null) {
 				return;
 			}
-			statistics.setVisibility(visibility.getBytes());
+			statistics.setVisibility(
+					visibility.getBytes());
 			statisticsMap.put(
 					visibility,
 					statistics);
 		}
 		statistics.entryIngested(
-				entryInfo,
-				entry);
+				entry,
+				kvs);
 	}
 
 	public Collection<DataStatistics<T>> getStatistics() {
@@ -64,16 +69,19 @@ public class DataStatisticsBuilder<T, R extends GeoWaveKeyValue> implements
 	@SuppressWarnings("unchecked")
 	@Override
 	public void entryDeleted(
-			final DataStoreEntryInfo entryInfo,
-			final T entry ) {
+			final T entry,
+			final GeoWaveKeyValue kv ) {
 		final ByteArrayId visibilityByteArray = new ByteArrayId(
 				visibilityHandler.getVisibility(
 						entryInfo,
 						entry));
-		DataStatistics<T> statistics = statisticsMap.get(visibilityByteArray);
+		DataStatistics<T> statistics = statisticsMap.get(
+				visibilityByteArray);
 		if (statistics == null) {
-			statistics = statisticsProvider.createDataStatistics(statisticsId);
-			statistics.setVisibility(visibilityByteArray.getBytes());
+			statistics = statisticsProvider.createDataStatistics(
+					statisticsId);
+			statistics.setVisibility(
+					visibilityByteArray.getBytes());
 			statisticsMap.put(
 					visibilityByteArray,
 					statistics);
@@ -87,20 +95,23 @@ public class DataStatisticsBuilder<T, R extends GeoWaveKeyValue> implements
 
 	@Override
 	public void entryScanned(
-			DataStoreEntryInfo entryInfo,
-			Object nativeDataStoreObj,
-			T entry ) {
+			final DataStoreEntryInfo entryInfo,
+			final Object nativeDataStoreObj,
+			final T entry ) {
 		final ByteArrayId visibility = new ByteArrayId(
 				visibilityHandler.getVisibility(
 						entryInfo,
 						entry));
-		DataStatistics<T> statistics = statisticsMap.get(visibility);
+		DataStatistics<T> statistics = statisticsMap.get(
+				visibility);
 		if (statistics == null) {
-			statistics = statisticsProvider.createDataStatistics(statisticsId);
+			statistics = statisticsProvider.createDataStatistics(
+					statisticsId);
 			if (statistics == null) {
 				return;
 			}
-			statistics.setVisibility(visibility.getBytes());
+			statistics.setVisibility(
+					visibility.getBytes());
 			statisticsMap.put(
 					visibility,
 					statistics);

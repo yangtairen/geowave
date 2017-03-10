@@ -64,7 +64,7 @@ import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.core.store.query.RowIdQuery;
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 
-public abstract class BaseDataStore implements
+public abstract class BaseDataStore<R extends GeoWaveKeyValue> implements
 		DataStore
 {
 	private final static Logger LOGGER = Logger.getLogger(BaseDataStore.class);
@@ -133,7 +133,7 @@ public abstract class BaseDataStore implements
 
 			callbackManager.setPersistStats(baseOptions.isPersistDataStatistics());
 
-			final List<IngestCallback<T>> callbacks = new ArrayList<IngestCallback<T>>();
+			final List<IngestCallback<T,R>> callbacks = new ArrayList<IngestCallback<T,R>>();
 
 			store(index);
 
@@ -156,7 +156,7 @@ public abstract class BaseDataStore implements
 					adapter,
 					index);
 
-			final IngestCallbackList<T> callbacksList = new IngestCallbackList<T>(
+			final IngestCallbackList<T,R> callbacksList = new IngestCallbackList<T,R>(
 					callbacks);
 			writers[i] = createIndexWriter(
 					adapter,
@@ -234,7 +234,7 @@ public abstract class BaseDataStore implements
 									idQuery.getDataIds(),
 									(DataAdapter<Object>) adapterStore.getAdapter(idQuery.getAdapterId()),
 									filter,
-									(ScanCallback<Object, Object>) sanitizedQueryOptions.getScanCallback(),
+									(ScanCallback<Object, R>) sanitizedQueryOptions.getScanCallback(),
 									sanitizedQueryOptions.getAuthorizations(),
 									sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension()));
 						}
@@ -417,11 +417,11 @@ public abstract class BaseDataStore implements
 					}
 					final Deleter internalIdxDeleter = idxDeleter;
 					final Deleter internalAltIdxDeleter = altIdxDeleter;
-					final ScanCallback<Object, GeoWaveKeyValue> callback = new ScanCallback<Object, GeoWaveKeyValue>() {
+					final ScanCallback<Object, R> callback = new ScanCallback<Object, R>() {
 						@Override
 						public void entryScanned(
-								final GeoWaveKeyValue row ,
-								final Object entry) {
+								final Object entry,
+								final R row) {
 							callbackCache.getDeleteCallback(
 									(WritableDataAdapter<Object>) adapter,
 									index).entryDeleted(
@@ -588,7 +588,7 @@ public abstract class BaseDataStore implements
 			final AdapterStore tempAdapterStore,
 			final List<ByteArrayId> dataIds,
 			final DataAdapter<?> adapter,
-			final ScanCallback<Object, Object> callback,
+			final ScanCallback<Object, R> callback,
 			final DedupeFilter dedupeFilter,
 			final String... authorizations );
 
@@ -616,7 +616,7 @@ public abstract class BaseDataStore implements
 			AdapterStore tempAdapterStore );
 
 	protected abstract <T> void addAltIndexCallback(
-			List<IngestCallback<T>> callbacks,
+			List<IngestCallback<T,R>> callbacks,
 			String indexName,
 			DataAdapter<T> adapter,
 			ByteArrayId primaryIndexId );

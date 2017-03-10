@@ -8,11 +8,12 @@ import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.callback.DeleteCallback;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
 
 public class CountDataStatistics<T> extends
 		AbstractDataStatistics<T> implements
-		IngestCallback<T>,
-		DeleteCallback<T>
+		IngestCallback<T, GeoWaveKeyValue>,
+		DeleteCallback<T, GeoWaveKeyValue>
 {
 	public final static ByteArrayId STATS_ID = new ByteArrayId(
 			"DATA_COUNT");
@@ -62,8 +63,8 @@ public class CountDataStatistics<T> extends
 
 	@Override
 	public void entryIngested(
-			final DataStoreEntryInfo entryInfo,
-			final T entry ) {
+			final T entry,
+			GeoWaveKeyValue... kvs) {
 		if (!isSet()) {
 			count = 0;
 		}
@@ -92,10 +93,10 @@ public class CountDataStatistics<T> extends
 
 	@Override
 	public void entryDeleted(
-			final DataStoreEntryInfo entryInfo,
-			final T entry ) {
+			final T entry,
+			GeoWaveKeyValue kv) {
 		if (ids.add(new ByteArrayId(
-				entryInfo.getDataId()))) {
+				kv.getDataId()))) {
 			if (!isSet()) {
 				count = 0;
 			}

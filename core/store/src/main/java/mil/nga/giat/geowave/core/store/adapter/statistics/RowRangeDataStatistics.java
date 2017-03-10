@@ -9,6 +9,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
 
 public class RowRangeDataStatistics<T> extends
 		AbstractDataStatistics<T>
@@ -74,8 +75,8 @@ public class RowRangeDataStatistics<T> extends
 
 	@Override
 	public void entryIngested(
-			final DataStoreEntryInfo entryInfo,
-			final T entry ) {
+			final T entry,
+			final GeoWaveKeyValue... kvs ) {
 		//TODO we should have a statistic that is a range per partition
 		for (final ByteArrayId ids : entryInfo.getRowIds()) {
 			final byte[] idBytes = ids.getBytes();

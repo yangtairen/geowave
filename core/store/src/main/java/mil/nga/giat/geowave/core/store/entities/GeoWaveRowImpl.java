@@ -18,7 +18,7 @@ public class GeoWaveRowImpl implements
 	public GeoWaveRowImpl(
 			final byte[] compositeInsertionId ) {
 		this(
-				compositeRowId,
+				compositeInsertionId,
 				null,
 				null);
 	}
@@ -27,7 +27,7 @@ public class GeoWaveRowImpl implements
 			final byte[] compositeInsertionId,
 			final int length ) {
 		this(
-				compositeRowId,
+				compositeInsertionId,
 				0,
 				length);
 	}

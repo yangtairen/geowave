@@ -28,7 +28,6 @@ public interface IngestCallback<T, R extends GeoWaveKeyValue>
 	@SuppressWarnings("unchecked")
 	public void entryIngested(
 			T entry,
-			DataStoreEntryInfo entryInfo,
 			R... rows );
 
 }

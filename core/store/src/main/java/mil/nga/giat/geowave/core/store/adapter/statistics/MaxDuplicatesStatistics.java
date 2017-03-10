@@ -7,6 +7,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
 
 public class MaxDuplicatesStatistics<T> extends
 		AbstractDataStatistics<T>
@@ -78,8 +79,8 @@ public class MaxDuplicatesStatistics<T> extends
 
 	@Override
 	public void entryIngested(
-			final DataStoreEntryInfo entryInfo,
-			final T entry ) {
+			final T entry,
+			final GeoWaveKeyValue... kvs) {
 		maxDuplicates = Math.max(
 				maxDuplicates,
 				entryInfo.getInsertionIds().getCompositeInsertionIds().size() - 1);
