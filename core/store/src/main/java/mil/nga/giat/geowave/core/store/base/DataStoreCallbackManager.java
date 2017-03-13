@@ -17,6 +17,7 @@ import mil.nga.giat.geowave.core.store.callback.DeleteCallback;
 import mil.nga.giat.geowave.core.store.callback.DeleteCallbackList;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.IngestCallbackList;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataAdapter;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataManager;
@@ -31,8 +32,8 @@ public class DataStoreCallbackManager
 
 	final private boolean captureAdapterStats;
 
-	final Map<ByteArrayId, IngestCallback<?>> icache = new HashMap<ByteArrayId, IngestCallback<?>>();
-	final Map<ByteArrayId, DeleteCallback<?>> dcache = new HashMap<ByteArrayId, DeleteCallback<?>>();
+	final Map<ByteArrayId, IngestCallback<?, GeoWaveKeyValue>> icache = new HashMap<ByteArrayId, IngestCallback<?, GeoWaveKeyValue>>();
+	final Map<ByteArrayId, DeleteCallback<?, GeoWaveKeyValue>> dcache = new HashMap<ByteArrayId, DeleteCallback<?, GeoWaveKeyValue>>();
 
 	public DataStoreCallbackManager(
 			final DataStatisticsStore statsStore,
@@ -43,7 +44,7 @@ public class DataStoreCallbackManager
 		this.captureAdapterStats = captureAdapterStats;
 	}
 
-	public <T> IngestCallback<T> getIngestCallback(
+	public <T> IngestCallback<T, GeoWaveKeyValue> getIngestCallback(
 			final WritableDataAdapter<T> writableAdapter,
 			final PrimaryIndex index ) {
 		if (!icache.containsKey(writableAdapter.getAdapterId())) {
@@ -51,7 +52,7 @@ public class DataStoreCallbackManager
 					writableAdapter,
 					index,
 					captureAdapterStats);
-			final List<IngestCallback<T>> callbackList = new ArrayList<IngestCallback<T>>();
+			final List<IngestCallback<T, GeoWaveKeyValue>> callbackList = new ArrayList<IngestCallback<T, GeoWaveKeyValue>>();
 			if ((writableAdapter instanceof StatisticsProvider) && persistStats) {
 				callbackList.add(new StatsCompositionTool<T>(
 						statsProvider,
@@ -65,10 +66,10 @@ public class DataStoreCallbackManager
 			}
 			icache.put(
 					writableAdapter.getAdapterId(),
-					new IngestCallbackList<T>(
+					new IngestCallbackList<T, GeoWaveKeyValue>(
 							callbackList));
 		}
-		return (IngestCallback<T>) icache.get(writableAdapter.getAdapterId());
+		return (IngestCallback<T, GeoWaveKeyValue>) icache.get(writableAdapter.getAdapterId());
 
 	}
 
@@ -77,7 +78,7 @@ public class DataStoreCallbackManager
 		this.persistStats = persistStats;
 	}
 
-	public <T> DeleteCallback<T> getDeleteCallback(
+	public <T> DeleteCallback<T, GeoWaveKeyValue> getDeleteCallback(
 			final WritableDataAdapter<T> writableAdapter,
 			final PrimaryIndex index ) {
 		if (!dcache.containsKey(writableAdapter.getAdapterId())) {
@@ -85,7 +86,7 @@ public class DataStoreCallbackManager
 					writableAdapter,
 					index,
 					captureAdapterStats);
-			final List<DeleteCallback<T>> callbackList = new ArrayList<DeleteCallback<T>>();
+			final List<DeleteCallback<T, GeoWaveKeyValue>> callbackList = new ArrayList<DeleteCallback<T, GeoWaveKeyValue>>();
 			if ((writableAdapter instanceof StatisticsProvider) && persistStats) {
 				callbackList.add(new StatsCompositionTool<T>(
 						statsProvider,
@@ -99,21 +100,21 @@ public class DataStoreCallbackManager
 			}
 			dcache.put(
 					writableAdapter.getAdapterId(),
-					new DeleteCallbackList<T>(
+					new DeleteCallbackList<T, GeoWaveKeyValue>(
 							callbackList));
 		}
-		return (DeleteCallback<T>) dcache.get(writableAdapter.getAdapterId());
+		return (DeleteCallback<T, GeoWaveKeyValue>) dcache.get(writableAdapter.getAdapterId());
 
 	}
 
 	public void close()
 			throws IOException {
-		for (final IngestCallback<?> callback : icache.values()) {
+		for (final IngestCallback<?, GeoWaveKeyValue> callback : icache.values()) {
 			if (callback instanceof Closeable) {
 				((Closeable) callback).close();
 			}
 		}
-		for (final DeleteCallback<?> callback : dcache.values()) {
+		for (final DeleteCallback<?, GeoWaveKeyValue> callback : dcache.values()) {
 			if (callback instanceof Closeable) {
 				((Closeable) callback).close();
 			}

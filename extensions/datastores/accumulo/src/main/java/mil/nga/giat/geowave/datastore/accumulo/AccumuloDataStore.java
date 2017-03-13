@@ -98,7 +98,7 @@ import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
  * used in subsequent queries.
  */
 public class AccumuloDataStore extends
-		BaseDataStore implements
+		BaseDataStore<AccumuloRow> implements
 		MapReduceDataStore
 {
 	public final static String TYPE = "accumulo";

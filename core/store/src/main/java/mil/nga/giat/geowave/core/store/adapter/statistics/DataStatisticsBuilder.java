@@ -73,7 +73,6 @@ public class DataStatisticsBuilder<T> implements
 			final GeoWaveKeyValue kv ) {
 		final ByteArrayId visibilityByteArray = new ByteArrayId(
 				visibilityHandler.getVisibility(
-						entryInfo,
 						entry));
 		DataStatistics<T> statistics = statisticsMap.get(
 				visibilityByteArray);
