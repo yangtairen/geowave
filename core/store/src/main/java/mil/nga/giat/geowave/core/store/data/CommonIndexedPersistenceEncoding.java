@@ -99,8 +99,7 @@ public class CommonIndexedPersistenceEncoding extends
 				}
 			}
 		}
-	}return untrimmedResult;
-
+		return untrimmedResult;
 	}
 
 	/**

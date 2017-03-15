@@ -4,9 +4,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
-public class ScanCallbackList<T, R extends GeoWaveKeyValue> implements
+public class ScanCallbackList<T, R extends GeoWaveRow> implements
 		ScanCallback<T, R>,
 		Closeable
 {
@@ -20,11 +20,11 @@ public class ScanCallbackList<T, R extends GeoWaveKeyValue> implements
 	@Override
 	public void entryScanned(
 			final T entry,
-			final R row ) {
+			final R rows ) {
 		for (final ScanCallback<T, R> callback : callbacks) {
 			callback.entryScanned(
 					entry,
-					row);
+					rows);
 		}
 	}
 

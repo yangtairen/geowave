@@ -3,7 +3,7 @@ package mil.nga.giat.geowave.core.store.entities;
 import java.nio.ByteBuffer;
 
 public class GeoWaveRowImpl implements
-		GeoWaveKeyValue
+		GeoWaveRow
 {
 	protected byte[] dataId = null;
 	protected byte[] adapterId = null;

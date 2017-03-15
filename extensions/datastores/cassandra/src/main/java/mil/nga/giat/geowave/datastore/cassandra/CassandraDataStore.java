@@ -28,7 +28,7 @@ import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.data.visibility.DifferingFieldVisibilityEntryCount;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRowImpl;
 import mil.nga.giat.geowave.core.store.filter.DedupeFilter;
 import mil.nga.giat.geowave.core.store.index.IndexMetaDataSet;
@@ -268,12 +268,12 @@ public class CassandraDataStore extends
 	}
 
 	@Override
-	protected Iterable<GeoWaveKeyValue> getRowsFromIngest(
+	protected Iterable<GeoWaveRow> getRowsFromIngest(
 			byte[] adapterId,
 			DataStoreEntryInfo ingestInfo,
 			List<FieldInfo<?>> fieldInfoList,
 			boolean ensureUniqueId ) {
-		final List<GeoWaveKeyValue> rows = new ArrayList<GeoWaveKeyValue>();
+		final List<GeoWaveRow> rows = new ArrayList<GeoWaveRow>();
 
 		// The single FieldInfo contains the fieldMask in the ID, and the
 		// flattened fields in the written value
@@ -297,7 +297,7 @@ public class CassandraDataStore extends
 
 			// for each insertion(index) id, there's a matching rowId
 			// that contains the duplicate count
-			GeoWaveKeyValue tempRow = new GeoWaveRowImpl(
+			GeoWaveRow tempRow = new GeoWaveRowImpl(
 					rowIdIterator.next().getBytes());
 			int numDuplicates = tempRow.getNumberOfDuplicates();
 
@@ -325,9 +325,9 @@ public class CassandraDataStore extends
 	@Override
 	public void write(
 			Writer writer,
-			Iterable<GeoWaveKeyValue> rows,
+			Iterable<GeoWaveRow> rows,
 			final String columnFamily ) {
-		for (GeoWaveKeyValue geowaveRow : rows) {
+		for (GeoWaveRow geowaveRow : rows) {
 			CassandraRow cassRow = (CassandraRow) geowaveRow;
 			((CassandraWriter) writer).write(cassRow);
 		}

@@ -44,13 +44,13 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DuplicateEntryCount;
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
+import mil.nga.giat.geowave.core.store.base.IntermediaryReadEntryInfo;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.base.Deleter;
 import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
-import mil.nga.giat.geowave.core.store.data.DecodePackage;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.filter.DedupeFilter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
@@ -628,12 +628,12 @@ public class HBaseDataStore extends
 	}
 
 	@Override
-	protected Iterable<GeoWaveKeyValue> getRowsFromIngest(
+	protected Iterable<GeoWaveRow> getRowsFromIngest(
 			byte[] adapterId,
 			DataStoreEntryInfo ingestInfo,
 			List<FieldInfo<?>> fieldInfoList,
 			boolean ensureUniqueId ) {
-		ArrayList<GeoWaveKeyValue> rows = new ArrayList<>();
+		ArrayList<GeoWaveRow> rows = new ArrayList<>();
 
 		for (ByteArrayId rowId : ingestInfo.getRowIds()) {
 			if (ensureUniqueId) {
@@ -654,11 +654,11 @@ public class HBaseDataStore extends
 	@Override
 	public void write(
 			Writer writer,
-			Iterable<GeoWaveKeyValue> rows,
+			Iterable<GeoWaveRow> rows,
 			final String columnFamily ) {
 		final List<RowMutations> mutations = new ArrayList<RowMutations>();
 
-		for (GeoWaveKeyValue geoWaveRow : rows) {
+		for (GeoWaveRow geoWaveRow : rows) {
 			HBaseRow hbaseRow = (HBaseRow) geoWaveRow;
 
 			byte[] rowId = hbaseRow.getRowId();
@@ -731,7 +731,7 @@ public class HBaseDataStore extends
 					hbaseRow.getAdapterId());
 		}
 
-		DecodePackage decodePackage = new DecodePackage(
+		IntermediaryReadEntryInfo decodePackage = new IntermediaryReadEntryInfo(
 				index,
 				decodeRow);
 

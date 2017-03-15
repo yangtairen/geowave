@@ -34,7 +34,7 @@ import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.data.visibility.DifferingFieldVisibilityEntryCount;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRowImpl;
 import mil.nga.giat.geowave.core.store.filter.DedupeFilter;
 import mil.nga.giat.geowave.core.store.index.IndexMetaDataSet;
@@ -270,12 +270,12 @@ public class DynamoDBDataStore extends
 	}
 
 	@Override
-	protected Iterable<GeoWaveKeyValue> getRowsFromIngest(
+	protected Iterable<GeoWaveRow> getRowsFromIngest(
 			byte[] adapterId,
 			DataStoreEntryInfo ingestInfo,
 			List<FieldInfo<?>> fieldInfoList,
 			boolean ensureUniqueId ) {
-		final List<GeoWaveKeyValue> rows = new ArrayList<GeoWaveKeyValue>();
+		final List<GeoWaveRow> rows = new ArrayList<GeoWaveRow>();
 
 		// The single FieldInfo contains the fieldMask in the ID, and the
 		// flattened fields in the written value
@@ -300,7 +300,7 @@ public class DynamoDBDataStore extends
 
 			// for each insertion(index) id, there's a matching rowId
 			// that contains the duplicate count
-			GeoWaveKeyValue tempRow = new GeoWaveRowImpl(
+			GeoWaveRow tempRow = new GeoWaveRowImpl(
 					rowIdIterator.next().getBytes());
 			int numDuplicates = tempRow.getNumberOfDuplicates();
 
@@ -326,11 +326,11 @@ public class DynamoDBDataStore extends
 	@Override
 	public void write(
 			Writer writer,
-			Iterable<GeoWaveKeyValue> rows,
+			Iterable<GeoWaveRow> rows,
 			String unused ) {
 		final List<WriteRequest> mutations = new ArrayList<WriteRequest>();
 
-		for (GeoWaveKeyValue row : rows) {
+		for (GeoWaveRow row : rows) {
 			final Map<String, AttributeValue> map = new HashMap<String, AttributeValue>();
 
 			String partitionId = ((DynamoDBRow) row).getPartitionId();

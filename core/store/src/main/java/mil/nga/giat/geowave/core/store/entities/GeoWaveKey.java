@@ -6,13 +6,9 @@ public interface GeoWaveKey
 
 	public byte[] getAdapterId();
 
-	public byte[] getFieldMask();
-
 	public byte[] getSortKey();
 	
 	public byte[] getPartitionKey();
-
-	public byte[] getVisibility();
 
 	public int getNumberOfDuplicates();
 }

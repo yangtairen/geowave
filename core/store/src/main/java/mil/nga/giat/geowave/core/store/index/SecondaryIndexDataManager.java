@@ -15,7 +15,7 @@ import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.callback.DeleteCallback;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
 /**
  * One manager associated with each primary index.
@@ -26,8 +26,8 @@ import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
  */
 public class SecondaryIndexDataManager<T> implements
 		Closeable,
-		IngestCallback<T, GeoWaveKeyValue>,
-		DeleteCallback<T, GeoWaveKeyValue>
+		IngestCallback<T, GeoWaveRow>,
+		DeleteCallback<T, GeoWaveRow>
 {
 	private final SecondaryIndexDataAdapter<T> adapter;
 	final SecondaryIndexDataStore secondaryIndexStore;
@@ -46,7 +46,7 @@ public class SecondaryIndexDataManager<T> implements
 	@Override
 	public void entryIngested(
 			final T entry,
-			GeoWaveKeyValue... kvs) {
+			GeoWaveRow... kvs) {
 		// loop secondary indices for adapter
 		for (final SecondaryIndex<T> secondaryIndex : adapter.getSupportedSecondaryIndices()) {
 			final ByteArrayId indexedAttributeFieldId = secondaryIndex.getFieldId();
@@ -125,7 +125,7 @@ public class SecondaryIndexDataManager<T> implements
 	@Override
 	public void entryDeleted(
 			final T entry,
-			GeoWaveKeyValue kv ) {
+			GeoWaveRow kv ) {
 		// loop secondary indices for adapter
 		for (final SecondaryIndex<T> secondaryIndex : adapter.getSupportedSecondaryIndices()) {
 			final ByteArrayId indexedAttributeFieldId = secondaryIndex.getFieldId();

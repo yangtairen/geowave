@@ -1,7 +1,6 @@
 package mil.nga.giat.geowave.core.store.callback;
 
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
 /**
  * This interface provides a callback mechanism when ingesting a collection of
@@ -10,7 +9,7 @@ import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
  * @param <T>
  *            A generic type for ingested entries
  */
-public interface IngestCallback<T, R extends GeoWaveKeyValue>
+public interface IngestCallback<T, R extends GeoWaveRow>
 {
 	/**
 	 * This will be called after an entry is successfully ingested with the row

@@ -13,7 +13,7 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
@@ -51,7 +51,7 @@ public class HBaseEntryIteratorWrapper<T> extends
 				index,
 				scannerIt,
 				clientFilter,
-				(ScanCallback<T, ? extends GeoWaveKeyValue>) scanCallback);
+				(ScanCallback<T, ? extends GeoWaveRow>) scanCallback);
 		this.decodePersistenceEncoding = decodePersistenceEncoding;
 		this.hasSkippingFilter = hasSkippingFilter;
 

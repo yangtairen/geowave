@@ -1,6 +1,6 @@
 package mil.nga.giat.geowave.core.store.callback;
 
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
 /**
  * This interface provides a callback mechanism when deleting a collection of
@@ -11,7 +11,7 @@ import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
  * @param <R>
  *            A generic type for rows
  */
-public interface DeleteCallback<T, R extends GeoWaveKeyValue>
+public interface DeleteCallback<T, R extends GeoWaveRow>
 {
 	/**
 	 * This will be called after an entry is successfully deleted with the row
@@ -24,5 +24,5 @@ public interface DeleteCallback<T, R extends GeoWaveKeyValue>
 	 */
 	public void entryDeleted(
 			final T entry,
-			final R row );
+			final R... rows );
 }

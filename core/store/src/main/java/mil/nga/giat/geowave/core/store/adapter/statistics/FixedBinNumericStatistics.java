@@ -8,7 +8,7 @@ import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.store.adapter.statistics.histogram.FixedBinNumericHistogram.FixedBinNumericHistogramFactory;
 import mil.nga.giat.geowave.core.store.adapter.statistics.histogram.NumericHistogram;
 import mil.nga.giat.geowave.core.store.adapter.statistics.histogram.NumericHistogramFactory;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
 /**
  *

@@ -5,10 +5,9 @@ import java.io.Flushable;
 import java.io.IOException;
 import java.util.List;
 
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
-public class IngestCallbackList<T, R extends GeoWaveKeyValue> implements
+public class IngestCallbackList<T, R extends GeoWaveRow> implements
 		IngestCallback<T, R>,
 		Flushable,
 		Closeable
@@ -22,19 +21,19 @@ public class IngestCallbackList<T, R extends GeoWaveKeyValue> implements
 
 	@Override
 	public void entryIngested(
-			final DataStoreEntryInfo entryInfo,
-			final T entry ) {
-		for (final IngestCallback<T> callback : callbacks) {
+			final T entry,
+			R...kvs ) {
+		for (final IngestCallback<T,R> callback : callbacks) {
 			callback.entryIngested(
-					entryInfo,
-					entry);
+					entry,
+					kvs);
 		}
 	}
 
 	@Override
 	public void close()
 			throws IOException {
-		for (final IngestCallback<T> callback : callbacks) {
+		for (final IngestCallback<T,R> callback : callbacks) {
 			if (callback instanceof Closeable) {
 				((Closeable) callback).close();
 			}
@@ -44,7 +43,7 @@ public class IngestCallbackList<T, R extends GeoWaveKeyValue> implements
 	@Override
 	public void flush()
 			throws IOException {
-		for (final IngestCallback<T> callback : callbacks) {
+		for (final IngestCallback<T,R> callback : callbacks) {
 			if (callback instanceof Flushable) {
 				((Flushable) callback).flush();
 			}

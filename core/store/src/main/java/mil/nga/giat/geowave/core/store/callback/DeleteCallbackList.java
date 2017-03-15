@@ -4,9 +4,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
-public class DeleteCallbackList<T, R extends GeoWaveKeyValue> implements
+public class DeleteCallbackList<T, R extends GeoWaveRow> implements
 		DeleteCallback<T, R>,
 		Closeable
 {
@@ -20,11 +20,11 @@ public class DeleteCallbackList<T, R extends GeoWaveKeyValue> implements
 	@Override
 	public void entryDeleted(
 			final T entry,
-			final R row ) {
+			final R... rows ) {
 		for (final DeleteCallback<T, R> callback : callbacks) {
 			callback.entryDeleted(
 					entry,
-					row);
+					rows);
 		}
 	}
 

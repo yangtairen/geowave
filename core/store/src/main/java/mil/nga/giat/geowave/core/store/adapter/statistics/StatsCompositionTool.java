@@ -9,10 +9,12 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.callback.DeleteCallback;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 
 /**
  *
@@ -24,9 +26,9 @@ import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
  *            Entry type
  */
 public class StatsCompositionTool<T> implements
-		IngestCallback<T, GeoWaveKeyValue>,
-		ScanCallback<T, GeoWaveKeyValue>,
-		DeleteCallback<T, GeoWaveKeyValue>,
+		IngestCallback<T, GeoWaveRow>,
+		ScanCallback<T, GeoWaveRow>,
+		DeleteCallback<T, GeoWaveRow>,
 		AutoCloseable,
 		Closeable,
 		Flushable
@@ -41,33 +43,35 @@ public class StatsCompositionTool<T> implements
 	final Object MUTEX = new Object();
 	protected boolean skipFlush = false;
 
-	public StatsCompositionTool() {
-		statisticsStore = null;
-	}
-
 	public StatsCompositionTool(
-			final StatisticsProvider<T> statisticsProvider ) {
+			final StatisticsProvider<T> statisticsProvider,
+			final PrimaryIndex index,
+			final DataAdapter<T> adapter) {
 		this.statisticsStore = null;
-		this.init(
+		this.init(index,adapter,
 				statisticsProvider);
 	}
 
 	public StatsCompositionTool(
 			final StatisticsProvider<T> statisticsProvider,
-			final DataStatisticsStore statisticsStore ) {
+			final DataStatisticsStore statisticsStore,
+			final PrimaryIndex index,
+			final DataAdapter<T> adapter ) {
 		this.statisticsStore = statisticsStore;
-		this.init(
+		this.init(index,adapter,
 				statisticsProvider);
 	}
 
 	private void init(
-			final StatisticsProvider<T> statisticsProvider ) {
+			final PrimaryIndex index,
+			final DataAdapter<T> adapter,
+			final StatisticsProvider<T> statisticsProvider) {
 		final ByteArrayId[] statisticsIds = statisticsProvider.getSupportedStatisticsIds();
 		statisticsBuilders = new ArrayList<DataStatisticsBuilder<T>>(
 				statisticsIds.length);
 		for (final ByteArrayId id : statisticsIds) {
 			statisticsBuilders.add(
-					new DataStatisticsBuilder<T>(
+					new DataStatisticsBuilder<T>(index,adapter,
 							statisticsProvider,
 							id));
 		}
@@ -87,7 +91,7 @@ public class StatsCompositionTool<T> implements
 	@Override
 	public void entryDeleted(
 			final T entry,
-			final GeoWaveKeyValue kv ) {
+			final GeoWaveRow kv ) {
 		if (statisticsBuilders == null) {
 			return;
 		}
@@ -106,7 +110,7 @@ public class StatsCompositionTool<T> implements
 	@Override
 	public void entryScanned(
 			final T entry,
-			final GeoWaveKeyValue kv ) {
+			final GeoWaveRow kv ) {
 		if (statisticsBuilders == null) {
 			return;
 		}
@@ -163,7 +167,7 @@ public class StatsCompositionTool<T> implements
 	@Override
 	public void entryIngested(
 			final T entry,
-			final GeoWaveKeyValue... kvs ) {
+			final GeoWaveRow... kvs ) {
 		if (statisticsBuilders == null) {
 			return;
 		}

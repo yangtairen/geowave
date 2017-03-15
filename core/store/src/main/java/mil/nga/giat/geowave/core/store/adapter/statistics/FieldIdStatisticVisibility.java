@@ -4,7 +4,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.EntryVisibilityHandler;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 
 public class FieldIdStatisticVisibility<T> implements
@@ -22,7 +22,7 @@ public class FieldIdStatisticVisibility<T> implements
 	@Override
 	public byte[] getVisibility(
 			final T entry,
-			final GeoWaveKeyValue... kvs ) {
+			final GeoWaveRow... kvs ) {
 		for (final FieldInfo<?> f : entryInfo.getFieldInfo()) {
 			if (f.getDataValue().getId().equals(
 					fieldId)) {

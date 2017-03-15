@@ -7,14 +7,13 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Mergeable;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.callback.DeleteCallback;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 
 public class DuplicateEntryCount<T> extends
 		AbstractDataStatistics<T> implements
-		DeleteCallback<T, GeoWaveKeyValue>
+		DeleteCallback<T, GeoWaveRow>
 {
 	public static final ByteArrayId STATS_ID = new ByteArrayId(
 			"DUPLICATE_ENTRY_COUNT");
@@ -92,7 +91,7 @@ public class DuplicateEntryCount<T> extends
 	@Override
 	public void entryIngested(
 			final T entry,
-			final GeoWaveKeyValue... kvs ) {
+			final GeoWaveRow... kvs ) {
 		if (kvs.length > 0) {
 			if (entryHasDuplicates(
 					kvs[0])) {
@@ -104,7 +103,7 @@ public class DuplicateEntryCount<T> extends
 	@Override
 	public void entryDeleted(
 			final T entry,
-			final GeoWaveKeyValue kv ) {
+			final GeoWaveRow kv ) {
 		if (entryHasDuplicates(
 				kv)) {
 			entriesWithDuplicates--;
@@ -120,7 +119,7 @@ public class DuplicateEntryCount<T> extends
 	}
 
 	private static boolean entryHasDuplicates(
-			final GeoWaveKeyValue kv ) {
+			final GeoWaveRow kv ) {
 		return kv.getNumberOfDuplicates() > 0;
 	}
 

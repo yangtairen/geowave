@@ -1,6 +1,6 @@
 package mil.nga.giat.geowave.core.store.callback;
 
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
 /**
  * This interface provides a callback mechanism when scanning entries
@@ -8,7 +8,7 @@ import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
  * @param <T>
  *            A generic type for ingested entries
  */
-public interface ScanCallback<T, R extends GeoWaveKeyValue>
+public interface ScanCallback<T, R extends GeoWaveRow>
 {
 	/**
 	 * This will be called after an entry is successfully scanned with the row

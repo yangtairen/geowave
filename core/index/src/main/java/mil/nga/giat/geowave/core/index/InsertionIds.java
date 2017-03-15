@@ -60,6 +60,16 @@ public class InsertionIds implements
 		return partitionKeys;
 	}
 
+	public boolean isEmpty() {
+		if (compositeInsertionIds != null) {
+			return compositeInsertionIds.isEmpty();
+		}
+		if ((partitionKeys == null) || partitionKeys.isEmpty()) {
+			return true;
+		}
+		return false;
+	}
+
 	public boolean hasDuplicates() {
 		if (compositeInsertionIds != null) {
 			return compositeInsertionIds.size() >= 2;
@@ -100,9 +110,8 @@ public class InsertionIds implements
 			final ByteArrayId partitionKey,
 			final ByteArrayId sortKey ) {
 		for (final SinglePartitionInsertionIds p : partitionKeys) {
-			if (((partitionKey == null) && (p.getPartitionKey() == null))
-					|| ((partitionKey != null) && partitionKey.equals(
-							p.getPartitionKey()))) {
+			if (((partitionKey == null) && (p.getPartitionKey() == null)) || ((partitionKey != null) && partitionKey.equals(
+					p.getPartitionKey()))) {
 				// partition key matches find out if sort key is contained
 				if (sortKey == null) {
 					return true;

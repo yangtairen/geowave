@@ -8,8 +8,7 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.histogram.ByteUtils;
 import mil.nga.giat.geowave.core.store.adapter.statistics.histogram.NumericHistogram;
 import mil.nga.giat.geowave.core.store.adapter.statistics.histogram.NumericHistogramFactory;
 import mil.nga.giat.geowave.core.store.adapter.statistics.histogram.MinimalBinDistanceHistogram.MinimalBinDistanceHistogramFactory;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -176,9 +175,9 @@ public class RowRangeHistogramStatistics<T> extends
 	@Override
 	public void entryIngested(
 			final T entry,
-			final GeoWaveKeyValue... kvs) {
-		for (final ByteArrayId ids : entryInfo.getRowIds()) {
-			final byte[] idBytes = ids.getBytes();
+			final GeoWaveRow... kvs) {
+		for (final GeoWaveRow kv : kvs) {
+			final byte[] idBytes = kv.getSortKey();
 			add(ByteUtils.toDouble(idBytes));
 
 		}
