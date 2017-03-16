@@ -51,6 +51,8 @@ public abstract class HBaseFilteredIndexQuery extends
 	protected List<QueryFilter> clientFilters;
 	private final static Logger LOGGER = Logger.getLogger(HBaseFilteredIndexQuery.class);
 	private boolean hasSkippingFilter = false;
+	private Map<ByteArrayId, RowMergingDataAdapter> mergingAdapters = new HashMap<ByteArrayId, RowMergingDataAdapter>();
+
 
 	public HBaseFilteredIndexQuery(
 			final BaseDataStore dataStore,
@@ -138,6 +140,8 @@ public abstract class HBaseFilteredIndexQuery extends
 
 		final List<Iterator<Result>> resultsIterators = new ArrayList<Iterator<Result>>();
 		final List<ResultScanner> results = new ArrayList<ResultScanner>();
+		
+		getMergingAdapters(adapterStore);
 
 		if (isBigtable()) {
 			final List<Scan> scanners = getScannerList(limit);
@@ -218,6 +222,13 @@ public abstract class HBaseFilteredIndexQuery extends
 						filterList.addFilter(numericIndexFilter);
 					}
 				}
+				
+				if (isMerging()) {
+					HBaseMergingFilter mergingFilter = new HBaseMergingFilter();
+					mergingFilter.setMergeData("MERGE! Everybody MERGE!");
+					
+					filterList.addFilter(mergingFilter);
+				}
 			}
 
 			if (!filterList.getFilters().isEmpty()) {
@@ -266,6 +277,24 @@ public abstract class HBaseFilteredIndexQuery extends
 
 		LOGGER.error("Results were empty");
 		return new CloseableIterator.Empty();
+	}
+	
+	private void getMergingAdapters(final AdapterStore adapterStore) {
+		mergingAdapters.clear();
+		
+		for (final ByteArrayId adapterId : adapterIds) {
+			final DataAdapter adapter = adapterStore.getAdapter(adapterId);
+			if ((adapter instanceof RowMergingDataAdapter)
+					&& (((RowMergingDataAdapter) adapter).getTransform() != null)) {
+				mergingAdapters.put(
+						adapterId,
+						(RowMergingDataAdapter) adapter);
+			}
+		}
+	}
+	
+	private boolean isMerging() {
+		return !mergingAdapters.isEmpty();
 	}
 
 	private boolean isEnableCustomFilters() {
@@ -456,40 +485,12 @@ public abstract class HBaseFilteredIndexQuery extends
 			final Iterator<Result> resultsIterator,
 			final double[] maxResolutionSubsamplingPerDimension,
 			final boolean decodePersistenceEncoding ) {
-		// TODO Since currently we are not supporting server side
-		// iterator/coprocessors, we also cannot run
-		// server side filters and hence they have to run on clients itself. So
-		// need to add server side filters also in list of client filters.
 		final List<QueryFilter> filters = getAllFiltersList();
 		final QueryFilter queryFilter = filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0)
 				: new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
 						filters);
 
-		final Map<ByteArrayId, RowMergingDataAdapter> mergingAdapters = new HashMap<ByteArrayId, RowMergingDataAdapter>();
-		for (final ByteArrayId adapterId : adapterIds) {
-			final DataAdapter adapter = adapterStore.getAdapter(adapterId);
-			if ((adapter instanceof RowMergingDataAdapter)
-					&& (((RowMergingDataAdapter) adapter).getTransform() != null)) {
-				mergingAdapters.put(
-						adapterId,
-						(RowMergingDataAdapter) adapter);
-			}
-		}
-
-		if (mergingAdapters.isEmpty()) {
-			return new HBaseEntryIteratorWrapper(
-					dataStore,
-					adapterStore,
-					index,
-					resultsIterator,
-					queryFilter,
-					scanCallback,
-					fieldIdsAdapterPair,
-					maxResolutionSubsamplingPerDimension,
-					decodePersistenceEncoding,
-					hasSkippingFilter);
-		}
-		else {
+		if (isMerging()) {
 			return new HBaseMergingEntryIterator(
 					dataStore,
 					adapterStore,
@@ -500,6 +501,19 @@ public abstract class HBaseFilteredIndexQuery extends
 					mergingAdapters,
 					fieldIdsAdapterPair,
 					maxResolutionSubsamplingPerDimension,
+					hasSkippingFilter);
+		}
+		else {
+			return new HBaseEntryIteratorWrapper(
+					dataStore,
+					adapterStore,
+					index,
+					resultsIterator,
+					queryFilter,
+					scanCallback,
+					fieldIdsAdapterPair,
+					maxResolutionSubsamplingPerDimension,
+					decodePersistenceEncoding,
 					hasSkippingFilter);
 		}
 	}
