@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.datastore.hbase.util;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -17,8 +18,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.datastore.hbase.query.HBaseDistributableFilter;
+import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.datastore.hbase.query.HBaseMergingFilter;
 
 public class HBaseMergingRegionObserver extends
@@ -33,7 +33,7 @@ public class HBaseMergingRegionObserver extends
 				Level.DEBUG);
 	}
 
-	private HashMap<RegionScanner, Scan> scanMap = new HashMap<RegionScanner, Scan>();
+	private HashMap<RegionScanner, HBaseMergingFilter> filterMap = new HashMap<RegionScanner, HBaseMergingFilter>();
 
 	@Override
 	public RegionScanner postScannerOpen(
@@ -41,11 +41,55 @@ public class HBaseMergingRegionObserver extends
 			final Scan scan,
 			final RegionScanner s )
 			throws IOException {
-		scanMap.put(
-				s,
-				scan);
+		if (scan != null) {
+			Filter scanFilter = scan.getFilter();
+			if (scanFilter != null) {
+				HBaseMergingFilter mergingFilter = extractMergingFilter(scanFilter);
+
+				if (mergingFilter != null) {
+					filterMap.put(
+							s,
+							mergingFilter);
+				}
+			}
+		}
 
 		return s;
+	}
+	
+	private HBaseMergingFilter extractMergingFilter(Filter checkFilter) {
+		if (checkFilter instanceof HBaseMergingFilter) {
+			return (HBaseMergingFilter) checkFilter;
+		}
+		
+		if (checkFilter instanceof FilterList) {
+			for (Filter filter : ((FilterList) checkFilter).getFilters()) {
+				HBaseMergingFilter mergingFilter = extractMergingFilter(filter);
+				if (mergingFilter != null) {
+					return mergingFilter;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	@Override
+	public boolean preScannerNext(
+			final ObserverContext<RegionCoprocessorEnvironment> e,
+			final InternalScanner s,
+			final List<Result> results,
+			final int limit,
+			final boolean hasMore )
+			throws IOException {
+		HBaseMergingFilter mergingFilter = filterMap.get(
+				s);
+
+		if (mergingFilter != null) {
+			// TODO: Any pre-scan work?
+		}
+		
+		return hasMore;
 	}
 
 	@Override
@@ -56,28 +100,14 @@ public class HBaseMergingRegionObserver extends
 			final int limit,
 			final boolean hasMore )
 			throws IOException {
-		if (results.size() > 0) {
-			Scan scan = scanMap.get(
-					s);
+		HBaseMergingFilter mergingFilter = filterMap.get(
+				s);
 
+		if (results.size() > 0) {
 			String mergeData = null;
 
-			if (scan != null) {
-				Filter scanFilter = scan.getFilter();
-				if (scanFilter != null) {
-					if (scanFilter instanceof FilterList) {
-						for (Filter filter : ((FilterList) scanFilter).getFilters()) {
-							if (filter instanceof HBaseMergingFilter) {
-								HBaseMergingFilter mergingFilter = (HBaseMergingFilter) filter;
-								mergeData = mergingFilter.getMergeData();
-							}
-						}
-					}
-					else if (scanFilter instanceof HBaseMergingFilter) {
-						HBaseMergingFilter mergingFilter = (HBaseMergingFilter) scanFilter;
-						mergeData = mergingFilter.getMergeData();
-					}
-				}
+			if (mergingFilter != null) {
+				mergeData = mergingFilter.getMergeData();
 			}
 
 			if (mergeData != null) {
@@ -87,27 +117,32 @@ public class HBaseMergingRegionObserver extends
 				if (results.size() > 1) {
 					LOGGER.debug(
 							">> PostScannerNext has " + results.size() + " rows");
-
-					boolean mergeMe = false;
-					byte[] curRow = null;
+					
+					HashMap<String, List<Result>> rowMap = new HashMap<String, List<Result>>();
 
 					for (Result result : results) {
 						byte[] row = result.getRow();
 
 						if (row != null) {
-							if (Bytes.equals(
-									row,
-									curRow)) {
-								mergeMe = true;
+							String rowKey = StringUtils.stringFromBinary(row);
+							List<Result> resultList = rowMap.get(rowKey);
+							
+							if (resultList == null) {
+								resultList = new ArrayList<Result>();
 							}
-
-							curRow = Bytes.copy(
-									row);
+							
+							resultList.add(result);
+							rowMap.put(rowKey, resultList);
 						}
 					}
-
-					if (mergeMe) LOGGER.debug(
-							">> PostScannerNext has mergeable rows");
+					
+					if (!rowMap.isEmpty()) {
+						LOGGER.debug(">> PostScannerNext got " + rowMap.keySet().size() + " unique rows");
+						for (String rowKey : rowMap.keySet()) {
+							List<Result> resultList = rowMap.get(rowKey);
+							LOGGER.debug(">> PostScannerNext got " + resultList.size() + " results for row " + rowKey);
+						}
+					}
 				}
 			}
 		}

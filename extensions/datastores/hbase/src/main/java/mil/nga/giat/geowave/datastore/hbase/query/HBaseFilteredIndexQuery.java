@@ -53,7 +53,6 @@ public abstract class HBaseFilteredIndexQuery extends
 	private boolean hasSkippingFilter = false;
 	private Map<ByteArrayId, RowMergingDataAdapter> mergingAdapters = new HashMap<ByteArrayId, RowMergingDataAdapter>();
 
-
 	public HBaseFilteredIndexQuery(
 			final BaseDataStore dataStore,
 			final List<ByteArrayId> adapterIds,
@@ -140,7 +139,7 @@ public abstract class HBaseFilteredIndexQuery extends
 
 		final List<Iterator<Result>> resultsIterators = new ArrayList<Iterator<Result>>();
 		final List<ResultScanner> results = new ArrayList<ResultScanner>();
-		
+
 		getMergingAdapters(adapterStore);
 
 		if (isBigtable()) {
@@ -175,6 +174,14 @@ public abstract class HBaseFilteredIndexQuery extends
 					maxResolutionSubsamplingPerDimension);
 
 			if (isEnableCustomFilters()) {
+				// TODO: load required inputs/options for row merging
+				if (isMerging()) {
+					HBaseMergingFilter mergingFilter = new HBaseMergingFilter();
+					mergingFilter.setMergeData("MERGE! Everybody MERGE!");
+
+					filterList.addFilter(mergingFilter);
+				}
+
 				// Add skipping filter if requested
 				hasSkippingFilter = false;
 				if (maxResolutionSubsamplingPerDimension != null) {
@@ -221,13 +228,6 @@ public abstract class HBaseFilteredIndexQuery extends
 								coords.toArray(new MultiDimensionalCoordinateRangesArray[] {}));
 						filterList.addFilter(numericIndexFilter);
 					}
-				}
-				
-				if (isMerging()) {
-					HBaseMergingFilter mergingFilter = new HBaseMergingFilter();
-					mergingFilter.setMergeData("MERGE! Everybody MERGE!");
-					
-					filterList.addFilter(mergingFilter);
 				}
 			}
 
@@ -278,10 +278,11 @@ public abstract class HBaseFilteredIndexQuery extends
 		LOGGER.error("Results were empty");
 		return new CloseableIterator.Empty();
 	}
-	
-	private void getMergingAdapters(final AdapterStore adapterStore) {
+
+	private void getMergingAdapters(
+			final AdapterStore adapterStore ) {
 		mergingAdapters.clear();
-		
+
 		for (final ByteArrayId adapterId : adapterIds) {
 			final DataAdapter adapter = adapterStore.getAdapter(adapterId);
 			if ((adapter instanceof RowMergingDataAdapter)
@@ -292,7 +293,7 @@ public abstract class HBaseFilteredIndexQuery extends
 			}
 		}
 	}
-	
+
 	private boolean isMerging() {
 		return !mergingAdapters.isEmpty();
 	}
