@@ -36,8 +36,8 @@ image::aws-gui-method-5.png[scaledwidth="100%",alt="select emr"]
  * This can be left as the default value of “Custom action”
 - Script location
  * Enter the location of your desired bootstrap script
-  ** For Accumulo use: s3.amazonaws.com/geowave/latest/scripts/emr/quickstart/accumulo/bootstrap-geowave.sh
-  ** For HBase use: s3.amazonaws.com/geowave/latest/scripts/emr/quickstart/hbase/bootstrap-geowave.sh
+  ** For Accumulo use: s3://geowave/latest/scripts/emr/quickstart/accumulo/bootstrap-geowave.sh
+  ** For HBase use: s3://amazonaws.com/geowave/latest/scripts/emr/quickstart/hbase/bootstrap-geowave.sh
   ** You can use the quickstart versions either script here as well
  * If you have chosen to use your own bucket to host the bootstrap script you can click on the folder icon to bring up a 
    list of your available buckets and chose a script from there.

@@ -17,7 +17,7 @@ aws emr create-cluster \
 --applications Name=Hadoop Name=HBase \
 --use-default-roles \
 --no-auto-terminate \
---bootstrap-actions Path=s3.amazonaws.com/geowave/latest/scripts/emr/${DATASTORE}/bootstrap-geowave.sh,Name=Bootstrap_GeoWave \
+--bootstrap-actions Path=s3://geowave/latest/scripts/emr/${DATASTORE}/bootstrap-geowave.sh,Name=Bootstrap_GeoWave \
 --tags ${YOUR_TAGNAME} \
 --region ${YOUR_REGION} \
 ----
