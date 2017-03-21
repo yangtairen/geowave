@@ -41,7 +41,7 @@ public class HBaseStoreTestEnvironment extends
 
 	// KAM - Travis timing test only!
 	private static boolean enableVisibility = false;
-	private static boolean enableMergingObserver = false;
+	private static boolean enableMergingObserver = true;
 
 	public static synchronized HBaseStoreTestEnvironment getInstance() {
 		if (singletonInstance == null) {
