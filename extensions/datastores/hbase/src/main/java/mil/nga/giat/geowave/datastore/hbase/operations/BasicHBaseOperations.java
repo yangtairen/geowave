@@ -135,10 +135,14 @@ public class BasicHBaseOperations implements
 					name)) {
 				final HTableDescriptor desc = new HTableDescriptor(
 						name);
+				
 				for (final String columnFamily : columnFamilies) {
-					desc.addFamily(new HColumnDescriptor(
-							columnFamily));
+					HColumnDescriptor columnDesc = new HColumnDescriptor(
+							columnFamily);
+					//columnDesc.setMaxVersions(100); // unlimited?
+					desc.addFamily(columnDesc);
 				}
+				
 				if ((splits != null) && !splits.isEmpty()) {
 					final byte[][] splitKeys = new byte[splits.size()][];
 					int i = 0;

@@ -40,7 +40,8 @@ public class HBaseStoreTestEnvironment extends
 	private static HBaseStoreTestEnvironment singletonInstance = null;
 
 	// KAM - Travis timing test only!
-	private static boolean enableVisibility = true;
+	private static boolean enableVisibility = false;
+	private static boolean enableMergingObserver = false;
 
 	public static synchronized HBaseStoreTestEnvironment getInstance() {
 		if (singletonInstance == null) {
@@ -49,7 +50,8 @@ public class HBaseStoreTestEnvironment extends
 		return singletonInstance;
 	}
 
-	private final static Logger LOGGER = Logger.getLogger(HBaseStoreTestEnvironment.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			HBaseStoreTestEnvironment.class);
 	public static final String HBASE_PROPS_FILE = "hbase.properties";
 	protected String zookeeper;
 	private HbaseLocalCluster hbaseLocalCluster;
@@ -68,7 +70,8 @@ public class HBaseStoreTestEnvironment extends
 	@Override
 	protected void initOptions(
 			final StoreFactoryOptions options ) {
-		((HBaseRequiredOptions) options).setZookeeper(zookeeper);
+		((HBaseRequiredOptions) options).setZookeeper(
+				zookeeper);
 	}
 
 	@Override
@@ -91,26 +94,33 @@ public class HBaseStoreTestEnvironment extends
 					e);
 		}
 
-		if (!TestUtils.isSet(zookeeper)) {
-			zookeeper = System.getProperty(ZookeeperTestEnvironment.ZK_PROPERTY_NAME);
+		if (!TestUtils.isSet(
+				zookeeper)) {
+			zookeeper = System.getProperty(
+					ZookeeperTestEnvironment.ZK_PROPERTY_NAME);
 
-			if (!TestUtils.isSet(zookeeper)) {
+			if (!TestUtils.isSet(
+					zookeeper)) {
 				zookeeper = ZookeeperTestEnvironment.getInstance().getZookeeper();
-				LOGGER.debug("Using local zookeeper URL: " + zookeeper);
+				LOGGER.debug(
+						"Using local zookeeper URL: " + zookeeper);
 			}
 		}
 
-		if ((hbaseLocalCluster == null)
-				&& !TestUtils.isSet(System.getProperty(ZookeeperTestEnvironment.ZK_PROPERTY_NAME))) {
+		if ((hbaseLocalCluster == null) && !TestUtils.isSet(
+				System.getProperty(
+						ZookeeperTestEnvironment.ZK_PROPERTY_NAME))) {
 			try {
 				final Configuration conf = new Configuration();
 				conf.set(
 						"hbase.online.schema.update.enable",
 						"true");
 
-				conf.set(
-						"hbase.coprocessor.region.classes",
-						"mil.nga.giat.geowave.datastore.hbase.util.HBaseMergingRegionObserver");
+				if (enableMergingObserver) {
+					conf.set(
+							"hbase.coprocessor.region.classes",
+							"mil.nga.giat.geowave.datastore.hbase.util.HBaseMergingRegionObserver");
+				}
 
 				if (enableVisibility) {
 					conf.set(
@@ -138,28 +148,41 @@ public class HBaseStoreTestEnvironment extends
 							VisibilityLabelService.class);
 
 					// Install the VisibilityController as a system processor
-					VisibilityTestUtil.enableVisiblityLabels(conf);
+					VisibilityTestUtil.enableVisiblityLabels(
+							conf);
 				}
 
 				// Start the cluster
 				hbaseLocalCluster = new HbaseLocalCluster.Builder()
 						.setHbaseMasterPort(
-								Integer.parseInt(propertyParser.getProperty(ConfigVars.HBASE_MASTER_PORT_KEY)))
+								Integer.parseInt(
+										propertyParser.getProperty(
+												ConfigVars.HBASE_MASTER_PORT_KEY)))
 						.setHbaseMasterInfoPort(
-								Integer.parseInt(propertyParser.getProperty(ConfigVars.HBASE_MASTER_INFO_PORT_KEY)))
+								Integer.parseInt(
+										propertyParser.getProperty(
+												ConfigVars.HBASE_MASTER_INFO_PORT_KEY)))
 						.setNumRegionServers(
-								Integer.parseInt(propertyParser.getProperty(ConfigVars.HBASE_NUM_REGION_SERVERS_KEY)))
+								Integer.parseInt(
+										propertyParser.getProperty(
+												ConfigVars.HBASE_NUM_REGION_SERVERS_KEY)))
 						.setHbaseRootDir(
-								propertyParser.getProperty(ConfigVars.HBASE_ROOT_DIR_KEY))
+								propertyParser.getProperty(
+										ConfigVars.HBASE_ROOT_DIR_KEY))
 						.setZookeeperPort(
-								Integer.parseInt(propertyParser.getProperty(ConfigVars.ZOOKEEPER_PORT_KEY)))
+								Integer.parseInt(
+										propertyParser.getProperty(
+												ConfigVars.ZOOKEEPER_PORT_KEY)))
 						.setZookeeperConnectionString(
-								propertyParser.getProperty(ConfigVars.ZOOKEEPER_CONNECTION_STRING_KEY))
+								propertyParser.getProperty(
+										ConfigVars.ZOOKEEPER_CONNECTION_STRING_KEY))
 						.setZookeeperZnodeParent(
-								propertyParser.getProperty(ConfigVars.HBASE_ZNODE_PARENT_KEY))
+								propertyParser.getProperty(
+										ConfigVars.HBASE_ZNODE_PARENT_KEY))
 						.setHbaseWalReplicationEnabled(
-								Boolean.parseBoolean(propertyParser
-										.getProperty(ConfigVars.HBASE_WAL_REPLICATION_ENABLED_KEY)))
+								Boolean.parseBoolean(
+										propertyParser.getProperty(
+												ConfigVars.HBASE_WAL_REPLICATION_ENABLED_KEY)))
 						.setHbaseConfiguration(
 								conf)
 						.build();
@@ -181,7 +204,8 @@ public class HBaseStoreTestEnvironment extends
 						List<SecurityCapability> capabilities = conn.getAdmin().getSecurityCapabilities();
 						assertTrue(
 								"CELL_VISIBILITY capability is missing",
-								capabilities.contains(SecurityCapability.CELL_VISIBILITY));
+								capabilities.contains(
+										SecurityCapability.CELL_VISIBILITY));
 
 						// Set up valid visibilities for the user
 						addLabels(
@@ -194,10 +218,12 @@ public class HBaseStoreTestEnvironment extends
 								"hfile.format.version");
 						assertTrue(
 								"HFile version is incorrect",
-								hfileVersionStr.equals("3"));
+								hfileVersionStr.equals(
+										"3"));
 					}
 					catch (Throwable e) {
-						LOGGER.error(e);
+						LOGGER.error(
+								e);
 					}
 				}
 			}
@@ -236,13 +262,15 @@ public class HBaseStoreTestEnvironment extends
 			}
 		};
 
-		SUPERUSER.runAs(action);
+		SUPERUSER.runAs(
+				action);
 	}
 
 	@Override
 	public void tearDown() {
 		try {
-			hbaseLocalCluster.stop(true);
+			hbaseLocalCluster.stop(
+					true);
 		}
 		catch (final Exception e) {
 			LOGGER.warn(

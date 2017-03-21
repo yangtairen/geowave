@@ -649,6 +649,7 @@ public class HBaseDataStore extends
 
 		for (ByteArrayId rowId : ingestInfo.getRowIds()) {
 			if (ensureUniqueId) {
+				LOGGER.warn("UNIQUE ID for row " + rowId.getHexString());
 				rowId = DataStoreUtils.ensureUniqueId(
 						rowId.getBytes(),
 						true);
