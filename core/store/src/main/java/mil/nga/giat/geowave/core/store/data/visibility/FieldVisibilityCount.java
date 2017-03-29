@@ -14,7 +14,7 @@ import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.store.adapter.statistics.AbstractDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.callback.DeleteCallback;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveFieldVisibility;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
 public class FieldVisibilityCount<T> extends
@@ -123,13 +123,13 @@ public class FieldVisibilityCount<T> extends
 			final int incrementValue,
 			GeoWaveRow... kvs ) {
 		for (GeoWaveRow row : kvs){
-			GeoWaveFieldVisibility visibilities = row.getFieldVisibilities();
-			for (final FieldInfo<?> field : fields) {
+			GeoWaveValue[] values = row.getFieldValues();
+			for (final GeoWaveValue v : values) {
 				ByteArrayId visibility = new ByteArrayId(
 						new byte[] {});
-				if (field.getVisibility() != null) {
+				if (v.getVisibility() != null) {
 					visibility = new ByteArrayId(
-							field.getVisibility());
+							v.getVisibility());
 				}
 				Long count = countsPerVisibility.get(visibility);
 				if (count == null) {

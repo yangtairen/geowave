@@ -48,22 +48,25 @@ public class CountDataStatistics<T> extends
 
 	@Override
 	public byte[] toBinary() {
-		final ByteBuffer buffer = super.binaryBuffer(8);
-		buffer.putLong(count);
+		final ByteBuffer buffer = super.binaryBuffer(
+				8);
+		buffer.putLong(
+				count);
 		return buffer.array();
 	}
 
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buffer = super.binaryBuffer(bytes);
+		final ByteBuffer buffer = super.binaryBuffer(
+				bytes);
 		count = buffer.getLong();
 	}
 
 	@Override
 	public void entryIngested(
 			final T entry,
-			GeoWaveRow... kvs) {
+			final GeoWaveRow... kvs ) {
 		if (!isSet()) {
 			count = 0;
 		}
@@ -86,33 +89,38 @@ public class CountDataStatistics<T> extends
 	}
 
 	/**
-	 * This is expensive, but necessary since there may be duplicates
+	 * This is expensive, but necessary since there may be duplicates 
 	 */
+	//TODO entryDeleted should only be called once with all duplicates
 	private transient HashSet<ByteArrayId> ids = new HashSet<ByteArrayId>();
 
 	@Override
 	public void entryDeleted(
 			final T entry,
-			GeoWaveRow kv) {
-		if (ids.add(new ByteArrayId(
-				kv.getDataId()))) {
-			if (!isSet()) {
-				count = 0;
+			final GeoWaveRow... kv ) {
+		if (kv.length > 0) {
+			if (ids.add(
+					new ByteArrayId(
+							kv[0].getDataId()))) {
+				if (!isSet()) {
+					count = 0;
+				}
+				count -= 1;
 			}
-			count -= 1;
 		}
-
 	}
 
+	@Override
 	public String toString() {
-		StringBuffer buffer = new StringBuffer();
+		final StringBuffer buffer = new StringBuffer();
 		buffer.append(
 				"count[adapter=").append(
-				super.getDataAdapterId().getString());
+						super.getDataAdapterId().getString());
 		buffer.append(
 				", count=").append(
-				count);
-		buffer.append("]");
+						count);
+		buffer.append(
+				"]");
 		return buffer.toString();
 	}
 }

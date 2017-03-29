@@ -103,10 +103,12 @@ public class DuplicateEntryCount<T> extends
 	@Override
 	public void entryDeleted(
 			final T entry,
-			final GeoWaveRow kv ) {
-		if (entryHasDuplicates(
-				kv)) {
-			entriesWithDuplicates--;
+			final GeoWaveRow... kvs ) {
+		if (kvs.length > 0) {
+			if (entryHasDuplicates(
+					kvs[0])) {
+				entriesWithDuplicates--;
+			}
 		}
 	}
 

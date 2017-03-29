@@ -1,7 +1,11 @@
 package mil.nga.giat.geowave.core.store.adapter.statistics;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import mil.nga.giat.geowave.core.store.EntryVisibilityHandler;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
 
 /**
@@ -16,32 +20,41 @@ import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
 public class DefaultFieldStatisticVisibility<T> implements
 		EntryVisibilityHandler<T>
 {
+	private static List<GeoWaveValue> getAllVisibilities(
+			final GeoWaveRow... kvs ) {
+		List<GeoWaveValue> retVal = new ArrayList<>();
+		for (GeoWaveRow kv : kvs) {
+			for (GeoWaveValue v : kv.getFieldValues()) {
+				retVal.add(
+						v);
+			}
+		}
+		return retVal;
+	}
 
 	@Override
 	public byte[] getVisibility(
 			final T entry,
 			final GeoWaveRow... kvs ) {
-		if (kvs.length == 1) {
-			return kvs[0].getVisibility();
+		List<GeoWaveValue> allVis = getAllVisibilities(
+				kvs);
+		if (allVis.size() == 1) {
+			return allVis.get(
+					0).getVisibility();
 		}
-		else if (kvs.length > 1) {
-			int lowestOrdinal = Integer.MAX_VALUE;
-			byte[] lowestOrdinalVisibility = null;
-			for (final GeoWaveRow kv : kvs) {
-				final int pos = BitmaskUtils.getLowestFieldPosition(
-						kv.getFieldMask());
-				if (pos == 0) {
-					return kv.getVisibility();
-				}
-				if (pos <= lowestOrdinal) {
-					lowestOrdinal = pos;
-					lowestOrdinalVisibility = kv.getVisibility();
-				}
+		int lowestOrdinal = Integer.MAX_VALUE;
+		byte[] lowestOrdinalVisibility = null;
+		for (GeoWaveValue v : allVis) {
+			final int pos = BitmaskUtils.getLowestFieldPosition(
+					v.getFieldMask());
+			if (pos == 0) {
+				return v.getVisibility();
 			}
-			return lowestOrdinalVisibility;
+			if (pos <= lowestOrdinal) {
+				lowestOrdinal = pos;
+				lowestOrdinalVisibility = v.getVisibility();
+			}
 		}
-
-		return null;
+		return lowestOrdinalVisibility;
 	}
-
 }

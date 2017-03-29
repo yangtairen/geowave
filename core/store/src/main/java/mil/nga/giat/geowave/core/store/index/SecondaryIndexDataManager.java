@@ -11,8 +11,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
+import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo;
+import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.callback.DeleteCallback;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
@@ -125,7 +125,7 @@ public class SecondaryIndexDataManager<T> implements
 	@Override
 	public void entryDeleted(
 			final T entry,
-			GeoWaveRow kv ) {
+			GeoWaveRow... kv ) {
 		// loop secondary indices for adapter
 		for (final SecondaryIndex<T> secondaryIndex : adapter.getSupportedSecondaryIndices()) {
 			final ByteArrayId indexedAttributeFieldId = secondaryIndex.getFieldId();
@@ -199,7 +199,7 @@ public class SecondaryIndexDataManager<T> implements
 	}
 
 	private FieldInfo<?> getFieldInfo(
-			final DataStoreEntryInfo entryInfo,
+			final IntermediaryWriteEntryInfo entryInfo,
 			final ByteArrayId fieldID ) {
 		for (final FieldInfo<?> info : entryInfo.getFieldInfo()) {
 			if (info.getDataValue().getId().equals(

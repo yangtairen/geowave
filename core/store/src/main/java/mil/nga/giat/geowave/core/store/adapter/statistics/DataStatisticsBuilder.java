@@ -71,7 +71,7 @@ public class DataStatisticsBuilder<T> implements
 	@Override
 	public void entryDeleted(
 			final T entry,
-			final GeoWaveRow kv ) {
+			final GeoWaveRow... kv ) {
 		final ByteArrayId visibilityByteArray = new ByteArrayId(
 				visibilityHandler.getVisibility(
 						entry));

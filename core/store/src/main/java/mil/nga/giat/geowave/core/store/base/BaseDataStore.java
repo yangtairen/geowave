@@ -1040,7 +1040,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 			if (scanCallback != null) {
 				scanCallback.entryScanned(
 						decodedRow,
-						geowaveRow);
+						geowaveRows);
 			}
 
 			return decodedRow;

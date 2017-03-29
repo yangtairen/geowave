@@ -91,7 +91,7 @@ public class StatsCompositionTool<T> implements
 	@Override
 	public void entryDeleted(
 			final T entry,
-			final GeoWaveRow kv ) {
+			final GeoWaveRow... kvs ) {
 		if (statisticsBuilders == null) {
 			return;
 		}
@@ -99,7 +99,7 @@ public class StatsCompositionTool<T> implements
 			for (final DataStatisticsBuilder<T> builder : statisticsBuilders) {
 				builder.entryDeleted(
 						entry,
-						kv);
+						kvs);
 			}
 			updateCount++;
 			checkStats();

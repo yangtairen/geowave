@@ -125,7 +125,7 @@ public class DifferingFieldVisibilityEntryCount<T> extends
 
 	private static boolean entryHasDifferentVisibilities(
 			final GeoWaveRow geowaveRow ) {
-		if ((geowaveRow.getFieldVisibilities() != null) && (geowaveRow.getFieldVisibilities().length > 1)) {
+		if ((geowaveRow.getFieldValues() != null) && (geowaveRow.getFieldValues().length > 1)) {
 			// if there is 0 or 1 field, there won't be differing visibilities
 			return true;
 		}
