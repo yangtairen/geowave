@@ -29,7 +29,7 @@ import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.data.visibility.DifferingFieldVisibilityEntryCount;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRowImpl;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyImpl;
 import mil.nga.giat.geowave.core.store.filter.DedupeFilter;
 import mil.nga.giat.geowave.core.store.index.IndexMetaDataSet;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
@@ -297,7 +297,7 @@ public class CassandraDataStore extends
 
 			// for each insertion(index) id, there's a matching rowId
 			// that contains the duplicate count
-			GeoWaveRow tempRow = new GeoWaveRowImpl(
+			GeoWaveRow tempRow = new GeoWaveKeyImpl(
 					rowIdIterator.next().getBytes());
 			int numDuplicates = tempRow.getNumberOfDuplicates();
 

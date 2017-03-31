@@ -9,6 +9,7 @@ import java.util.Map;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.base.Writer;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
 import mil.nga.giat.geowave.core.store.filter.DistributableFilterList;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 
@@ -60,20 +61,19 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 			final ByteArrayId adapterId,
 			final ByteArrayId indexedAttributeFieldId,
 			final ByteArrayId dataId,
-			final ByteArrayId attributeVisibility,
-			final List<FieldInfo<?>> attributes ) {
+			final GeoWaveValue... values ) {
 		try {
 			final Writer<MutationType> writer = getWriter(secondaryIndexId);
 			if (writer != null) {
-				for (final FieldInfo<?> indexedAttribute : attributes) {
+				for (final GeoWaveValue v : values) {
 					writer.write(buildMutation(
 							indexedAttributeValue.getBytes(),
 							adapterId.getBytes(),
 							indexedAttributeFieldId.getBytes(),
 							dataId.getBytes(),
-							indexedAttribute.getDataValue().getId().getBytes(),
-							indexedAttribute.getWrittenValue(),
-							indexedAttribute.getVisibility()));
+							v.getFieldMask(),
+							v.getValue(),
+							v.getVisibility()));
 				}
 			}
 		}
@@ -108,7 +108,8 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 			final ByteArrayId adapterId,
 			final ByteArrayId indexedAttributeFieldId,
 			final ByteArrayId primaryIndexId,
-			final ByteArrayId primaryIndexRowId ) {
+			final ByteArrayId primaryIndexRowId,
+			final ByteArrayId attributeVisibility ) {
 		try {
 			final Writer<MutationType> writer = getWriter(secondaryIndexId);
 			if (writer != null) {
@@ -134,17 +135,17 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 			final ByteArrayId adapterId,
 			final ByteArrayId indexedAttributeFieldId,
 			final ByteArrayId dataId,
-			final List<FieldInfo<?>> attributes ) {
+			final GeoWaveValue... values ) {
 		try {
 			final Writer<MutationType> writer = getWriter(secondaryIndexId);
 			if (writer != null) {
-				for (FieldInfo<?> attribute : attributes) {
+				for (GeoWaveValue v : values) {
 					writer.write(buildFullDeleteMutation(
 							indexedAttributeValue.getBytes(),
 							adapterId.getBytes(),
 							indexedAttributeFieldId.getBytes(),
 							dataId.getBytes(),
-							attribute.getDataValue().getId().getBytes()));
+							v.getFieldMask()));
 				}
 			}
 		}

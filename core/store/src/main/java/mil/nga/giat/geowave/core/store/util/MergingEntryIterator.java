@@ -20,7 +20,7 @@ import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter.RowTransfor
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRowImpl;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyImpl;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 
@@ -113,7 +113,7 @@ public class MergingEntryIterator<T> extends
 		}
 		else if (resultsToMerge.size() == 1) {
 			final GeoWaveRow row = resultsToMerge.get(0);
-			return new GeoWaveRowImpl(
+			return new GeoWaveKeyImpl(
 					DataStoreUtils.removeUniqueId(row.getDataId()),
 					row.getAdapterId(),
 					row.getIndex(),
@@ -194,7 +194,7 @@ public class MergingEntryIterator<T> extends
 						rowToMerge.getFieldMask()),
 				rowToMerge.getValue()));
 
-		return new GeoWaveRowImpl(
+		return new GeoWaveKeyImpl(
 				DataStoreUtils.removeUniqueId(row.getDataId()),
 				row.getAdapterId(),
 				row.getIndex(),

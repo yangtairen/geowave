@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,9 +25,8 @@ import mil.nga.giat.geowave.core.index.IndexMetaData;
 import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.QueryRanges;
-import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.index.SinglePartitionInsertionIds;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
-import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
@@ -35,18 +35,14 @@ import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
 import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
-import mil.nga.giat.geowave.core.store.data.DataWriter;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
-import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
-import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
-import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
 import mil.nga.giat.geowave.core.store.data.visibility.UnconstrainedVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
 import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyValue;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRowImpl;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKey;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskedFieldInfoComparator;
@@ -89,10 +85,6 @@ public class DataStoreUtils
 		return dimensionFieldIds;
 	}
 
-	public static Map<ByteArrayId, Integer> getFieldIdToFieldPositionMapping(CommonIndexModel indexModel, DataAdapter<?> adapter){
-		for (indexModel.getDimensions()
-	}
-
 	public static <T> long cardinality(
 			final PrimaryIndex index,
 			final Map<ByteArrayId, DataStatistics<T>> stats,
@@ -112,12 +104,46 @@ public class DataStoreUtils
 		return count;
 	}
 
+	public static InsertionIds keysToInsertionIds(
+			final GeoWaveKey... geoWaveKeys ) {
+		final Map<ByteArrayId, List<ByteArrayId>> sortKeysPerPartition = new HashMap<>();
+		for (final GeoWaveKey key : geoWaveKeys) {
+			final ByteArrayId partitionKey = new ByteArrayId(
+					key.getPartitionKey());
+			List<ByteArrayId> sortKeys = sortKeysPerPartition.get(
+					partitionKey);
+			if (sortKeys == null) {
+				sortKeys = new ArrayList<>();
+				sortKeysPerPartition.put(
+						partitionKey,
+						sortKeys);
+			}
+			sortKeys.add(
+					new ByteArrayId(
+							key.getSortKey()));
+		}
+		final Set<SinglePartitionInsertionIds> insertionIds = new HashSet<>();
+		for (final Entry<ByteArrayId, List<ByteArrayId>> e : sortKeysPerPartition.entrySet()) {
+			insertionIds.add(
+					new SinglePartitionInsertionIds(
+							e.getKey(),
+							e.getValue()));
+		}
+		return new InsertionIds(
+				insertionIds);
+	}
+
 	public static boolean rowIdsMatch(
-			final GeoWaveKeyValue rowId1,
-			final GeoWaveKeyValue rowId2 ) {
+			final GeoWaveKey rowId1,
+			final GeoWaveKey rowId2 ) {
 		if (!Arrays.equals(
-				rowId1.getIndex(),
-				rowId2.getIndex())) {
+				rowId1.getPartitionKey(),
+				rowId2.getPartitionKey())) {
+			return false;
+		}
+		if (!Arrays.equals(
+				rowId1.getSortKey(),
+				rowId2.getSortKey())) {
 			return false;
 		}
 		if (!Arrays.equals(
@@ -141,7 +167,8 @@ public class DataStoreUtils
 
 	public static byte[] removeUniqueId(
 			byte[] dataId ) {
-		if ((dataId.length < UNIQUE_ADDED_BYTES) || (dataId[dataId.length - UNIQUE_ADDED_BYTES] != UNIQUE_ID_DELIMITER)) {
+		if ((dataId.length < UNIQUE_ADDED_BYTES)
+				|| (dataId[dataId.length - UNIQUE_ADDED_BYTES] != UNIQUE_ID_DELIMITER)) {
 			return dataId;
 		}
 
@@ -151,74 +178,6 @@ public class DataStoreUtils
 				dataId.length - UNIQUE_ADDED_BYTES);
 
 		return dataId;
-	}
-
-	public static <T> void readFieldInfo(
-			final List<FieldInfo<?>> fieldInfoList,
-			final PersistentDataset<CommonIndexValue> indexData,
-			final PersistentDataset<Object> extendedData,
-			final PersistentDataset<byte[]> unknownData,
-			final byte[] compositeFieldIdBytes,
-			final byte[] commonVisiblity,
-			final byte[] byteValue,
-			final DataAdapter<T> adapter,
-			final CommonIndexModel indexModel ) {
-		final ByteArrayId compositeFieldId = new ByteArrayId(
-				compositeFieldIdBytes);
-		final List<FlattenedFieldInfo> fieldInfos = DataStoreUtils.decomposeFlattenedFields(
-				compositeFieldId.getBytes(),
-				byteValue,
-				commonVisiblity,
-				-1).getFieldsRead();
-		for (final FlattenedFieldInfo fieldInfo : fieldInfos) {
-			final ByteArrayId fieldId = adapter.getFieldIdForPosition(
-					indexModel,
-					fieldInfo.getFieldPosition());
-			final FieldReader<? extends CommonIndexValue> indexFieldReader = indexModel.getReader(
-					fieldId);
-			if (indexFieldReader != null) {
-				final CommonIndexValue indexValue = indexFieldReader.readField(
-						fieldInfo.getValue());
-				indexValue.setVisibility(
-						commonVisiblity);
-				final PersistentValue<CommonIndexValue> val = new PersistentValue<CommonIndexValue>(
-						fieldId,
-						indexValue);
-				indexData.addValue(
-						val);
-				fieldInfoList.add(
-						DataStoreUtils.getFieldInfo(
-								val,
-								fieldInfo.getValue(),
-								commonVisiblity));
-			}
-			else {
-				final FieldReader<?> extFieldReader = adapter.getReader(
-						fieldId);
-				if (extFieldReader != null) {
-					final Object value = extFieldReader.readField(
-							fieldInfo.getValue());
-					final PersistentValue<Object> val = new PersistentValue<Object>(
-							fieldId,
-							value);
-					extendedData.addValue(
-							val);
-					fieldInfoList.add(
-							DataStoreUtils.getFieldInfo(
-									val,
-									fieldInfo.getValue(),
-									commonVisiblity));
-				}
-				else {
-					LOGGER.error(
-							"field reader not found for data entry, the value may be ignored");
-					unknownData.addValue(
-							new PersistentValue<byte[]>(
-									fieldId,
-									fieldInfo.getValue()));
-				}
-			}
-		}
 	}
 
 	/**
@@ -315,7 +274,8 @@ public class DataStoreUtils
 	public static String getQualifiedTableName(
 			final String tableNamespace,
 			final String unqualifiedTableName ) {
-		return ((tableNamespace == null) || tableNamespace.isEmpty()) ? unqualifiedTableName : tableNamespace + "_" + unqualifiedTableName;
+		return ((tableNamespace == null) || tableNamespace.isEmpty()) ? unqualifiedTableName
+				: tableNamespace + "_" + unqualifiedTableName;
 	}
 
 	/**
@@ -428,212 +388,6 @@ public class DataStoreUtils
 		return retVal;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T, R extends GeoWaveKeyValue> T decodeRow(
-			final R row,
-			final AdapterStore adapterStore,
-			final QueryFilter clientFilter,
-			final PrimaryIndex index,
-			final ScanCallback<T, R> scanCallback ) {
-		return decodeRowInternal(
-				row,
-				null,
-				adapterStore,
-				clientFilter,
-				index,
-				scanCallback);
-	}
-
-	@SuppressWarnings("unchecked")
-	private static <T, R extends GeoWaveKeyValue> T decodeRowInternal(
-			final R row,
-			DataAdapter<T> dataAdapter,
-			final AdapterStore adapterStore,
-			final QueryFilter clientFilter,
-			final PrimaryIndex index,
-			final ScanCallback<T, R> scanCallback ) {
-		if (dataAdapter == null) {
-			if (adapterStore != null) {
-				final ByteArrayId adapterId = new ByteArrayId(
-						row.getAdapterId());
-				dataAdapter = (DataAdapter<T>) adapterStore.getAdapter(
-						adapterId);
-			}
-			if (dataAdapter == null) {
-				LOGGER.error(
-						"Could not decode row from iterator. Either adapter or adapter store must be non-null.");
-				return null;
-			}
-		}
-
-		// build a persistence encoding object first, pass it through the
-		// client filters and if its accepted, use the data adapter to
-		// decode the persistence model into the native data type
-		final PersistentDataset<CommonIndexValue> indexData = new PersistentDataset<CommonIndexValue>();
-		final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
-		final PersistentDataset<byte[]> unknownData = new PersistentDataset<byte[]>();
-
-		final List<FieldInfo<?>> fieldInfoList = new ArrayList<FieldInfo<?>>();
-
-		final List<FlattenedFieldInfo> flattenedFieldInfoList = new ArrayList<FlattenedFieldInfo>();
-		final CommonIndexModel indexModel = index.getIndexModel();
-		final byte[] flattenedValue = row.getValue();
-		final ByteBuffer input = ByteBuffer.wrap(
-				flattenedValue);
-
-		// Get the list of valid field positions from the row's field mask
-		final List<Integer> fieldPositions = BitmaskUtils.getFieldPositions(
-				row.getFieldMask());
-
-		// Collect the valid fields
-		int fieldIndex = 0;
-		while (input.hasRemaining()) {
-			final int fieldLength = input.getInt();
-
-			final byte[] fieldValueBytes = new byte[fieldLength];
-			input.get(
-					fieldValueBytes);
-
-			if (fieldPositions.contains(
-					fieldIndex)) {
-				flattenedFieldInfoList.add(
-						new FlattenedFieldInfo(
-								fieldIndex,
-								fieldValueBytes));
-			}
-
-			fieldIndex++;
-		}
-
-		// below this likely needs some work
-		final Set<ByteArrayId> visitedFieldIds = new HashSet<>();
-		for (final FlattenedFieldInfo flatInfo : flattenedFieldInfoList) {
-			final ByteArrayId fieldId = dataAdapter.getFieldIdForPosition(
-					indexModel,
-					flatInfo.getFieldPosition());
-			if (!visitedFieldIds.contains(
-					fieldId)) {
-				visitedFieldIds.add(
-						fieldId);
-				final FieldReader<? extends CommonIndexValue> indexFieldReader = indexModel.getReader(
-						fieldId);
-				if (indexFieldReader != null) {
-					final CommonIndexValue indexValue = indexFieldReader.readField(
-							flatInfo.getValue());
-					final PersistentValue<CommonIndexValue> val = new PersistentValue<CommonIndexValue>(
-							fieldId,
-							indexValue);
-					indexData.addValue(
-							val);
-					fieldInfoList.add(
-							DataStoreUtils.getFieldInfo(
-									val,
-									flatInfo.getValue(),
-									new byte[] {}));
-				}
-				else {
-					final FieldReader<?> extFieldReader = dataAdapter.getReader(
-							fieldId);
-					if (extFieldReader != null) {
-						final Object value = extFieldReader.readField(
-								flatInfo.getValue());
-						final PersistentValue<Object> val = new PersistentValue<Object>(
-								fieldId,
-								value);
-						extendedData.addValue(
-								val);
-						fieldInfoList.add(
-								DataStoreUtils.getFieldInfo(
-										val,
-										flatInfo.getValue(),
-										new byte[] {}));
-					}
-					else {
-						LOGGER.error(
-								"field reader not found for data entry, the value may be ignored");
-						unknownData.addValue(
-								new PersistentValue<byte[]>(
-										fieldId,
-										flatInfo.getValue()));
-					}
-				}
-			}
-		}
-		final IndexedAdapterPersistenceEncoding encodedRow = new IndexedAdapterPersistenceEncoding(
-				dataAdapter.getAdapterId(),
-				new ByteArrayId(
-						row.getDataId()),
-				new ByteArrayId(
-						row.getIndex()),
-				row.getNumberOfDuplicates(),
-				indexData,
-				unknownData,
-				extendedData);
-
-		if ((clientFilter == null) || clientFilter.accept(
-				index.getIndexModel(),
-				encodedRow)) {
-			final Pair<T, DataStoreEntryInfo> pair = Pair.of(
-					dataAdapter.decode(
-							encodedRow,
-							index),
-					new DataStoreEntryInfo(
-							row.getDataId(),
-							Arrays.asList(
-									new ByteArrayId(
-											row.getIndex())),
-							Arrays.asList(
-									new ByteArrayId(
-											row.getIndex())),
-							fieldInfoList));
-			if (scanCallback != null) {
-				scanCallback.entryScanned(
-						pair.getRight(),
-						row,
-						pair.getLeft());
-			}
-			return pair.getLeft();
-		}
-		return null;
-	}
-
-	// TODO: this doesn't account for varying visibilities, so this is
-	// potentially only temporary
-	public static ByteBuffer serializeFields(
-			final DataStoreEntryInfo ingestInfo ) {
-		final List<byte[]> fieldInfoBytesList = new ArrayList<>();
-		int totalLength = 0;
-		// TODO potentially another hack, but if there is only one field, don't
-		// need to write the length
-		if (ingestInfo.getFieldInfo().size() == 1) {
-			final byte[] value = ingestInfo.getFieldInfo().get(
-					0).getWrittenValue();
-			fieldInfoBytesList.add(
-					value);
-			totalLength += value.length;
-		}
-		else {
-			for (final FieldInfo<?> fieldInfo : ingestInfo.getFieldInfo()) {
-				final ByteBuffer fieldInfoBytes = ByteBuffer.allocate(
-						4 + fieldInfo.getWrittenValue().length);
-				fieldInfoBytes.putInt(
-						fieldInfo.getWrittenValue().length);
-				fieldInfoBytes.put(
-						fieldInfo.getWrittenValue());
-				fieldInfoBytesList.add(
-						fieldInfoBytes.array());
-				totalLength += fieldInfoBytes.array().length;
-			}
-		}
-		final ByteBuffer allFields = ByteBuffer.allocate(
-				totalLength);
-		for (final byte[] bytes : fieldInfoBytesList) {
-			allFields.put(
-					bytes);
-		}
-		return allFields;
-	}
-
 	public static ByteArrayId ensureUniqueId(
 			final byte[] id,
 			final boolean hasMetadata ) {
@@ -683,7 +437,7 @@ public class DataStoreUtils
 		buf.put(
 				new byte[] {
 					UNIQUE_ID_DELIMITER
-		});
+				});
 		final UUID uuid = UUID.randomUUID();
 		buf.putLong(
 				timestamp);

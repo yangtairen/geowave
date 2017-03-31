@@ -2,66 +2,42 @@ package mil.nga.giat.geowave.core.store.entities;
 
 import java.nio.ByteBuffer;
 
-public class GeoWaveRowImpl implements
-		GeoWaveRow
+public class GeoWaveKeyImpl implements
+		GeoWaveKey
 {
 	protected byte[] dataId = null;
 	protected byte[] adapterId = null;
 	protected byte[] partitionKey = null;
 	protected byte[] sortKey = null;
-	protected byte[] value = null;
-	protected byte[] fieldMask = null;
 	protected int numberOfDuplicates = 0;
 
-	protected GeoWaveRowImpl() {}
+	protected GeoWaveKeyImpl() {}
 
-	public GeoWaveRowImpl(
-			final byte[] compositeInsertionId ) {
+	public GeoWaveKeyImpl(
+			final byte[] compositeInsertionId,
+			final int partitionKeyLength ) {
 		this(
 				compositeInsertionId,
-				null,
-				null);
+				partitionKeyLength,
+				compositeInsertionId.length);
 	}
 
-	public GeoWaveRowImpl(
+	public GeoWaveKeyImpl(
 			final byte[] compositeInsertionId,
+			final int partitionKeyLength,
 			final int length ) {
 		this(
 				compositeInsertionId,
+				partitionKeyLength,
 				0,
 				length);
 	}
 
-	public GeoWaveRowImpl(
+	public GeoWaveKeyImpl(
 			final byte[] compositeInsertionId,
+			final int partitionKeyLength,
 			final int offset,
 			final int length ) {
-		this(
-				compositeInsertionId,
-				offset,
-				length,
-				null,
-				null);
-	}
-
-	public GeoWaveRowImpl(
-			final byte[] compositeInsertionId,
-			final byte[] fieldMask,
-			final byte[] value ) {
-		this(
-				compositeInsertionId,
-				0,
-				compositeInsertionId.length,
-				fieldMask,
-				value);
-	}
-
-	public GeoWaveRowImpl(
-			final byte[] compositeInsertionId,
-			final int offset,
-			final int length,
-			final byte[] fieldMask,
-			final byte[] value ) {
 		final ByteBuffer metadataBuf = ByteBuffer.wrap(
 				compositeInsertionId,
 				(length + offset) - 12,
@@ -74,11 +50,14 @@ public class GeoWaveRowImpl implements
 				compositeInsertionId,
 				offset,
 				length - 12);
-		final byte[] index = new byte[length - 12 - adapterIdLength - dataIdLength];
+		final byte[] sortKey = new byte[length - 12 - adapterIdLength - dataIdLength - partitionKeyLength];
+		final byte[] partitionKey = new byte[length - 12 - adapterIdLength - dataIdLength - sortKey.length];
 		final byte[] adapterId = new byte[adapterIdLength];
 		final byte[] dataId = new byte[dataIdLength];
 		buf.get(
-				index);
+				partitionKey);
+		buf.get(
+				sortKey);
 		buf.get(
 				adapterId);
 		buf.get(
@@ -86,69 +65,22 @@ public class GeoWaveRowImpl implements
 
 		this.dataId = dataId;
 		this.adapterId = adapterId;
-		this.index = index;
+		this.partitionKey = partitionKey;
+		this.sortKey = sortKey;
 		this.numberOfDuplicates = numberOfDuplicates;
-
-		this.fieldMask = fieldMask;
-		this.value = value;
 	}
 
-	public GeoWaveRowImpl(
+	public GeoWaveKeyImpl(
 			final byte[] dataId,
 			final byte[] adapterId,
 			final byte[] partitionKey,
 			final byte[] sortKey,
-			final byte[] fieldMask,
-			final byte[] value,
 			final int numberOfDuplicates ) {
 		this.dataId = dataId;
 		this.adapterId = adapterId;
 		this.partitionKey = partitionKey;
 		this.sortKey = sortKey;
-		this.fieldMask = fieldMask;
-		this.value = value;
 		this.numberOfDuplicates = numberOfDuplicates;
-	}
-
-	public GeoWaveRowImpl(
-			final byte[] dataId,
-			final byte[] adapterId,
-			final byte[] partitionKey,
-			final byte[] sortKey,
-			final int numberOfDuplicates ) {
-		this(
-				dataId,
-				adapterId,
-				partitionKey,
-				sortKey,
-				null,
-				null,
-				numberOfDuplicates);
-	}
-
-	public byte[] getCompositeInsertionId() {
-		final ByteBuffer buf = ByteBuffer.allocate(
-				12 + dataId.length + adapterId.length + index.length);
-		buf.put(
-				index);
-		buf.put(
-				adapterId);
-		buf.put(
-				dataId);
-		buf.putInt(
-				adapterId.length);
-		buf.putInt(
-				dataId.length);
-		buf.putInt(
-				numberOfDuplicates);
-		buf.rewind();
-
-		return buf.array();
-	}
-
-	@Override
-	public byte[] getFieldMask() {
-		return fieldMask;
 	}
 
 	@Override
@@ -160,6 +92,7 @@ public class GeoWaveRowImpl implements
 	public byte[] getAdapterId() {
 		return adapterId;
 	}
+
 	@Override
 	public byte[] getPartitionKey() {
 		return partitionKey;
@@ -168,11 +101,6 @@ public class GeoWaveRowImpl implements
 	@Override
 	public byte[] getSortKey() {
 		return sortKey;
-	}
-
-	@Override
-	public byte[] getValue() {
-		return value;
 	}
 
 	@Override

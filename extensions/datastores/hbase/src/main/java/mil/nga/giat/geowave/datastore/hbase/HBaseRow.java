@@ -5,10 +5,10 @@ import java.util.List;
 import org.apache.hadoop.hbase.client.Result;
 
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRowImpl;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyImpl;
 
 public class HBaseRow extends
-		GeoWaveRowImpl
+		GeoWaveKeyImpl
 {
 	private List<FieldInfo<?>> fieldInfoList;
 

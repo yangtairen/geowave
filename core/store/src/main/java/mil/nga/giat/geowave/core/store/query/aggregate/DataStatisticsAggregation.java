@@ -22,7 +22,6 @@ public class DataStatisticsAggregation<T> implements
 	public void aggregate(
 			final T entry ) {
 		statisticsResult.entryIngested(
-				null,
 				entry);
 	}
 

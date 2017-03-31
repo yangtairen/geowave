@@ -14,7 +14,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRowImpl;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyImpl;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.mapreduce.HadoopWritableSerializationTool;
@@ -82,7 +82,7 @@ public class InputFormatIteratorWrapper<T> implements
 			final Entry<Key, Value> row,
 			final QueryFilter clientFilter,
 			final PrimaryIndex index ) {
-		final GeoWaveRowImpl tempRow = new GeoWaveRowImpl(
+		final GeoWaveKeyImpl tempRow = new GeoWaveKeyImpl(
 				row.getKey().getRow().copyBytes());
 
 		KeyValue inputRow = new KeyValue(

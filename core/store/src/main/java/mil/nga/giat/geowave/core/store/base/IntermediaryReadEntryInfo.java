@@ -1,6 +1,5 @@
 package mil.nga.giat.geowave.core.store.base;
 
-
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
@@ -18,11 +17,14 @@ public class IntermediaryReadEntryInfo<T>
 	private final PrimaryIndex index;
 
 	private DataAdapter<T> dataAdapter;
-	boolean adapterVerified;
+	private boolean adapterVerified;
+	private ByteArrayId dataId;
+	private ByteArrayId partitionId;
+	private ByteArrayId sortKey;
 
 	public IntermediaryReadEntryInfo(
-			PrimaryIndex index,
-			boolean decodeRow ) {
+			final PrimaryIndex index,
+			final boolean decodeRow ) {
 		this.index = index;
 		this.decodeRow = decodeRow;
 	}
@@ -38,28 +40,29 @@ public class IntermediaryReadEntryInfo<T>
 	// Adapter is set either by the user or from the data
 	// If null, expect it from data, so no verify needed
 	public boolean setDataAdapter(
-			DataAdapter<T> dataAdapter,
-			boolean fromData ) {
+			final DataAdapter<T> dataAdapter,
+			final boolean fromData ) {
 		this.dataAdapter = dataAdapter;
 		this.adapterVerified = fromData ? true : (dataAdapter == null);
 		return hasDataAdapter();
 	}
 
 	public boolean verifyAdapter(
-			ByteArrayId adapterId ) {
-		if (this.dataAdapter == null || adapterId == null) {
+			final ByteArrayId adapterId ) {
+		if ((this.dataAdapter == null) || (adapterId == null)) {
 			return false;
 		}
 
-		this.adapterVerified = adapterId.equals(dataAdapter.getAdapterId());
+		this.adapterVerified = adapterId.equals(
+				dataAdapter.getAdapterId());
 
 		return this.adapterVerified;
 	}
 
 	public boolean setOrRetrieveAdapter(
-			DataAdapter<T> adapter,
-			ByteArrayId adapterId,
-			AdapterStore adapterStore ) {
+			final DataAdapter<T> adapter,
+			final ByteArrayId adapterId,
+			final AdapterStore adapterStore ) {
 		// Verify the current data adapter
 		if (setDataAdapter(
 				adapter,
@@ -74,7 +77,8 @@ public class IntermediaryReadEntryInfo<T>
 
 		// Try to retrieve the adapter from the store
 		if (setDataAdapter(
-				(DataAdapter<T>) adapterStore.getAdapter(adapterId),
+				(DataAdapter<T>) adapterStore.getAdapter(
+						adapterId),
 				true)) {
 			return true;
 		}

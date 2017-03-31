@@ -44,9 +44,7 @@ import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DuplicateEntryCount;
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.base.IntermediaryReadEntryInfo;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.base.Deleter;
 import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
@@ -723,92 +721,4 @@ public class HBaseDataStore extends
 		}
 	}
 
-	@Override
-	public Object decodeRow(
-			Object inputRow,
-			boolean wholeRowEncoding,
-			QueryFilter clientFilter,
-			DataAdapter dataAdapter,
-			AdapterStore adapterStore,
-			PrimaryIndex index,
-			ScanCallback scanCallback,
-			byte[] fieldSubsetBitmask,
-			boolean decodeRow ) {
-		if ((dataAdapter == null) && (adapterStore == null)) {
-			LOGGER.error("Could not decode row from iterator. Either adapter or adapter store must be non-null.");
-			return null;
-		}
-
-		if (!(inputRow instanceof Result)) {
-			return null;
-		}
-
-		Result row = (Result) inputRow;
-
-		// Create the general-purpose row
-		HBaseRow hbaseRow = new HBaseRow(
-				row.getRow());
-
-		// Grab the first entry's adapter ID if necessary
-		ByteArrayId adapterId = null;
-		if (dataAdapter == null) {
-			adapterId = new ByteArrayId(
-					hbaseRow.getAdapterId());
-		}
-
-		IntermediaryReadEntryInfo decodePackage = new IntermediaryReadEntryInfo(
-				index,
-				decodeRow);
-
-		if (!decodePackage.setOrRetrieveAdapter(
-				dataAdapter,
-				adapterId,
-				adapterStore)) {
-			LOGGER.error("Could not retrieve adapter from adapter store.");
-			return null;
-		}
-
-		final NavigableMap<byte[], NavigableMap<byte[], NavigableMap<Long, byte[]>>> map = row.getMap();
-
-		for (final Entry<byte[], NavigableMap<byte[], NavigableMap<Long, byte[]>>> cfEntry : map.entrySet()) {
-			// Verify the adapter matches the data
-			if (!decodePackage.isAdapterVerified()) {
-				adapterId = new ByteArrayId(
-						cfEntry.getKey());
-
-				if (!decodePackage.verifyAdapter(adapterId)) {
-					LOGGER.error("Adapter verify failed: adapter does not match data.");
-					return null;
-				}
-			}
-
-			for (final Entry<byte[], NavigableMap<Long, byte[]>> cqEntry : cfEntry.getValue().entrySet()) {
-				byte[] byteValue = cqEntry.getValue().lastEntry().getValue();
-				byte[] fieldMask = cqEntry.getKey();
-
-				if (fieldSubsetBitmask != null) {
-					final byte[] newBitmask = BitmaskUtils.generateANDBitmask(
-							fieldMask,
-							fieldSubsetBitmask);
-					byteValue = BitmaskUtils.constructNewValue(
-							byteValue,
-							fieldMask,
-							newBitmask);
-					fieldMask = newBitmask;
-				}
-
-				readFieldInfo(
-						decodePackage,
-						fieldMask,
-						DataStoreUtils.EMTPY_VISIBILITY,
-						byteValue);
-			}
-		}
-
-		return getDecodedRow(
-				hbaseRow,
-				decodePackage,
-				clientFilter,
-				scanCallback);
-	}
 }

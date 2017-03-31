@@ -13,7 +13,6 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
@@ -22,7 +21,8 @@ import mil.nga.giat.geowave.core.store.util.EntryIteratorWrapper;
 public class HBaseEntryIteratorWrapper<T> extends
 		EntryIteratorWrapper<T>
 {
-	private final static Logger LOGGER = Logger.getLogger(HBaseEntryIteratorWrapper.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			HBaseEntryIteratorWrapper.class);
 	private boolean decodePersistenceEncoding = true;
 
 	private byte[] fieldSubsetBitmask;
@@ -51,12 +51,13 @@ public class HBaseEntryIteratorWrapper<T> extends
 				index,
 				scannerIt,
 				clientFilter,
-				(ScanCallback<T, ? extends GeoWaveRow>) scanCallback);
+				scanCallback);
 		this.decodePersistenceEncoding = decodePersistenceEncoding;
 		this.hasSkippingFilter = hasSkippingFilter;
 
 		if (!this.hasSkippingFilter) {
-			initializeBitPosition(maxResolutionSubsamplingPerDimension);
+			initializeBitPosition(
+					maxResolutionSubsamplingPerDimension);
 		}
 		else {
 			bitPosition = null;
@@ -65,7 +66,8 @@ public class HBaseEntryIteratorWrapper<T> extends
 		if (fieldIds != null) {
 			fieldSubsetBitmask = BitmaskUtils.generateFieldSubsetBitmask(
 					index.getIndexModel(),
-					fieldIds.getLeft(),
+					ByteArrayId.transformStringList(
+							fieldIds.getLeft()),
 					fieldIds.getRight());
 		}
 	}
@@ -87,7 +89,8 @@ public class HBaseEntryIteratorWrapper<T> extends
 			return null;
 		}
 
-		if (passesResolutionSkippingFilter(result)) {
+		if (passesResolutionSkippingFilter(
+				result)) {
 			return (T) dataStore.decodeRow(
 					result,
 					wholeRowEncoding,
@@ -108,11 +111,13 @@ public class HBaseEntryIteratorWrapper<T> extends
 			return true;
 		}
 
-		if ((reachedEnd == true) || ((skipUntilRow != null) && (skipUntilRow.compareTo(new ByteArrayId(
-				result.getRow())) > 0))) {
+		if ((reachedEnd == true) || ((skipUntilRow != null) && (skipUntilRow.compareTo(
+				new ByteArrayId(
+						result.getRow())) > 0))) {
 			return false;
 		}
-		incrementSkipRow(result);
+		incrementSkipRow(
+				result);
 		return true;
 	}
 

@@ -12,14 +12,15 @@ import org.apache.log4j.Logger;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.index.SinglePartitionInsertionIds;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo;
 import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 
 /**
@@ -28,7 +29,7 @@ import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
  * responsibility of the caller to close this writer when complete.
  *
  */
-public abstract class DataStoreIndexWriter<T, MutationType> implements
+public abstract class DataStoreIndexWriter<T, R extends GeoWaveRow> implements
 		IndexWriter<T>
 {
 	private final static Logger LOGGER = Logger.getLogger(
@@ -36,8 +37,8 @@ public abstract class DataStoreIndexWriter<T, MutationType> implements
 	protected final PrimaryIndex index;
 	protected final DataStoreOperations operations;
 	protected final DataStoreOptions options;
-	protected final IngestCallback<T> callback;
-	protected Writer<MutationType> writer;
+	protected final IngestCallback<T, GeoWaveRow> callback;
+	protected Writer<R> writer;
 
 	protected final DataAdapter<T> adapter;
 	protected final byte[] adapterId;
@@ -48,7 +49,7 @@ public abstract class DataStoreIndexWriter<T, MutationType> implements
 			final PrimaryIndex index,
 			final DataStoreOperations operations,
 			final DataStoreOptions options,
-			final IngestCallback<T> callback,
+			final IngestCallback<T,GeoWaveRow> callback,
 			final Closeable closable ) {
 		this.index = index;
 		this.operations = operations;
@@ -93,7 +94,7 @@ public abstract class DataStoreIndexWriter<T, MutationType> implements
 			final T entry,
 			final VisibilityWriter<T> fieldVisibilityWriter ) {
 
-		DataStoreEntryInfo entryInfo;
+		R[] entryInfo;
 		synchronized (this) {
 
 			ensureOpen();
@@ -107,15 +108,16 @@ public abstract class DataStoreIndexWriter<T, MutationType> implements
 				return new InsertionIds();
 			}
 			callback.entryIngested(
-					entryInfo,
-					entry);
+					entry,
+					entryInfo);
 		}
-		return entryInfo.getInsertionIds();
+		//TODO GEOWAVE-1018: this may be inefficient, perhaps this should be part of the metadata from getEntryInfo
+		return DataStoreUtils.keysToInsertionIds(entryInfo);
 	}
 
 	protected abstract void ensureOpen();
 
-	protected abstract DataStoreEntryInfo getEntryInfo(
+	protected abstract R[] getEntryInfo(
 			final T entry,
 			final VisibilityWriter<T> visibilityWriter );
 

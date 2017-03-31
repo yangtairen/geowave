@@ -7,6 +7,7 @@ import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 
 /**
@@ -52,8 +53,7 @@ public interface SecondaryIndexDataStore
 	 * @param adapterId
 	 * @param indexedAttributeFieldId
 	 * @param dataId
-	 * @param attributeVisibility
-	 * @param attributes
+	 * @param originalFields
 	 */
 	public void storeEntry(
 			ByteArrayId secondaryIndexId,
@@ -61,8 +61,7 @@ public interface SecondaryIndexDataStore
 			ByteArrayId adapterId,
 			ByteArrayId indexedAttributeFieldId,
 			ByteArrayId dataId,
-			ByteArrayId attributeVisibility,
-			List<FieldInfo<?>> attributes );
+			GeoWaveValue... originalFields );
 
 	/**
 	 * Execute a query against the given secondary index
@@ -84,20 +83,21 @@ public interface SecondaryIndexDataStore
 			final String... authorizations );
 
 	public void deleteJoinEntry(
-			final ByteArrayId secondaryIndexId,
-			final ByteArrayId indexedAttributeValue,
-			final ByteArrayId adapterId,
-			final ByteArrayId indexedAttributeFieldId,
-			final ByteArrayId primaryIndexPartitionKey,
-			final ByteArrayId primaryIndexSortKey );
+			ByteArrayId secondaryIndexId,
+			ByteArrayId indexedAttributeValue,
+			ByteArrayId adapterId,
+			ByteArrayId indexedAttributeFieldId,
+			ByteArrayId primaryIndexPartitionKey,
+			ByteArrayId primaryIndexSortKey,
+			ByteArrayId attributeVisibility );
 
 	public void deleteEntry(
-			final ByteArrayId secondaryIndexId,
-			final ByteArrayId indexedAttributeValue,
-			final ByteArrayId adapterId,
-			final ByteArrayId indexedAttributeFieldId,
-			final ByteArrayId dataId,
-			final List<FieldInfo<?>> attributes );
+			ByteArrayId secondaryIndexId,
+			ByteArrayId indexedAttributeValue,
+			ByteArrayId adapterId,
+			ByteArrayId indexedAttributeFieldId,
+			ByteArrayId dataId,
+			GeoWaveValue... originalFields  );
 
 	public void flush();
 

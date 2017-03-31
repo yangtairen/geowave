@@ -63,7 +63,7 @@ public class DataStoreCallbackManager
 				callbackList.add(new SecondaryIndexDataManager<T>(
 						secondaryIndexStore,
 						(SecondaryIndexDataAdapter<T>) writableAdapter,
-						index.getId()));
+						index));
 			}
 			icache.put(
 					writableAdapter.getAdapterId(),
@@ -98,7 +98,7 @@ public class DataStoreCallbackManager
 				callbackList.add(new SecondaryIndexDataManager<T>(
 						secondaryIndexStore,
 						(SecondaryIndexDataAdapter<T>) writableAdapter,
-						index.getId()));
+						index));
 			}
 			dcache.put(
 					writableAdapter.getAdapterId(),

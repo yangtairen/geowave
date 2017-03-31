@@ -28,7 +28,7 @@ import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
  *
  */
 public class AccumuloIndexWriter<T> extends
-		DataStoreIndexWriter<T, Mutation>
+		DataStoreIndexWriter<T, AccumuloRow>
 {
 	private final static Logger LOGGER = Logger.getLogger(AccumuloIndexWriter.class);
 	protected final AccumuloOperations accumuloOperations;
@@ -74,7 +74,7 @@ public class AccumuloIndexWriter<T> extends
 	}
 
 	@Override
-	protected DataStoreEntryInfo getEntryInfo(
+	protected R[] getEntryInfo(
 			final T entry,
 			final VisibilityWriter<T> visibilityWriter ) {
 		return dataStore.write(
