@@ -14,8 +14,8 @@ import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
+import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo;
+import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
@@ -90,9 +90,9 @@ public class MemoryStoreUtils
 			final WritableDataAdapter<T> dataWriter,
 			final PrimaryIndex index,
 			final T entry,
-			final IngestCallback<T> ingestCallback,
+			final IngestCallback ingestCallback,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-		final DataStoreEntryInfo ingestInfo = DataStoreUtils.getIngestInfo(
+		final IntermediaryWriteEntryInfo ingestInfo = DataStoreUtils.getIngestInfo(
 				dataWriter,
 				index,
 				entry,
@@ -109,7 +109,7 @@ public class MemoryStoreUtils
 	private static <T> List<MemoryEntryRow> buildRows(
 			final byte[] adapterId,
 			final T entry,
-			final DataStoreEntryInfo ingestInfo ) {
+			final IntermediaryWriteEntryInfo ingestInfo ) {
 		final List<MemoryEntryRow> rows = new ArrayList<MemoryEntryRow>();
 		InsertionIds insertionIds = ingestInfo.getInsertionIds();
 		for (final ByteArrayId compositeInsertionId : insertionIds.getCompositeInsertionIds()) {

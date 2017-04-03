@@ -815,7 +815,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 					fieldValue,
 					fieldWriter.writeField(
 							value),
-					merge(
+					DataStoreUtils.mergeVisibilities(
 							customVisibilityHandler.getVisibility(
 									entry,
 									fieldValue.getId(),
@@ -831,38 +831,6 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 							+ fieldValue.getValue());
 		}
 		return null;
-	}
-
-	private static final byte[] BEG_AND_BYTE = "&".getBytes(
-			StringUtils.GEOWAVE_CHAR_SET);
-	private static final byte[] END_AND_BYTE = ")".getBytes(
-			StringUtils.GEOWAVE_CHAR_SET);
-
-	private static byte[] merge(
-			final byte vis1[],
-			final byte vis2[] ) {
-		if ((vis1 == null) || (vis1.length == 0)) {
-			return vis2;
-		}
-		else if ((vis2 == null) || (vis2.length == 0)) {
-			return vis1;
-		}
-
-		final ByteBuffer buffer = ByteBuffer.allocate(
-				vis1.length + 3 + vis2.length);
-		buffer.putChar(
-				'(');
-		buffer.put(
-				vis1);
-		buffer.putChar(
-				')');
-		buffer.put(
-				BEG_AND_BYTE);
-		buffer.put(
-				vis2);
-		buffer.put(
-				END_AND_BYTE);
-		return buffer.array();
 	}
 
 	/**

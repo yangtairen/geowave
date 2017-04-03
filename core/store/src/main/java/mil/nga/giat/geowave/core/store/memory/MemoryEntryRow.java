@@ -3,21 +3,21 @@ package mil.nga.giat.geowave.core.store.memory;
 import java.util.List;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
 import mil.nga.giat.geowave.core.store.base.EntryRowID;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
+import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo;
+import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
 
 public class MemoryEntryRow implements
 		Comparable<MemoryEntryRow>
 {
 	final EntryRowID rowId;
-	final DataStoreEntryInfo info;
+	final IntermediaryWriteEntryInfo info;
 	final Object entry;
 
 	public MemoryEntryRow(
 			final ByteArrayId compositeInsertionId,
 			final Object entry,
-			final DataStoreEntryInfo info ) {
+			final IntermediaryWriteEntryInfo info ) {
 		super();
 		this.rowId = new EntryRowID(
 				compositeInsertionId.getBytes());
@@ -48,7 +48,7 @@ public class MemoryEntryRow implements
 		return entry;
 	}
 
-	public DataStoreEntryInfo getInfo() {
+	public IntermediaryWriteEntryInfo getInfo() {
 		return info;
 	}
 

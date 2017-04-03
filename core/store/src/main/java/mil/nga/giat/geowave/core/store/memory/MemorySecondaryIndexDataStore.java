@@ -6,7 +6,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndex;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStore;
@@ -29,42 +29,6 @@ public class MemorySecondaryIndexDataStore implements
 
 	}
 
-	@Override
-	public void storeEntry(
-			ByteArrayId secondaryIndexId,
-			ByteArrayId indexedAttributeValue,
-			ByteArrayId adapterId,
-			ByteArrayId indexedAttributeFieldId,
-			ByteArrayId dataId,
-			ByteArrayId attributeVisibility,
-			List<FieldInfo<?>> attributes ) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void deleteJoinEntry(
-			ByteArrayId secondaryIndexId,
-			ByteArrayId indexedAttributeValue,
-			ByteArrayId adapterId,
-			ByteArrayId indexedAttributeFieldId,
-			ByteArrayId primaryIndexId,
-			ByteArrayId primaryIndexRowId ) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void deleteEntry(
-			ByteArrayId secondaryIndexId,
-			ByteArrayId indexedAttributeValue,
-			ByteArrayId adapterId,
-			ByteArrayId indexedAttributeFieldId,
-			ByteArrayId dataId,
-			List<FieldInfo<?>> attributes ) {
-		// TODO Auto-generated method stub
-
-	}
 
 	@Override
 	public void flush() {
@@ -95,6 +59,46 @@ public class MemorySecondaryIndexDataStore implements
 			final DataStore dataStore ) {
 		// TODO Auto-generated method stub
 
+	}
+
+
+	@Override
+	public void storeEntry(
+			ByteArrayId secondaryIndexId,
+			ByteArrayId indexedAttributeValue,
+			ByteArrayId adapterId,
+			ByteArrayId indexedAttributeFieldId,
+			ByteArrayId dataId,
+			GeoWaveValue... originalFields ) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void deleteJoinEntry(
+			ByteArrayId secondaryIndexId,
+			ByteArrayId indexedAttributeValue,
+			ByteArrayId adapterId,
+			ByteArrayId indexedAttributeFieldId,
+			ByteArrayId primaryIndexPartitionKey,
+			ByteArrayId primaryIndexSortKey,
+			ByteArrayId attributeVisibility ) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void deleteEntry(
+			ByteArrayId secondaryIndexId,
+			ByteArrayId indexedAttributeValue,
+			ByteArrayId adapterId,
+			ByteArrayId indexedAttributeFieldId,
+			ByteArrayId dataId,
+			GeoWaveValue... originalFields ) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

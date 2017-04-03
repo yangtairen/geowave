@@ -81,7 +81,9 @@ public class RecalculateStatsCommand extends
 
 				try (StatsCompositionTool<?> statsTool = new StatsCompositionTool(
 						provider,
-						storeOptions.createDataStatisticsStore())) {
+						storeOptions.createDataStatisticsStore(),
+						index,
+						adapter)) {
 					try (CloseableIterator<?> entryIt = dataStore.query(
 							new QueryOptions(
 									adapter,

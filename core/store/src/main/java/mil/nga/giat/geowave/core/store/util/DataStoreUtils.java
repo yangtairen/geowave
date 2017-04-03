@@ -26,24 +26,17 @@ import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.QueryRanges;
 import mil.nga.giat.geowave.core.index.SinglePartitionInsertionIds;
+import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
-import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
-import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
 import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
-import mil.nga.giat.geowave.core.store.callback.ScanCallback;
-import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
-import mil.nga.giat.geowave.core.store.data.field.FieldReader;
 import mil.nga.giat.geowave.core.store.data.visibility.UnconstrainedVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
 import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveKey;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
-import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskedFieldInfoComparator;
 import mil.nga.giat.geowave.core.store.flatten.FlattenedDataSet;
@@ -452,5 +445,37 @@ public class DataStoreUtils
 
 		return new ByteArrayId(
 				buf.array());
+	}
+
+	private static final byte[] BEG_AND_BYTE = "&".getBytes(
+			StringUtils.GEOWAVE_CHAR_SET);
+	private static final byte[] END_AND_BYTE = ")".getBytes(
+			StringUtils.GEOWAVE_CHAR_SET);
+
+	public static byte[] mergeVisibilities(
+			final byte vis1[],
+			final byte vis2[] ) {
+		if ((vis1 == null) || (vis1.length == 0)) {
+			return vis2;
+		}
+		else if ((vis2 == null) || (vis2.length == 0)) {
+			return vis1;
+		}
+
+		final ByteBuffer buffer = ByteBuffer.allocate(
+				vis1.length + 3 + vis2.length);
+		buffer.putChar(
+				'(');
+		buffer.put(
+				vis1);
+		buffer.putChar(
+				')');
+		buffer.put(
+				BEG_AND_BYTE);
+		buffer.put(
+				vis2);
+		buffer.put(
+				END_AND_BYTE);
+		return buffer.array();
 	}
 }

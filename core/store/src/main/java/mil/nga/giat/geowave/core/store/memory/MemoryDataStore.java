@@ -32,7 +32,7 @@ import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.exceptions.MismatchedIndexToAdapterMapping;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.base.DataStoreCallbackManager;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
+import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
@@ -157,7 +157,7 @@ public class MemoryDataStore implements
 				final VisibilityWriter<T> fieldVisibilityWriter ) {
 			final List<ByteArrayId> ids = new ArrayList<ByteArrayId>();
 
-			final IngestCallback<T> callback = callbackCache.getIngestCallback(
+			final IngestCallback callback = callbackCache.getIngestCallback(
 					(WritableDataAdapter) this.adapter,
 					index);
 

@@ -34,7 +34,8 @@ public class CalculateStatCommand extends
 		Command
 {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CalculateStatCommand.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(
+			CalculateStatCommand.class);
 
 	@Parameter(description = "<store name> <adapterId> <statId>")
 	private List<String> parameters = new ArrayList<String>();
@@ -45,7 +46,7 @@ public class CalculateStatCommand extends
 
 	@Override
 	public void execute(
-			OperationParams params ) {
+			final OperationParams params ) {
 
 		// Ensure we have all the required arguments
 		if (parameters.size() != 3) {
@@ -53,13 +54,15 @@ public class CalculateStatCommand extends
 					"Requires arguments: <store name> <adapterId> <statId>");
 		}
 
-		statId = parameters.get(2);
+		statId = parameters.get(
+				2);
 
 		super.run(
 				params,
 				parameters);
 	}
 
+	@Override
 	protected boolean calculateStatistics(
 			final DataStorePluginOptions storeOptions,
 			final DataAdapter<?> adapter,
@@ -68,19 +71,20 @@ public class CalculateStatCommand extends
 
 		try {
 
-			AdapterIndexMappingStore mappingStore = storeOptions.createAdapterIndexMappingStore();
-			DataStore dataStore = storeOptions.createDataStore();
-			IndexStore indexStore = storeOptions.createIndexStore();
+			final AdapterIndexMappingStore mappingStore = storeOptions.createAdapterIndexMappingStore();
+			final DataStore dataStore = storeOptions.createDataStore();
+			final IndexStore indexStore = storeOptions.createIndexStore();
 
 			boolean isFirstTime = true;
 			for (final PrimaryIndex index : mappingStore.getIndicesForAdapter(
 					adapter.getAdapterId()).getIndices(
-					indexStore)) {
+							indexStore)) {
 
 				@SuppressWarnings({
 					"rawtypes",
 					"unchecked"
 				})
+				final
 				DataStoreStatisticsProvider provider = new DataStoreStatisticsProvider(
 						adapter,
 						index,
@@ -96,7 +100,9 @@ public class CalculateStatCommand extends
 
 				try (StatsCompositionTool<?> statsTool = new StatsCompositionTool(
 						provider,
-						storeOptions.createDataStatisticsStore())) {
+						storeOptions.createDataStatisticsStore(),
+						index,
+						adapter)) {
 					try (CloseableIterator<?> entryIt = dataStore.query(
 							new QueryOptions(
 									adapter,
@@ -129,12 +135,15 @@ public class CalculateStatCommand extends
 	}
 
 	public void setParameters(
-			String storeName,
-			String adapterId,
-			String statId ) {
-		this.parameters = new ArrayList<String>();
-		this.parameters.add(storeName);
-		this.parameters.add(adapterId);
-		this.parameters.add(statId);
+			final String storeName,
+			final String adapterId,
+			final String statId ) {
+		parameters = new ArrayList<String>();
+		parameters.add(
+				storeName);
+		parameters.add(
+				adapterId);
+		parameters.add(
+				statId);
 	}
 }
