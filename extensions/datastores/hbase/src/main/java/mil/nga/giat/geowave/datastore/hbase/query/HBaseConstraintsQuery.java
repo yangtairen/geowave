@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.datastore.hbase.query;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -129,6 +130,9 @@ public class HBaseConstraintsQuery extends
 	}
 
 	@Override
+	// protected List<QueryFilter> getAllFiltersList() {
+	// return new ArrayList<QueryFilter>();
+	// }
 	protected List<QueryFilter> getAllFiltersList() {
 		final List<QueryFilter> filters = super.getAllFiltersList();
 
@@ -162,6 +166,9 @@ public class HBaseConstraintsQuery extends
 	}
 
 	@Override
+	// protected List<DistributableQueryFilter> getDistributableFilters() {
+	// return new ArrayList<DistributableQueryFilter>();
+	// }
 	protected List<DistributableQueryFilter> getDistributableFilters() {
 		return base.distributableFilters;
 	}

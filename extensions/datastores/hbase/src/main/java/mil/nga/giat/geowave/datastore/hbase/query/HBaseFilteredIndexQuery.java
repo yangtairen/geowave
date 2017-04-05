@@ -160,12 +160,8 @@ public abstract class HBaseFilteredIndexQuery extends
 			}
 		}
 		else {
+			final Scan multiScanner = createStandardScanner(limit);
 			final FilterList filterList = new FilterList();
-
-			final Scan multiScanner = getMultiScanner(
-					filterList,
-					limit,
-					maxResolutionSubsamplingPerDimension);
 
 			if (isEnableCustomFilters()) {
 				// Add skipping filter if requested
@@ -189,7 +185,16 @@ public abstract class HBaseFilteredIndexQuery extends
 						hasSkippingFilter = true;
 					}
 				}
+			}
 
+			final MultiRowRangeFilter mrrFilter = getMultiRowRangeFilter(getRanges());
+			filterList.addFilter(mrrFilter);
+
+			setScanRange(
+					multiScanner,
+					mrrFilter);
+
+			if (isEnableCustomFilters()) {
 				// Add distributable filters if requested, this has to be last
 				// in the filter list for the dedupe filter to work correctly
 				final List<DistributableQueryFilter> distFilters = getDistributableFilters();
@@ -302,21 +307,11 @@ public abstract class HBaseFilteredIndexQuery extends
 		return scanners;
 	}
 
-	// Default (not Bigtable) case - use a single multi-row-range filter
-	protected Scan getMultiScanner(
-			final FilterList filterList,
-			final Integer limit,
-			final double[] maxResolutionSubsamplingPerDimension ) {
-		// Single scan w/ multiple ranges
-		final Scan multiScanner = createStandardScanner(limit);
-
-		final List<ByteArrayRange> ranges = getRanges();
-
-		final MultiRowRangeFilter filter = getMultiRowRangeFilter(ranges);
-		if (filter != null) {
-			filterList.addFilter(filter);
-
-			final List<RowRange> rowRanges = filter.getRowRanges();
+	protected void setScanRange(
+			final Scan multiScanner,
+			final MultiRowRangeFilter mrrFilter ) {
+		if (mrrFilter != null) {
+			final List<RowRange> rowRanges = mrrFilter.getRowRanges();
 			multiScanner.setStartRow(rowRanges.get(
 					0).getStartRow());
 
@@ -337,10 +332,9 @@ public abstract class HBaseFilteredIndexQuery extends
 			else {
 				stopRowExclusive = stopRowRange.getStopRow();
 			}
+
 			multiScanner.setStopRow(stopRowExclusive);
 		}
-
-		return multiScanner;
 	}
 
 	protected Scan createStandardScanner(

@@ -6,8 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -97,18 +95,5 @@ public class InputFormatHBaseRangeQuery extends
 				filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0)
 						: new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
 								filters));
-	}
-
-	@Override
-	protected Scan getMultiScanner(
-			final FilterList filterList,
-			final Integer limit,
-			final double[] maxResolutionSubsamplingPerDimension ) {
-		final Scan scanner = createStandardScanner(limit);
-
-		scanner.setStartRow(range.getStart().getBytes());
-		scanner.setStopRow(range.getEndAsNextPrefix().getBytes());
-
-		return scanner;
 	}
 }

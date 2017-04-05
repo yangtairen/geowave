@@ -40,8 +40,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 public class BBOXQuery extends
 		AbstractGeoWaveQuery
 {
-	private static Logger LOGGER = Logger.getLogger(
-			BBOXQuery.class);
+	private static Logger LOGGER = Logger.getLogger(BBOXQuery.class);
 
 	@Parameter(names = {
 		"-e",
@@ -91,15 +90,20 @@ public class BBOXQuery extends
 	}, required = false, description = "Use IndexOnlySpatialQuery")
 	private Boolean indexOnly = Boolean.FALSE;
 
+	@Parameter(names = {
+		"--iterateResults",
+		"-it"
+	}, required = false, description = "Iterate through results after query")
+	private Boolean iterateResults = Boolean.FALSE;
+
 	private Geometry geom;
 
 	private void getBoxGeom() {
-		geom = new GeometryFactory().toGeometry(
-				new Envelope(
-						west,
-						east,
-						south,
-						north));
+		geom = new GeometryFactory().toGeometry(new Envelope(
+				west,
+				east,
+				south,
+				north));
 	}
 
 	@Override
@@ -130,9 +134,20 @@ public class BBOXQuery extends
 			final QueryOptions options = new QueryOptions(
 					adapterId,
 					indexId);
+
 			options.setAggregation(
 					new CountAggregation(),
 					adapter);
+
+			if (tileSize != null && pixelSize != null) {
+				try {
+					options.setMaxResolutionSubsamplingPerDimension(getSpans());
+				}
+				catch (Exception e) {
+					LOGGER.error(e);
+				}
+			}
+
 			try (final CloseableIterator<Object> it = dataStore.query(
 					options,
 					spatialQuery)) {
@@ -154,14 +169,12 @@ public class BBOXQuery extends
 					adapterId,
 					indexId);
 
-			if (tileSize != null) {
+			if (tileSize != null && pixelSize != null) {
 				try {
-					queryOptions.setMaxResolutionSubsamplingPerDimension(
-							getSpans());
+					queryOptions.setMaxResolutionSubsamplingPerDimension(getSpans());
 				}
 				catch (Exception e) {
-					LOGGER.error(
-							e);
+					LOGGER.error(e);
 				}
 			}
 
@@ -170,26 +183,25 @@ public class BBOXQuery extends
 					spatialQuery);
 
 			stopWatch.stop();
-			LOGGER.warn(
-					"Ran BBOX query in " + stopWatch.toString());
+			LOGGER.warn("Ran BBOX query in " + stopWatch.toString());
 
-			stopWatch.reset();
-			stopWatch.start();
+			if (iterateResults) {
+				stopWatch.reset();
+				stopWatch.start();
 
-			while (it.hasNext()) {
-				if (debug) {
-					System.out.println(
-							it.next());
+				while (it.hasNext()) {
+					if (debug) {
+						System.out.println(it.next());
+					}
+					else {
+						it.next();
+					}
+					count++;
 				}
-				else {
-					it.next();
-				}
-				count++;
+
+				stopWatch.stop();
+				LOGGER.warn("BBOX query results iteration took " + stopWatch.toString());
 			}
-
-			stopWatch.stop();
-			LOGGER.warn(
-					"BBOX query results iteration took " + stopWatch.toString());
 		}
 		return count;
 	}
@@ -207,13 +219,11 @@ public class BBOXQuery extends
 								east,
 								south,
 								north),
-						CRS.decode(
-								"EPSG:4326")),
+						CRS.decode("EPSG:4326")),
 				new Rectangle(
 						tileSize,
 						tileSize));
-		final MathTransform2D fullTransform = (MathTransform2D) ProjectiveTransform.create(
-				worldToScreen);
+		final MathTransform2D fullTransform = (MathTransform2D) ProjectiveTransform.create(worldToScreen);
 
 		final double[] spans = Decimator.computeGeneralizationDistances(
 				fullTransform.inverse(),
