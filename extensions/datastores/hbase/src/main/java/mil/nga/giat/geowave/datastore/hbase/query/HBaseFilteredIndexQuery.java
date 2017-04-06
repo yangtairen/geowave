@@ -126,7 +126,7 @@ public abstract class HBaseFilteredIndexQuery extends
 		}
 		catch (final IOException ex) {
 			LOGGER.warn(
-					"Unabe to check if " + StringUtils.stringFromBinary(index.getId().getBytes()) + " table exists",
+					"Unable to check if " + StringUtils.stringFromBinary(index.getId().getBytes()) + " table exists",
 					ex);
 			return new CloseableIterator.Empty();
 		}
@@ -182,6 +182,7 @@ public abstract class HBaseFilteredIndexQuery extends
 						final FixedCardinalitySkippingFilter skippingFilter = new FixedCardinalitySkippingFilter(
 								cardinalityToSubsample);
 						filterList.addFilter(skippingFilter);
+						LOGGER.warn("KAM (1) >> Adding skip filter");
 						hasSkippingFilter = true;
 					}
 				}
@@ -189,6 +190,7 @@ public abstract class HBaseFilteredIndexQuery extends
 
 			final MultiRowRangeFilter mrrFilter = getMultiRowRangeFilter(getRanges());
 			filterList.addFilter(mrrFilter);
+			LOGGER.warn("KAM (2) >> Adding MRR filter");
 
 			setScanRange(
 					multiScanner,
@@ -205,6 +207,7 @@ public abstract class HBaseFilteredIndexQuery extends
 							index.getIndexModel());
 
 					filterList.addFilter(hbdFilter);
+					LOGGER.warn("KAM (3) >> Adding " + distFilters.size() + " dist filters");
 				}
 				else {
 					final List<MultiDimensionalCoordinateRangesArray> coords = getCoordinateRanges();
