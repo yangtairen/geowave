@@ -8,6 +8,7 @@ import mil.nga.giat.geowave.core.ingest.local.LocalFileIngestPlugin;
 import mil.nga.giat.geowave.core.ingest.spi.IngestFormatOptionProvider;
 import mil.nga.giat.geowave.core.ingest.spi.IngestFormatPluginProviderSpi;
 import mil.nga.giat.geowave.format.geotools.vector.retyping.date.DateFieldRetypingPlugin;
+import mil.nga.giat.geowave.format.tracks2.TracksRetypingPlugin;
 
 /**
  * This represents an ingest format plugin provider for GeoTools vector data
@@ -38,8 +39,7 @@ public class GeoToolsVectorDataStoreIngestFormat implements
 			IngestFormatOptionProvider options ) {
 		GeoToolsVectorDataOptions vectorDataOptions = (GeoToolsVectorDataOptions) options;
 		return new GeoToolsVectorDataStoreIngestPlugin(
-				new DateFieldRetypingPlugin(
-						vectorDataOptions.getDateFieldOptionProvider()),
+				new TracksRetypingPlugin(),
 				vectorDataOptions.getCqlFilterOptionProvider(),
 				vectorDataOptions.getFeatureTypeNames());
 	}
