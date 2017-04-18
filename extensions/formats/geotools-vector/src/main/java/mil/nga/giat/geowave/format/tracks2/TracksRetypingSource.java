@@ -27,11 +27,13 @@ public class TracksRetypingSource implements
 	public SimpleFeatureType getRetypedSimpleFeatureType() {
 		SimpleFeatureTypeBuilder typeOutBuilder = new SimpleFeatureTypeBuilder();
 		typeOutBuilder.init(typeIn);
+		typeOutBuilder.setName("track_benchmark");
+		int index = typeIn.indexOf("datetime");
 		AttributeDescriptor timeDesc = typeOutBuilder.remove("datetime");
 		AttributeTypeBuilder newTimeBuilder = new AttributeTypeBuilder();
 		newTimeBuilder.init(timeDesc);
 		newTimeBuilder.setBinding(Date.class);
-		typeOutBuilder.add(newTimeBuilder.buildDescriptor(timeDesc.getLocalName()));
+		typeOutBuilder.add(index,newTimeBuilder.buildDescriptor(timeDesc.getLocalName()));
 
 		final SimpleFeatureType typeOut = typeOutBuilder.buildFeatureType();
 		return typeOut;
