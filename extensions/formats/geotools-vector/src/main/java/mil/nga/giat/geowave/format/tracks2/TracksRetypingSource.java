@@ -1,25 +1,37 @@
 package mil.nga.giat.geowave.format.tracks2;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import org.geotools.feature.AttributeTypeBuilder;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
+
 import mil.nga.giat.geowave.format.geotools.vector.RetypingVectorDataPlugin.RetypingVectorDataSource;
 
 public class TracksRetypingSource implements
 		RetypingVectorDataSource
 {
+	private SimpleFeatureType typeIn;
 
-	Tracks2IngestFormat typeIn = new Tracks2IngestFormat();
+	public TracksRetypingSource(
+			SimpleFeatureType typeIn ) {
+		this.typeIn = typeIn;
+	}
 
 	@Override
 	public SimpleFeatureType getRetypedSimpleFeatureType() {
-
 		SimpleFeatureTypeBuilder typeOutBuilder = new SimpleFeatureTypeBuilder();
-		typeOutBuilder.description(typeIn.getIngestFormatDescription());
-		typeOutBuilder.setName(typeIn.getIngestFormatName());
+		typeOutBuilder.init(typeIn);
+		AttributeDescriptor timeDesc = typeOutBuilder.remove("datetime");
+		AttributeTypeBuilder newTimeBuilder = new AttributeTypeBuilder();
+		newTimeBuilder.init(timeDesc);
+		newTimeBuilder.setBinding(Date.class);
+		typeOutBuilder.add(newTimeBuilder.buildDescriptor(timeDesc.getLocalName()));
 
 		final SimpleFeatureType typeOut = typeOutBuilder.buildFeatureType();
 		return typeOut;

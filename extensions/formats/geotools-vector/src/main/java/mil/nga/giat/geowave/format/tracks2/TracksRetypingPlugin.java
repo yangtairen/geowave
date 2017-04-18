@@ -11,7 +11,8 @@ public class TracksRetypingPlugin implements
 	@Override
 	public RetypingVectorDataSource getRetypingSource(
 			SimpleFeatureType type ) {
-		return new TracksRetypingSource();
+		return new TracksRetypingSource(
+				type);
 	}
 
 }
