@@ -21,6 +21,7 @@ import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.format.tracks2.TracksRetypingPlugin;
 
 import org.apache.log4j.Logger;
 import org.geotools.data.DataStore;
@@ -44,7 +45,7 @@ public class GeoToolsVectorDataStoreIngestPlugin implements
 	private final static Logger LOGGER = Logger.getLogger(GeoToolsVectorDataStoreIngestPlugin.class);
 	private final static String PROPERTIES_EXTENSION = ".properties";
 
-	private final RetypingVectorDataPlugin retypingPlugin;
+	private final TracksRetypingPlugin retypingPlugin;
 	private final Filter filter;
 	private final List<String> featureTypeNames;
 
@@ -58,7 +59,7 @@ public class GeoToolsVectorDataStoreIngestPlugin implements
 	}
 
 	public GeoToolsVectorDataStoreIngestPlugin(
-			final RetypingVectorDataPlugin retypingPlugin,
+			final TracksRetypingPlugin retypingPlugin,
 			final Filter filter,
 			List<String> featureTypeNames ) {
 		// this constructor can be used directly as an extension point for

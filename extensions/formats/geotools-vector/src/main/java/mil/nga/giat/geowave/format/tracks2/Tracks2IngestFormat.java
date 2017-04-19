@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.format.geotools.vector;
+package mil.nga.giat.geowave.format.tracks2;
 
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -7,15 +7,12 @@ import mil.nga.giat.geowave.core.ingest.hdfs.mapreduce.IngestFromHdfsPlugin;
 import mil.nga.giat.geowave.core.ingest.local.LocalFileIngestPlugin;
 import mil.nga.giat.geowave.core.ingest.spi.IngestFormatOptionProvider;
 import mil.nga.giat.geowave.core.ingest.spi.IngestFormatPluginProviderSpi;
+import mil.nga.giat.geowave.format.geotools.vector.GeoToolsVectorDataOptions;
+import mil.nga.giat.geowave.format.geotools.vector.GeoToolsVectorDataStoreIngestFormat;
+import mil.nga.giat.geowave.format.geotools.vector.GeoToolsVectorDataStoreIngestPlugin;
 import mil.nga.giat.geowave.format.geotools.vector.retyping.date.DateFieldRetypingPlugin;
-import mil.nga.giat.geowave.format.tracks2.TracksRetypingPlugin;
 
-/**
- * This represents an ingest format plugin provider for GeoTools vector data
- * stores. It currently only supports ingesting data directly from a local file
- * system into GeoWave.
- */
-public class GeoToolsVectorDataStoreIngestFormat implements
+public class Tracks2IngestFormat implements
 		IngestFormatPluginProviderSpi<Object, SimpleFeature>
 {
 	@Override
@@ -46,17 +43,16 @@ public class GeoToolsVectorDataStoreIngestFormat implements
 
 	@Override
 	public String getIngestFormatName() {
-		return "geotools-vector";
+		return "tracks";
 	}
 
 	@Override
 	public String getIngestFormatDescription() {
-		return "all file-based vector datastores supported within geotools";
+		return "test";
 	}
 
 	@Override
 	public IngestFormatOptionProvider createOptionsInstances() {
 		return new GeoToolsVectorDataOptions();
 	}
-
 }
