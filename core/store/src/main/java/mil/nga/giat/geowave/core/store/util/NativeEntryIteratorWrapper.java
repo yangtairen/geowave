@@ -14,7 +14,9 @@ import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 public class NativeEntryIteratorWrapper<T> extends
 		EntryIteratorWrapper<T>
 {
-	private final static Logger LOGGER = Logger.getLogger(NativeEntryIteratorWrapper.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			NativeEntryIteratorWrapper.class);
+	private final boolean decodePersistenceEncoding;
 
 	public NativeEntryIteratorWrapper(
 			final BaseDataStore dataStore,
@@ -32,6 +34,7 @@ public class NativeEntryIteratorWrapper<T> extends
 				scannerIt,
 				clientFilter,
 				scanCallback);
+		this.decodePersistenceEncoding = decodePersistenceEncoding;
 	}
 
 	@Override
@@ -45,7 +48,8 @@ public class NativeEntryIteratorWrapper<T> extends
 			entry = (GeoWaveRow) row;
 		}
 		catch (final ClassCastException e) {
-			LOGGER.error("Row is not a native geowave row entry.");
+			LOGGER.error(
+					"Row is not a native geowave row entry.");
 			return null;
 		}
 		return (T) dataStore.decodeRow(
@@ -57,6 +61,6 @@ public class NativeEntryIteratorWrapper<T> extends
 				index,
 				scanCallback,
 				null,
-				false);
+				decodePersistenceEncoding);
 	}
 }

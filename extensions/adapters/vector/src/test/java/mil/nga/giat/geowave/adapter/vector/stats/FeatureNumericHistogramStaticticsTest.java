@@ -97,20 +97,16 @@ public class FeatureNumericHistogramStaticticsTest
 				7777);
 
 		stat.entryIngested(
-				null,
 				create(100.0));
 		stat.entryIngested(
-				null,
 				create(101.0));
 		stat.entryIngested(
-				null,
 				create(2.0));
 
 		double next = 1;
 		for (int i = 0; i < 10000; i++) {
 			next = next + (Math.round(rand.nextDouble()));
 			stat.entryIngested(
-					null,
 					create(next));
 		}
 
@@ -125,7 +121,6 @@ public class FeatureNumericHistogramStaticticsTest
 		for (long i = 0; i < 10000; i++) {
 			final double val = next + 1000 * rand.nextDouble();
 			stat2.entryIngested(
-					null,
 					create(val));
 			max = Math.max(
 					val,
@@ -135,7 +130,6 @@ public class FeatureNumericHistogramStaticticsTest
 		final SimpleFeature skewedFeature = create(skewvalue);
 		for (int i = 0; i < 10000; i++) {
 			stat2.entryIngested(
-					null,
 					skewedFeature);
 			// skewedFeature.setAttribute("pop", Long.valueOf(next + (long)
 			// (1000 * rand.nextDouble())));
@@ -187,7 +181,6 @@ public class FeatureNumericHistogramStaticticsTest
 		for (int i = 0; i < 100; i++) {
 			next = next + (rand.nextDouble() * 100.0);
 			stat1.entryIngested(
-					null,
 					create(next));
 		}
 
@@ -198,7 +191,6 @@ public class FeatureNumericHistogramStaticticsTest
 					"pop");
 			for (int j = 0; j < 100; j++) {
 				stat2.entryIngested(
-						null,
 						create(4839000434.547854578 * rand.nextDouble() * rand.nextGaussian()));
 			}
 			byte[] b = stat2.toBinary();
@@ -223,20 +215,16 @@ public class FeatureNumericHistogramStaticticsTest
 				7777);
 
 		stat.entryIngested(
-				null,
 				create(-100.0));
 		stat.entryIngested(
-				null,
 				create(-101.0));
 		stat.entryIngested(
-				null,
 				create(-2.0));
 
 		double next = -1;
 		for (int i = 0; i < 10000; i++) {
 			next = next - (Math.round(rand.nextDouble()));
 			stat.entryIngested(
-					null,
 					create(next));
 		}
 
@@ -251,7 +239,6 @@ public class FeatureNumericHistogramStaticticsTest
 		for (long i = 0; i < 10000; i++) {
 			final double val = next - (long) (1000 * rand.nextDouble());
 			stat2.entryIngested(
-					null,
 					create(val));
 			min = Math.min(
 					val,
@@ -261,7 +248,6 @@ public class FeatureNumericHistogramStaticticsTest
 		final SimpleFeature skewedFeature = create(skewvalue);
 		for (int i = 0; i < 10000; i++) {
 			stat2.entryIngested(
-					null,
 					skewedFeature);
 		}
 
@@ -349,7 +335,6 @@ public class FeatureNumericHistogramStaticticsTest
 				next = (m * rand.nextDouble() * MathUtils.sign(rand.nextGaussian()));
 			}
 			stat2.entryIngested(
-					null,
 					create(next));
 			if (!Double.isNaN(next)) {
 				max = Math.max(

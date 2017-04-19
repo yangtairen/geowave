@@ -6,15 +6,17 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.QueryRanges;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.data.visibility.DifferingFieldVisibilityEntryCount;
+import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
+import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 
 /**
  * Base class for datastore query classes
- * 
+ *
  * @author kmiller
  *
  */
@@ -29,10 +31,10 @@ public abstract class DataStoreQuery
 	protected final String[] authorizations;
 
 	public DataStoreQuery(
-			BaseDataStore dataStore,
-			List<ByteArrayId> adapterIds,
-			PrimaryIndex index,
-			Pair<List<String>, DataAdapter<?>> fieldIdsAdapterPair,
+			final BaseDataStore dataStore,
+			final List<ByteArrayId> adapterIds,
+			final PrimaryIndex index,
+			final Pair<List<String>, DataAdapter<?>> fieldIdsAdapterPair,
 			final DifferingFieldVisibilityEntryCount visibilityCounts,
 			final String... authorizations ) {
 		this.dataStore = dataStore;
@@ -45,8 +47,12 @@ public abstract class DataStoreQuery
 
 	abstract protected QueryRanges getRanges();
 
-	protected boolean isAggregation() {
-		return false;
+	protected Pair<DataAdapter<?>, Aggregation<?, ?, ?>> getAggregation() {
+		return null;
+	}
+
+	protected Pair<List<String>, DataAdapter<?>> getFieldSubsets() {
+		return fieldIdsAdapterPair;
 	}
 
 	protected boolean useWholeRowIterator() {
@@ -55,5 +61,17 @@ public abstract class DataStoreQuery
 
 	public String[] getAdditionalAuthorizations() {
 		return authorizations;
+	}
+
+	public DistributableQueryFilter getServerFilter() {
+		return null;
+	}
+
+	protected QueryFilter getClientFilter() {
+		return null;
+	}
+
+	protected boolean isCommonIndexAggregation() {
+		return false;
 	}
 }

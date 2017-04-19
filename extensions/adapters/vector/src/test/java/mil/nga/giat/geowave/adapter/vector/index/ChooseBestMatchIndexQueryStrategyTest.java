@@ -22,15 +22,18 @@ import mil.nga.giat.geowave.core.geotime.ingest.SpatialTemporalDimensionalityTyp
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
+import mil.nga.giat.geowave.core.index.QueryRanges;
+import mil.nga.giat.geowave.core.index.SinglePartitionQueryRanges;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericData;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.histogram.FixedBinNumericHistogram.FixedBinNumericHistogramFactory;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyImpl;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRowImpl;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.NullIndex;
@@ -67,10 +70,12 @@ public class ChooseBestMatchIndexQueryStrategyTest
 
 		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = new HashMap<ByteArrayId, DataStatistics<SimpleFeature>>();
 		statsMap.put(
-				RowRangeHistogramStatistics.composeId(spatialIndex.getId()),
+				RowRangeHistogramStatistics.composeId(
+						spatialIndex.getId()),
 				rangeStats);
 		statsMap.put(
-				RowRangeHistogramStatistics.composeId(temporalindex.getId()),
+				RowRangeHistogramStatistics.composeId(
+						temporalindex.getId()),
 				rangeTempStats);
 
 		final ChooseBestMatchIndexQueryStrategy strategy = new ChooseBestMatchIndexQueryStrategy();
@@ -102,7 +107,10 @@ public class ChooseBestMatchIndexQueryStrategyTest
 						true));
 
 		final Constraints constraints = new Constraints(
-				Arrays.asList(cs2a)).merge(Collections.singletonList(cs1));
+				Arrays.asList(
+						cs2a)).merge(
+								Collections.singletonList(
+										cs1));
 
 		final BasicQuery query = new BasicQuery(
 				constraints);
@@ -110,63 +118,87 @@ public class ChooseBestMatchIndexQueryStrategyTest
 		final NumericIndexStrategy temporalIndexStrategy = new SpatialTemporalIndexBuilder()
 				.createIndex()
 				.getIndexStrategy();
-		final List<MultiDimensionalNumericData> tempConstraints = query.getIndexConstraints(temporalIndexStrategy);
+		final List<MultiDimensionalNumericData> tempConstraints = query.getIndexConstraints(
+				temporalIndexStrategy);
 
-		final List<ByteArrayRange> temporalRanges = DataStoreUtils.constraintsToByteArrayRanges(
+		final QueryRanges temporalRanges = DataStoreUtils.constraintsToQueryRanges(
 				tempConstraints,
 				temporalIndexStrategy,
 				5000);
 
-		for (final ByteArrayRange range : temporalRanges) {
-			rangeTempStats.entryIngested(
-					new DataStoreEntryInfo(
-							new byte[] {
-								1
-							},
-							Arrays.asList(range.getStart()),
-							Arrays.asList(range.getStart()),
-							Collections.<FieldInfo<?>> emptyList()),
-					null);
-			rangeTempStats.entryIngested(
-					new DataStoreEntryInfo(
-							new byte[] {
-								1
-							},
-							Arrays.asList(range.getEnd()),
-							Arrays.asList(range.getEnd()),
-							Collections.<FieldInfo<?>> emptyList()),
-					null);
+		for (final SinglePartitionQueryRanges range : temporalRanges.getPartitionQueryRanges()) {
+			for (final ByteArrayRange r : range.getSortKeyRanges()) {
+				rangeTempStats.entryIngested(
+						null,
+						new GeoWaveRowImpl(
+								new GeoWaveKeyImpl(
+										new byte[] {
+											1
+										},
+										new byte[] {
+											1
+										},
+										range.getPartitionKey().getBytes(),
+										r.getStart().getBytes(),
+										0),
+								new GeoWaveValue[] {}));
+
+				rangeTempStats.entryIngested(
+						null,
+						new GeoWaveRowImpl(
+								new GeoWaveKeyImpl(
+										new byte[] {
+											1
+										},
+										new byte[] {
+											1
+										},
+										range.getPartitionKey().getBytes(),
+										r.getEnd().getBytes(),
+										0),
+								new GeoWaveValue[] {}));
+			}
 		}
 
 		final NumericIndexStrategy indexStrategy = new SpatialTemporalIndexBuilder().createIndex().getIndexStrategy();
-		final List<MultiDimensionalNumericData> spatialConstraints = query.getIndexConstraints(indexStrategy);
+		final List<MultiDimensionalNumericData> spatialConstraints = query.getIndexConstraints(
+				indexStrategy);
 
-		final List<ByteArrayRange> spatialRanges = DataStoreUtils.constraintsToByteArrayRanges(
+		final QueryRanges spatialRanges = DataStoreUtils.constraintsToQueryRanges(
 				spatialConstraints,
 				indexStrategy,
 				5000);
 
-		for (final ByteArrayRange range : spatialRanges) {
-			rangeStats.entryIngested(
-					new DataStoreEntryInfo(
-							new byte[] {
-								1
-							},
-							Arrays.asList(range.getStart()),
-							Arrays.asList(range.getStart()),
-							Collections.<FieldInfo<?>> emptyList()),
-					null);
+		for (final SinglePartitionQueryRanges range : spatialRanges.getPartitionQueryRanges()) {
+			for (final ByteArrayRange r : range.getSortKeyRanges()) {
+				rangeStats.entryIngested(
+						null,
+						new GeoWaveRowImpl(
+								new GeoWaveKeyImpl(
+										new byte[] {
+											1
+										},
+										new byte[] {
+											1
+										},
+										range.getPartitionKey().getBytes(),
+										r.getStart().getBytes(),
+										0),
+								new GeoWaveValue[] {}));
+			}
 		}
 
 		final Iterator<Index<?, ?>> it = getIndices(
 				statsMap,
 				query,
 				strategy);
-		assertTrue(it.hasNext());
+		assertTrue(
+				it.hasNext());
 		assertEquals(
 				spatialIndex.getId(),
 				it.next().getId());
-		assertFalse(it.hasNext());
+		assertFalse(
+				it.hasNext());
 
 	}
 
@@ -175,52 +207,52 @@ public class ChooseBestMatchIndexQueryStrategyTest
 	 * temporalindex = new SpatialTemporalIndexBuilder().createIndex(); final
 	 * ChooseBestMatchIndexQueryStrategy strategy = new
 	 * ChooseBestMatchIndexQueryStrategy();
-	 * 
+	 *
 	 * final ConstraintSet cs1 = new ConstraintSet(); cs1.addConstraint(
 	 * LatitudeDefinition.class, new ConstraintData( new ConstrainedIndexValue(
 	 * 0.3, 0.5), true));
-	 * 
+	 *
 	 * cs1.addConstraint( LongitudeDefinition.class, new ConstraintData( new
 	 * ConstrainedIndexValue( 0.4, 0.7), true));
-	 * 
+	 *
 	 * final ConstraintSet cs2a = new ConstraintSet(); cs2a.addConstraint(
 	 * TimeDefinition.class, new ConstraintData( new ConstrainedIndexValue( 0.1,
 	 * 0.2), true));
-	 * 
+	 *
 	 * final Constraints constraints = new Constraints(
 	 * Arrays.asList(cs2a)).merge(Collections.singletonList(cs1));
-	 * 
+	 *
 	 * final BasicQuery query = new BasicQuery( constraints);
-	 * 
+	 *
 	 * final Iterator<Index<?, ?>> it = getIndices( new HashMap<ByteArrayId,
 	 * DataStatistics<SimpleFeature>>(), query, strategy);
 	 * assertTrue(it.hasNext()); assertEquals( temporalindex.getId(),
 	 * it.next().getId()); assertFalse(it.hasNext());
-	 * 
+	 *
 	 * }
-	 * 
+	 *
 	 * @Test public void testChooseSpatialWithoutStats() { final PrimaryIndex
 	 * spatialIndex = new SpatialIndexBuilder().createIndex(); final
 	 * ChooseBestMatchIndexQueryStrategy strategy = new
 	 * ChooseBestMatchIndexQueryStrategy();
-	 * 
+	 *
 	 * final ConstraintSet cs1 = new ConstraintSet(); cs1.addConstraint(
 	 * LatitudeDefinition.class, new ConstraintData( new ConstrainedIndexValue(
 	 * 0.3, 0.5), true));
-	 * 
+	 *
 	 * cs1.addConstraint( LongitudeDefinition.class, new ConstraintData( new
 	 * ConstrainedIndexValue( 0.4, 0.7), true));
-	 * 
+	 *
 	 * final Constraints constraints = new Constraints(
 	 * Collections.singletonList(cs1));
-	 * 
+	 *
 	 * final BasicQuery query = new BasicQuery( constraints);
-	 * 
+	 *
 	 * final Iterator<Index<?, ?>> it = getIndices( new HashMap<ByteArrayId,
 	 * DataStatistics<SimpleFeature>>(), query, strategy);
 	 * assertTrue(it.hasNext()); assertEquals( spatialIndex.getId(),
 	 * it.next().getId()); assertFalse(it.hasNext());
-	 * 
+	 *
 	 * }
 	 */
 

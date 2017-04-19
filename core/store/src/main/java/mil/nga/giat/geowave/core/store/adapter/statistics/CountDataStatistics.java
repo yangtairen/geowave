@@ -6,12 +6,10 @@ import java.util.HashSet;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.store.callback.DeleteCallback;
-import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
 public class CountDataStatistics<T> extends
 		AbstractDataStatistics<T> implements
-		IngestCallback<T, GeoWaveRow>,
 		DeleteCallback<T, GeoWaveRow>
 {
 	public final static ByteArrayId STATS_ID = new ByteArrayId(
@@ -89,9 +87,9 @@ public class CountDataStatistics<T> extends
 	}
 
 	/**
-	 * This is expensive, but necessary since there may be duplicates 
+	 * This is expensive, but necessary since there may be duplicates
 	 */
-	//TODO entryDeleted should only be called once with all duplicates
+	// TODO entryDeleted should only be called once with all duplicates
 	private transient HashSet<ByteArrayId> ids = new HashSet<ByteArrayId>();
 
 	@Override

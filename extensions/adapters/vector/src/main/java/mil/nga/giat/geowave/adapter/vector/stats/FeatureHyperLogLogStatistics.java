@@ -3,29 +3,30 @@ package mil.nga.giat.geowave.adapter.vector.stats;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.Mergeable;
-import mil.nga.giat.geowave.core.store.adapter.statistics.AbstractDataStatistics;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
-
 import org.apache.log4j.Logger;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.clearspring.analytics.stream.cardinality.CardinalityMergeException;
 import com.clearspring.analytics.stream.cardinality.HyperLogLogPlus;
 
+import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.Mergeable;
+import mil.nga.giat.geowave.core.store.adapter.statistics.AbstractDataStatistics;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
+
 /**
  * Hyperloglog provides an estimated cardinality of the number of unique values
  * for an attribute.
- * 
- * 
+ *
+ *
  */
 public class FeatureHyperLogLogStatistics extends
 		AbstractDataStatistics<SimpleFeature> implements
 		FeatureStatistic
 {
-	private final static Logger LOGGER = Logger.getLogger(FeatureHyperLogLogStatistics.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			FeatureHyperLogLogStatistics.class);
 	public static final String STATS_TYPE = "ATT_HYPERLLP";
 
 	private HyperLogLogPlus loglog;
@@ -36,7 +37,7 @@ public class FeatureHyperLogLogStatistics extends
 	}
 
 	/**
-	 * 
+	 *
 	 * @param dataAdapterId
 	 * @param fieldName
 	 * @param precision
@@ -46,7 +47,7 @@ public class FeatureHyperLogLogStatistics extends
 	public FeatureHyperLogLogStatistics(
 			final ByteArrayId dataAdapterId,
 			final String fieldName,
-			int precision ) {
+			final int precision ) {
 		super(
 				dataAdapterId,
 				composeId(
@@ -66,7 +67,8 @@ public class FeatureHyperLogLogStatistics extends
 
 	@Override
 	public String getFieldName() {
-		return decomposeNameFromId(getStatisticsId());
+		return decomposeNameFromId(
+				getStatisticsId());
 	}
 
 	@Override
@@ -86,9 +88,10 @@ public class FeatureHyperLogLogStatistics extends
 			final Mergeable mergeable ) {
 		if (mergeable instanceof FeatureHyperLogLogStatistics) {
 			try {
-				loglog = (HyperLogLogPlus) ((FeatureHyperLogLogStatistics) mergeable).loglog.merge(loglog);
+				loglog = (HyperLogLogPlus) ((FeatureHyperLogLogStatistics) mergeable).loglog.merge(
+						loglog);
 			}
-			catch (CardinalityMergeException e) {
+			catch (final CardinalityMergeException e) {
 				throw new RuntimeException(
 						"Unable to merge counters",
 						e);
@@ -101,14 +104,17 @@ public class FeatureHyperLogLogStatistics extends
 	public byte[] toBinary() {
 
 		try {
-			byte[] data = loglog.getBytes();
+			final byte[] data = loglog.getBytes();
 
-			final ByteBuffer buffer = super.binaryBuffer(4 + data.length);
-			buffer.putInt(data.length);
-			buffer.put(data);
+			final ByteBuffer buffer = super.binaryBuffer(
+					4 + data.length);
+			buffer.putInt(
+					data.length);
+			buffer.put(
+					data);
 			return buffer.array();
 		}
-		catch (IOException e) {
+		catch (final IOException e) {
 			LOGGER.error(
 					"Exception while writing statistic",
 					e);
@@ -119,13 +125,16 @@ public class FeatureHyperLogLogStatistics extends
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buffer = super.binaryBuffer(bytes);
+		final ByteBuffer buffer = super.binaryBuffer(
+				bytes);
 		final byte[] data = new byte[buffer.getInt()];
-		buffer.get(data);
+		buffer.get(
+				data);
 		try {
-			loglog = HyperLogLogPlus.Builder.build(data);
+			loglog = HyperLogLogPlus.Builder.build(
+					data);
 		}
-		catch (IOException e) {
+		catch (final IOException e) {
 			LOGGER.error(
 					"Exception while reading statistic",
 					e);
@@ -134,27 +143,31 @@ public class FeatureHyperLogLogStatistics extends
 
 	@Override
 	public void entryIngested(
-			final DataStoreEntryInfo entryInfo,
-			final SimpleFeature entry ) {
-		final Object o = entry.getAttribute(getFieldName());
+			final SimpleFeature entry,
+			final GeoWaveRow... rows ) {
+		final Object o = entry.getAttribute(
+				getFieldName());
 		if (o == null) {
 			return;
 		}
-		loglog.offer(o.toString());
+		loglog.offer(
+				o.toString());
 	}
 
+	@Override
 	public String toString() {
-		StringBuffer buffer = new StringBuffer();
+		final StringBuffer buffer = new StringBuffer();
 		buffer.append(
 				"hyperloglog[adapter=").append(
-				super.getDataAdapterId().getString());
+						super.getDataAdapterId().getString());
 		buffer.append(
 				", field=").append(
-				getFieldName());
+						getFieldName());
 		buffer.append(
 				", cardinality=").append(
-				loglog.cardinality());
-		buffer.append("]");
+						loglog.cardinality());
+		buffer.append(
+				"]");
 		return buffer.toString();
 	}
 
@@ -162,7 +175,7 @@ public class FeatureHyperLogLogStatistics extends
 			StatsConfig<SimpleFeature>
 	{
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 6309383518148391565L;
 		private int precision = 16;
@@ -172,7 +185,7 @@ public class FeatureHyperLogLogStatistics extends
 		}
 
 		public FeatureHyperLogLogConfig(
-				int precision ) {
+				final int precision ) {
 			super();
 			this.precision = precision;
 		}
@@ -182,7 +195,7 @@ public class FeatureHyperLogLogStatistics extends
 		}
 
 		public void setPrecision(
-				int precision ) {
+				final int precision ) {
 			this.precision = precision;
 		}
 

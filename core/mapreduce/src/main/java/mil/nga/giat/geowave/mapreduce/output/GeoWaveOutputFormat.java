@@ -289,7 +289,7 @@ public class GeoWaveOutputFormat extends
 		}
 
 		private synchronized IndexWriter getIndexWriter(
-				final DataAdapter<?> adapter,
+				final WritableDataAdapter<?> adapter,
 				final Collection<ByteArrayId> indexIds )
 				throws MismatchedIndexToAdapterMapping {
 			IndexWriter writer = adapterIdToIndexWriterCache.get(adapter.getAdapterId());

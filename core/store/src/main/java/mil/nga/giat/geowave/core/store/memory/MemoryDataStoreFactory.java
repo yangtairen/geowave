@@ -13,20 +13,27 @@ public class MemoryDataStoreFactory extends
 
 	@Override
 	public DataStore createStore(
-			StoreFactoryOptions configOptions ) {
-		return createStore(configOptions.getGeowaveNamespace());
+			final StoreFactoryOptions configOptions ) {
+		return createStore(
+				configOptions.getGeowaveNamespace());
 	}
 
 	protected static synchronized DataStore createStore(
 			final String namespace ) {
-		DataStore store = DATA_STORE_CACHE.get(namespace);
+		DataStore store = DATA_STORE_CACHE.get(
+				namespace);
 		if (store == null) {
 			store = new MemoryDataStore(
-					MemoryAdapterStoreFactory.createStore(namespace),
-					MemoryIndexStoreFactory.createStore(namespace),
-					MemoryDataStatisticsStoreFactory.createStore(namespace),
-					MemorySecondaryIndexStoreFactory.createStore(namespace),
-					MemoryAdapterIndexMappingStoreFactory.createStore(namespace));
+					MemoryIndexStoreFactory.createStore(
+							namespace),
+					MemoryAdapterStoreFactory.createStore(
+							namespace),
+					MemoryDataStatisticsStoreFactory.createStore(
+							namespace),
+					MemoryAdapterIndexMappingStoreFactory.createStore(
+							namespace),
+					MemorySecondaryIndexStoreFactory.createStore(
+							namespace));
 			DATA_STORE_CACHE.put(
 					namespace,
 					store);

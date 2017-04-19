@@ -26,6 +26,7 @@ import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.QueryRanges;
 import mil.nga.giat.geowave.core.index.SinglePartitionInsertionIds;
+import mil.nga.giat.geowave.core.index.SinglePartitionQueryRanges;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
@@ -81,7 +82,7 @@ public class DataStoreUtils
 	public static <T> long cardinality(
 			final PrimaryIndex index,
 			final Map<ByteArrayId, DataStatistics<T>> stats,
-			final List<ByteArrayRange> ranges ) {
+			final QueryRanges queryRanges ) {
 		final RowRangeHistogramStatistics rangeStats = (RowRangeHistogramStatistics) stats.get(
 				RowRangeHistogramStatistics.composeId(
 						index.getId()));
@@ -89,10 +90,12 @@ public class DataStoreUtils
 			return Long.MAX_VALUE - 1;
 		}
 		long count = 0;
-		for (final ByteArrayRange range : ranges) {
-			count += rangeStats.cardinality(
-					range.getStart().getBytes(),
-					range.getEnd().getBytes());
+		for (final SinglePartitionQueryRanges partitionRange : queryRanges.getPartitionQueryRanges()) {
+			for (final ByteArrayRange range : partitionRange.getSortKeyRanges()) {
+				count += rangeStats.cardinality(
+						range.getStart().getBytes(),
+						range.getEnd().getBytes());
+			}
 		}
 		return count;
 	}

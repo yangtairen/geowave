@@ -32,7 +32,7 @@ public class DataStoreCallbackManager
 
 	final private boolean captureAdapterStats;
 
-	final Map<ByteArrayId, IngestCallback<?, GeoWaveRow>> icache = new HashMap<ByteArrayId, IngestCallback<?, GeoWaveRow>>();
+	final Map<ByteArrayId, IngestCallback<?>> icache = new HashMap<ByteArrayId, IngestCallback<?>>();
 	final Map<ByteArrayId, DeleteCallback<?, GeoWaveRow>> dcache = new HashMap<ByteArrayId, DeleteCallback<?, GeoWaveRow>>();
 
 	public DataStoreCallbackManager(
@@ -44,7 +44,7 @@ public class DataStoreCallbackManager
 		this.captureAdapterStats = captureAdapterStats;
 	}
 
-	public <T> IngestCallback<T, GeoWaveRow> getIngestCallback(
+	public <T> IngestCallback<T> getIngestCallback(
 			final WritableDataAdapter<T> writableAdapter,
 			final PrimaryIndex index ) {
 		if (!icache.containsKey(writableAdapter.getAdapterId())) {
@@ -52,7 +52,7 @@ public class DataStoreCallbackManager
 					writableAdapter,
 					index,
 					captureAdapterStats);
-			final List<IngestCallback<T, GeoWaveRow>> callbackList = new ArrayList<IngestCallback<T, GeoWaveRow>>();
+			final List<IngestCallback<T>> callbackList = new ArrayList<IngestCallback<T>>();
 			if ((writableAdapter instanceof StatisticsProvider) && persistStats) {
 				callbackList.add(new StatsCompositionTool<T>(
 						statsProvider,
@@ -67,10 +67,10 @@ public class DataStoreCallbackManager
 			}
 			icache.put(
 					writableAdapter.getAdapterId(),
-					new IngestCallbackList<T, GeoWaveRow>(
+					new IngestCallbackList<T>(
 							callbackList));
 		}
-		return (IngestCallback<T, GeoWaveRow>) icache.get(writableAdapter.getAdapterId());
+		return (IngestCallback<T>) icache.get(writableAdapter.getAdapterId());
 
 	}
 
@@ -111,7 +111,7 @@ public class DataStoreCallbackManager
 
 	public void close()
 			throws IOException {
-		for (final IngestCallback<?, GeoWaveRow> callback : icache.values()) {
+		for (final IngestCallback<?> callback : icache.values()) {
 			if (callback instanceof Closeable) {
 				((Closeable) callback).close();
 			}

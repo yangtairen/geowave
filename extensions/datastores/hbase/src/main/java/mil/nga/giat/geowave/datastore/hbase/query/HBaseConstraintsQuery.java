@@ -94,7 +94,6 @@ public class HBaseConstraintsQuery extends
 			final DifferingFieldVisibilityEntryCount visibilityCounts,
 			final Pair<List<String>, DataAdapter<?>> fieldIds,
 			final String[] authorizations ) {
-
 		super(
 				dataStore,
 				adapterIds,

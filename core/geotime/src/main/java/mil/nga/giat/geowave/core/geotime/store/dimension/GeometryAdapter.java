@@ -11,7 +11,7 @@ import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
  * This adapter can be used for reading and writing Geometry fields within
  * GeoWave. The GeometryWrapper wraps JTS geometries with a visibility tag. This
  * enables spatial field definitions that can use JTS geometries.
- * 
+ *
  */
 public class GeometryAdapter implements
 		FieldReader<GeometryWrapper>,
@@ -19,7 +19,8 @@ public class GeometryAdapter implements
 {
 	public final static ByteArrayId DEFAULT_GEOMETRY_FIELD_ID = new ByteArrayId(
 			ByteArrayUtils.combineArrays(
-					StringUtils.stringToBinary("geom"),
+					StringUtils.stringToBinary(
+							"geom"),
 					new byte[] {
 						0,
 						0
@@ -30,14 +31,16 @@ public class GeometryAdapter implements
 	@Override
 	public byte[] writeField(
 			final GeometryWrapper geometry ) {
-		return GeometryUtils.geometryToBinary(geometry.getGeometry());
+		return GeometryUtils.geometryToBinary(
+				geometry.getGeometry());
 	}
 
 	@Override
 	public GeometryWrapper readField(
 			final byte[] fieldData ) {
 		return new GeometryWrapper(
-				GeometryUtils.geometryFromBinary(fieldData));
+				GeometryUtils.geometryFromBinary(
+						fieldData));
 	}
 
 	@Override

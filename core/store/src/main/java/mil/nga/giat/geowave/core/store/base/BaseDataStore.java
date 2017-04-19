@@ -2,7 +2,6 @@ package mil.nga.giat.geowave.core.store.base;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,7 +16,6 @@ import com.google.common.collect.Iterators;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.InsertionIds;
-import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.AdapterToIndexMapping;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
@@ -26,27 +24,24 @@ import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.AdapterIndexMappingStore;
-import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexDependentDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
-import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.exceptions.MismatchedIndexToAdapterMapping;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
-import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DuplicateEntryCount;
+import mil.nga.giat.geowave.core.store.base.query.BaseConstraintsQuery;
+import mil.nga.giat.geowave.core.store.base.query.BaseRowIdsQuery;
+import mil.nga.giat.geowave.core.store.base.query.BaseRowPrefixQuery;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.IngestCallbackList;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
-import mil.nga.giat.geowave.core.store.data.DataWriter;
-import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
-import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
-import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
-import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
+import mil.nga.giat.geowave.core.store.data.visibility.DifferingFieldVisibilityEntryCount;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveValueImpl;
@@ -54,8 +49,8 @@ import mil.nga.giat.geowave.core.store.filter.DedupeFilter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
 import mil.nga.giat.geowave.core.store.flatten.FlattenedFieldInfo;
-import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
+import mil.nga.giat.geowave.core.store.index.IndexMetaDataSet;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStore;
@@ -124,7 +119,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 
 	@Override
 	public <T> IndexWriter<T> createWriter(
-			final DataAdapter<T> adapter,
+			final WritableDataAdapter<T> adapter,
 			final PrimaryIndex... indices )
 			throws MismatchedIndexToAdapterMapping {
 		store(
@@ -147,7 +142,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 			callbackManager.setPersistStats(
 					baseOptions.isPersistDataStatistics());
 
-			final List<IngestCallback<T, R>> callbacks = new ArrayList<IngestCallback<T, R>>();
+			final List<IngestCallback<T>> callbacks = new ArrayList<IngestCallback<T>>();
 
 			store(
 					index);
@@ -164,15 +159,15 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 				}
 			}
 			callbacks.add(
-					(IngestCallback<T, R>) callbackManager.getIngestCallback(
-							(WritableDataAdapter<T>) adapter,
+					callbackManager.getIngestCallback(
+							adapter,
 							index));
 
 			initOnIndexWriterCreate(
 					adapter,
 					index);
 
-			final IngestCallbackList<T, R> callbacksList = new IngestCallbackList<T, R>(
+			final IngestCallbackList<T> callbacksList = new IngestCallbackList<T>(
 					callbacks);
 			writers[i] = createIndexWriter(
 					adapter,
@@ -255,9 +250,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 											(DataAdapter<Object>) adapterStore.getAdapter(
 													idQuery.getAdapterId()),
 											filter,
-											(ScanCallback<Object, R>) sanitizedQueryOptions.getScanCallback(),
-											sanitizedQueryOptions.getAuthorizations(),
-											sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension()));
+											sanitizedQueryOptions));
 						}
 						continue;
 					}
@@ -290,9 +283,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 			}
 
 		}
-		catch (final IOException e1)
-
-		{
+		catch (final IOException e1) {
 			LOGGER.error(
 					"Failed to resolve adapter or index for query",
 					e1);
@@ -318,9 +309,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 			final List<ByteArrayId> dataIds,
 			final DataAdapter<Object> adapter,
 			final DedupeFilter dedupeFilter,
-			final ScanCallback<Object, R> callback,
-			final String[] authorizations,
-			final double[] maxResolutionSubsamplingPerDimension )
+			final QueryOptions sanitizedQueryOptions )
 			throws IOException {
 		final String altIdxTableName = index.getId().getString() + ALT_INDEX_TABLE;
 
@@ -331,8 +320,9 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 					adapter
 				});
 
-		if (baseOptions.isUseAltIndex() && baseOperations.tableExists(
-				altIdxTableName)) {
+		if (baseOptions.isUseAltIndex() && baseOperations.indexExists(
+				new ByteArrayId(
+						altIdxTableName))) {
 			final InsertionIds rowIds = getAltIndexInsertionIds(
 					altIdxTableName,
 					dataIds,
@@ -342,11 +332,11 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 
 				final QueryOptions options = new QueryOptions();
 				options.setScanCallback(
-						callback);
+						sanitizedQueryOptions.getScanCallback());
 				options.setAuthorizations(
-						authorizations);
+						sanitizedQueryOptions.getAuthorizations());
 				options.setMaxResolutionSubsamplingPerDimension(
-						maxResolutionSubsamplingPerDimension);
+						sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension());
 				options.setLimit(
 						-1);
 
@@ -365,9 +355,8 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 					tempAdapterStore,
 					dataIds,
 					adapter,
-					callback,
 					dedupeFilter,
-					authorizations);
+					sanitizedQueryOptions);
 		}
 		return new CloseableIterator.Empty();
 	}
@@ -418,18 +407,18 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 				final String indexTableName = index.getId().getString();
 				final String altIdxTableName = indexTableName + ALT_INDEX_TABLE;
 
-				idxDeleter = createIndexDeleter(
-						indexTableName,
-						false,
+				idxDeleter = baseOperations.createDeleter(
+						index.getId(),
 						queryOptions.getAuthorizations());
 
-				altIdxDeleter = baseOptions.isUseAltIndex() && baseOperations.tableExists(
-						altIdxTableName)
-								? createIndexDeleter(
-										altIdxTableName,
-										true,
-										queryOptions.getAuthorizations())
-								: null;
+				altIdxDeleter = baseOptions.isUseAltIndex() && baseOperations.indexExists(
+						new ByteArrayId(
+								altIdxTableName))
+										? baseOperations.createDeleter(
+												new ByteArrayId(
+														altIdxTableName),
+												queryOptions.getAuthorizations())
+										: null;
 
 				for (final DataAdapter<Object> adapter : indexAdapterPair.getRight()) {
 
@@ -504,9 +493,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 								idQuery.getDataIds(),
 								adapter,
 								null,
-								callback,
-								queryOptions.getAuthorizations(),
-								null);
+								queryOptions);
 					}
 					else if (query instanceof PrefixIdQuery) {
 						dataIt = queryRowPrefix(
@@ -572,10 +559,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 			final PrimaryIndex index,
 			final String... additionalAuthorizations )
 			throws IOException {
-		final String tableName = index.getId().getString();
-		final String altIdxTableName = tableName + ALT_INDEX_TABLE;
-		final String adapterId = StringUtils.stringFromBinary(
-				adapter.getAdapterId().getBytes());
+		final String altIdxTableName = index.getId().getString() + ALT_INDEX_TABLE;
 
 		try (final CloseableIterator<DataStatistics<?>> it = statisticsStore.getDataStatistics(
 				adapter.getAdapterId())) {
@@ -592,269 +576,178 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 		// cannot delete because authorizations are not used
 		// this.indexMappingStore.remove(adapter.getAdapterId());
 
-		deleteAll(
-				tableName,
-				adapterId,
+		baseOperations.deleteAll(
+				index.getId(),
+				adapter.getAdapterId(),
 				additionalAuthorizations);
-		if (baseOptions.isUseAltIndex() && baseOperations.tableExists(
-				altIdxTableName)) {
-			deleteAll(
-					altIdxTableName,
-					adapterId,
+		if (baseOptions.isUseAltIndex() && baseOperations.indexExists(
+				new ByteArrayId(
+						altIdxTableName))) {
+			baseOperations.deleteAll(
+					new ByteArrayId(
+							altIdxTableName),
+					adapter.getAdapterId(),
 					additionalAuthorizations);
 		}
 	}
 
-	protected abstract boolean deleteAll(
-			final String tableName,
-			final String columnFamily,
-			final String... additionalAuthorizations );
-
-	protected abstract Deleter<R> createIndexDeleter(
-			String indexTableName,
-			boolean altIndex,
-			String... authorizations )
-			throws Exception;
-
-	protected abstract InsertionIds getAltIndexInsertionIds(
+	protected InsertionIds getAltIndexInsertionIds(
 			final String altIdxTableName,
 			final List<ByteArrayId> dataIds,
 			final ByteArrayId adapterId,
-			final String... authorizations );
+			final String... authorizations ) {
+		// TODO: GEOWAVE-1018 - this really should be a secondary index and not
+		// special cased
+		return new InsertionIds();
 
-	protected abstract CloseableIterator<Object> getEntryRows(
+	}
+
+	protected CloseableIterator<Object> getEntryRows(
 			final PrimaryIndex index,
 			final AdapterStore tempAdapterStore,
 			final List<ByteArrayId> dataIds,
 			final DataAdapter<?> adapter,
-			final ScanCallback<Object, R> callback,
 			final DedupeFilter dedupeFilter,
-			final String... authorizations );
+			final QueryOptions queryOptions ) {
+		return queryConstraints(
+				Collections.singletonList(
+						adapter.getAdapterId()),
+				index,
+				new EverythingQuery(),
+				dedupeFilter,
+				queryOptions,
+				tempAdapterStore);
+	}
 
-	protected abstract CloseableIterator<Object> queryConstraints(
-			List<ByteArrayId> adapterIdsToQuery,
-			PrimaryIndex index,
-			Query sanitizedQuery,
-			DedupeFilter filter,
-			QueryOptions sanitizedQueryOptions,
-			AdapterStore tempAdapterStore );
+	protected CloseableIterator<Object> queryConstraints(
+			final List<ByteArrayId> adapterIdsToQuery,
+			final PrimaryIndex index,
+			final Query sanitizedQuery,
+			final DedupeFilter filter,
+			final QueryOptions sanitizedQueryOptions,
+			final AdapterStore tempAdapterStore ) {
+		final BaseConstraintsQuery constraintsQuery = new BaseConstraintsQuery(
+				this,
+				adapterIdsToQuery,
+				index,
+				sanitizedQuery,
+				filter,
+				sanitizedQueryOptions.getScanCallback(),
+				sanitizedQueryOptions.getAggregation(),
+				sanitizedQueryOptions.getFieldIdsAdapterPair(),
+				IndexMetaDataSet.getIndexMetadata(
+						index,
+						adapterIdsToQuery,
+						statisticsStore,
+						sanitizedQueryOptions.getAuthorizations()),
+				DuplicateEntryCount.getDuplicateCounts(
+						index,
+						adapterIdsToQuery,
+						statisticsStore,
+						sanitizedQueryOptions.getAuthorizations()),
+				DifferingFieldVisibilityEntryCount.getVisibilityCounts(
+						index,
+						adapterIdsToQuery,
+						statisticsStore,
+						sanitizedQueryOptions.getAuthorizations()),
+				sanitizedQueryOptions.getAuthorizations());
 
-	protected abstract CloseableIterator<Object> queryRowPrefix(
-			PrimaryIndex index,
-			ByteArrayId sortPrefix,
-			QueryOptions sanitizedQueryOptions,
-			AdapterStore tempAdapterStore,
-			List<ByteArrayId> adapterIdsToQuery );
+		return constraintsQuery.query(
+				baseOperations,
+				tempAdapterStore,
+				sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension(),
+				sanitizedQueryOptions.getLimit());
+	}
 
-	protected abstract CloseableIterator<Object> queryRowIds(
-			DataAdapter<Object> adapter,
-			PrimaryIndex index,
-			InsertionIds rowIds,
-			DedupeFilter filter,
-			QueryOptions sanitizedQueryOptions,
-			AdapterStore tempAdapterStore );
+	protected CloseableIterator<Object> queryRowPrefix(
+			final PrimaryIndex index,
+			final ByteArrayId sortPrefix,
+			final QueryOptions sanitizedQueryOptions,
+			final AdapterStore tempAdapterStore,
+			final List<ByteArrayId> adapterIdsToQuery ) {
+		final BaseRowPrefixQuery<Object> prefixQuery = new BaseRowPrefixQuery<Object>(
+				this,
+				index,
+				sortPrefix,
+				(ScanCallback<Object, ?>) sanitizedQueryOptions.getScanCallback(),
+				sanitizedQueryOptions.getLimit(),
+				DifferingFieldVisibilityEntryCount.getVisibilityCounts(
+						index,
+						adapterIdsToQuery,
+						statisticsStore,
+						sanitizedQueryOptions.getAuthorizations()),
+				sanitizedQueryOptions.getAuthorizations());
+
+		return prefixQuery.query(
+				baseOperations,
+				sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension(),
+				tempAdapterStore);
+
+	}
+
+	protected CloseableIterator<Object> queryRowIds(
+			final DataAdapter<Object> adapter,
+			final PrimaryIndex index,
+			final InsertionIds rowIds,
+			final DedupeFilter filter,
+			final QueryOptions sanitizedQueryOptions,
+			final AdapterStore tempAdapterStore ) {
+		// final DifferingFieldVisibilityEntryCount visibilityCounts =
+		// DifferingFieldVisibilityEntryCount
+		// .getVisibilityCounts(
+		// index,
+		// Collections.singletonList(adapter.getAdapterId()),
+		// statisticsStore,
+		// sanitizedQueryOptions.getAuthorizations());
+		// boolean isWholeRow = (visibilityCounts == null) ||
+		// visibilityCounts.isAnyEntryDifferingFieldVisiblity();
+		// return baseOperations.createReader(index, adapter.getAdapterId(),
+		// sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension(),
+		// sanitizedQueryOptions.getAggregation(), isWholeRow, rowIds, filter,
+		// sanitizedQueryOptions.getLimit(),
+		// sanitizedQueryOptions.getAuthorizations());
+
+		final BaseRowIdsQuery<Object> q = new BaseRowIdsQuery<Object>(
+				this,
+				adapter,
+				index,
+				rowIds,
+				(ScanCallback<Object, ?>) sanitizedQueryOptions.getScanCallback(),
+				filter,
+				sanitizedQueryOptions.getAuthorizations());
+
+		return q.query(
+				this.baseOperations,
+				tempAdapterStore,
+				sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension(),
+				sanitizedQueryOptions.getLimit());
+	}
 
 	protected abstract <T> void addAltIndexCallback(
-			List<IngestCallback<T, R>> callbacks,
+			List<IngestCallback<T>> callbacks,
 			String indexName,
 			DataAdapter<T> adapter,
 			ByteArrayId primaryIndexId );
 
-	protected abstract <T> IndexWriter<T> createIndexWriter(
-			DataAdapter<T> adapter,
-			PrimaryIndex index,
-			DataStoreOperations baseOperations,
-			DataStoreOptions baseOptions,
-			final IngestCallback<T, R> callback,
-			final Closeable closable );
+	protected <T> IndexWriter<T> createIndexWriter(
+			final WritableDataAdapter<T> adapter,
+			final PrimaryIndex index,
+			final DataStoreOperations baseOperations,
+			final DataStoreOptions baseOptions,
+			final IngestCallback<T> callback,
+			final Closeable closable ) {
+		return new BaseIndexWriter<T>(
+				adapter,
+				index,
+				baseOperations,
+				baseOptions,
+				callback,
+				closable);
+	}
 
 	protected abstract <T> void initOnIndexWriterCreate(
 			final DataAdapter<T> adapter,
 			final PrimaryIndex index );
-
-	/**
-	 * General-purpose entry ingest
-	 */
-	public <T> R[] write(
-			final WritableDataAdapter<T> writableAdapter,
-			final PrimaryIndex index,
-			final T entry,
-			final Writer<T> writer,
-			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-
-		final R[] rows = toGeoWaveRows(
-				writableAdapter,
-				index,
-				entry,
-				customFieldVisibilityWriter);
-
-		try {
-			write(
-					writer,
-					writableAdapter.getAdapterId(),
-					rows);
-		}
-		catch (final Exception e) {
-			LOGGER.warn(
-					"Writing to table failed.",
-					e);
-		}
-
-		return rows;
-	}
-
-	/**
-	 * DataStore-agnostic method to accept ingest info and return generic
-	 * geowave rows
-	 *
-	 * @param writableAdapter
-	 * @param index
-	 * @param ingestInfo
-	 *
-	 * @return list of GeoWaveRow
-	 */
-	public <T> R[] toGeoWaveRows(
-			final WritableDataAdapter<T> writableAdapter,
-			final PrimaryIndex index,
-			final T entry,
-			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-
-		final CommonIndexModel indexModel = index.getIndexModel();
-
-		final AdapterPersistenceEncoding encodedData = writableAdapter.encode(
-				entry,
-				indexModel);
-		final InsertionIds insertionIds = encodedData.getInsertionIds(
-				index);
-		final PersistentDataset extendedData = encodedData.getAdapterExtendedData();
-		final PersistentDataset indexedData = encodedData.getCommonData();
-		final List<PersistentValue> extendedValues = extendedData.getValues();
-		final List<PersistentValue> commonValues = indexedData.getValues();
-
-		List<FieldInfo<?>> fieldInfoList = new ArrayList<FieldInfo<?>>();
-
-		final byte[] dataId = writableAdapter.getDataId(
-				entry).getBytes();
-		final byte[] adapterId = writableAdapter.getAdapterId().getBytes();
-		if (!insertionIds.isEmpty()) {
-			for (final PersistentValue fieldValue : commonValues) {
-				final FieldInfo<T> fieldInfo = getFieldInfo(
-						indexModel,
-						fieldValue,
-						entry,
-						customFieldVisibilityWriter);
-				if (fieldInfo != null) {
-					fieldInfoList.add(
-							fieldInfo);
-				}
-			}
-			for (final PersistentValue fieldValue : extendedValues) {
-				if (fieldValue.getValue() != null) {
-					final FieldInfo<T> fieldInfo = getFieldInfo(
-							writableAdapter,
-							fieldValue,
-							entry,
-							customFieldVisibilityWriter);
-					if (fieldInfo != null) {
-						fieldInfoList.add(
-								fieldInfo);
-					}
-				}
-			}
-		}
-		else {
-			LOGGER.warn(
-					"Indexing failed to produce insertion ids; entry [" + writableAdapter.getDataId(
-							entry).getString() + "] not saved.");
-		}
-
-		fieldInfoList = DataStoreUtils.composeFlattenedFields(
-				fieldInfoList,
-				index.getIndexModel(),
-				writableAdapter);
-
-		final boolean ensureUniqueId = (writableAdapter instanceof RowMergingDataAdapter)
-				&& (((RowMergingDataAdapter) writableAdapter).getTransform() != null);
-
-		final IntermediaryWriteEntryInfo ingestInfo = new IntermediaryWriteEntryInfo(
-				dataId,
-				adapterId,
-				insertionIds,
-				fieldInfoList);
-		verifyVisibility(
-				customFieldVisibilityWriter,
-				ingestInfo);
-		final R[] geowaveRows = getRowsFromIngestInfo(
-				ingestInfo,
-				ensureUniqueId);
-
-		return geowaveRows;
-	}
-
-	protected void verifyVisibility(
-			final VisibilityWriter customFieldVisibilityWriter,
-			final IntermediaryWriteEntryInfo ingestInfo ) {
-		// TODO: Implement/override vis for all datastore types, if there is
-		// some initializing that must occur within table administration on
-		// encountering a new visibility
-	}
-
-	private static <T> FieldInfo<T> getFieldInfo(
-			final DataWriter dataWriter,
-			final PersistentValue<T> fieldValue,
-			final T entry,
-			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-		final FieldWriter fieldWriter = dataWriter.getWriter(
-				fieldValue.getId());
-		final FieldVisibilityHandler<T, Object> customVisibilityHandler = customFieldVisibilityWriter
-				.getFieldVisibilityHandler(
-						fieldValue.getId());
-		if (fieldWriter != null) {
-			final Object value = fieldValue.getValue();
-			return new FieldInfo<T>(
-					fieldValue,
-					fieldWriter.writeField(
-							value),
-					DataStoreUtils.mergeVisibilities(
-							customVisibilityHandler.getVisibility(
-									entry,
-									fieldValue.getId(),
-									value),
-							fieldWriter.getVisibility(
-									entry,
-									fieldValue.getId(),
-									value)));
-		}
-		else if (fieldValue.getValue() != null) {
-			LOGGER.warn(
-					"Data writer of class " + dataWriter.getClass() + " does not support field for "
-							+ fieldValue.getValue());
-		}
-		return null;
-	}
-
-	/**
-	 * DataStore-specific method to create its row impl on ingest Called from
-	 * toGeoWaveRows method above.
-	 *
-	 * @param adapterId
-	 * @param ingestInfo
-	 * @param fieldInfoList
-	 * @param ensureUniqueId
-	 * @return
-	 */
-	protected abstract R[] getRowsFromIngestInfo(
-			final IntermediaryWriteEntryInfo ingestInfo,
-			final boolean ensureUniqueId );
-
-	/**
-	 * DataStore-specific method that accepts a writer and a list of rows,
-	 * converts them to db mutations and passes them to the writer.
-	 */
-	public abstract void write(
-			Writer writer,
-			final ByteArrayId adapterId,
-			R... rows );
 
 	/**
 	 * Basic method that decodes a native row Currently overridden by Accumulo
@@ -915,7 +808,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 						byteValue,
 						fieldMask,
 						newBitmask);
-				if (byteValue == null || byteValue.length == 0){
+				if ((byteValue == null) || (byteValue.length == 0)) {
 					continue;
 				}
 				fieldMask = newBitmask;

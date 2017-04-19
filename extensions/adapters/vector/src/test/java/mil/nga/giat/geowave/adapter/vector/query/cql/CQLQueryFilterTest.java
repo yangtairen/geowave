@@ -6,18 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
-import mil.nga.giat.geowave.core.geotime.ingest.SpatialDimensionalityTypeProvider;
-import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.InsertionIds;
-import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
-import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
-import mil.nga.giat.geowave.core.store.filter.DistributableFilterList;
-import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
-import mil.nga.giat.geowave.core.store.filter.QueryFilter;
-import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
-
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -33,6 +21,18 @@ import org.opengis.filter.expression.Expression;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
+
+import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
+import mil.nga.giat.geowave.core.geotime.ingest.SpatialDimensionalityTypeProvider;
+import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.InsertionIds;
+import mil.nga.giat.geowave.core.index.SinglePartitionInsertionIds;
+import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.filter.DistributableFilterList;
+import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
+import mil.nga.giat.geowave.core.store.filter.QueryFilter;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 
 public class CQLQueryFilterTest
 {
@@ -62,8 +62,10 @@ public class CQLQueryFilterTest
 	@Test
 	public void test() {
 		final FilterFactoryImpl factory = new FilterFactoryImpl();
-		final Expression exp1 = factory.property("pid");
-		final Expression exp2 = factory.literal("a89dhd-123-abc");
+		final Expression exp1 = factory.property(
+				"pid");
+		final Expression exp2 = factory.literal(
+				"a89dhd-123-abc");
 		final Filter f = factory.equal(
 				exp1,
 				exp2,
@@ -78,40 +80,48 @@ public class CQLQueryFilterTest
 
 		final PrimaryIndex spatialIndex = new SpatialDimensionalityTypeProvider().createPrimaryIndex();
 
-		final List<QueryFilter> filters = cqlQuery.createFilters(spatialIndex.getIndexModel());
+		final List<QueryFilter> filters = cqlQuery.createFilters(
+				spatialIndex.getIndexModel());
 		final List<DistributableQueryFilter> dFilters = new ArrayList<DistributableQueryFilter>();
 		for (final QueryFilter filter : filters) {
-			dFilters.add((DistributableQueryFilter) filter);
+			dFilters.add(
+					(DistributableQueryFilter) filter);
 		}
 
 		final DistributableFilterList dFilterList = new DistributableFilterList(
 				dFilters);
 
-		assertTrue(dFilterList.accept(
-				spatialIndex.getIndexModel(),
-				getEncodings(
-						spatialIndex,
-						adapter.encode(
-								createFeature(),
-								spatialIndex.getIndexModel())).get(
-						0)));
+		assertTrue(
+				dFilterList.accept(
+						spatialIndex.getIndexModel(),
+						getEncodings(
+								spatialIndex,
+								adapter.encode(
+										createFeature(),
+										spatialIndex.getIndexModel())).get(
+												0)));
 	}
-	
 
 	private static List<IndexedAdapterPersistenceEncoding> getEncodings(
 			final PrimaryIndex index,
 			final AdapterPersistenceEncoding encoding ) {
-		final InsertionIds ids = encoding.getInsertionIds(index);
+		final InsertionIds ids = encoding.getInsertionIds(
+				index);
 		final ArrayList<IndexedAdapterPersistenceEncoding> encodings = new ArrayList<IndexedAdapterPersistenceEncoding>();
-		for (final ByteArrayId id : ids) {
-			encodings.add(new IndexedAdapterPersistenceEncoding(
-					encoding.getAdapterId(),
-					encoding.getDataId(),
-					id,
-					ids.size(),
-					encoding.getCommonData(),
-					encoding.getUnknownData(),
-					encoding.getAdapterExtendedData()));
+
+		for (final SinglePartitionInsertionIds partitionIds : ids.getPartitionKeys()) {
+			for (final ByteArrayId sortKey : partitionIds.getSortKeys()) {
+				encodings.add(
+						new IndexedAdapterPersistenceEncoding(
+								encoding.getAdapterId(),
+								encoding.getDataId(),
+								partitionIds.getPartitionKey(),
+								sortKey,
+								ids.getSize(),
+								encoding.getCommonData(),
+								encoding.getUnknownData(),
+								encoding.getAdapterExtendedData()));
+			}
 		}
 		return encodings;
 	}
@@ -123,15 +133,17 @@ public class CQLQueryFilterTest
 				UUID.randomUUID().toString());
 		instance.setAttribute(
 				"pop",
-				Long.valueOf(100));
+				Long.valueOf(
+						100));
 		instance.setAttribute(
 				"pid",
 				"a89dhd-123-abc");
 		instance.setAttribute(
 				"geom",
-				factory.createPoint(new Coordinate(
-						27.25,
-						41.25)));
+				factory.createPoint(
+						new Coordinate(
+								27.25,
+								41.25)));
 		return instance;
 	}
 }

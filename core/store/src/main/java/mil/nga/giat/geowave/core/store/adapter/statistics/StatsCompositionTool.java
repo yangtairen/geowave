@@ -26,7 +26,7 @@ import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
  *            Entry type
  */
 public class StatsCompositionTool<T> implements
-		IngestCallback<T, GeoWaveRow>,
+		IngestCallback<T>,
 		ScanCallback<T, GeoWaveRow>,
 		DeleteCallback<T, GeoWaveRow>,
 		AutoCloseable,

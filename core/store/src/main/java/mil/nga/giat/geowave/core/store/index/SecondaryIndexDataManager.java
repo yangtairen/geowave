@@ -32,7 +32,7 @@ import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
  */
 public class SecondaryIndexDataManager<T> implements
 		Closeable,
-		IngestCallback<T, GeoWaveRow>,
+		IngestCallback<T>,
 		DeleteCallback<T, GeoWaveRow>
 {
 	private final SecondaryIndexDataAdapter<T> adapter;

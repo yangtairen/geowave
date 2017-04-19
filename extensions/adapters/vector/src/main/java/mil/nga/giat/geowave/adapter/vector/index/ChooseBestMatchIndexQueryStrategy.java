@@ -8,6 +8,7 @@ import java.util.NoSuchElementException;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.IndexUtils;
+import mil.nga.giat.geowave.core.index.QueryRanges;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
@@ -65,7 +66,7 @@ public class ChooseBestMatchIndexQueryStrategy implements
 						}
 					}
 					else {
-						final List<ByteArrayRange> ranges = DataStoreUtils.constraintsToByteArrayRanges(
+						final QueryRanges ranges = DataStoreUtils.constraintsToQueryRanges(
 								constraints,
 								nextIdx.getIndexStrategy(),
 								ConstraintsQuery.MAX_RANGE_DECOMPOSITION);

@@ -14,6 +14,7 @@ import org.apache.accumulo.core.client.TableNotFoundException;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.DataStoreOperations;
+import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.base.Writer;
 
 /**
@@ -146,7 +147,6 @@ public interface AccumuloOperations extends
 			final boolean createTable );
 
 	public String getTableNameSpace();
-
 	/**
 	 * Creates a new writer that can be used by an index. The basic
 	 * implementation uses a BatchWriter but other implementations can be
@@ -183,6 +183,43 @@ public interface AccumuloOperations extends
 			final boolean createTable,
 			final boolean enableVersioning,
 			final boolean enableBlockCache,
+			final Set<ByteArrayId> splits )
+			throws TableNotFoundException;
+	/**
+	 * Creates a new writer that can be used by an index. The basic
+	 * implementation uses a BatchWriter but other implementations can be
+	 * replaced such as a context-based writer for bulk ingest within a
+	 * map-reduce job. This will use the createTable flag to determine if the
+	 * table should be created if it does not exist. This will also use the
+	 * enableVersioning flag to determine if the versioning iterator should be
+	 * used. Additionally it will add the provided splits on creation of the
+	 * table only.
+	 *
+	 * @param tableName
+	 *            The basic name of the table. Note that that basic
+	 *            implementation of the factory will allow for a table namespace
+	 *            to prefix this name
+	 * @param createTable
+	 *            If true and the table does not exist, it will be created. If
+	 *            false and the table does not exist, a TableNotFoundException
+	 *            will be thrown.
+	 * @param enableVersioning
+	 *            If true the versioning iterator will be used.
+	 * @param enableBlockCache
+	 *            Will set the default property for accumulo block cache if the
+	 *            table is created
+	 * @param splits
+	 *            If the table is created, these splits will be added as
+	 *            partition keys. Null can be used to imply not to add any
+	 *            splits.
+	 * @return The appropriate writer
+	 * @throws TableNotFoundException
+	 *             The table does not exist in this Accumulo instance
+	 */
+	public Writer createWriter(
+			final String tableName,
+			DataStoreOptions options,
+			
 			final Set<ByteArrayId> splits )
 			throws TableNotFoundException;
 
@@ -390,11 +427,9 @@ public interface AccumuloOperations extends
 	 *
 	 * Insure user has the given operations.
 	 */
-	public void insureAuthorization(
+	public boolean insureAuthorizations(
 			final String clientUser,
-			final String... authorizations )
-			throws AccumuloException,
-			AccumuloSecurityException;
+			final String... authorizations );
 
 	public String getGeoWaveNamespace();
 

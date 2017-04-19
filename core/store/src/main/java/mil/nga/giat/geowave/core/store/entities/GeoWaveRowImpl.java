@@ -38,6 +38,10 @@ public class GeoWaveRowImpl implements
 		return key.getNumberOfDuplicates();
 	}
 
+	public GeoWaveKey getKey() {
+		return key;
+	}
+
 	@Override
 	public GeoWaveValue[] getFieldValues() {
 		return fieldValues;

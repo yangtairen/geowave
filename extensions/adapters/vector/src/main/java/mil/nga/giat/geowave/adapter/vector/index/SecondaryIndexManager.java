@@ -4,6 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
+
+import com.google.common.base.Splitter;
+
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureHyperLogLogStatistics;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureNumericHistogramStatistics;
 import mil.nga.giat.geowave.adapter.vector.stats.StatsManager;
@@ -12,18 +18,11 @@ import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
-import mil.nga.giat.geowave.core.store.adapter.statistics.FieldIdStatisticVisibility;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndex;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexType;
 import mil.nga.giat.geowave.core.store.index.numeric.NumericFieldIndexStrategy;
 import mil.nga.giat.geowave.core.store.index.temporal.TemporalIndexStrategy;
 import mil.nga.giat.geowave.core.store.index.text.TextIndexStrategy;
-
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
-
-import com.google.common.base.Splitter;
 
 public class SecondaryIndexManager implements
 		Persistable
@@ -54,30 +53,39 @@ public class SecondaryIndexManager implements
 			String secondaryIndex = null;
 			SecondaryIndexType secondaryIndexType = null;
 			final List<ByteArrayId> fieldsForPartial = new ArrayList<>();
-			if (userData.containsKey(NumericSecondaryIndexConfiguration.INDEX_KEY)) {
+			if (userData.containsKey(
+					NumericSecondaryIndexConfiguration.INDEX_KEY)) {
 				secondaryIndex = NumericSecondaryIndexConfiguration.INDEX_KEY;
-				secondaryIndexType = SecondaryIndexType.valueOf((String) userData
-						.get(NumericSecondaryIndexConfiguration.INDEX_KEY));
+				secondaryIndexType = SecondaryIndexType.valueOf(
+						(String) userData.get(
+								NumericSecondaryIndexConfiguration.INDEX_KEY));
 			}
-			else if (userData.containsKey(TextSecondaryIndexConfiguration.INDEX_KEY)) {
+			else if (userData.containsKey(
+					TextSecondaryIndexConfiguration.INDEX_KEY)) {
 				secondaryIndex = TextSecondaryIndexConfiguration.INDEX_KEY;
-				secondaryIndexType = SecondaryIndexType.valueOf((String) userData
-						.get(TextSecondaryIndexConfiguration.INDEX_KEY));
+				secondaryIndexType = SecondaryIndexType.valueOf(
+						(String) userData.get(
+								TextSecondaryIndexConfiguration.INDEX_KEY));
 			}
-			else if (userData.containsKey(TemporalSecondaryIndexConfiguration.INDEX_KEY)) {
+			else if (userData.containsKey(
+					TemporalSecondaryIndexConfiguration.INDEX_KEY)) {
 				secondaryIndex = TemporalSecondaryIndexConfiguration.INDEX_KEY;
-				secondaryIndexType = SecondaryIndexType.valueOf((String) userData
-						.get(TemporalSecondaryIndexConfiguration.INDEX_KEY));
+				secondaryIndexType = SecondaryIndexType.valueOf(
+						(String) userData.get(
+								TemporalSecondaryIndexConfiguration.INDEX_KEY));
 			}
 			if (secondaryIndexType != null) {
-				if (secondaryIndexType.equals(SecondaryIndexType.PARTIAL)) {
-					final String joined = (String) userData.get(SecondaryIndexType.PARTIAL.getValue());
+				if (secondaryIndexType.equals(
+						SecondaryIndexType.PARTIAL)) {
+					final String joined = (String) userData.get(
+							SecondaryIndexType.PARTIAL.getValue());
 					final Iterable<String> split = Splitter.on(
 							",").split(
-							joined);
+									joined);
 					for (final String field : split) {
-						fieldsForPartial.add(new ByteArrayId(
-								field));
+						fieldsForPartial.add(
+								new ByteArrayId(
+										field));
 					}
 				}
 				addIndex(
@@ -105,38 +113,44 @@ public class SecondaryIndexManager implements
 				stat = new FeatureNumericHistogramStatistics(
 						dataAdapter.getAdapterId(),
 						fieldId.getString());
-				statistics.add(stat);
-				supportedSecondaryIndices.add(new SecondaryIndex<SimpleFeature>(
-						new NumericFieldIndexStrategy(),
-						fieldId,
-						statistics,
-						secondaryIndexType,
-						fieldsForPartial));
+				statistics.add(
+						stat);
+				supportedSecondaryIndices.add(
+						new SecondaryIndex<SimpleFeature>(
+								new NumericFieldIndexStrategy(),
+								fieldId,
+								statistics,
+								secondaryIndexType,
+								fieldsForPartial));
 				break;
 			case TextSecondaryIndexConfiguration.INDEX_KEY:
 				stat = new FeatureHyperLogLogStatistics(
 						dataAdapter.getAdapterId(),
 						fieldId.getString(),
 						16);
-				statistics.add(stat);
-				supportedSecondaryIndices.add(new SecondaryIndex<SimpleFeature>(
-						new TextIndexStrategy(),
-						fieldId,
-						statistics,
-						secondaryIndexType,
-						fieldsForPartial));
+				statistics.add(
+						stat);
+				supportedSecondaryIndices.add(
+						new SecondaryIndex<SimpleFeature>(
+								new TextIndexStrategy(),
+								fieldId,
+								statistics,
+								secondaryIndexType,
+								fieldsForPartial));
 				break;
 			case TemporalSecondaryIndexConfiguration.INDEX_KEY:
 				stat = new FeatureNumericHistogramStatistics(
 						dataAdapter.getAdapterId(),
 						fieldId.getString());
-				statistics.add(stat);
-				supportedSecondaryIndices.add(new SecondaryIndex<SimpleFeature>(
-						new TemporalIndexStrategy(),
-						fieldId,
-						statistics,
-						secondaryIndexType,
-						fieldsForPartial));
+				statistics.add(
+						stat);
+				supportedSecondaryIndices.add(
+						new SecondaryIndex<SimpleFeature>(
+								new TemporalIndexStrategy(),
+								fieldId,
+								statistics,
+								secondaryIndexType,
+								fieldsForPartial));
 				break;
 			default:
 				break;
@@ -145,9 +159,7 @@ public class SecondaryIndexManager implements
 		for (final DataStatistics<SimpleFeature> statistic : statistics) {
 			statsManager.addStats(
 					statistic,
-					new FieldIdStatisticVisibility<SimpleFeature>(
-							//TODO, statistic ID and field ID are different things, is this correct?
-							statistic.getStatisticsId()));
+					fieldId);
 		}
 	}
 
@@ -155,18 +167,22 @@ public class SecondaryIndexManager implements
 	public byte[] toBinary() {
 		final List<Persistable> persistables = new ArrayList<Persistable>();
 		for (final SecondaryIndex<SimpleFeature> secondaryIndex : supportedSecondaryIndices) {
-			persistables.add(secondaryIndex);
+			persistables.add(
+					secondaryIndex);
 		}
-		return PersistenceUtils.toBinary(persistables);
+		return PersistenceUtils.toBinary(
+				persistables);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public void fromBinary(
-			byte[] bytes ) {
-		final List<Persistable> persistables = PersistenceUtils.fromBinary(bytes);
+			final byte[] bytes ) {
+		final List<Persistable> persistables = PersistenceUtils.fromBinary(
+				bytes);
 		for (final Persistable persistable : persistables) {
-			supportedSecondaryIndices.add((SecondaryIndex<SimpleFeature>) persistable);
+			supportedSecondaryIndices.add(
+					(SecondaryIndex<SimpleFeature>) persistable);
 		}
 	}
 

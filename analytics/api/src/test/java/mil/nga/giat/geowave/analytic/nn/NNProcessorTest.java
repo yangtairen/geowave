@@ -15,17 +15,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.JobContext;
+import org.junit.Before;
+import org.junit.Test;
+
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.nn.NNProcessor.CompleteNotifier;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner;
 import mil.nga.giat.geowave.analytic.partitioner.Partitioner.PartitionData;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.JobContext;
-import org.junit.Before;
-import org.junit.Test;
 
 public class NNProcessorTest
 {
@@ -36,33 +36,39 @@ public class NNProcessorTest
 		expectedResults.put(
 				new Integer(
 						293),
-				Arrays.asList(new Integer(
-						233)));
+				Arrays.asList(
+						new Integer(
+								233)));
 		expectedResults.put(
 				new Integer(
 						233),
-				Arrays.asList(new Integer(
-						293)));
+				Arrays.asList(
+						new Integer(
+								293)));
 		expectedResults.put(
 				new Integer(
 						735),
-				Arrays.asList(new Integer(
-						833)));
+				Arrays.asList(
+						new Integer(
+								833)));
 		expectedResults.put(
 				new Integer(
 						833),
-				Arrays.asList(new Integer(
-						735)));
+				Arrays.asList(
+						new Integer(
+								735)));
 		expectedResults.put(
 				new Integer(
 						1833),
-				Arrays.asList(new Integer(
-						2033)));
+				Arrays.asList(
+						new Integer(
+								2033)));
 		expectedResults.put(
 				new Integer(
 						2033),
-				Arrays.asList(new Integer(
-						1833)));
+				Arrays.asList(
+						new Integer(
+								1833)));
 		expectedResults.put(
 				new Integer(
 						1033),
@@ -77,6 +83,11 @@ public class NNProcessorTest
 		return new NNProcessor<Integer, Integer>(
 				new Partitioner<Object>() {
 
+					/**
+					 *
+					 */
+					private static final long serialVersionUID = 1L;
+
 					@Override
 					public void initialize(
 							final JobContext context,
@@ -86,9 +97,13 @@ public class NNProcessorTest
 					@Override
 					public List<mil.nga.giat.geowave.analytic.partitioner.Partitioner.PartitionData> getCubeIdentifiers(
 							final Object entry ) {
-						return Collections.singletonList(new PartitionData(
-								NNProcessorTest.partition((Integer) entry),
-								true));
+						return Collections.singletonList(
+								new PartitionData(
+										new ByteArrayId(
+												new byte[] {}),
+										NNProcessorTest.partition(
+												(Integer) entry),
+										true));
 					}
 
 					@Override
@@ -96,8 +111,10 @@ public class NNProcessorTest
 							final Object entry,
 							final mil.nga.giat.geowave.analytic.partitioner.Partitioner.PartitionDataCallback callback )
 							throws Exception {
-						for (final PartitionData pd : getCubeIdentifiers(entry)) {
-							callback.partitionWith(pd);
+						for (final PartitionData pd : getCubeIdentifiers(
+								entry)) {
+							callback.partitionWith(
+									pd);
 						}
 
 					}
@@ -129,12 +146,15 @@ public class NNProcessorTest
 							final Integer item1,
 							final Integer item2 ) {
 						return new DistanceProfile<Integer>(
-								Math.abs(item1.doubleValue() - item2.doubleValue()),
+								Math.abs(
+										item1.doubleValue() - item2.doubleValue()),
 								item1);
 					}
 				},
 				200,
 				new PartitionData(
+						new ByteArrayId(
+								new byte[] {}),
 						new ByteArrayId(
 								"123"),
 						true));
@@ -158,15 +178,19 @@ public class NNProcessorTest
 							InterruptedException {
 						final Iterator<Entry<ByteArrayId, Integer>> it = list.iterator();
 						final List<Integer> expectedResultSet = new ArrayList<Integer>(
-								expectedResults.get(value));
-						assertNotNull(expectedResultSet);
+								expectedResults.get(
+										value));
+						assertNotNull(
+								expectedResultSet);
 						while (it.hasNext()) {
 							final Integer result = it.next().getValue();
 							assertTrue(
 									"" + value + " with " + result,
-									expectedResultSet.remove(result));
+									expectedResultSet.remove(
+											result));
 						}
-						assertTrue(expectedResultSet.isEmpty());
+						assertTrue(
+								expectedResultSet.isEmpty());
 					}
 
 				});
@@ -188,7 +212,8 @@ public class NNProcessorTest
 							final NeighborList<Integer> list )
 							throws IOException,
 							InterruptedException {
-						processor.remove(id);
+						processor.remove(
+								id);
 					}
 				});
 	}
@@ -222,7 +247,8 @@ public class NNProcessorTest
 		addToProcess(
 				processor,
 				2033);
-		processor.trimSmallPartitions(10);
+		processor.trimSmallPartitions(
+				10);
 		processor.process(
 				new NeighborListFactory<Integer>() {
 
@@ -243,7 +269,8 @@ public class NNProcessorTest
 							final NeighborList<Integer> list )
 							throws IOException,
 							InterruptedException {
-						fail("Should not get here");
+						fail(
+								"Should not get here");
 					}
 				});
 	}
@@ -297,7 +324,8 @@ public class NNProcessorTest
 	private static ByteArrayId partition(
 			final Integer v ) {
 		return new ByteArrayId(
-				Integer.toString((v.intValue() / 300)));
+				Integer.toString(
+						(v.intValue() / 300)));
 	}
 
 	private void addToProcess(

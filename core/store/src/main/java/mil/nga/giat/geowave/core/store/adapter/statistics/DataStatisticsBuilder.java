@@ -14,7 +14,7 @@ import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 
 public class DataStatisticsBuilder<T> implements
-		IngestCallback<T, GeoWaveRow>,
+		IngestCallback<T>,
 		DeleteCallback<T, GeoWaveRow>,
 		ScanCallback<T, GeoWaveRow>
 {

@@ -119,7 +119,6 @@ public class FeatureHyperLogLogStaticticsTest
 
 		for (int i = 0; i < 10000; i++) {
 			stat.entryIngested(
-					null,
 					create(
 							pidSetOne,
 							firstSet));
@@ -133,7 +132,6 @@ public class FeatureHyperLogLogStaticticsTest
 
 		for (int i = 0; i < 10000; i++) {
 			stat2.entryIngested(
-					null,
 					create(
 							pidSetTwo,
 							secondSet));

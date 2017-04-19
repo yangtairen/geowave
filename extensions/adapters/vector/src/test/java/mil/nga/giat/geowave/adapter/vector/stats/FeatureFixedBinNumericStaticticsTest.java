@@ -96,20 +96,16 @@ public class FeatureFixedBinNumericStaticticsTest
 				7777);
 
 		stat.entryIngested(
-				null,
 				create(100.0));
 		stat.entryIngested(
-				null,
 				create(101.0));
 		stat.entryIngested(
-				null,
 				create(2.0));
 
 		double next = 1;
 		for (int i = 0; i < 10000; i++) {
 			next = next + (Math.round(rand.nextDouble()));
 			stat.entryIngested(
-					null,
 					create(next));
 		}
 
@@ -123,7 +119,6 @@ public class FeatureFixedBinNumericStaticticsTest
 		final SimpleFeature skewedFeature = create(skewvalue);
 		for (int i = 0; i < 10000; i++) {
 			stat2.entryIngested(
-					null,
 					skewedFeature);
 		}
 
@@ -132,7 +127,6 @@ public class FeatureFixedBinNumericStaticticsTest
 		for (long i = 0; i < 10000; i++) {
 			final double val = next + (1000 * rand.nextDouble());
 			stat2.entryIngested(
-					null,
 					create(val));
 			max = Math.max(
 					val,
@@ -184,7 +178,6 @@ public class FeatureFixedBinNumericStaticticsTest
 		for (int i = 0; i < 10000; i++) {
 			next = next + (rand.nextDouble() * 100.0);
 			stat1.entryIngested(
-					null,
 					create(next));
 		}
 
@@ -197,7 +190,6 @@ public class FeatureFixedBinNumericStaticticsTest
 		for (long i = 0; i < 10000; i++) {
 			final double val = next + (1000.0 * rand.nextDouble());
 			stat2.entryIngested(
-					null,
 					create(val));
 		}
 
@@ -217,7 +209,6 @@ public class FeatureFixedBinNumericStaticticsTest
 		for (int i = 0; i < 40000; i++) {
 			next = (Math.round(rand.nextDouble()));
 			stat2.entryIngested(
-					null,
 					create(next));
 		}
 
@@ -230,7 +221,6 @@ public class FeatureFixedBinNumericStaticticsTest
 		for (long i = 0; i < 10000; i++) {
 			final double val = next + (rand.nextDouble());
 			stat3.entryIngested(
-					null,
 					create(val));
 		}
 
@@ -266,7 +256,6 @@ public class FeatureFixedBinNumericStaticticsTest
 		for (int i = 0; i < 10000; i++) {
 			next = next + (100 * rand.nextDouble());
 			stat.entryIngested(
-					null,
 					create(next));
 			max = Math.max(
 					next,
@@ -277,7 +266,6 @@ public class FeatureFixedBinNumericStaticticsTest
 		for (int i = 0; i < 10000; i++) {
 			next = next - (100 * rand.nextDouble());
 			stat.entryIngested(
-					null,
 					create(next));
 			min = Math.min(
 					next,
@@ -334,7 +322,6 @@ public class FeatureFixedBinNumericStaticticsTest
 		for (int i = 0; i < 100000; i++) {
 			next = 1000 * rand.nextGaussian();
 			stat.entryIngested(
-					null,
 					create(next));
 			max = Math.max(
 					next,

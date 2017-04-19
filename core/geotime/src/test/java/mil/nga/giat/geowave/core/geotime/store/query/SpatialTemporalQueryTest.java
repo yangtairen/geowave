@@ -6,6 +6,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.junit.Test;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
+
 import mil.nga.giat.geowave.core.geotime.index.dimension.TemporalBinningStrategy.Unit;
 import mil.nga.giat.geowave.core.geotime.ingest.SpatialTemporalDimensionalityTypeProvider;
 import mil.nga.giat.geowave.core.geotime.store.dimension.GeometryAdapter;
@@ -21,11 +26,6 @@ import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 
-import org.junit.Test;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-
 public class SpatialTemporalQueryTest
 {
 	SimpleDateFormat df = new SimpleDateFormat(
@@ -36,27 +36,31 @@ public class SpatialTemporalQueryTest
 			throws ParseException {
 		final GeometryFactory factory = new GeometryFactory();
 		final SpatialTemporalQuery query = new SpatialTemporalQuery(
-				df.parse("2005-05-17T19:32:56GMT-00:00"),
-				df.parse("2005-05-17T22:32:56GMT-00:00"),
-				factory.createPolygon(new Coordinate[] {
-					new Coordinate(
-							24,
-							33),
-					new Coordinate(
-							28,
-							33),
-					new Coordinate(
-							28,
-							31),
-					new Coordinate(
-							24,
-							31),
-					new Coordinate(
-							24,
-							33)
-				}));
+				df.parse(
+						"2005-05-17T19:32:56GMT-00:00"),
+				df.parse(
+						"2005-05-17T22:32:56GMT-00:00"),
+				factory.createPolygon(
+						new Coordinate[] {
+							new Coordinate(
+									24,
+									33),
+							new Coordinate(
+									28,
+									33),
+							new Coordinate(
+									28,
+									31),
+							new Coordinate(
+									24,
+									31),
+							new Coordinate(
+									24,
+									33)
+						}));
 		final SpatialTemporalQuery queryCopy = new SpatialTemporalQuery();
-		queryCopy.fromBinary(query.toBinary());
+		queryCopy.fromBinary(
+				query.toBinary());
 		assertEquals(
 				queryCopy.getQueryGeometry(),
 				query.getQueryGeometry());
@@ -69,19 +73,24 @@ public class SpatialTemporalQueryTest
 		final GeometryFactory factory = new GeometryFactory();
 		final PersistentDataset<CommonIndexValue> commonData = new PersistentDataset<CommonIndexValue>();
 
-		commonData.addValue(new PersistentValue<CommonIndexValue>(
-				GeometryAdapter.DEFAULT_GEOMETRY_FIELD_ID,
-				new GeometryWrapper(
-						factory.createLineString(coordinates))));
-		commonData.addValue(new PersistentValue<CommonIndexValue>(
-				new TimeField(
-						Unit.YEAR).getFieldId(),
-				new TimeRange(
-						start.getTime(),
-						end.getTime(),
-						new byte[0])));
+		commonData.addValue(
+				new PersistentValue<CommonIndexValue>(
+						GeometryAdapter.DEFAULT_GEOMETRY_FIELD_ID,
+						new GeometryWrapper(
+								factory.createLineString(
+										coordinates))));
+		commonData.addValue(
+				new PersistentValue<CommonIndexValue>(
+						new TimeField(
+								Unit.YEAR).getFieldId(),
+						new TimeRange(
+								start.getTime(),
+								end.getTime(),
+								new byte[0])));
 
 		return new CommonIndexedPersistenceEncoding(
+				new ByteArrayId(
+						"1"),
 				new ByteArrayId(
 						"1"),
 				new ByteArrayId(
@@ -99,33 +108,39 @@ public class SpatialTemporalQueryTest
 			throws ParseException {
 		final GeometryFactory factory = new GeometryFactory();
 		final SpatialTemporalQuery query = new SpatialTemporalQuery(
-				df.parse("2005-05-17T19:32:56GMT-00:00"),
-				df.parse("2005-05-17T22:32:56GMT-00:00"),
-				factory.createPolygon(new Coordinate[] {
-					new Coordinate(
-							24,
-							33),
-					new Coordinate(
-							28,
-							33),
-					new Coordinate(
-							28,
-							37),
-					new Coordinate(
-							24,
-							37),
-					new Coordinate(
-							24,
-							33)
-				}),
+				df.parse(
+						"2005-05-17T19:32:56GMT-00:00"),
+				df.parse(
+						"2005-05-17T22:32:56GMT-00:00"),
+				factory.createPolygon(
+						new Coordinate[] {
+							new Coordinate(
+									24,
+									33),
+							new Coordinate(
+									28,
+									33),
+							new Coordinate(
+									28,
+									37),
+							new Coordinate(
+									24,
+									37),
+							new Coordinate(
+									24,
+									33)
+						}),
 				op);
 		final SpatialQuery queryCopy = new SpatialQuery();
-		queryCopy.fromBinary(query.toBinary());
+		queryCopy.fromBinary(
+				query.toBinary());
 
 		final CommonIndexedPersistenceEncoding[] data = new CommonIndexedPersistenceEncoding[] {
 			createData(
-					df.parse("2005-05-17T19:32:56GMT-00:00"),
-					df.parse("2005-05-17T22:32:56GMT-00:00"),
+					df.parse(
+							"2005-05-17T19:32:56GMT-00:00"),
+					df.parse(
+							"2005-05-17T22:32:56GMT-00:00"),
 					new Coordinate[] {
 						new Coordinate(
 								25,
@@ -135,8 +150,10 @@ public class SpatialTemporalQueryTest
 								34)
 					}),
 			createData(
-					df.parse("2005-05-17T17:32:56GMT-00:00"),
-					df.parse("2005-05-17T21:32:56GMT-00:00"),
+					df.parse(
+							"2005-05-17T17:32:56GMT-00:00"),
+					df.parse(
+							"2005-05-17T21:32:56GMT-00:00"),
 					new Coordinate[] {
 						new Coordinate(
 								25,
@@ -146,8 +163,10 @@ public class SpatialTemporalQueryTest
 								34)
 					}),
 			createData(
-					df.parse("2005-05-17T19:33:56GMT-00:00"),
-					df.parse("2005-05-17T20:32:56GMT-00:00"),
+					df.parse(
+							"2005-05-17T19:33:56GMT-00:00"),
+					df.parse(
+							"2005-05-17T20:32:56GMT-00:00"),
 					new Coordinate[] {
 						new Coordinate(
 								25,
@@ -157,8 +176,10 @@ public class SpatialTemporalQueryTest
 								34)
 					}),
 			createData(
-					df.parse("2005-05-17T16:32:56GMT-00:00"),
-					df.parse("2005-05-17T21:32:56GMT-00:00"),
+					df.parse(
+							"2005-05-17T16:32:56GMT-00:00"),
+					df.parse(
+							"2005-05-17T21:32:56GMT-00:00"),
 					new Coordinate[] {
 						new Coordinate(
 								25,
@@ -168,8 +189,10 @@ public class SpatialTemporalQueryTest
 								34)
 					}),
 			createData(
-					df.parse("2005-05-17T22:33:56GMT-00:00"),
-					df.parse("2005-05-17T22:34:56GMT-00:00"),
+					df.parse(
+							"2005-05-17T22:33:56GMT-00:00"),
+					df.parse(
+							"2005-05-17T22:34:56GMT-00:00"),
 					new Coordinate[] {
 						new Coordinate(
 								25,
@@ -184,7 +207,8 @@ public class SpatialTemporalQueryTest
 				.getIndexModel();
 		int pos = 0;
 		for (final CommonIndexedPersistenceEncoding dataItem : data) {
-			for (final QueryFilter filter : queryCopy.createFilters(model)) {
+			for (final QueryFilter filter : queryCopy.createFilters(
+					model)) {
 				assertEquals(
 						"result: " + (pos + 1),
 						expectedResults[pos++],

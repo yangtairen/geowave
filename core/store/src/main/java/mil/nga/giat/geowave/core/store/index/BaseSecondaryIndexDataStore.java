@@ -6,22 +6,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.base.Writer;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
 import mil.nga.giat.geowave.core.store.filter.DistributableFilterList;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 
-import org.apache.log4j.Logger;
-
-public abstract class BaseSecondaryIndexDataStore<MutationType> implements
+public abstract class BaseSecondaryIndexDataStore implements
 		SecondaryIndexDataStore,
 		Closeable
 {
 
-	private final static Logger LOGGER = Logger.getLogger(BaseSecondaryIndexDataStore.class);
-	protected final Map<String, Writer<MutationType>> writerCache = new HashMap<>();
+	private final static Logger LOGGER = Logger.getLogger(
+			BaseSecondaryIndexDataStore.class);
+	protected final Map<String, Writer> writerCache = new HashMap<>();
 	protected final static byte[] EMPTY_VALUE = new byte[0];
 
 	public BaseSecondaryIndexDataStore() {}
@@ -36,15 +37,17 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 			final ByteArrayId primaryIndexRowId,
 			final ByteArrayId attributeVisibility ) {
 		try {
-			final Writer<MutationType> writer = getWriter(secondaryIndexId);
+			final Writer writer = getWriter(
+					secondaryIndexId);
 			if (writer != null) {
-				writer.write(buildJoinMutation(
-						indexedAttributeValue.getBytes(),
-						adapterId.getBytes(),
-						indexedAttributeFieldId.getBytes(),
-						primaryIndexId.getBytes(),
-						primaryIndexRowId.getBytes(),
-						attributeVisibility.getBytes()));
+				writer.write(
+						buildJoinMutation(
+								indexedAttributeValue.getBytes(),
+								adapterId.getBytes(),
+								indexedAttributeFieldId.getBytes(),
+								primaryIndexId.getBytes(),
+								primaryIndexRowId.getBytes(),
+								attributeVisibility.getBytes()));
 			}
 		}
 		catch (final Exception e) {
@@ -63,17 +66,19 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 			final ByteArrayId dataId,
 			final GeoWaveValue... values ) {
 		try {
-			final Writer<MutationType> writer = getWriter(secondaryIndexId);
+			final Writer writer = getWriter(
+					secondaryIndexId);
 			if (writer != null) {
 				for (final GeoWaveValue v : values) {
-					writer.write(buildMutation(
-							indexedAttributeValue.getBytes(),
-							adapterId.getBytes(),
-							indexedAttributeFieldId.getBytes(),
-							dataId.getBytes(),
-							v.getFieldMask(),
-							v.getValue(),
-							v.getVisibility()));
+					writer.write(
+							buildMutation(
+									indexedAttributeValue.getBytes(),
+									adapterId.getBytes(),
+									indexedAttributeFieldId.getBytes(),
+									dataId.getBytes(),
+									v.getFieldMask(),
+									v.getValue(),
+									v.getVisibility()));
 				}
 			}
 		}
@@ -91,7 +96,8 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 			filter = null;
 		}
 		else if (constraints.size() == 1) {
-			filter = constraints.get(0);
+			filter = constraints.get(
+					0);
 		}
 		else {
 			filter = new DistributableFilterList(
@@ -111,14 +117,16 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 			final ByteArrayId primaryIndexRowId,
 			final ByteArrayId attributeVisibility ) {
 		try {
-			final Writer<MutationType> writer = getWriter(secondaryIndexId);
+			final Writer writer = getWriter(
+					secondaryIndexId);
 			if (writer != null) {
-				writer.write(buildJoinDeleteMutation(
-						indexedAttributeValue.getBytes(),
-						adapterId.getBytes(),
-						indexedAttributeFieldId.getBytes(),
-						primaryIndexId.getBytes(),
-						primaryIndexRowId.getBytes()));
+				writer.write(
+						buildJoinDeleteMutation(
+								indexedAttributeValue.getBytes(),
+								adapterId.getBytes(),
+								indexedAttributeFieldId.getBytes(),
+								primaryIndexId.getBytes(),
+								primaryIndexRowId.getBytes()));
 			}
 		}
 		catch (final Exception e) {
@@ -137,15 +145,17 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 			final ByteArrayId dataId,
 			final GeoWaveValue... values ) {
 		try {
-			final Writer<MutationType> writer = getWriter(secondaryIndexId);
+			final Writer writer = getWriter(
+					secondaryIndexId);
 			if (writer != null) {
-				for (GeoWaveValue v : values) {
-					writer.write(buildFullDeleteMutation(
-							indexedAttributeValue.getBytes(),
-							adapterId.getBytes(),
-							indexedAttributeFieldId.getBytes(),
-							dataId.getBytes(),
-							v.getFieldMask()));
+				for (final GeoWaveValue v : values) {
+					writer.write(
+							buildFullDeleteMutation(
+									indexedAttributeValue.getBytes(),
+									adapterId.getBytes(),
+									indexedAttributeFieldId.getBytes(),
+									dataId.getBytes(),
+									v.getFieldMask()));
 				}
 			}
 		}
@@ -164,11 +174,11 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 
 	@Override
 	public void close() {
-		for (final Writer<MutationType> writer : writerCache.values()) {
+		for (final Writer writer : writerCache.values()) {
 			try {
 				writer.close();
 			}
-			catch (final IOException e) {
+			catch (final Exception e) {
 				LOGGER.warn(
 						"Unable to close secondary index writer",
 						e);
@@ -182,7 +192,7 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 		close();
 	}
 
-	protected abstract MutationType buildJoinMutation(
+	protected abstract GeoWaveRow buildJoinMutation(
 			final byte[] secondaryIndexRowId,
 			final byte[] adapterId,
 			final byte[] indexedAttributeFieldId,
@@ -191,7 +201,7 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 			final byte[] attributeVisibility )
 			throws IOException;
 
-	protected abstract MutationType buildMutation(
+	protected abstract GeoWaveRow buildMutation(
 			final byte[] secondaryIndexRowId,
 			final byte[] adapterId,
 			final byte[] indexedAttributeFieldId,
@@ -201,7 +211,7 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 			final byte[] fieldVisibility )
 			throws IOException;
 
-	protected abstract MutationType buildJoinDeleteMutation(
+	protected abstract GeoWaveRow buildJoinDeleteMutation(
 			final byte[] secondaryIndexRowId,
 			final byte[] adapterId,
 			final byte[] indexedAttributeFieldId,
@@ -209,7 +219,7 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 			final byte[] primaryIndexRowId )
 			throws IOException;
 
-	protected abstract MutationType buildFullDeleteMutation(
+	protected abstract GeoWaveRow buildFullDeleteMutation(
 			final byte[] secondaryIndexRowId,
 			final byte[] adapterId,
 			final byte[] indexedAttributeFieldId,
@@ -217,7 +227,7 @@ public abstract class BaseSecondaryIndexDataStore<MutationType> implements
 			final byte[] fieldId )
 			throws IOException;
 
-	protected abstract Writer<MutationType> getWriter(
+	protected abstract Writer getWriter(
 			ByteArrayId secondaryIndexId );
 
 }

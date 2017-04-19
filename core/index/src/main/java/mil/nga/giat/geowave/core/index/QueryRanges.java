@@ -65,10 +65,10 @@ public class QueryRanges
 	public QueryRanges(
 			final List<QueryRanges> queryRangesList ) {
 		// group by partition
-		final Map<ByteArrayId, List<ByteArrayRange>> sortRangesPerPartition = new HashMap<>();
+		final Map<ByteArrayId, Collection<ByteArrayRange>> sortRangesPerPartition = new HashMap<>();
 		for (final QueryRanges qr : queryRangesList) {
 			for (final SinglePartitionQueryRanges r : qr.getPartitionQueryRanges()) {
-				final List<ByteArrayRange> ranges = sortRangesPerPartition.get(
+				final Collection<ByteArrayRange> ranges = sortRangesPerPartition.get(
 						r.getPartitionKey());
 				if (ranges == null) {
 					sortRangesPerPartition.put(
@@ -83,8 +83,8 @@ public class QueryRanges
 		}
 		partitionRanges = new ArrayList<>(
 				sortRangesPerPartition.size());
-		for (final Entry<ByteArrayId, List<ByteArrayRange>> e : sortRangesPerPartition.entrySet()) {
-			List<ByteArrayRange> mergedRanges;
+		for (final Entry<ByteArrayId, Collection<ByteArrayRange>> e : sortRangesPerPartition.entrySet()) {
+			Collection<ByteArrayRange> mergedRanges;
 			if (e.getValue() != null) {
 				mergedRanges = ByteArrayRange.mergeIntersections(
 						e.getValue(),

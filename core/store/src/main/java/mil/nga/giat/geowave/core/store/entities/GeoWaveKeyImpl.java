@@ -1,6 +1,13 @@
 package mil.nga.giat.geowave.core.store.entities;
 
 import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.InsertionIds;
+import mil.nga.giat.geowave.core.index.SinglePartitionInsertionIds;
 
 public class GeoWaveKeyImpl implements
 		GeoWaveKey
@@ -10,6 +17,7 @@ public class GeoWaveKeyImpl implements
 	protected byte[] partitionKey = null;
 	protected byte[] sortKey = null;
 	protected int numberOfDuplicates = 0;
+	private byte[] compositeInsertionId = null;
 
 	protected GeoWaveKeyImpl() {}
 
@@ -38,6 +46,7 @@ public class GeoWaveKeyImpl implements
 			final int partitionKeyLength,
 			final int offset,
 			final int length ) {
+		this.compositeInsertionId = compositeInsertionId;
 		final ByteBuffer metadataBuf = ByteBuffer.wrap(
 				compositeInsertionId,
 				(length + offset) - 12,
@@ -103,6 +112,30 @@ public class GeoWaveKeyImpl implements
 		return sortKey;
 	}
 
+	public byte[] getCompositeInsertionId() {
+		if (compositeInsertionId != null) {
+			return compositeInsertionId;
+		}
+		final ByteBuffer buffer = ByteBuffer.allocate(
+				partitionKey.length + sortKey.length + adapterId.length + dataId.length + 12);
+		buffer.put(
+				partitionKey);
+		buffer.put(
+				sortKey);
+		buffer.put(
+				adapterId);
+		buffer.put(
+				dataId);
+		buffer.putInt(
+				adapterId.length);
+		buffer.putInt(
+				dataId.length);
+		buffer.putInt(
+				numberOfDuplicates);
+		compositeInsertionId = buffer.array();
+		return compositeInsertionId;
+	}
+
 	@Override
 	public int getNumberOfDuplicates() {
 		return numberOfDuplicates;
@@ -110,5 +143,46 @@ public class GeoWaveKeyImpl implements
 
 	public boolean isDeduplicationEnabled() {
 		return numberOfDuplicates >= 0;
+	}
+
+	public static GeoWaveKey[] createKeys(
+			final InsertionIds insertionIds,
+			final byte[] dataId,
+			final byte[] adapterId ) {
+		final GeoWaveKey[] keys = new GeoWaveKey[insertionIds.getSize()];
+		final Collection<SinglePartitionInsertionIds> partitionKeys = insertionIds.getPartitionKeys();
+		final Iterator<SinglePartitionInsertionIds> it = partitionKeys.iterator();
+		final int numDuplicates = keys.length - 1;
+		int i = 0;
+		while (it.hasNext()) {
+			final SinglePartitionInsertionIds partitionKey = it.next();
+			if ((partitionKey.getSortKeys() == null) || partitionKey.getSortKeys().isEmpty()) {
+				keys[i++] = new GeoWaveKeyImpl(
+						dataId,
+						adapterId,
+						partitionKey.getPartitionKey().getBytes(),
+						new byte[] {},
+						numDuplicates);
+			}
+			else {
+				byte[] partitionKeyBytes;
+				if (partitionKey.getPartitionKey() == null) {
+					partitionKeyBytes = new byte[] {};
+				}
+				else {
+					partitionKeyBytes = partitionKey.getPartitionKey().getBytes();
+				}
+				final List<ByteArrayId> sortKeys = partitionKey.getSortKeys();
+				for (final ByteArrayId sortKey : sortKeys) {
+					keys[i++] = new GeoWaveKeyImpl(
+							dataId,
+							adapterId,
+							partitionKeyBytes,
+							sortKey.getBytes(),
+							numDuplicates);
+				}
+			}
+		}
+		return keys;
 	}
 }

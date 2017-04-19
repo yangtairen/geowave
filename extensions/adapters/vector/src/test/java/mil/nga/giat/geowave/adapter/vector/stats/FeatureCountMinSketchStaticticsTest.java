@@ -101,11 +101,9 @@ public class FeatureCountMinSketchStaticticsTest
 
 		for (int i = 0; i < 10000; i++) {
 			stat.entryIngested(
-					null,
 					create());
 		}
 		stat.entryIngested(
-				null,
 				create("barney"));
 
 		final FeatureCountMinSketchStatistics stat2 = new FeatureCountMinSketchStatistics(
@@ -115,15 +113,12 @@ public class FeatureCountMinSketchStaticticsTest
 
 		for (int i = 0; i < 10000; i++) {
 			stat2.entryIngested(
-					null,
 					create());
 		}
 
 		stat2.entryIngested(
-				null,
 				create("global"));
 		stat2.entryIngested(
-				null,
 				create("fred"));
 
 		assertTrue(stat2.count("global") > 0);

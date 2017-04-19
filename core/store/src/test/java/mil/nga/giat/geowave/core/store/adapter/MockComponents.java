@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Set;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.ByteArrayRange;
-import mil.nga.giat.geowave.core.index.Coordinate;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
+import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinateRanges;
 import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinates;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
+import mil.nga.giat.geowave.core.index.QueryRanges;
 import mil.nga.giat.geowave.core.index.dimension.NumericDimensionDefinition;
 import mil.nga.giat.geowave.core.index.dimension.bin.BinRange;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
@@ -49,37 +49,38 @@ public class MockComponents
 		}
 
 		public MockAbstractDataAdapter(
-				ByteArrayId id ) {
+				final ByteArrayId id ) {
 			super();
 			this.id = id;
 			final List<IndexFieldHandler<Integer, TestIndexFieldType, Object>> handlers = new ArrayList<IndexFieldHandler<Integer, TestIndexFieldType, Object>>();
-			handlers.add(new IndexFieldHandler<Integer, TestIndexFieldType, Object>() {
+			handlers.add(
+					new IndexFieldHandler<Integer, TestIndexFieldType, Object>() {
 
-				@Override
-				public ByteArrayId[] getNativeFieldIds() {
-					return new ByteArrayId[] {
-						INTEGER
-					};
-				}
+						@Override
+						public ByteArrayId[] getNativeFieldIds() {
+							return new ByteArrayId[] {
+								INTEGER
+							};
+						}
 
-				@Override
-				public TestIndexFieldType toIndexValue(
-						final Integer row ) {
-					return new TestIndexFieldType(
-							row);
-				}
+						@Override
+						public TestIndexFieldType toIndexValue(
+								final Integer row ) {
+							return new TestIndexFieldType(
+									row);
+						}
 
-				@Override
-				public PersistentValue<Object>[] toNativeValues(
-						final TestIndexFieldType indexValue ) {
-					return new PersistentValue[] {
-						new PersistentValue<Integer>(
-								INTEGER,
-								indexValue.indexValue)
-					};
-				}
+						@Override
+						public PersistentValue<Object>[] toNativeValues(
+								final TestIndexFieldType indexValue ) {
+							return new PersistentValue[] {
+								new PersistentValue<Integer>(
+										INTEGER,
+										indexValue.indexValue)
+							};
+						}
 
-			});
+					});
 			super.init(
 					handlers,
 					null);
@@ -120,9 +121,9 @@ public class MockComponents
 		}
 
 		/**
-		 * 
+		 *
 		 * Return the adapter ID
-		 * 
+		 *
 		 * @return a unique identifier for this adapter
 		 */
 		@Override
@@ -145,11 +146,15 @@ public class MockComponents
 		@Override
 		public FieldReader getReader(
 				final ByteArrayId fieldId ) {
-			if (fieldId.equals(INTEGER)) {
-				return FieldUtils.getDefaultReaderForClass(Integer.class);
+			if (fieldId.equals(
+					INTEGER)) {
+				return FieldUtils.getDefaultReaderForClass(
+						Integer.class);
 			}
-			else if (fieldId.equals(ID)) {
-				return FieldUtils.getDefaultReaderForClass(String.class);
+			else if (fieldId.equals(
+					ID)) {
+				return FieldUtils.getDefaultReaderForClass(
+						String.class);
 			}
 			return null;
 		}
@@ -161,11 +166,15 @@ public class MockComponents
 		@Override
 		public FieldWriter getWriter(
 				final ByteArrayId fieldId ) {
-			if (fieldId.equals(INTEGER)) {
-				return FieldUtils.getDefaultWriterForClass(Integer.class);
+			if (fieldId.equals(
+					INTEGER)) {
+				return FieldUtils.getDefaultWriterForClass(
+						Integer.class);
 			}
-			else if (fieldId.equals(ID)) {
-				return FieldUtils.getDefaultWriterForClass(String.class);
+			else if (fieldId.equals(
+					ID)) {
+				return FieldUtils.getDefaultWriterForClass(
+						String.class);
 			}
 			return null;
 		}
@@ -223,27 +232,23 @@ public class MockComponents
 		}
 
 		@Override
-		public EntryVisibilityHandler<Integer> getVisibilityHandler(
-				final ByteArrayId statisticsId ) {
-			return new FieldIdStatisticVisibility<Integer>(
-					new TestDimensionField().fieldId);
-		}
-
-		@Override
 		public int getPositionOfOrderedField(
 				final CommonIndexModel model,
 				final ByteArrayId fieldId ) {
 			int i = 0;
 			for (final NumericDimensionField<? extends CommonIndexValue> dimensionField : model.getDimensions()) {
-				if (fieldId.equals(dimensionField.getFieldId())) {
+				if (fieldId.equals(
+						dimensionField.getFieldId())) {
 					return i;
 				}
 				i++;
 			}
-			if (fieldId.equals(INTEGER)) {
+			if (fieldId.equals(
+					INTEGER)) {
 				return i;
 			}
-			else if (fieldId.equals(ID)) {
+			else if (fieldId.equals(
+					ID)) {
 				return i + 1;
 			}
 			return -1;
@@ -272,6 +277,17 @@ public class MockComponents
 				}
 			}
 			return null;
+		}
+
+		@Override
+		public EntryVisibilityHandler<Integer> getVisibilityHandler(
+				final CommonIndexModel indexModel,
+				final DataAdapter<Integer> adapter,
+				final ByteArrayId statisticsId ) {
+			return new FieldIdStatisticVisibility<Integer>(
+					new TestDimensionField().fieldId,
+					indexModel,
+					adapter);
 		}
 
 	} // class MockAbstractDataAdapter
@@ -364,7 +380,8 @@ public class MockComponents
 			String sNewRow = new String();
 			final char[] newDigit = new char[1];
 			for (int i = 0; i < numDigits; i++) {
-				final char digit = sRow.charAt(i);
+				final char digit = sRow.charAt(
+						i);
 				switch (digit) {
 					case '0':
 						newDigit[0] = '1';
@@ -397,11 +414,13 @@ public class MockComponents
 						newDigit[0] = '0';
 						break;
 				}
-				sNewRow = sNewRow.concat(new String(
-						newDigit));
+				sNewRow = sNewRow.concat(
+						new String(
+								newDigit));
 			}
 			return new TestIndexFieldType(
-					Integer.decode(sNewRow));
+					Integer.decode(
+							sNewRow));
 		}
 
 		// toNativeValues decrements each digit in the value.
@@ -415,7 +434,8 @@ public class MockComponents
 			String sNewRow = new String();
 			final char[] newDigit = new char[1];
 			for (int i = 0; i < numDigits; i++) {
-				final char digit = sRow.charAt(i);
+				final char digit = sRow.charAt(
+						i);
 				switch (digit) {
 					case '0':
 						newDigit[0] = '9';
@@ -448,10 +468,12 @@ public class MockComponents
 						newDigit[0] = '8';
 						break;
 				}
-				sNewRow = sNewRow.concat(new String(
-						newDigit));
+				sNewRow = sNewRow.concat(
+						new String(
+								newDigit));
 			}
-			final Integer newValue = Integer.decode(sNewRow);
+			final Integer newValue = Integer.decode(
+					sNewRow);
 
 			return new PersistentValue[] {
 				new PersistentValue<Object>(
@@ -609,53 +631,40 @@ public class MockComponents
 		}
 
 		@Override
-		public List<ByteArrayRange> getQueryRanges(
+		public QueryRanges getQueryRanges(
 				final MultiDimensionalNumericData indexedRange,
 				final IndexMetaData... hints ) {
-			// TODO Auto-generated method stub
-			return null;
+			return getQueryRanges(indexedRange, -1, hints);
 		}
 
 		@Override
-		public List<ByteArrayRange> getQueryRanges(
+		public QueryRanges getQueryRanges(
 				final MultiDimensionalNumericData indexedRange,
 				final int maxEstimatedRangeDecomposition,
 				final IndexMetaData... hints ) {
-			// TODO Auto-generated method stub
-			return null;
+			return new QueryRanges();
 		}
 
 		@Override
-		public List<ByteArrayId> getInsertionIds(
+		public InsertionIds getInsertionIds(
 				final MultiDimensionalNumericData indexedData ) {
 			final List<ByteArrayId> ids = new ArrayList<ByteArrayId>();
 			for (final NumericData data : indexedData.getDataPerDimension()) {
-				ids.add(new ByteArrayId(
-						Double.toString(
-								data.getCentroid()).getBytes()));
+				ids.add(
+						new ByteArrayId(
+								Double.toString(
+										data.getCentroid()).getBytes()));
 			}
-			return ids;
+			return new InsertionIds(
+					ids);
 		}
 
 		@Override
-		public List<ByteArrayId> getInsertionIds(
+		public InsertionIds getInsertionIds(
 				final MultiDimensionalNumericData indexedData,
 				final int maxEstimatedDuplicateIds ) {
-			return this.getInsertionIds(indexedData);
-		}
-
-		@Override
-		public MultiDimensionalNumericData getRangeForId(
-				final ByteArrayId insertionId ) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public MultiDimensionalCoordinates getCoordinatesPerDimension(
-				final ByteArrayId insertionId ) {
-			// TODO Auto-generated method stub
-			return null;
+			return this.getInsertionIds(
+					indexedData);
 		}
 
 		@Override
@@ -677,28 +686,59 @@ public class MockComponents
 		}
 
 		@Override
-		public Set<ByteArrayId> getNaturalSplits() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public int getByteOffsetFromDimensionalIndex() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
 		public List<IndexMetaData> createMetaData() {
 			return Collections.emptyList();
 		}
 
 		@Override
 		public MultiDimensionalCoordinateRanges[] getCoordinateRangesPerDimension(
-				MultiDimensionalNumericData dataRange,
-				IndexMetaData... hints ) {
+				final MultiDimensionalNumericData dataRange,
+				final IndexMetaData... hints ) {
 			// TODO Auto-generated method stub
 			return null;
+		}
+
+		@Override
+		public MultiDimensionalNumericData getRangeForId(
+				final ByteArrayId partitionKey,
+				final ByteArrayId sortKey ) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Set<ByteArrayId> getInsertionPartitionKeys(
+				final MultiDimensionalNumericData insertionData ) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Set<ByteArrayId> getQueryPartitionKeys(
+				final MultiDimensionalNumericData queryData,
+				final IndexMetaData... hints ) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Set<ByteArrayId> getPartitionKeys() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public MultiDimensionalCoordinates getCoordinatesPerDimension(
+				final ByteArrayId partitionKey,
+				final ByteArrayId sortKey ) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public int getPartitionKeyLength() {
+			// TODO Auto-generated method stub
+			return 0;
 		}
 
 	}
@@ -787,8 +827,9 @@ public class MockComponents
 		public TestIndexFieldType readField(
 				final byte[] fieldData ) {
 			return new TestIndexFieldType(
-					Integer.parseInt(new String(
-							fieldData)));
+					Integer.parseInt(
+							new String(
+									fieldData)));
 		}
 	}
 }

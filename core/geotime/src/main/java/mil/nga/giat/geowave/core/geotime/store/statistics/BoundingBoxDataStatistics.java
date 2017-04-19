@@ -13,10 +13,9 @@ import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.index.dimension.NumericDimensionDefinition;
 import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import mil.nga.giat.geowave.core.store.adapter.statistics.AbstractDataStatistics;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.query.BasicQuery.ConstraintData;
 import mil.nga.giat.geowave.core.store.query.BasicQuery.ConstraintSet;
-import mil.nga.giat.geowave.core.store.query.BasicQuery.Constraints;
 
 abstract public class BoundingBoxDataStatistics<T> extends
 		AbstractDataStatistics<T>
@@ -82,18 +81,24 @@ abstract public class BoundingBoxDataStatistics<T> extends
 
 	@Override
 	public byte[] toBinary() {
-		final ByteBuffer buffer = super.binaryBuffer(32);
-		buffer.putDouble(minX);
-		buffer.putDouble(minY);
-		buffer.putDouble(maxX);
-		buffer.putDouble(maxY);
+		final ByteBuffer buffer = super.binaryBuffer(
+				32);
+		buffer.putDouble(
+				minX);
+		buffer.putDouble(
+				minY);
+		buffer.putDouble(
+				maxX);
+		buffer.putDouble(
+				maxY);
 		return buffer.array();
 	}
 
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buffer = super.binaryBuffer(bytes);
+		final ByteBuffer buffer = super.binaryBuffer(
+				bytes);
 		minX = buffer.getDouble();
 		minY = buffer.getDouble();
 		maxX = buffer.getDouble();
@@ -102,9 +107,10 @@ abstract public class BoundingBoxDataStatistics<T> extends
 
 	@Override
 	public void entryIngested(
-			final DataStoreEntryInfo entryInfo,
-			final T entry ) {
-		final Envelope env = getEnvelope(entry);
+			final T entry,
+			final GeoWaveRow... rows ) {
+		final Envelope env = getEnvelope(
+				entry);
 		if (env != null) {
 			minX = Math.min(
 					minX,
@@ -174,29 +180,32 @@ abstract public class BoundingBoxDataStatistics<T> extends
 		}
 	}
 
+	@Override
 	public String toString() {
-		StringBuffer buffer = new StringBuffer();
+		final StringBuffer buffer = new StringBuffer();
 		buffer.append(
 				"bbox[adapter=").append(
-				super.getDataAdapterId().getString());
+						super.getDataAdapterId().getString());
 		if (isSet()) {
 			buffer.append(
 					", minX=").append(
-					minX);
+							minX);
 			buffer.append(
 					", maxX=").append(
-					maxX);
+							maxX);
 			buffer.append(
 					", minY=").append(
-					minY);
+							minY);
 			buffer.append(
 					", maxY=").append(
-					maxY);
+							maxY);
 		}
 		else {
-			buffer.append(", No Values");
+			buffer.append(
+					", No Values");
 		}
-		buffer.append("]");
+		buffer.append(
+				"]");
 		return buffer.toString();
 	}
 }

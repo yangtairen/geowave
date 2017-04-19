@@ -1,6 +1,6 @@
 package mil.nga.giat.geowave.core.store.base;
 
-import java.io.Closeable;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
 /**
  * This interface is returned by DataStoreOperations and useful for general
@@ -8,14 +8,14 @@ import java.io.Closeable;
  * will wrap this interface with a BatchWriter but can be overridden for other
  * mechanisms to write the data.
  */
-public interface Writer<MutationType> extends
-		Closeable
+public interface Writer extends
+		AutoCloseable
 {
 	public void write(
-			Iterable<MutationType> mutations );
+			GeoWaveRow[] rows );
 
 	public void write(
-			MutationType mutation );
+			GeoWaveRow rows );
 
 	public void flush();
 }
