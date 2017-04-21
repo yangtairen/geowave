@@ -15,6 +15,8 @@ import java.util.TreeSet;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
+import com.google.common.primitives.UnsignedBytes;
+
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.QueryRanges;
@@ -155,33 +157,6 @@ public class MemoryDataStoreOperations implements
 												r.getStart().getNextPrefix())));
 					}
 					else {
-						System.err.println(
-
-								new ByteArrayId(new MemoryStoreEntry(
-										p.getPartitionKey(),
-										r.getStart()).getCompositeInsertionId()).getHexString());
-						System.err.println(new ByteArrayId(
-								new MemoryStoreEntry(
-										p.getPartitionKey(),
-										r.getEndAsNextPrefix()).getCompositeInsertionId()).getHexString());
-						System.err.println(
-								new ByteArrayId(
-										internalData
-												.tailSet(
-														new MemoryStoreEntry(
-																p.getPartitionKey(),
-																r.getStart()))
-												.first()
-												.getCompositeInsertionId()).getHexString());
-						System.err.println(
-										MemoryStoreEntry.compare(internalData
-												.tailSet(
-														new MemoryStoreEntry(
-																p.getPartitionKey(),
-																r.getStart()),true)
-												.first().getCompositeInsertionId(), new MemoryStoreEntry(
-														p.getPartitionKey(),
-														r.getEndAsNextPrefix()).getCompositeInsertionId()));
 						set = internalData.tailSet(
 								new MemoryStoreEntry(
 										p.getPartitionKey(),
@@ -432,19 +407,19 @@ public class MemoryDataStoreOperations implements
 		@Override
 		public int compareTo(
 				final MemoryStoreEntry other ) {
-			final int indexIdCompare = compare(
+			final int indexIdCompare = UnsignedBytes.lexicographicalComparator().compare(
 					getCompositeInsertionId(),
 					other.getCompositeInsertionId());
 			if (indexIdCompare != 0) {
 				return indexIdCompare;
 			}
-			final int dataIdCompare = compare(
+			final int dataIdCompare = UnsignedBytes.lexicographicalComparator().compare(
 					row.getDataId(),
 					other.getRow().getDataId());
 			if (dataIdCompare != 0) {
 				return dataIdCompare;
 			}
-			final int adapterIdCompare = compare(
+			final int adapterIdCompare = UnsignedBytes.lexicographicalComparator().compare(
 					row.getAdapterId(),
 					other.getRow().getAdapterId());
 			if (adapterIdCompare != 0) {
@@ -452,23 +427,6 @@ public class MemoryDataStoreOperations implements
 			}
 			return 0;
 
-		}
-
-		protected static final int compare(
-				final byte[] a,
-				final byte[] b ) {
-			int j = 0;
-			for (final byte aByte : a) {
-				if (b.length <= j) {
-					break;
-				}
-				final int val = aByte - b[j];
-				if (val != 0) {
-					return val;
-				}
-				j++;
-			}
-			return a.length - b.length;
 		}
 	}
 }
