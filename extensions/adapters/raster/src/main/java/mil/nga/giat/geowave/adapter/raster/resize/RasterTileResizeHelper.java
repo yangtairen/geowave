@@ -29,13 +29,18 @@ public class RasterTileResizeHelper
 
 	public RasterTileResizeHelper(
 			final JobContext context ) {
-		index = JobContextIndexStore.getIndices(context)[0];
+		index = JobContextIndexStore.getIndices(
+				context)[0];
 		indexIds = new ArrayList<ByteArrayId>();
-		indexIds.add(index.getId());
-		final DataAdapter[] adapters = JobContextAdapterStore.getDataAdapters(context);
+		indexIds.add(
+				index.getId());
+		final DataAdapter[] adapters = JobContextAdapterStore.getDataAdapters(
+				context);
 		final Configuration conf = context.getConfiguration();
-		final String oldAdapterId = conf.get(RasterTileResizeJobRunner.OLD_ADAPTER_ID_KEY);
-		final String newAdapterId = conf.get(RasterTileResizeJobRunner.NEW_ADAPTER_ID_KEY);
+		final String oldAdapterId = conf.get(
+				RasterTileResizeJobRunner.OLD_ADAPTER_ID_KEY);
+		final String newAdapterId = conf.get(
+				RasterTileResizeJobRunner.NEW_ADAPTER_ID_KEY);
 		for (final DataAdapter adapter : adapters) {
 			if (adapter.getAdapterId().getString().equals(
 					oldAdapterId)) {
@@ -88,12 +93,15 @@ public class RasterTileResizeHelper
 				}
 				else {
 					if (!needsMerge) {
-						mergedTile = newAdapter.getRasterTileFromCoverage(mergedCoverage);
+						mergedTile = newAdapter.getRasterTileFromCoverage(
+								mergedCoverage);
 						needsMerge = true;
 					}
-					final MergeableRasterTile thisTile = newAdapter.getRasterTileFromCoverage((GridCoverage) value);
+					final MergeableRasterTile thisTile = newAdapter.getRasterTileFromCoverage(
+							(GridCoverage) value);
 					if (mergedTile != null) {
-						mergedTile.merge(thisTile);
+						mergedTile.merge(
+								thisTile);
 					}
 				}
 			}
@@ -101,7 +109,8 @@ public class RasterTileResizeHelper
 		if (needsMerge) {
 			mergedCoverage = newAdapter.getCoverageFromRasterTile(
 					mergedTile,
-					key.getDataId(),
+					key.getPartitionKey(),
+					key.getSortKey(),
 					index);
 		}
 		return mergedCoverage;

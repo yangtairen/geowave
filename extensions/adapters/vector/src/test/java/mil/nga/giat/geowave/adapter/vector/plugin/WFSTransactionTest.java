@@ -59,7 +59,7 @@ public class WFSTransactionTest extends
 		dataStore.createSchema(type);
 		query = new Query(
 				"geostuff",
-				CQL.toFilter("BBOX(geometry,27.30,41.20,27.20,41.30)"),
+				CQL.toFilter("BBOX(geometry,27.20,41.20,27.30,41.30)"),
 				new String[] {
 					"geometry",
 					"pid"

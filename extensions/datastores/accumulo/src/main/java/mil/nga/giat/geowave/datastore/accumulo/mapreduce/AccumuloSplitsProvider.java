@@ -110,13 +110,13 @@ public class AccumuloSplitsProvider extends
 		if (query != null) {
 			final List<MultiDimensionalNumericData> indexConstraints = query.getIndexConstraints(indexStrategy);
 			if ((maxSplits != null) && (maxSplits > 0)) {
-				ranges = AccumuloUtils.byteArrayRangesToAccumuloRanges(DataStoreUtils.constraintsToByteArrayRanges(
+				ranges = AccumuloUtils.byteArrayRangesToAccumuloRanges(DataStoreUtils.constraintsToQueryRanges(
 						indexConstraints,
 						indexStrategy,
 						maxSplits));
 			}
 			else {
-				ranges = AccumuloUtils.byteArrayRangesToAccumuloRanges(DataStoreUtils.constraintsToByteArrayRanges(
+				ranges = AccumuloUtils.byteArrayRangesToAccumuloRanges(DataStoreUtils.constraintsToQueryRanges(
 						indexConstraints,
 						indexStrategy,
 						-1));

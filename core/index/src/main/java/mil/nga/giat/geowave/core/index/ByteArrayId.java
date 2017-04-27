@@ -134,7 +134,9 @@ public class ByteArrayId implements
 	@Override
 	public int compareTo(
 			final ByteArrayId o ) {
-
+		if (o == null){
+			return -1;
+		}
 		for (int i = 0, j = 0; (i < id.length) && (j < o.id.length); i++, j++) {
 			final int a = (id[i] & 0xff);
 			final int b = (o.id[j] & 0xff);

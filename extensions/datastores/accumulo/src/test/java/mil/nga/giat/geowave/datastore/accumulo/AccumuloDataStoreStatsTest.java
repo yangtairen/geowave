@@ -10,47 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import mil.nga.giat.geowave.core.geotime.ingest.SpatialDimensionalityTypeProvider;
-import mil.nga.giat.geowave.core.geotime.store.dimension.GeometryWrapper;
-import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
-import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics;
-import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.StringUtils;
-import mil.nga.giat.geowave.core.store.CloseableIterator;
-import mil.nga.giat.geowave.core.store.EntryVisibilityHandler;
-import mil.nga.giat.geowave.core.store.IndexWriter;
-import mil.nga.giat.geowave.core.store.adapter.AbstractDataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler;
-import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler.RowBuilder;
-import mil.nga.giat.geowave.core.store.adapter.PersistentIndexFieldHandler;
-import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.statistics.CountDataStatistics;
-import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
-import mil.nga.giat.geowave.core.store.adapter.statistics.FieldTypeStatisticVisibility;
-import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeDataStatistics;
-import mil.nga.giat.geowave.core.store.adapter.statistics.StatisticsProvider;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
-import mil.nga.giat.geowave.core.store.callback.ScanCallback;
-import mil.nga.giat.geowave.core.store.data.PersistentValue;
-import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
-import mil.nga.giat.geowave.core.store.data.field.FieldReader;
-import mil.nga.giat.geowave.core.store.data.field.FieldUtils;
-import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
-import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
-import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
-import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
-import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
-import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.core.store.query.DataIdQuery;
-import mil.nga.giat.geowave.core.store.query.EverythingQuery;
-import mil.nga.giat.geowave.core.store.query.QueryOptions;
-import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterIndexMappingStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
-import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions;
-
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
@@ -65,9 +24,52 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
+import mil.nga.giat.geowave.core.geotime.ingest.SpatialDimensionalityTypeProvider;
+import mil.nga.giat.geowave.core.geotime.store.dimension.GeometryWrapper;
+import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
+import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics;
+import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.store.CloseableIterator;
+import mil.nga.giat.geowave.core.store.EntryVisibilityHandler;
+import mil.nga.giat.geowave.core.store.IndexWriter;
+import mil.nga.giat.geowave.core.store.adapter.AbstractDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler;
+import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler.RowBuilder;
+import mil.nga.giat.geowave.core.store.adapter.PersistentIndexFieldHandler;
+import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.CountDataStatistics;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DefaultFieldStatisticVisibility;
+import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeDataStatistics;
+import mil.nga.giat.geowave.core.store.adapter.statistics.StatisticsProvider;
+import mil.nga.giat.geowave.core.store.callback.ScanCallback;
+import mil.nga.giat.geowave.core.store.data.PersistentValue;
+import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
+import mil.nga.giat.geowave.core.store.data.field.FieldReader;
+import mil.nga.giat.geowave.core.store.data.field.FieldUtils;
+import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
+import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
+import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
+import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
+import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.query.DataIdQuery;
+import mil.nga.giat.geowave.core.store.query.EverythingQuery;
+import mil.nga.giat.geowave.core.store.query.QueryOptions;
+import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterIndexMappingStore;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
+import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions;
+
 public class AccumuloDataStoreStatsTest
 {
-	private final static Logger LOGGER = Logger.getLogger(AccumuloDataStoreStatsTest.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			AccumuloDataStoreStatsTest.class);
 
 	final AccumuloOptions accumuloOptions = new AccumuloOptions();
 
@@ -168,18 +170,24 @@ public class AccumuloDataStoreStatsTest
 	@Test
 	public void testWithOutAltIndex()
 			throws IOException {
-		accumuloOptions.setCreateTable(true);
-		accumuloOptions.setUseAltIndex(false);
-		accumuloOptions.setPersistDataStatistics(true);
+		accumuloOptions.setCreateTable(
+				true);
+		accumuloOptions.setUseAltIndex(
+				false);
+		accumuloOptions.setPersistDataStatistics(
+				true);
 		runtest();
 	}
 
 	@Test
 	public void testWithAltIndex()
 			throws IOException {
-		accumuloOptions.setCreateTable(true);
-		accumuloOptions.setUseAltIndex(true);
-		accumuloOptions.setPersistDataStatistics(true);
+		accumuloOptions.setCreateTable(
+				true);
+		accumuloOptions.setUseAltIndex(
+				true);
+		accumuloOptions.setPersistDataStatistics(
+				true);
 		runtest();
 	}
 
@@ -189,52 +197,52 @@ public class AccumuloDataStoreStatsTest
 		final PrimaryIndex index = new SpatialDimensionalityTypeProvider().createPrimaryIndex();
 		final WritableDataAdapter<TestGeometry> adapter = new TestGeometryAdapter();
 
-		final Geometry testGeoFilter = factory.createPolygon(new Coordinate[] {
-			new Coordinate(
-					24,
-					33),
-			new Coordinate(
-					28,
-					33),
-			new Coordinate(
-					28,
-					31),
-			new Coordinate(
-					24,
-					31),
-			new Coordinate(
-					24,
-					33)
-		});
+		final Geometry testGeoFilter = factory.createPolygon(
+				new Coordinate[] {
+					new Coordinate(
+							24,
+							33),
+					new Coordinate(
+							28,
+							33),
+					new Coordinate(
+							28,
+							31),
+					new Coordinate(
+							24,
+							31),
+					new Coordinate(
+							24,
+							33)
+				});
 
-		ByteArrayId rowId0, rowId1;
 		try (IndexWriter<TestGeometry> indexWriter = mockDataStore.createWriter(
 				adapter,
 				index)) {
-			rowId0 = indexWriter.write(
-					new TestGeometry(
-							factory.createPoint(new Coordinate(
-									25,
-									32)),
-							"test_pt"),
-					visWriterAAA).get(
-					0);
-			rowId1 = indexWriter.write(
-					new TestGeometry(
-							factory.createPoint(new Coordinate(
-									26,
-									32)),
-							"test_pt_1"),
-					visWriterAAA).get(
-					0);
 			indexWriter.write(
 					new TestGeometry(
-							factory.createPoint(new Coordinate(
-									27,
-									32)),
+							factory.createPoint(
+									new Coordinate(
+											25,
+											32)),
+							"test_pt"),
+					visWriterAAA);
+			indexWriter.write(
+					new TestGeometry(
+							factory.createPoint(
+									new Coordinate(
+											26,
+											32)),
+							"test_pt_1"),
+					visWriterAAA);
+			indexWriter.write(
+					new TestGeometry(
+							factory.createPoint(
+									new Coordinate(
+											27,
+											32)),
 							"test_pt_2"),
-					visWriterBBB).get(
-					0);
+					visWriterBBB);
 		}
 
 		final SpatialQuery query = new SpatialQuery(
@@ -290,23 +298,26 @@ public class AccumuloDataStoreStatsTest
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"aaa");
-		assertTrue((bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 26) && (bboxStats.getMinY() == 32)
-				&& (bboxStats.getMaxY() == 32));
+		assertTrue(
+				(bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 26) && (bboxStats.getMinY() == 32)
+						&& (bboxStats.getMaxY() == 32));
 
 		bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"bbb");
-		assertTrue((bboxStats.getMinX() == 27) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
-				&& (bboxStats.getMaxY() == 32));
+		assertTrue(
+				(bboxStats.getMinX() == 27) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
+						&& (bboxStats.getMaxY() == 32));
 
 		bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"aaa",
 				"bbb");
-		assertTrue((bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
-				&& (bboxStats.getMaxY() == 32));
+		assertTrue(
+				(bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
+						&& (bboxStats.getMaxY() == 32));
 
 		final AtomicBoolean found = new AtomicBoolean(
 				false);
@@ -315,14 +326,14 @@ public class AccumuloDataStoreStatsTest
 						adapter,
 						index,
 						-1,
-						new ScanCallback<TestGeometry, Object>() {
+						new ScanCallback<TestGeometry, GeoWaveRow>() {
 
 							@Override
 							public void entryScanned(
-									final DataStoreEntryInfo entryInfo,
-									Object nativeDataStoreEntry,
-									final TestGeometry entry ) {
-								found.getAndSet(true);
+									final TestGeometry entry,
+									final GeoWaveRow row ) {
+								found.getAndSet(
+										true);
 							}
 						},
 						new String[] {
@@ -331,8 +342,10 @@ public class AccumuloDataStoreStatsTest
 				new DataIdQuery(
 						adapter.getAdapterId(),
 						new ByteArrayId(
-								"test_pt_2".getBytes(StringUtils.GEOWAVE_CHAR_SET))));
-		assertFalse(found.get());
+								"test_pt_2".getBytes(
+										StringUtils.GEOWAVE_CHAR_SET))));
+		assertFalse(
+				found.get());
 
 		try (CloseableIterator<?> it1 = mockDataStore.query(
 				new QueryOptions(
@@ -367,7 +380,8 @@ public class AccumuloDataStoreStatsTest
 				new DataIdQuery(
 						adapter.getAdapterId(),
 						new ByteArrayId(
-								"test_pt".getBytes(StringUtils.GEOWAVE_CHAR_SET))));
+								"test_pt".getBytes(
+										StringUtils.GEOWAVE_CHAR_SET))));
 
 		try (CloseableIterator<?> it1 = mockDataStore.query(
 				new QueryOptions(
@@ -410,46 +424,51 @@ public class AccumuloDataStoreStatsTest
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"aaa");
-		assertTrue((bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 26) && (bboxStats.getMinY() == 32)
-				&& (bboxStats.getMaxY() == 32));
+		assertTrue(
+				(bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 26) && (bboxStats.getMinY() == 32)
+						&& (bboxStats.getMaxY() == 32));
 
 		bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"bbb");
-		assertTrue((bboxStats.getMinX() == 27) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
-				&& (bboxStats.getMaxY() == 32));
+		assertTrue(
+				(bboxStats.getMinX() == 27) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
+						&& (bboxStats.getMaxY() == 32));
 
 		bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"aaa",
 				"bbb");
-		assertTrue((bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
-				&& (bboxStats.getMaxY() == 32));
+		assertTrue(
+				(bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
+						&& (bboxStats.getMaxY() == 32));
 
-		found.set(false);
+		found.set(
+				false);
 
-		assertTrue(mockDataStore.delete(
-				new QueryOptions(
-						adapter,
-						index,
-						-1,
-						new ScanCallback<TestGeometry, Object>() {
+		assertTrue(
+				mockDataStore.delete(
+						new QueryOptions(
+								adapter,
+								index,
+								-1,
+								new ScanCallback<TestGeometry, GeoWaveRow>() {
 
-							@Override
-							public void entryScanned(
-									final DataStoreEntryInfo entryInfo,
-									Object nativeDataStoreEntry,
-									final TestGeometry entry ) {
-								found.getAndSet(true);
-							}
-						},
-						new String[] {
-							"aaa",
-							"bbb"
-						}),
-				new EverythingQuery()));
+									@Override
+									public void entryScanned(
+											final TestGeometry entry,
+											final GeoWaveRow row ) {
+										found.getAndSet(
+												true);
+									}
+								},
+								new String[] {
+									"aaa",
+									"bbb"
+								}),
+						new EverythingQuery()));
 
 		try (CloseableIterator<?> it1 = mockDataStore.query(
 				new QueryOptions(
@@ -475,25 +494,27 @@ public class AccumuloDataStoreStatsTest
 		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID);
-		assertNull(countStats);
+		assertNull(
+				countStats);
 
 		try (IndexWriter<TestGeometry> indexWriter = mockDataStore.createWriter(
 				adapter,
 				index)) {
-			rowId0 = indexWriter.write(
+			indexWriter.write(
 					new TestGeometry(
-							factory.createPoint(new Coordinate(
-									25,
-									32)),
-							"test_pt_2")).get(
-					0);
+							factory.createPoint(
+									new Coordinate(
+											25,
+											32)),
+							"test_pt_2"));
 		}
 
 		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
 				"bbb");
-		assertTrue(countStats != null);
+		assertTrue(
+				countStats != null);
 
 		statsStore.deleteObjects(
 				adapter.getAdapterId(),
@@ -503,14 +524,17 @@ public class AccumuloDataStoreStatsTest
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
 				"bbb");
-		assertNull(countStats);
+		assertNull(
+				countStats);
 
 		final RowRangeDataStatistics<?> rowStats = (RowRangeDataStatistics<?>) statsStore.getDataStatistics(
 				null,
-				RowRangeDataStatistics.getId(index.getId()),
+				RowRangeDataStatistics.getId(
+						index.getId()),
 				"bbb");
 
-		assertTrue(rowStats != null);
+		assertTrue(
+				rowStats != null);
 
 	}
 
@@ -576,8 +600,7 @@ public class AccumuloDataStoreStatsTest
 			}
 		};
 
-		private final static EntryVisibilityHandler<TestGeometry> GEOMETRY_VISIBILITY_HANDLER = new FieldTypeStatisticVisibility<TestGeometry>(
-				GeometryWrapper.class);
+		private final static EntryVisibilityHandler<TestGeometry> GEOMETRY_VISIBILITY_HANDLER = new DefaultFieldStatisticVisibility();
 		private static final NativeFieldHandler<TestGeometry, Object> ID_FIELD_HANDLER = new NativeFieldHandler<TestGeometry, Object>() {
 
 			@Override
@@ -597,8 +620,10 @@ public class AccumuloDataStoreStatsTest
 		private static final List<PersistentIndexFieldHandler<TestGeometry, ? extends CommonIndexValue, Object>> COMMON_FIELD_HANDLER_LIST = new ArrayList<PersistentIndexFieldHandler<TestGeometry, ? extends CommonIndexValue, Object>>();
 
 		static {
-			COMMON_FIELD_HANDLER_LIST.add(GEOM_FIELD_HANDLER);
-			NATIVE_FIELD_HANDLER_LIST.add(ID_FIELD_HANDLER);
+			COMMON_FIELD_HANDLER_LIST.add(
+					GEOM_FIELD_HANDLER);
+			NATIVE_FIELD_HANDLER_LIST.add(
+					ID_FIELD_HANDLER);
 		}
 
 		public TestGeometryAdapter() {
@@ -630,11 +655,15 @@ public class AccumuloDataStoreStatsTest
 		@Override
 		public FieldReader getReader(
 				final ByteArrayId fieldId ) {
-			if (fieldId.equals(GEOM)) {
-				return FieldUtils.getDefaultReaderForClass(Geometry.class);
+			if (fieldId.equals(
+					GEOM)) {
+				return FieldUtils.getDefaultReaderForClass(
+						Geometry.class);
 			}
-			else if (fieldId.equals(ID)) {
-				return FieldUtils.getDefaultReaderForClass(String.class);
+			else if (fieldId.equals(
+					ID)) {
+				return FieldUtils.getDefaultReaderForClass(
+						String.class);
 			}
 			return null;
 		}
@@ -642,11 +671,15 @@ public class AccumuloDataStoreStatsTest
 		@Override
 		public FieldWriter getWriter(
 				final ByteArrayId fieldId ) {
-			if (fieldId.equals(GEOM)) {
-				return FieldUtils.getDefaultWriterForClass(Geometry.class);
+			if (fieldId.equals(
+					GEOM)) {
+				return FieldUtils.getDefaultWriterForClass(
+						Geometry.class);
 			}
-			else if (fieldId.equals(ID)) {
-				return FieldUtils.getDefaultWriterForClass(String.class);
+			else if (fieldId.equals(
+					ID)) {
+				return FieldUtils.getDefaultWriterForClass(
+						String.class);
 			}
 			return null;
 		}
@@ -654,24 +687,21 @@ public class AccumuloDataStoreStatsTest
 		@Override
 		public DataStatistics<TestGeometry> createDataStatistics(
 				final ByteArrayId statisticsId ) {
-			if (BoundingBoxDataStatistics.STATS_ID.equals(statisticsId)) {
+			if (BoundingBoxDataStatistics.STATS_ID.equals(
+					statisticsId)) {
 				return new GeoBoundingBoxStatistics(
 						getAdapterId());
 			}
-			else if (CountDataStatistics.STATS_ID.equals(statisticsId)) {
+			else if (CountDataStatistics.STATS_ID.equals(
+					statisticsId)) {
 				return new CountDataStatistics<TestGeometry>(
 						getAdapterId());
 			}
-			LOGGER.warn("Unrecognized statistics ID " + statisticsId.getString() + " using count statistic");
+			LOGGER.warn(
+					"Unrecognized statistics ID " + statisticsId.getString() + " using count statistic");
 			return new CountDataStatistics<TestGeometry>(
 					getAdapterId(),
 					statisticsId);
-		}
-
-		@Override
-		public EntryVisibilityHandler<TestGeometry> getVisibilityHandler(
-				final ByteArrayId statisticsId ) {
-			return GEOMETRY_VISIBILITY_HANDLER;
 		}
 
 		@Override
@@ -714,15 +744,18 @@ public class AccumuloDataStoreStatsTest
 				final ByteArrayId fieldId ) {
 			int i = 0;
 			for (final NumericDimensionField<? extends CommonIndexValue> dimensionField : model.getDimensions()) {
-				if (fieldId.equals(dimensionField.getFieldId())) {
+				if (fieldId.equals(
+						dimensionField.getFieldId())) {
 					return i;
 				}
 				i++;
 			}
-			if (fieldId.equals(GEOM)) {
+			if (fieldId.equals(
+					GEOM)) {
 				return i;
 			}
-			else if (fieldId.equals(ID)) {
+			else if (fieldId.equals(
+					ID)) {
 				return i + 1;
 			}
 			return -1;
@@ -751,6 +784,14 @@ public class AccumuloDataStoreStatsTest
 				}
 			}
 			return null;
+		}
+
+		@Override
+		public EntryVisibilityHandler<TestGeometry> getVisibilityHandler(
+				final CommonIndexModel indexModel,
+				final DataAdapter<TestGeometry> adapter,
+				final ByteArrayId statisticsId ) {
+			return GEOMETRY_VISIBILITY_HANDLER;
 		}
 	}
 

@@ -17,10 +17,6 @@ public class HBaseOptions extends
 	@Parameter(names = "--scanCacheSize")
 	protected int scanCacheSize = HConstants.DEFAULT_HBASE_CLIENT_SCANNER_CACHING;
 
-	protected boolean disableCustomFilters = false;
-
-	protected boolean disableCoprocessors = false;
-
 	@Parameter(names = "--disableVerifyCoprocessors")
 	protected boolean disableVerifyCoprocessors = false;
 
@@ -32,10 +28,11 @@ public class HBaseOptions extends
 	private String coprocessorJar;
 
 	public void setBigTable(
-			boolean bigTable ) {
+			final boolean bigTable ) {
 		this.bigTable = bigTable;
 		if (bigTable) {
-			setServerSideDisabled(true);
+			setServerSideDisabled(
+					true);
 		}
 	}
 
@@ -61,31 +58,13 @@ public class HBaseOptions extends
 		this.scanCacheSize = scanCacheSize;
 	}
 
-	public boolean isEnableCustomFilters() {
-		return !disableCustomFilters && !disableServiceSide;
-	}
-
-	public void setEnableCustomFilters(
-			final boolean enableCustomFilters ) {
-		this.disableCustomFilters = !enableCustomFilters;
-	}
-
-	public boolean isEnableCoprocessors() {
-		return !disableCoprocessors && !disableServiceSide;
-	}
-
-	public void setEnableCoprocessors(
-			final boolean enableCoprocessors ) {
-		this.disableCoprocessors = !enableCoprocessors;
-	}
-
 	public boolean isVerifyCoprocessors() {
 		return !disableVerifyCoprocessors && !disableServiceSide;
 	}
 
 	public void setVerifyCoprocessors(
 			final boolean verifyCoprocessors ) {
-		this.disableVerifyCoprocessors = !verifyCoprocessors;
+		disableVerifyCoprocessors = !verifyCoprocessors;
 	}
 
 	public String getCoprocessorJar() {
@@ -95,5 +74,10 @@ public class HBaseOptions extends
 	public void setCoprocessorJar(
 			final String coprocessorJar ) {
 		this.coprocessorJar = coprocessorJar;
+	}
+
+	@Override
+	public boolean isServerSideLibraryEnabled() {
+		return !isServerSideDisabled();
 	}
 }

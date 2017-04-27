@@ -61,7 +61,7 @@ public class ConstraintsQuery
 		parentQuery.setClientFilters(
 				clientFilters);
 		distributableFilters = lists.distributableFilters;
-		if (!distributableFilters.isEmpty() && (clientDedupeFilter != null)) {
+		if (clientDedupeFilter != null) {
 			distributableFilters.add(
 					0,
 					clientDedupeFilter);
@@ -97,7 +97,7 @@ public class ConstraintsQuery
 					index.getIndexStrategy(),
 					AGGREGATION_RANGE_DECOMPOSITION,
 					indexMetaData);
-			
+
 			return ranges;
 		}
 		else {

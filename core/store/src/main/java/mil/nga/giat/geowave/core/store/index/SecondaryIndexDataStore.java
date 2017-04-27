@@ -1,12 +1,9 @@
 package mil.nga.giat.geowave.core.store.index;
 
-import java.util.List;
-
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 
@@ -40,6 +37,7 @@ public interface SecondaryIndexDataStore
 			ByteArrayId indexedAttributeValue,
 			ByteArrayId adapterId,
 			ByteArrayId indexedAttributeFieldId,
+			ByteArrayId primaryIndexId,
 			ByteArrayId primaryIndexPartitionKey,
 			ByteArrayId primaryIndexSortKey,
 			ByteArrayId attributeVisibility );

@@ -22,6 +22,7 @@ import mil.nga.giat.geowave.core.geotime.index.dimension.LatitudeDefinition;
 import mil.nga.giat.geowave.core.geotime.index.dimension.LongitudeDefinition;
 import mil.nga.giat.geowave.core.geotime.ingest.SpatialDimensionalityTypeProvider;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.dimension.NumericDimensionDefinition;
 import mil.nga.giat.geowave.core.index.sfc.SFCFactory.SFCType;
@@ -48,8 +49,8 @@ public class DeleteWriterTest
 	private Connector mockConnector = null;
 	private BasicAccumuloOperations operations;
 	private DataStore mockDataStore;
-	private List<ByteArrayId> rowId1s;
-	private List<ByteArrayId> rowId2s;
+	private InsertionIds rowId1s;
+	private InsertionIds rowId2s;
 	private WritableDataAdapter<AccumuloDataStoreStatsTest.TestGeometry> adapter;
 	private DataStatisticsStore statsStore;
 	protected AccumuloOptions options = new AccumuloOptions();
@@ -158,7 +159,7 @@ public class DeleteWriterTest
 		assertEquals(
 				2,
 				countStats.getCount());
-		assertTrue(rowId1s.size() > 1);
+		assertTrue(rowId1s.getSize() > 1);
 		final CloseableIterator it1 = mockDataStore.query(
 				new QueryOptions(),
 				new RowIdQuery(
@@ -195,7 +196,7 @@ public class DeleteWriterTest
 				countStats.getCount());
 		assertEquals(
 				18,
-				rowId2s.size());
+				rowId2s.getSize());
 		final CloseableIterator it1 = mockDataStore.query(
 				new QueryOptions(),
 				new DataIdQuery(

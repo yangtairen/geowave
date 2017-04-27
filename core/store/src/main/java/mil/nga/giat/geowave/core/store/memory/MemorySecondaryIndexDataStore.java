@@ -23,7 +23,8 @@ public class MemorySecondaryIndexDataStore implements
 			ByteArrayId adapterId,
 			ByteArrayId indexedAttributeFieldId,
 			ByteArrayId primaryIndexId,
-			ByteArrayId primaryIndexRowId,
+			ByteArrayId primaryIndexPartitionKey,			
+			ByteArrayId primaryIndexSortKey,
 			ByteArrayId attributeVisibility ) {
 		// TODO Auto-generated method stub
 

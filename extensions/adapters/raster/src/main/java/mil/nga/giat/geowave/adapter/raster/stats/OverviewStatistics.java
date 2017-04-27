@@ -13,7 +13,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.adapter.statistics.AbstractDataStatistics;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
 public class OverviewStatistics extends
 		AbstractDataStatistics<GridCoverage>
@@ -41,17 +41,23 @@ public class OverviewStatistics extends
 					resolutions.length);
 			int byteCount = 4; // an int for the list size
 			for (final Resolution res : resolutions) {
-				final byte[] resBinary = PersistenceUtils.toBinary(res);
-				resolutionBinaries.add(resBinary);
+				final byte[] resBinary = PersistenceUtils.toBinary(
+						res);
+				resolutionBinaries.add(
+						resBinary);
 				byteCount += (resBinary.length + 4); // an int for the binary
 														// size
 			}
 
-			final ByteBuffer buf = super.binaryBuffer(byteCount);
-			buf.putInt(resolutionBinaries.size());
+			final ByteBuffer buf = super.binaryBuffer(
+					byteCount);
+			buf.putInt(
+					resolutionBinaries.size());
 			for (final byte[] resBinary : resolutionBinaries) {
-				buf.putInt(resBinary.length);
-				buf.put(resBinary);
+				buf.putInt(
+						resBinary.length);
+				buf.put(
+						resBinary);
 			}
 			return buf.array();
 		}
@@ -60,13 +66,15 @@ public class OverviewStatistics extends
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buf = super.binaryBuffer(bytes);
+		final ByteBuffer buf = super.binaryBuffer(
+				bytes);
 		final int resLength = buf.getInt();
 		synchronized (this) {
 			resolutions = new Resolution[resLength];
 			for (int i = 0; i < resolutions.length; i++) {
 				final byte[] resBytes = new byte[buf.getInt()];
-				buf.get(resBytes);
+				buf.get(
+						resBytes);
 				resolutions[i] = PersistenceUtils.fromBinary(
 						resBytes,
 						Resolution.class);
@@ -76,8 +84,8 @@ public class OverviewStatistics extends
 
 	@Override
 	public void entryIngested(
-			final DataStoreEntryInfo entryInfo,
-			final GridCoverage entry ) {
+			final GridCoverage entry,
+			final GeoWaveRow... geoWaveRows ) {
 		if (entry instanceof FitToIndexGridCoverage) {
 			final FitToIndexGridCoverage fitEntry = (FitToIndexGridCoverage) entry;
 			synchronized (this) {
@@ -95,10 +103,12 @@ public class OverviewStatistics extends
 			final Resolution[] res2 ) {
 		final TreeSet<Resolution> resolutionSet = new TreeSet<Resolution>();
 		for (final Resolution res : res1) {
-			resolutionSet.add(res);
+			resolutionSet.add(
+					res);
 		}
 		for (final Resolution res : res2) {
-			resolutionSet.add(res);
+			resolutionSet.add(
+					res);
 		}
 		final Resolution[] combinedRes = new Resolution[resolutionSet.size()];
 		int i = 0;

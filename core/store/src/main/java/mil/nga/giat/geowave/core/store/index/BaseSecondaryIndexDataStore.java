@@ -34,7 +34,8 @@ public abstract class BaseSecondaryIndexDataStore implements
 			final ByteArrayId adapterId,
 			final ByteArrayId indexedAttributeFieldId,
 			final ByteArrayId primaryIndexId,
-			final ByteArrayId primaryIndexRowId,
+			final ByteArrayId primaryPartitionKey,
+			final ByteArrayId primarySortKey,
 			final ByteArrayId attributeVisibility ) {
 		try {
 			final Writer writer = getWriter(
@@ -46,7 +47,8 @@ public abstract class BaseSecondaryIndexDataStore implements
 								adapterId.getBytes(),
 								indexedAttributeFieldId.getBytes(),
 								primaryIndexId.getBytes(),
-								primaryIndexRowId.getBytes(),
+								primaryPartitionKey.getBytes(),
+								primarySortKey.getBytes(),
 								attributeVisibility.getBytes()));
 			}
 		}
@@ -197,7 +199,8 @@ public abstract class BaseSecondaryIndexDataStore implements
 			final byte[] adapterId,
 			final byte[] indexedAttributeFieldId,
 			final byte[] primaryIndexId,
-			final byte[] primaryIndexRowId,
+			final byte[] primaryIndexPartitionKey,
+			final byte[] primaryIndexSortKey,
 			final byte[] attributeVisibility )
 			throws IOException;
 

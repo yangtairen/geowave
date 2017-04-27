@@ -422,7 +422,7 @@ public class SecondaryIndexIT
 				dataAdapter,
 				index)) {
 			for (final SimpleFeature aFeature : features) {
-				allPrimaryIndexIds.addAll(writer.write(aFeature));
+				allPrimaryIndexIds.addAll(writer.write(aFeature).getCompositeInsertionIds());
 			}
 		}
 

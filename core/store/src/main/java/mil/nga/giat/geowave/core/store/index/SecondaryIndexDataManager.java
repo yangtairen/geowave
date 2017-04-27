@@ -38,6 +38,7 @@ public class SecondaryIndexDataManager<T> implements
 	private final SecondaryIndexDataAdapter<T> adapter;
 	private final SecondaryIndexDataStore secondaryIndexStore;
 	private final CommonIndexModel primaryIndexModel;
+	private ByteArrayId primaryIndexId;
 
 	public SecondaryIndexDataManager(
 			final SecondaryIndexDataStore secondaryIndexStore,
@@ -46,6 +47,7 @@ public class SecondaryIndexDataManager<T> implements
 		this.adapter = adapter;
 		this.secondaryIndexStore = secondaryIndexStore;
 		this.primaryIndexModel = primaryIndex.getIndexModel();
+		this.primaryIndexId = primaryIndex.getId();
 
 	}
 
@@ -100,6 +102,7 @@ public class SecondaryIndexDataManager<T> implements
 									insertionId,
 									adapter.getAdapterId(),
 									indexedAttributeFieldId,
+									primaryIndexId,
 									firstPartitionAndSortKey.getLeft(),
 									firstPartitionAndSortKey.getRight(),
 									new ByteArrayId(

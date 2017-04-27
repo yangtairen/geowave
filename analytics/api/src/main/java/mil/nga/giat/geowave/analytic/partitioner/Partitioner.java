@@ -15,6 +15,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 
 /**
  * Provide a partition for a data item.
@@ -89,6 +90,13 @@ public interface Partitioner<T> extends
 
 		public ByteArrayId getSortKey() {
 			return sortKey;
+		}
+
+		public ByteArrayId getCompositeKey() {
+			return new ByteArrayId(
+					ByteArrayUtils.combineArrays(
+							partitionKey.getBytes(),
+							sortKey.getBytes()));
 		}
 
 		public ByteArrayId getGroupId() {

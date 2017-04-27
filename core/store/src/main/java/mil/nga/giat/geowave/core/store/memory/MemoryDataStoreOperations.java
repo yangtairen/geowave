@@ -195,37 +195,6 @@ public class MemoryDataStoreOperations implements
 				}
 			}
 		}
-		// if (isAggregation) {
-		// final Aggregation agg = queryOptions.getAggregation().getRight();
-		// for (final CloseableIterator r : results) {
-		// while (r.hasNext()) {
-		// final Object entry = r.next();
-		// if (agg instanceof CommonIndexAggregation) {
-		// agg.aggregate(
-		// adapter.encode(
-		// entry,
-		// index.getIndexModel()));
-		// }
-		// else {
-		// agg.aggregate(
-		// entry);
-		// }
-		// }
-		// try {
-		// r.close();
-		// }
-		// catch (final IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// }
-		//
-		// results.clear();
-		// results.add(
-		// new CloseableIterator.Wrapper<>(
-		// Iterators.singletonIterator(
-		// (Object) agg.getResult())));
-		// }
 		return new MyIndexReader(
 				retVal.iterator());
 	}

@@ -116,23 +116,8 @@ public class GeoWaveKeyImpl implements
 		if (compositeInsertionId != null) {
 			return compositeInsertionId;
 		}
-		final ByteBuffer buffer = ByteBuffer.allocate(
-				partitionKey.length + sortKey.length + adapterId.length + dataId.length + 12);
-		buffer.put(
-				partitionKey);
-		buffer.put(
-				sortKey);
-		buffer.put(
-				adapterId);
-		buffer.put(
-				dataId);
-		buffer.putInt(
-				adapterId.length);
-		buffer.putInt(
-				dataId.length);
-		buffer.putInt(
-				numberOfDuplicates);
-		compositeInsertionId = buffer.array();
+		compositeInsertionId = GeoWaveKey.getCompositeId(
+				this);
 		return compositeInsertionId;
 	}
 

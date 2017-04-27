@@ -1,10 +1,20 @@
 package mil.nga.giat.geowave.datastore.accumulo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.data.Mutation;
+import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.security.ColumnVisibility;
+import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
+import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.base.Writer;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKey;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
 
 /**
  * This is a basic wrapper around the Accumulo batch writer so that write
@@ -13,9 +23,10 @@ import mil.nga.giat.geowave.core.store.base.Writer;
  * this implementation within a custom implementation of AccumuloOperations.
  */
 public class BatchWriterWrapper implements
-		Writer<Mutation>
+		Writer
 {
-	private final static Logger LOGGER = Logger.getLogger(BatchWriterWrapper.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			BatchWriterWrapper.class);
 	private org.apache.accumulo.core.client.BatchWriter batchWriter;
 
 	public BatchWriterWrapper(
@@ -32,11 +43,11 @@ public class BatchWriterWrapper implements
 		this.batchWriter = batchWriter;
 	}
 
-	@Override
 	public void write(
 			final Iterable<Mutation> mutations ) {
 		try {
-			batchWriter.addMutations(mutations);
+			batchWriter.addMutations(
+					mutations);
 		}
 		catch (final MutationsRejectedException e) {
 			LOGGER.error(
@@ -45,11 +56,11 @@ public class BatchWriterWrapper implements
 		}
 	}
 
-	@Override
 	public void write(
 			final Mutation mutation ) {
 		try {
-			batchWriter.addMutation(mutation);
+			batchWriter.addMutation(
+					mutation);
 		}
 		catch (final MutationsRejectedException e) {
 			LOGGER.error(
@@ -80,6 +91,49 @@ public class BatchWriterWrapper implements
 					"Unable to flush batch writer",
 					e);
 		}
+	}
+
+	@Override
+	public void write(
+			GeoWaveRow[] rows ) {
+		for (GeoWaveRow row : rows) {
+			write(
+					row);
+		}
+	}
+
+	@Override
+	public void write(
+			GeoWaveRow row ) {
+		write(rowToMutation(row));
+	}
+
+	private static Mutation rowToMutation(
+			GeoWaveRow row ) {
+		final Mutation mutation = new Mutation(GeoWaveKey.getCompositeId(row));
+		for (final GeoWaveValue value : row.getFieldValues()) {
+			if (value.getVisibility() != null && value.getVisibility().length > 0) {
+				mutation.put(
+						new Text(row.getAdapterId()),
+						new Text(
+								value.getFieldMask()),
+						new ColumnVisibility(
+								value.getVisibility()),
+						new Value(
+								value.getValue()));
+			}
+			else {
+				mutation.put(
+						new Text(
+								row.getAdapterId()),
+						new Text(
+								value.getFieldMask()),
+						new Value(
+								value.getValue()));
+			}
+		}
+
+		return mutation;
 	}
 
 }

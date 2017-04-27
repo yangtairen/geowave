@@ -22,7 +22,8 @@ public class GeoWaveInputKey extends
 	 */
 	private static final long serialVersionUID = 1L;
 	private ByteArrayId dataId;
-	private transient ByteArrayId insertionId;
+	private transient ByteArrayId partitionKey;
+	private transient ByteArrayId sortKey;
 
 	public GeoWaveInputKey() {
 		super();
@@ -36,13 +37,22 @@ public class GeoWaveInputKey extends
 		this.dataId = dataId;
 	}
 
-	public ByteArrayId getInsertionId() {
-		return insertionId;
+	public ByteArrayId getPartitionKey() {
+		return partitionKey;
 	}
 
-	public void setInsertionId(
-			final ByteArrayId insertionId ) {
-		this.insertionId = insertionId;
+	public void setPartitionKey(
+			ByteArrayId partitionKey ) {
+		this.partitionKey = partitionKey;
+	}
+
+	public ByteArrayId getSortKey() {
+		return sortKey;
+	}
+
+	public void setSortKey(
+			ByteArrayId sortKey ) {
+		this.sortKey = sortKey;
 	}
 
 	public void setDataId(
@@ -63,13 +73,36 @@ public class GeoWaveInputKey extends
 		}
 		if (o instanceof GeoWaveInputKey) {
 			final GeoWaveInputKey other = (GeoWaveInputKey) o;
-			return WritableComparator.compareBytes(
+			final int dataIdCompare =  WritableComparator.compareBytes(
 					dataId.getBytes(),
 					0,
 					dataId.getBytes().length,
 					other.dataId.getBytes(),
 					0,
 					other.dataId.getBytes().length);
+			if (dataIdCompare != 0) {
+				return dataIdCompare;
+			}
+			if (partitionKey != null){
+				int partitionKeyCompare = partitionKey.compareTo(other.partitionKey);
+
+				if (partitionKeyCompare != 0) {
+					return partitionKeyCompare;
+				}
+			}
+			else if (other.partitionKey != null){
+				return 1;
+			}
+			if (sortKey != null){
+				int sortKeyCompare = sortKey.compareTo(other.sortKey);
+
+				if (sortKeyCompare != 0) {
+					return sortKeyCompare;
+				}
+			}
+			else if (other.sortKey != null){
+				return 1;
+			}
 		}
 		return 1;
 	}

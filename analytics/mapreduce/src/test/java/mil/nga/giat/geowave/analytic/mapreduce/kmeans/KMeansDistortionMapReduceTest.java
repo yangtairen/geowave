@@ -219,7 +219,6 @@ public class KMeansDistortionMapReduceTest
 			throws IOException {
 
 		final GeoWaveInputKey inputKey = new GeoWaveInputKey();
-		inputKey.setInsertionId(null);
 		inputKey.setAdapterId(testObjectAdapter.getAdapterId());
 		inputKey.setDataId(new ByteArrayId(
 				"abc".getBytes()));

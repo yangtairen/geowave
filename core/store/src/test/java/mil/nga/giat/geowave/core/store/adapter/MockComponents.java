@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Set;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.Coordinate;
+import mil.nga.giat.geowave.core.index.CoordinateRange;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
 import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinateRanges;
@@ -634,7 +636,10 @@ public class MockComponents
 		public QueryRanges getQueryRanges(
 				final MultiDimensionalNumericData indexedRange,
 				final IndexMetaData... hints ) {
-			return getQueryRanges(indexedRange, -1, hints);
+			return getQueryRanges(
+					indexedRange,
+					-1,
+					hints);
 		}
 
 		@Override
@@ -694,8 +699,19 @@ public class MockComponents
 		public MultiDimensionalCoordinateRanges[] getCoordinateRangesPerDimension(
 				final MultiDimensionalNumericData dataRange,
 				final IndexMetaData... hints ) {
-			// TODO Auto-generated method stub
-			return null;
+			final CoordinateRange[][] coordinateRangesPerDimension = new CoordinateRange[dataRange.getDimensionCount()][];
+			for (int d = 0; d < coordinateRangesPerDimension.length; d++) {
+				coordinateRangesPerDimension[d] = new CoordinateRange[1];
+					coordinateRangesPerDimension[d][0] = new CoordinateRange(
+							(long)dataRange.getMinValuesPerDimension()[0],
+							(long)dataRange.getMaxValuesPerDimension()[0],
+							new byte[]{});
+			}
+			return new MultiDimensionalCoordinateRanges[] {
+				new MultiDimensionalCoordinateRanges(
+						new byte[] {},
+						coordinateRangesPerDimension)
+			};
 		}
 
 		@Override
@@ -731,8 +747,7 @@ public class MockComponents
 		public MultiDimensionalCoordinates getCoordinatesPerDimension(
 				final ByteArrayId partitionKey,
 				final ByteArrayId sortKey ) {
-			// TODO Auto-generated method stub
-			return null;
+			return new MultiDimensionalCoordinates(new byte[]{}, new Coordinate[]{new Coordinate((long)Double.parseDouble(new String(partitionKey.getBytes())), new byte[]{})});
 		}
 
 		@Override

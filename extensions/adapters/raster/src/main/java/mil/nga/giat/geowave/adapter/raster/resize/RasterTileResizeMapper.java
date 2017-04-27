@@ -42,8 +42,9 @@ public class RasterTileResizeMapper extends
 					if (c instanceof FitToIndexGridCoverage) {
 						final GeoWaveInputKey inputKey = new GeoWaveInputKey(
 								helper.getNewCoverageId(),
-								((FitToIndexGridCoverage) c).getInsertionId());
-						inputKey.setInsertionId(((FitToIndexGridCoverage) c).getInsertionId());
+								key.getDataId());
+						inputKey.setPartitionKey(((FitToIndexGridCoverage) c).getPartitionKey());
+						inputKey.setSortKey(((FitToIndexGridCoverage) c).getSortKey());
 						context.write(
 								inputKey,
 								c);

@@ -28,7 +28,7 @@ public interface DataStoreOperations
 			throws Exception;
 
 	public boolean deleteAll(
-			final ByteArrayId tableName,
+			final ByteArrayId indexId,
 			final ByteArrayId adapterId,
 			final String... additionalAuthorizations );
 

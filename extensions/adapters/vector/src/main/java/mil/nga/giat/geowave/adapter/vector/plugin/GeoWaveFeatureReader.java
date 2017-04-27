@@ -383,10 +383,6 @@ public class GeoWaveFeatureReader implements
 			}
 			return null;
 		}
-
-		public long getCount() {
-			return count;
-		}
 	}
 
 	private class EnvelopeQueryIssuer extends

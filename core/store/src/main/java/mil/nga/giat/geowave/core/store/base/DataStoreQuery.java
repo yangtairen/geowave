@@ -7,6 +7,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.QueryRanges;
+import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.data.visibility.DifferingFieldVisibilityEntryCount;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
@@ -63,11 +64,13 @@ public abstract class DataStoreQuery
 		return authorizations;
 	}
 
-	public DistributableQueryFilter getServerFilter() {
+	public DistributableQueryFilter getServerFilter(
+			final DataStoreOptions options ) {
 		return null;
 	}
 
-	protected QueryFilter getClientFilter() {
+	protected QueryFilter getClientFilter(
+			final DataStoreOptions options ) {
 		return null;
 	}
 

@@ -2,7 +2,7 @@ package mil.nga.giat.geowave.datastore.accumulo;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -12,7 +12,6 @@ import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Scanner;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Key;
@@ -26,6 +25,11 @@ import org.junit.Test;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.base.Writer;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyImpl;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRowImpl;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveValueImpl;
+import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions;
 import mil.nga.giat.geowave.datastore.accumulo.util.TransformerWriter;
 import mil.nga.giat.geowave.datastore.accumulo.util.VisibilityTransformer;
 
@@ -65,9 +69,11 @@ public class TransformWriterTest
 			final String cq,
 			final String vis,
 			final String value ) {
+
 		final Mutation m = new Mutation(
 				new Text(
-						id.getBytes(StringUtils.GEOWAVE_CHAR_SET)));
+						id.getBytes(
+								StringUtils.GEOWAVE_CHAR_SET)));
 		m.put(
 				new Text(
 						cf),
@@ -76,8 +82,27 @@ public class TransformWriterTest
 				new ColumnVisibility(
 						vis),
 				new Value(
-						value.getBytes(StringUtils.GEOWAVE_CHAR_SET)));
-		writer.write(m);
+						value.getBytes(
+								StringUtils.GEOWAVE_CHAR_SET)));
+		writer.write(
+				new GeoWaveRowImpl(
+						new GeoWaveKeyImpl(
+								id.getBytes(
+										StringUtils.GEOWAVE_CHAR_SET),
+								cf.getBytes(
+										StringUtils.GEOWAVE_CHAR_SET),
+								new byte[] {},
+								new byte[] {},
+								0),
+						new GeoWaveValue[] {
+							new GeoWaveValueImpl(
+									cq.getBytes(
+											StringUtils.GEOWAVE_CHAR_SET),
+									vis.getBytes(
+											StringUtils.GEOWAVE_CHAR_SET),
+									value.getBytes(
+											StringUtils.GEOWAVE_CHAR_SET))
+						}));
 	}
 
 	private class Expect
@@ -106,8 +131,10 @@ public class TransformWriterTest
 					entry.getKey().getRow().getBytes());
 			result.put(
 					rowID,
-					Integer.valueOf(1 + (result.containsKey(rowID) ? result.get(
-							rowID).intValue() : 0)));
+					Integer.valueOf(
+							1 + (result.containsKey(
+									rowID) ? result.get(
+											rowID).intValue() : 0)));
 		}
 		int expectedCount = 0;
 		for (final Expect e : expectations) {
@@ -118,8 +145,9 @@ public class TransformWriterTest
 					new Text(
 							e.id).toString(),
 					e.count,
-					(result.containsKey(rowID) ? result.get(
-							rowID).intValue() : 0));
+					(result.containsKey(
+							rowID) ? result.get(
+									rowID).intValue() : 0));
 		}
 		assertEquals(
 				result.size(),
@@ -128,9 +156,14 @@ public class TransformWriterTest
 
 	@Test
 	public void test()
-			throws TableNotFoundException,
-			IOException {
-		final Writer w = operations.createWriter("test_table");
+			throws Exception {
+		final Writer w = operations.createWriter(
+				new ByteArrayId(
+						"test_table"),
+				new ByteArrayId(
+						new byte[] {}),
+				new AccumuloOptions(),
+				Collections.emptySet());
 		write(
 				w,
 				"1234",
@@ -168,10 +201,12 @@ public class TransformWriterTest
 		check(
 				scanner.iterator(),
 				new Expect(
-						"1234".getBytes(StringUtils.GEOWAVE_CHAR_SET),
+						"1234".getBytes(
+								StringUtils.GEOWAVE_CHAR_SET),
 						2),
 				new Expect(
-						"1235".getBytes(StringUtils.GEOWAVE_CHAR_SET),
+						"1235".getBytes(
+								StringUtils.GEOWAVE_CHAR_SET),
 						2));
 		scanner.close();
 
@@ -182,10 +217,12 @@ public class TransformWriterTest
 		check(
 				scanner.iterator(),
 				new Expect(
-						"1234".getBytes(StringUtils.GEOWAVE_CHAR_SET),
+						"1234".getBytes(
+								StringUtils.GEOWAVE_CHAR_SET),
 						0),
 				new Expect(
-						"1235".getBytes(StringUtils.GEOWAVE_CHAR_SET),
+						"1235".getBytes(
+								StringUtils.GEOWAVE_CHAR_SET),
 						0));
 		scanner.close();
 

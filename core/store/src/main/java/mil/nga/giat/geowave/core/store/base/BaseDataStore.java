@@ -613,7 +613,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 				Collections.singletonList(
 						adapter.getAdapterId()),
 				index,
-				new EverythingQuery(),
+				new DataIdQuery(adapter.getAdapterId(), dataIds),
 				dedupeFilter,
 				queryOptions,
 				tempAdapterStore);
@@ -654,6 +654,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 
 		return constraintsQuery.query(
 				baseOperations,
+				baseOptions,
 				tempAdapterStore,
 				sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension(),
 				sanitizedQueryOptions.getLimit());
@@ -680,6 +681,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 
 		return prefixQuery.query(
 				baseOperations,
+				baseOptions,
 				sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension(),
 				tempAdapterStore);
 
@@ -718,6 +720,7 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 
 		return q.query(
 				this.baseOperations,
+				baseOptions,
 				tempAdapterStore,
 				sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension(),
 				sanitizedQueryOptions.getLimit());

@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStoreOperations;
+import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
@@ -39,6 +40,7 @@ abstract public class AbstractBaseRowQuery<T> extends
 
 	public CloseableIterator<T> query(
 			final DataStoreOperations operations,
+			final DataStoreOptions options,
 			final double[] maxResolutionSubsamplingPerDimension,
 			final AdapterStore adapterStore ) {
 		return (CloseableIterator<T>) new NativeEntryIteratorWrapper(
@@ -53,10 +55,10 @@ abstract public class AbstractBaseRowQuery<T> extends
 						getFieldSubsets(),
 						useWholeRowIterator(),
 						getRanges(),
-						getServerFilter(),
+						getServerFilter(options),
 						getScannerLimit(),
 						getAdditionalAuthorizations()),
-				getClientFilter(),
+				getClientFilter(options),
 				scanCallback,
 				!isCommonIndexAggregation());
 	}

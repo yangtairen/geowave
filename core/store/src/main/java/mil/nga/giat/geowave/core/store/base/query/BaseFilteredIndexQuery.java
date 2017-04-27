@@ -14,6 +14,7 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.DataStoreOperations;
+import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
@@ -67,6 +68,7 @@ public abstract class BaseFilteredIndexQuery extends
 	@SuppressWarnings("rawtypes")
 	public CloseableIterator<Object> query(
 			final DataStoreOperations datastoreOperations,
+			final DataStoreOptions options,
 			final AdapterStore adapterStore,
 			final double[] maxResolutionSubsamplingPerDimension,
 			final Integer limit ) {
@@ -89,10 +91,12 @@ public abstract class BaseFilteredIndexQuery extends
 
 		final Reader reader = getReader(
 				datastoreOperations,
+				options,
 				maxResolutionSubsamplingPerDimension,
 				limit);
 
 		Iterator it = initIterator(
+				options,
 				adapterStore,
 				reader,
 				maxResolutionSubsamplingPerDimension,
@@ -109,6 +113,7 @@ public abstract class BaseFilteredIndexQuery extends
 	}
 
 	protected Iterator initIterator(
+			final DataStoreOptions options,
 			final AdapterStore adapterStore,
 			final Reader reader,
 			final double[] maxResolutionSubsamplingPerDimension,
@@ -120,12 +125,25 @@ public abstract class BaseFilteredIndexQuery extends
 				adapterStore,
 				index,
 				reader,
-				clientFilters.isEmpty() ? null : clientFilters.size() == 1 ? clientFilters.get(
-						0)
-						: new FilterList<QueryFilter>(
-								clientFilters),
+				getClientFilter(
+						options),
 				scanCallback,
 				decodePersistenceEncoding);
 	}
 
+	@Override
+	protected QueryFilter getClientFilter(
+			final DataStoreOptions options ) {
+		final List<QueryFilter> internalClientFilters = getClientFiltersList(
+				options);
+		return internalClientFilters.isEmpty() ? null : internalClientFilters.size() == 1 ? internalClientFilters.get(
+				0)
+				: new FilterList<QueryFilter>(
+						internalClientFilters);
+	}
+
+	protected List<QueryFilter> getClientFiltersList(
+			final DataStoreOptions options ) {
+		return clientFilters;
+	}
 }

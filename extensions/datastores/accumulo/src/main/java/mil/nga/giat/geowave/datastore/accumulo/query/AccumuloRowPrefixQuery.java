@@ -9,6 +9,7 @@ import mil.nga.giat.geowave.core.store.base.BaseDataStore;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.data.visibility.DifferingFieldVisibilityEntryCount;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloRow;
 
 /**
  * Represents a query operation using an Accumulo row prefix.
@@ -25,7 +26,7 @@ public class AccumuloRowPrefixQuery<T> extends
 			final BaseDataStore dataStore,
 			final PrimaryIndex index,
 			final ByteArrayId rowPrefix,
-			final ScanCallback<T, Object> scanCallback,
+			final ScanCallback<T, AccumuloRow> scanCallback,
 			final Integer limit,
 			final DifferingFieldVisibilityEntryCount visibilityCounts,
 			final String[] authorizations ) {

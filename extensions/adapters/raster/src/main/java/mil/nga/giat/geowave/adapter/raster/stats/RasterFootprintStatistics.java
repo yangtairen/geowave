@@ -15,12 +15,13 @@ import mil.nga.giat.geowave.adapter.raster.RasterUtils;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.store.adapter.statistics.AbstractDataStatistics;
-import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 
 public class RasterFootprintStatistics extends
 		AbstractDataStatistics<GridCoverage>
 {
-	private static final Logger LOGGER = Logger.getLogger(RasterFootprintStatistics.class);
+	private static final Logger LOGGER = Logger.getLogger(
+			RasterFootprintStatistics.class);
 	public static final ByteArrayId STATS_ID = new ByteArrayId(
 			"FOOTPRINT");
 	private Geometry footprint;
@@ -43,21 +44,26 @@ public class RasterFootprintStatistics extends
 			bytes = new byte[] {};
 		}
 		else {
-			bytes = new WKBWriter().write(footprint);
+			bytes = new WKBWriter().write(
+					footprint);
 		}
-		final ByteBuffer buf = super.binaryBuffer(bytes.length);
-		buf.put(bytes);
+		final ByteBuffer buf = super.binaryBuffer(
+				bytes.length);
+		buf.put(
+				bytes);
 		return buf.array();
 	}
 
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buf = super.binaryBuffer(bytes);
+		final ByteBuffer buf = super.binaryBuffer(
+				bytes);
 		final byte[] payload = buf.array();
 		if (payload.length > 0) {
 			try {
-				footprint = new WKBReader().read(payload);
+				footprint = new WKBReader().read(
+						payload);
 			}
 			catch (final ParseException e) {
 				LOGGER.warn(
@@ -72,8 +78,8 @@ public class RasterFootprintStatistics extends
 
 	@Override
 	public void entryIngested(
-			final DataStoreEntryInfo entryInfo,
-			final GridCoverage entry ) {
+			final GridCoverage entry,
+			final GeoWaveRow... geoWaveRows ) {
 		if (entry instanceof FitToIndexGridCoverage) {
 			footprint = RasterUtils.combineIntoOneGeometry(
 					footprint,
