@@ -392,8 +392,6 @@ public class EarthVector
 	 * Initialize the internal ECF vector from radian lat/long
 	 */
 	protected void initVector() {
-		// normalizeInputs();
-
 		final double x = Math.cos(latitude) * Math.cos(longitude) * getRadius();
 		final double y = Math.cos(latitude) * Math.sin(longitude) * getRadius();
 		double z;
@@ -1019,7 +1017,7 @@ public class EarthVector
 			final double azimuth,
 			final double elevAngle ) {
 		// convert distance to radians
-		// final double distR = distanceKM / KMPerDegree() / DPR;
+
 		final double lon = getLongitude();
 		final double lat = getLatitude();
 		// convert local enu to ecf to get east and north vectors
@@ -1108,34 +1106,6 @@ public class EarthVector
 		return distKM / kmPerDegree();
 	}
 
-	/**
-	 * Rotates this coordinate about the input vector through the input angle
-	 * (radians - because we usually use this internally)
-	 * 
-	 * @param vecAxis
-	 *            The axis of rotation
-	 * @param ang
-	 *            The angle of rotation (in radians)
-	 */
-	// public Vector3d rotate( Vector3d vecAxis, double ang )
-	// {
-	// Vector3d vec1 = new Vector3d(vecAxis);
-	// vec1.normalize();
-	// Vector3d vec2 = new Vector3d();
-	// vec2.cross(vec1, ecfVector);
-	// Vector3d vec3 = new Vector3d();
-	// vec3.cross(vec2, vec1);
-	//
-	// double ang_sin = Math.sin(ang);
-	// double ang_cos = Math.cos(ang) - 1.0;
-	//
-	// Vector3d result = new Vector3d();
-	// result.x = ecfVector.x + ang_cos*vec3.x + ang_sin*vec2.x;
-	// result.y = ecfVector.y + ang_cos*vec3.y + ang_sin*vec2.y;
-	// result.z = ecfVector.z + ang_cos*vec3.z + ang_sin*vec2.z;
-	//
-	// return result;
-	// }
 	public Vector3d rotate(
 			final Vector3d rotAxis,
 			final double angle ) {

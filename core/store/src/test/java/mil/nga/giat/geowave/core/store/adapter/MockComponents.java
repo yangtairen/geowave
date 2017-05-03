@@ -7,7 +7,6 @@ import java.util.Set;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
-import mil.nga.giat.geowave.core.index.Coordinate;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
 import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinateRanges;
 import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinates;
@@ -175,6 +174,7 @@ public class MockComponents
 			return new RowBuilder<Integer, Object>() {
 				@SuppressWarnings("unused")
 				private String myid;
+
 				private Integer intValue;
 
 				@Override
@@ -186,7 +186,7 @@ public class MockComponents
 					}
 					else if (fieldValue.getId().equals(
 							ID)) {
-						myid = (String) fieldValue.getValue();
+						// myid = (String) fieldValue.getValue();
 					}
 				}
 

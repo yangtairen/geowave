@@ -153,11 +153,9 @@ public class RasterDataAdapter implements
 	/**
 	 * A transparent color for missing data.
 	 */
-	private static final Color TRANSPARENT = new Color(
-			0,
-			0,
-			0,
-			0);
+	/*
+	 * private static final Color TRANSPARENT = new Color( 0, 0, 0, 0);
+	 */
 	private String coverageName;
 	private int tileSize;
 	private SampleModel sampleModel;
@@ -1697,7 +1695,6 @@ public class RasterDataAdapter implements
 		private final Unit<?> unit;
 		private final SampleDimensionType type;
 		private final ColorInterpretation color;
-		private final Category bkg;
 
 		public SimplifiedGridSampleDimension(
 				final CharSequence description,
@@ -1744,10 +1741,6 @@ public class RasterDataAdapter implements
 			this.unit = unit;
 			this.type = type;
 			this.color = color;
-			bkg = new Category(
-					"Background",
-					TRANSPARENT,
-					0);
 		}
 
 		@Override

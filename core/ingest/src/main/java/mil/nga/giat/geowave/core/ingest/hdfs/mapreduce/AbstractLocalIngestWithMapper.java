@@ -80,6 +80,7 @@ abstract public class AbstractLocalIngestWithMapper<T> extends
 	{
 		private AbstractLocalIngestWithMapper parentPlugin;
 
+		@SuppressWarnings("unused")
 		public InternalIngestWithMapper() {}
 
 		public InternalIngestWithMapper(

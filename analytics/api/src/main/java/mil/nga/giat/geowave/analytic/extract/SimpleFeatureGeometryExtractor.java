@@ -19,6 +19,8 @@ public class SimpleFeatureGeometryExtractor extends
 		EmptyDimensionExtractor<SimpleFeature> implements
 		DimensionExtractor<SimpleFeature>
 {
+	private static final long serialVersionUID = 1437760875872871857L;
+
 	@Override
 	public Geometry getGeometry(
 			final SimpleFeature anObject ) {

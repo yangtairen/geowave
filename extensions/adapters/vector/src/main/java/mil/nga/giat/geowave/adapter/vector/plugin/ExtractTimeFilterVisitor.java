@@ -1298,12 +1298,6 @@ public class ExtractTimeFilterVisitor extends
 			final Object data ) {
 		final String name = expression.getPropertyName();
 		if (validateName(expression.getPropertyName())) {
-			// for (final String[] range : validParamRanges) {
-			// if (range[0].equals(name) || range[1].equals(name)) {
-			// return new ParameterTimeConstraint(
-			// range[0] + "_" + range[1]);
-			// }
-			// }
 			return new ParameterTimeConstraint(
 					name);
 		}
@@ -1326,6 +1320,7 @@ public class ExtractTimeFilterVisitor extends
 				null)).isEmpty();
 	}
 
+	@SuppressWarnings("unused")
 	private boolean containsTime(
 			final Function function ) {
 		boolean yes = false;
@@ -1338,7 +1333,6 @@ public class ExtractTimeFilterVisitor extends
 	private static class ParameterTimeConstraint extends
 			TemporalConstraints
 	{
-
 		public ParameterTimeConstraint(
 				final String name ) {
 			super(
@@ -1362,6 +1356,7 @@ public class ExtractTimeFilterVisitor extends
 					name);
 		}
 
+		@SuppressWarnings("unused")
 		public TemporalConstraints bounds(
 				final TemporalConstraints other ) {
 			return other;

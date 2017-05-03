@@ -1,6 +1,3 @@
-//                            BasicAccumuloOperations ops = new BasicAccumuloOperations(zookeeper, accumuloInstance, accumuloUser, accumuloPassword, "");
-//                            ops.insureAuthorization(accumuloUser, "a","b","c");
-
 package mil.nga.giat.geowave.test.basic;
 
 import java.io.IOException;
@@ -49,8 +46,7 @@ public class GeoWaveVisibilityIT
 		GeoWaveStoreType.HBASE
 	})
 	protected DataStorePluginOptions dataStore;
-	// because there are 8 we want to make
-	// sure it is properly truncated
+	// because there are 8 we want to make sure it is properly truncated
 	private static final int TOTAL_FEATURES = 800;
 
 	@Test
@@ -165,8 +161,8 @@ public class GeoWaveVisibilityIT
 			throws IOException {
 
 		// you have to at least be able to see the geometry field which is wide
-		// open for exactly (5 * total_Features / 8)
-		// for other fields there is exactly
+		// open for exactly (5 * total_Features / 8) for other fields there is
+		// exactly
 		testQuery(
 				store,
 				new String[] {},

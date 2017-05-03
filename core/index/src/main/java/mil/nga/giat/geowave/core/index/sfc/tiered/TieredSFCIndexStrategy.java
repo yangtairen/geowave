@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableBiMap.Builder;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
-import mil.nga.giat.geowave.core.index.CoordinateRange;
 import mil.nga.giat.geowave.core.index.FloatCompareUtils;
 import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
@@ -604,11 +603,6 @@ public class TieredSFCIndexStrategy implements
 				buffer.putInt(count);
 			}
 			// do not use orderedTierIdToSfcIndex on query
-			// for (final Entry<Byte,Integer > entry :
-			// orderedTierIdToSfcIndex.entrySet()) {
-			// buffer.put(entry.getKey().byteValue());
-			// buffer.put(entry.getValue().byteValue());
-			// }
 			return buffer.array();
 		}
 
@@ -621,15 +615,6 @@ public class TieredSFCIndexStrategy implements
 				tierCounts[i] = buffer.getInt();
 			}
 			// do not use orderedTierIdToSfcIndex on query
-			// final Builder<Byte,Integer> bimapBuilder =
-			// ImmutableBiMap.builder();
-			// for (int i = 0; i < tierCounts.length; i++) {
-			// bimapBuilder.put(
-			// buffer.get(),
-			// Byte.valueOf(buffer.get()).intValue()
-			// );
-			// }
-			// orderedTierIdToSfcIndex = bimapBuilder.build();
 		}
 
 		@Override
@@ -642,7 +627,6 @@ public class TieredSFCIndexStrategy implements
 					tierCounts[pos++] += count;
 				}
 			}
-
 		}
 
 		@Override
@@ -672,7 +656,6 @@ public class TieredSFCIndexStrategy implements
 		/**
 		 * Convert Tiered Index Metadata statistics to a JSON object
 		 */
-
 		@Override
 		public JSONObject toJSONObject()
 				throws JSONException {
@@ -680,7 +663,6 @@ public class TieredSFCIndexStrategy implements
 			jo.put(
 					"type",
 					"TieredSFCIndexStrategy");
-
 			jo.put(
 					"TierCountsSize",
 					tierCounts.length);
@@ -698,6 +680,5 @@ public class TieredSFCIndexStrategy implements
 
 			return jo;
 		}
-
 	}
 }

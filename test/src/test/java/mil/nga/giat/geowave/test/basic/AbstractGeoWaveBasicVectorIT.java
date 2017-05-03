@@ -539,9 +539,9 @@ abstract public class AbstractGeoWaveBasicVectorIT
 		// assume a bounding box statistic exists and calculate the value
 		// separately to ensure calculation works
 		private double minX = Double.MAX_VALUE;
-		private double minY = Double.MAX_VALUE;;
-		private double maxX = -Double.MAX_VALUE;;
-		private double maxY = -Double.MAX_VALUE;;
+		private double minY = Double.MAX_VALUE;
+		private double maxX = -Double.MAX_VALUE;
+		private double maxY = -Double.MAX_VALUE;
 		protected final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsCache = new HashMap<ByteArrayId, DataStatistics<SimpleFeature>>();
 
 		// otherwise use the statistics interface to calculate every statistic

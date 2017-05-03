@@ -290,25 +290,4 @@ public class AccumuloSecondaryIndexDataStore extends
 		}
 		return scanRanges;
 	}
-
-	// private IteratorSetting getScanIteratorSettings(
-	// final List<DistributableQueryFilter> distributableFilters,
-	// final ByteArrayId primaryIndexId ) {
-	// final IteratorSetting iteratorSettings = new IteratorSetting(
-	// SecondaryIndexQueryFilterIterator.ITERATOR_PRIORITY,
-	// SecondaryIndexQueryFilterIterator.ITERATOR_NAME,
-	// SecondaryIndexQueryFilterIterator.class);
-	// DistributableQueryFilter filter = getFilter(distributableFilters);
-	// if (filter != null) {
-	// iteratorSettings.addOption(
-	// SecondaryIndexQueryFilterIterator.FILTERS,
-	// ByteArrayUtils.byteArrayToString(PersistenceUtils.toBinary(filter)));
-	//
-	// }
-	// iteratorSettings.addOption(
-	// SecondaryIndexQueryFilterIterator.PRIMARY_INDEX_ID,
-	// primaryIndexId.getString());
-	// return iteratorSettings;
-	// }
-
 }

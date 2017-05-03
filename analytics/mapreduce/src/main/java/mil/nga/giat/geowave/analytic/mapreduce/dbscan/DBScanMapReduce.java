@@ -306,14 +306,6 @@ public class DBScanMapReduce
 								"Generating {}",
 								newPolygonFeature.toString());
 					}
-					// ShapefileTool.writeShape(
-					// cluster.getId().getString() + iteration,
-					// new File(
-					// "./target/testdb_" + cluster.getId().getString() +
-					// iteration),
-					// new Geometry[] {
-					// (Geometry) cluster.get()
-					// });
 					context.write(
 							new GeoWaveInputKey(
 									outputAdapter.getAdapterId(),

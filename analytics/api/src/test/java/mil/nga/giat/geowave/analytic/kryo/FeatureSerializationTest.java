@@ -2,6 +2,8 @@ package mil.nga.giat.geowave.analytic.kryo;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,14 +18,11 @@ import org.opengis.feature.type.AttributeDescriptor;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.InputChunked;
 import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.io.OutputChunked;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
-public class FeatureSerializationTest
-{
+public class FeatureSerializationTest {
 
 	@Test
 	public void test()
@@ -55,22 +54,19 @@ public class FeatureSerializationTest
 				geoFactory.createPoint(new Coordinate(
 						-45,
 						45)));
-		final Output output = new OutputChunked();
-		kryo.getSerializer(
-				SimpleFeatureImpl.class).write(
-				kryo,
-				output,
-				feature);
-		final Input input = new InputChunked();
-		input.setBuffer(output.getBuffer());
-		final SimpleFeature f2 = (SimpleFeature) kryo.getSerializer(
-				SimpleFeatureImpl.class).read(
-				kryo,
-				input,
-				SimpleFeatureImpl.class);
+
+		// by registering the SimpleFeatureImpl class with the FeatureSerializer serializer class, kryo will automatically
+		// use that serializer, so no need to specify the extra parameters in the read & write commands
+
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		Output output = new Output(bos);
+		kryo.writeObject(output, feature);
+		output.flush();
+		output.close();
+
+		final SimpleFeature f2 = kryo.readObject(new Input(new ByteArrayInputStream(bos.toByteArray())), SimpleFeatureImpl.class);
 		assertEquals(
 				feature,
 				f2);
-
 	}
 }

@@ -356,9 +356,6 @@ public class UnboundedHilbertSFCOperations implements
 				compactHilbertCurve,
 				queryBuilder));
 
-		// com.google.uzaygezen.core.Query<LongRange, LongRange> hilbertQuery =
-		// queryBuilder.get();
-
 		final List<FilteredIndexRange<BigIntegerRange, BigIntegerRange>> hilbertRanges = queryBuilder
 				.get()
 				.getFilteredIndexRanges();

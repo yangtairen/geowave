@@ -30,7 +30,7 @@ public class KafkaTestUtils
 	public static void testKafkaStage(
 			final String ingestFilePath ) {
 		LOGGER.warn("Staging '" + ingestFilePath + "' to a Kafka topic - this may take several minutes...");
-		final String[] args = null;
+
 		String localhost = "localhost";
 		try {
 			localhost = java.net.InetAddress.getLocalHost().getCanonicalHostName();

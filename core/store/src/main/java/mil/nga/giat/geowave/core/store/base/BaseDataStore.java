@@ -572,7 +572,6 @@ public abstract class BaseDataStore
 		}
 
 		// cannot delete because authorizations are not used
-		// this.indexMappingStore.remove(adapter.getAdapterId());
 
 		deleteAll(
 				tableName,
@@ -660,5 +659,4 @@ public abstract class BaseDataStore
 	protected abstract void initOnIndexWriterCreate(
 			final DataAdapter adapter,
 			final PrimaryIndex index );
-
 }

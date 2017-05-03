@@ -12,9 +12,10 @@ public class SpatialIndexModelBuilder implements
 		IndexModelBuilder
 {
 
+	private static final long serialVersionUID = 1371535250333727887L;
+
 	@Override
 	public CommonIndexModel buildModel() {
 		return new SpatialDimensionalityTypeProvider().createPrimaryIndex().getIndexModel();
 	}
-
 }

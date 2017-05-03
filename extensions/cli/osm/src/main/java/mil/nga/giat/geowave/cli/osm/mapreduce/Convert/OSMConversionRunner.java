@@ -142,7 +142,6 @@ public class OSMConversionRunner extends
 				is);
 		job.setInputFormatClass(AccumuloInputFormat.class);
 		final Range r = new Range();
-		// final ArrayList<Pair<Text, Text>> columns = new ArrayList<>();
 		InputFormatBase.setRanges(
 				job,
 				Arrays.asList(r));

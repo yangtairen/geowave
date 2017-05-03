@@ -2,7 +2,6 @@ package mil.nga.giat.geowave.format.stanag4676.parser.model;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.UUID;
 
 public class Track
 {

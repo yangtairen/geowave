@@ -13,7 +13,11 @@ import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 public class BasicParameterHelper implements
 		ParameterHelper<Object>
 {
+
+	private static final long serialVersionUID = -5569858955677656975L;
+
 	final static Logger LOGGER = LoggerFactory.getLogger(BasicParameterHelper.class);
+
 	private final ParameterEnum<?> parent;
 	private final Class<Object> baseClass;
 	private final boolean isClass;

@@ -118,7 +118,6 @@ public class ExplainCommand extends
 
 			Object value = null;
 			try {
-				// value = tEntry.getParam().get(tEntry.getObject());
 				value = pd.getParameterized().get(
 						pd.getObject());
 			}

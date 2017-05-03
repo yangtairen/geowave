@@ -137,8 +137,6 @@ public class FeatureNumericHistogramStaticticsTest
 			stat2.entryIngested(
 					null,
 					skewedFeature);
-			// skewedFeature.setAttribute("pop", Long.valueOf(next + (long)
-			// (1000 * rand.nextDouble())));
 		}
 
 		final byte[] b = stat2.toBinary();

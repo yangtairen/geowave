@@ -4,7 +4,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 
 import mil.nga.giat.geowave.core.cli.converters.PasswordConverter;
-import mil.nga.giat.geowave.core.cli.converters.RequiredFieldConverter;
 import mil.nga.giat.geowave.core.store.StoreFactoryFamilySpi;
 import mil.nga.giat.geowave.core.store.StoreFactoryOptions;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreFactoryFamily;
@@ -16,7 +15,6 @@ import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreFactoryFamily;
 public class AccumuloRequiredOptions extends
 		StoreFactoryOptions
 {
-
 	public static final String ZOOKEEPER_CONFIG_KEY = "zookeeper";
 	public static final String INSTANCE_CONFIG_KEY = "instance";
 	public static final String USER_CONFIG_KEY = "user";

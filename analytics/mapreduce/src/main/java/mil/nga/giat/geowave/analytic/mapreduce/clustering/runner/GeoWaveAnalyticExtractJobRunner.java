@@ -29,7 +29,6 @@ import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
-import mil.nga.giat.geowave.analytic.param.StoreParameters;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
 import mil.nga.giat.geowave.analytic.store.PersistableStore;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
@@ -279,8 +278,7 @@ public class GeoWaveAnalyticExtractJobRunner extends
 			throws ParseException {
 
 		try {
-			final Job job = new Job(
-					super.getConf());
+			final Job job = Job.getInstance(super.getConf());
 			job.setJarByClass(this.getClass());
 			configure(job);
 			return job.waitForCompletion(true);

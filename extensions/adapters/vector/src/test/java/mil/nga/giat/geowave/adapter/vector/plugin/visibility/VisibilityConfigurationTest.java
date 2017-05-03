@@ -1,18 +1,15 @@
 package mil.nga.giat.geowave.adapter.vector.plugin.visibility;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.text.ParseException;
-
-import mil.nga.giat.geowave.adapter.vector.AvroFeatureDataAdapter;
-import mil.nga.giat.geowave.core.store.data.visibility.GlobalVisibilityHandler;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.SchemaException;
 import org.geotools.filter.text.cql2.CQLException;
 import org.junit.Before;
 import org.junit.Test;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 public class VisibilityConfigurationTest

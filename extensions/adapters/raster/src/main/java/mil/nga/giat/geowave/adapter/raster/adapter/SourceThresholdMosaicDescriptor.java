@@ -74,5 +74,4 @@ public class SourceThresholdMosaicDescriptor extends
 			final String modeName ) {
 		return defaultParamListDescriptor;
 	}
-
 }

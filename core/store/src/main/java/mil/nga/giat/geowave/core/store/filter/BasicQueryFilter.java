@@ -162,7 +162,7 @@ public class BasicQueryFilter implements
 						queryMax));
 			}
 		}
-	};
+	}
 
 	protected Map<ByteArrayId, List<MultiDimensionalNumericData>> binnedConstraints;
 	protected NumericDimensionField<?>[] dimensionFields;

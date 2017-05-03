@@ -14,7 +14,6 @@ import mil.nga.giat.geowave.core.store.AdapterToIndexMapping;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,10 +85,6 @@ public class IngestTask implements
 	 * This function will continue to read from the BlockingQueue until
 	 * isTerminated is true and the queue is empty.
 	 */
-	@SuppressWarnings({
-		"unchecked",
-		"rawtypes"
-	})
 	@Override
 	public void run() {
 		int count = 0;

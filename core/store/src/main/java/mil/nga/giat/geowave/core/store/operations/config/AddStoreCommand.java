@@ -15,6 +15,7 @@ import com.beust.jcommander.ParametersDelegate;
 import mil.nga.giat.geowave.core.cli.annotations.GeowaveOperation;
 import mil.nga.giat.geowave.core.cli.api.Command;
 import mil.nga.giat.geowave.core.cli.api.DefaultOperation;
+import mil.nga.giat.geowave.core.cli.api.DefaultPluginOptions;
 import mil.nga.giat.geowave.core.cli.api.OperationParams;
 import mil.nga.giat.geowave.core.cli.operations.config.ConfigSection;
 import mil.nga.giat.geowave.core.cli.operations.config.options.ConfigOptions;
@@ -129,7 +130,7 @@ public class AddStoreCommand extends
 				getGeoWaveConfigFile(),
 				existingProps,
 				pluginOptions.getFactoryOptions().getClass(),
-				getNamespace() + "." + DataStorePluginOptions.OPTS);
+				getNamespace() + "." + DefaultPluginOptions.OPTS);
 	}
 
 	public DataStorePluginOptions getPluginOptions() {

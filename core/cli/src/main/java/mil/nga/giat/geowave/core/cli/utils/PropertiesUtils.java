@@ -72,7 +72,7 @@ public class PropertiesUtils implements
 		 */
 		public Object get(
 				String name );
-	};
+	}
 
 	/** The interface to obtain property values */
 	private final Getter getter;

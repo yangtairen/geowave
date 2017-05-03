@@ -48,7 +48,6 @@ public class HBaseDistributableFilter extends
 	private final List<DistributableQueryFilter> filterList;
 	protected CommonIndexModel model;
 	private final List<ByteArrayId> commonIndexFieldIds = new ArrayList<>();
-	private PersistentDataset<Object> adapterExtendedValues;
 
 	// CACHED decoded data:
 	private PersistentDataset<CommonIndexValue> commonData;

@@ -384,6 +384,7 @@ public class GeoWaveFeatureReader implements
 			return null;
 		}
 
+		@SuppressWarnings("unused")
 		public long getCount() {
 			return count;
 		}
@@ -690,18 +691,10 @@ public class GeoWaveFeatureReader implements
 		// this could be kept as a statistic on ingest, but considering
 		// it doesn't boost performance it may not be worthwhile
 		// pursuing
-
-		// if (geoConstraints.isConstraintsMatchGeometry()) {
-		// return new BasicQuery(
-		// geoConstraints.getConstraints().merge(
-		// temporalConstraints));
-		// }
-		// else {
 		return new SpatialQuery(
 				geoConstraints.getConstraints().merge(
 						temporalConstraints),
 				geoConstraints.getGeometry());
-		// }
 	}
 
 	public Object convertToType(

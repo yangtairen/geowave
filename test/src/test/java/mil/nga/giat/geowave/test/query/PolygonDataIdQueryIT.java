@@ -100,8 +100,7 @@ public class PolygonDataIdQueryIT
 	@Before
 	public void ingestSampleData()
 			throws IOException {
-		try (@SuppressWarnings("unchecked")
-		IndexWriter writer = dataStore.createDataStore().createWriter(
+		try (IndexWriter writer = dataStore.createDataStore().createWriter(
 				dataAdapter,
 				TestUtils.DEFAULT_SPATIAL_INDEX)) {
 			writer.write(buildSimpleFeature(

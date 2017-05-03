@@ -17,7 +17,7 @@ import org.opengis.coverage.grid.GridCoverage;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import mil.nga.giat.geowave.adapter.raster.RasterUtils;
 import mil.nga.giat.geowave.adapter.raster.adapter.MergeableRasterTile;
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter;
@@ -224,7 +224,8 @@ public class GeoWaveBasicRasterIT
 								raster.getSampleDouble(
 										x,
 										y,
-										b));
+										b),
+								DOUBLE_TOLERANCE);
 
 					}
 					if ((y % 2) == 0) {
@@ -238,7 +239,8 @@ public class GeoWaveBasicRasterIT
 								raster.getSampleDouble(
 										x,
 										y,
-										0));
+										0),
+								DOUBLE_TOLERANCE);
 					}
 					else {
 						Assert.assertEquals(
@@ -247,7 +249,8 @@ public class GeoWaveBasicRasterIT
 								raster.getSampleDouble(
 										x,
 										y,
-										0));
+										0),
+								DOUBLE_TOLERANCE);
 					}
 					if ((x > ((tileSize * 3) / 4)) && (y > ((tileSize * 3) / 4))) {
 						Assert.assertEquals(
@@ -256,7 +259,8 @@ public class GeoWaveBasicRasterIT
 								raster.getSampleDouble(
 										x,
 										y,
-										7));
+										7),
+								DOUBLE_TOLERANCE);
 					}
 					else {
 						Assert.assertEquals(
@@ -269,7 +273,8 @@ public class GeoWaveBasicRasterIT
 								raster.getSampleDouble(
 										x,
 										y,
-										7));
+										7),
+								DOUBLE_TOLERANCE);
 
 					}
 				}

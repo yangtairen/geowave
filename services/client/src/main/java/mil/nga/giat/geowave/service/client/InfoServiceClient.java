@@ -21,12 +21,6 @@ public class InfoServiceClient
 						baseUrl));
 	}
 
-	// public JSONObject getNamespaces() {
-	// final Response resp = infoService.getNamespaces();
-	// resp.bufferEntity();
-	// return JSONObject.fromObject(resp.readEntity(String.class));
-	// }
-
 	public JSONObject getIndices(
 			final String storeName ) {
 		final Response resp = infoService.getIndices(storeName);

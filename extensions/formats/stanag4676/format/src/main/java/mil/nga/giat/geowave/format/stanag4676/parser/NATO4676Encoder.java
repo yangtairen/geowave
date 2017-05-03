@@ -112,10 +112,6 @@ public class NATO4676Encoder implements
 		return "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 	}
 
-	private String GetXMLClose() {
-		return "";
-	}
-
 	/**
 	 * A TrackRun will be encoded as a single NATO4676Message even though there
 	 * may be multiple messages inside it. The LAST NATO4676Message should be

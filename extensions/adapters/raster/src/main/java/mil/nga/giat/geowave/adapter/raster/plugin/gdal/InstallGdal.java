@@ -2,10 +2,8 @@ package mil.nga.giat.geowave.adapter.raster.plugin.gdal;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 

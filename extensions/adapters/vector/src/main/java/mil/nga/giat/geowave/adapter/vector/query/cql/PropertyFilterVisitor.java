@@ -7,7 +7,6 @@ import mil.nga.giat.geowave.core.store.index.numeric.NumericGreaterThanOrEqualTo
 import mil.nga.giat.geowave.core.store.index.numeric.NumericLessThanConstraint;
 import mil.nga.giat.geowave.core.store.index.numeric.NumericLessThanOrEqualToConstraint;
 import mil.nga.giat.geowave.core.store.index.numeric.NumericQueryConstraint;
-import mil.nga.giat.geowave.core.store.index.text.TextExactMatchFilter;
 import mil.nga.giat.geowave.core.store.index.text.TextQueryConstraint;
 
 import org.geotools.filter.visitor.NullFilterVisitor;

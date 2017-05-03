@@ -84,5 +84,4 @@ public class SampleParameters
 			return helper;
 		}
 	}
-
 }

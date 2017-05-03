@@ -139,15 +139,14 @@ public class KDEJobRunner extends
 					kdeCommandLineOptions.getCqlFilter());
 		}
 		preJob1Setup(conf);
-		final Job job = new Job(
-				conf);
+		final Job job = Job.getInstance(
+				conf,
+				getJob1Name());
 
 		job.setJarByClass(this.getClass());
 		addJobClasspathDependencies(
 				job,
 				conf);
-
-		job.setJobName(getJob1Name());
 
 		job.setMapperClass(getJob1Mapper());
 		job.setCombinerClass(CellSummationCombiner.class);

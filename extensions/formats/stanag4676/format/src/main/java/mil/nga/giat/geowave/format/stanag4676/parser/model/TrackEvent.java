@@ -25,7 +25,6 @@ public class TrackEvent
 	private List<TrackClassification> classifications = new ArrayList<TrackClassification>();
 	private List<TrackManagement> managements = new ArrayList<TrackManagement>();
 	private List<MotionImagery> motionImages = new ArrayList<MotionImagery>();
-	// private ESMInfo esm;
 	private List<LineageRelation> trackRelations = new ArrayList<LineageRelation>();
 	private ExerciseIndicator exerciseIndicator;
 	private SimulationIndicator simulationIndicator;
@@ -160,9 +159,6 @@ public class TrackEvent
 		motionEvents.put(
 				point.eventTime,
 				point);
-		// if(motionEvents != null) {
-		// track.addPoint(point);
-		// }
 	}
 
 	/**
@@ -179,7 +175,6 @@ public class TrackEvent
 	public void setIdentities(
 			final List<TrackIdentity> identities ) {
 		this.identities = identities;
-		;
 	}
 
 	/**
@@ -211,7 +206,6 @@ public class TrackEvent
 	public void setClassifications(
 			final List<TrackClassification> classifications ) {
 		this.classifications = classifications;
-		;
 	}
 
 	/**
@@ -243,7 +237,6 @@ public class TrackEvent
 	public void setManagements(
 			final List<TrackManagement> managements ) {
 		this.managements = managements;
-		;
 	}
 
 	/**
@@ -275,7 +268,6 @@ public class TrackEvent
 	public void setMotionImages(
 			final List<MotionImagery> motionImages ) {
 		this.motionImages = motionImages;
-		;
 	}
 
 	/**
@@ -307,7 +299,6 @@ public class TrackEvent
 	public void setTrackRelations(
 			final List<LineageRelation> trackRelations ) {
 		this.trackRelations = trackRelations;
-		;
 	}
 
 	/**
@@ -344,5 +335,4 @@ public class TrackEvent
 	public SimulationIndicator getSimulationIndicator() {
 		return simulationIndicator;
 	}
-
 }

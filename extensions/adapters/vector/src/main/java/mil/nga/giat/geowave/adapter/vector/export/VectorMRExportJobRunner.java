@@ -152,12 +152,12 @@ public class VectorMRExportJobRunner extends
 		GeoWaveInputFormat.setQueryOptions(
 				conf,
 				options);
-		final Job job = new Job(
-				conf);
+		final Job job = Job.getInstance(
+				conf,
+				"Exporting to " + hdfsPath);
 
 		job.setJarByClass(this.getClass());
 
-		job.setJobName("Exporting to " + hdfsPath);
 		FileOutputFormat.setCompressOutput(
 				job,
 				true);

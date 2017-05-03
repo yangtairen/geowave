@@ -2,9 +2,6 @@ package mil.nga.giat.geowave.core.cli.operations;
 
 import static org.junit.Assert.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
 import org.junit.Test;
 
 import mil.nga.giat.geowave.core.cli.parser.CommandLineOperationParams;

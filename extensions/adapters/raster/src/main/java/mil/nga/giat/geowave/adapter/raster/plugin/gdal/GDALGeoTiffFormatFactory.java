@@ -1,8 +1,5 @@
 package mil.nga.giat.geowave.adapter.raster.plugin.gdal;
 
-import java.awt.RenderingHints.Key;
-import java.util.Map;
-
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverageio.BaseGridFormatFactorySPI;
 import org.slf4j.Logger;

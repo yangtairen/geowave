@@ -100,7 +100,7 @@ public class AttributeTypes
 		}
 
 		@Override
-		public Class getClassType() {
+		public Class<String> getClassType() {
 			return String.class;
 		}
 	}
@@ -121,7 +121,7 @@ public class AttributeTypes
 		}
 
 		@Override
-		public Class getClassType() {
+		public Class<Double> getClassType() {
 			return Double.class;
 		}
 	}
@@ -142,7 +142,7 @@ public class AttributeTypes
 		}
 
 		@Override
-		public Class getClassType() {
+		public Class<Integer> getClassType() {
 			return Integer.class;
 		}
 	}
@@ -163,7 +163,7 @@ public class AttributeTypes
 		}
 
 		@Override
-		public Class getClassType() {
+		public Class<Long> getClassType() {
 			return Long.class;
 		}
 	}
@@ -184,7 +184,7 @@ public class AttributeTypes
 		}
 
 		@Override
-		public Class getClassType() {
+		public Class<Geometry> getClassType() {
 			return Geometry.class;
 		}
 	}
@@ -206,7 +206,7 @@ public class AttributeTypes
 		}
 
 		@Override
-		public Class getClassType() {
+		public Class<Short> getClassType() {
 			return Short.class;
 		}
 	}
@@ -238,9 +238,8 @@ public class AttributeTypes
 		}
 
 		@Override
-		public Class getClassType() {
+		public Class<Boolean> getClassType() {
 			return Boolean.class;
 		}
 	}
-
 }

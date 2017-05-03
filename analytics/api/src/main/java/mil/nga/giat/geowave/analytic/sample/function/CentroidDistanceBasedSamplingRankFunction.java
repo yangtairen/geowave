@@ -6,6 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.JobContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapper;
 import mil.nga.giat.geowave.analytic.AnalyticItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.PropertyManagement;
@@ -13,19 +18,12 @@ import mil.nga.giat.geowave.analytic.ScopedJobConfiguration;
 import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.clustering.CentroidPairing;
 import mil.nga.giat.geowave.analytic.clustering.NestedGroupCentroidAssignment;
-import mil.nga.giat.geowave.analytic.distance.DistanceFn;
 import mil.nga.giat.geowave.analytic.kmeans.AssociationNotification;
 import mil.nga.giat.geowave.analytic.param.CentroidParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.SampleParameters;
 import mil.nga.giat.geowave.analytic.sample.RandomProbabilitySampleFn;
 import mil.nga.giat.geowave.analytic.sample.SampleProbabilityFn;
-import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.JobContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Rank objects using their distance to the closest centroid of a set of
@@ -76,7 +74,7 @@ public class CentroidDistanceBasedSamplingRankFunction<T> implements
 	private SampleProbabilityFn sampleProbabilityFn;
 	private NestedGroupCentroidAssignment<T> nestedGroupCentroidAssigner;
 	private final Map<String, Double> groupToConstant = new HashMap<String, Double>();
-	protected AnalyticItemWrapperFactory<T> itemWrapperFactory;;
+	protected AnalyticItemWrapperFactory<T> itemWrapperFactory;
 
 	public static void setParameters(
 			final Configuration config,

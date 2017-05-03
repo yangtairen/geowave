@@ -11,7 +11,7 @@ public interface NeighborList<NNTYPE> extends
 		NONE,
 		SKIP, // distance measure is skipped
 		REMOVE // skipped and removed from future selection
-	};
+	}
 
 	/**
 	 * May be called prior to init() when discovered by entry itself.

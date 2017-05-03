@@ -180,7 +180,6 @@ public class TdriveIngestPlugin extends
 
 		final List<GeoWaveData<SimpleFeature>> featureData = new ArrayList<GeoWaveData<SimpleFeature>>();
 
-		// tdrivepointBuilder = new SimpleFeatureBuilder(tdrivepointType);
 		tdrivepointBuilder.set(
 				"geometry",
 				GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(

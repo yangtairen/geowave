@@ -159,7 +159,7 @@ public class SpatialQueryFilter extends
 				return BasicQueryCompareOperation.EQUALS;
 			}
 		}
-	};
+	}
 
 	private CompareOperation compareOperation = CompareOperation.INTERSECTS;
 

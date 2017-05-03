@@ -1,10 +1,10 @@
 package mil.nga.giat.geowave.core.cli.prefix;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import javassist.CannotCompileException;
@@ -15,13 +15,9 @@ import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
-import javassist.bytecode.AttributeInfo;
-import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.IntegerMemberValue;
-import junit.framework.Assert;
-import mil.nga.giat.geowave.core.cli.prefix.JavassistUtils;
 
 public class JavassistUtilsTest
 {
@@ -52,10 +48,12 @@ public class JavassistUtilsTest
 
 	private static class FindMethodTest
 	{
+		@SuppressWarnings("unused")
 		public void method1() {
 			return;
 		}
 
+		@SuppressWarnings("unused")
 		public void methodA() {
 			return;
 		}

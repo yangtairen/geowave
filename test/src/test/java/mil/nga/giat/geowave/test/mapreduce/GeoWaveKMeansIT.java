@@ -27,19 +27,16 @@ import mil.nga.giat.geowave.analytic.SimpleFeatureItemWrapperFactory;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManager;
 import mil.nga.giat.geowave.analytic.clustering.CentroidManagerGeoWave;
 import mil.nga.giat.geowave.analytic.distance.FeatureCentroidDistanceFn;
-import mil.nga.giat.geowave.analytic.mapreduce.clustering.runner.MultiLevelJumpKMeansClusteringJobRunner;
 import mil.nga.giat.geowave.analytic.mapreduce.clustering.runner.MultiLevelKMeansClusteringJobRunner;
 import mil.nga.giat.geowave.analytic.param.ClusteringParameters;
 import mil.nga.giat.geowave.analytic.param.ExtractParameters;
 import mil.nga.giat.geowave.analytic.param.GlobalParameters;
-import mil.nga.giat.geowave.analytic.param.JumpParameters;
 import mil.nga.giat.geowave.analytic.param.MapReduceParameters;
 import mil.nga.giat.geowave.analytic.param.ParameterEnum;
 import mil.nga.giat.geowave.analytic.param.SampleParameters;
 import mil.nga.giat.geowave.analytic.param.StoreParameters.StoreParam;
 import mil.nga.giat.geowave.analytic.store.PersistableStore;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
-import mil.nga.giat.geowave.core.index.sfc.data.NumericRange;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
@@ -237,71 +234,6 @@ public class GeoWaveKMeansIT
 				2, // level
 				resultCounLevel1);
 		Assert.assertTrue(resultCounLevel2 >= 2);
-		// for travis-ci to run, we want to limit the memory consumption
-		System.gc();
-	}
-
-	private void runKJumpPlusPlus(
-			final DistributableQuery query )
-			throws Exception {
-
-		final MultiLevelJumpKMeansClusteringJobRunner jobRunner2 = new MultiLevelJumpKMeansClusteringJobRunner();
-		final int res2 = jobRunner2.run(
-				MapReduceTestUtils.getConfiguration(),
-				new PropertyManagement(
-						new ParameterEnum[] {
-							ExtractParameters.Extract.QUERY,
-							ExtractParameters.Extract.MIN_INPUT_SPLIT,
-							ExtractParameters.Extract.MAX_INPUT_SPLIT,
-							ClusteringParameters.Clustering.ZOOM_LEVELS,
-							ExtractParameters.Extract.OUTPUT_DATA_TYPE_ID,
-							StoreParam.INPUT_STORE,
-							GlobalParameters.Global.BATCH_ID,
-							MapReduceParameters.MRConfig.HDFS_BASE_DIR,
-							JumpParameters.Jump.RANGE_OF_CENTROIDS,
-							JumpParameters.Jump.KPLUSPLUS_MIN,
-							ClusteringParameters.Clustering.MAX_ITERATIONS
-						},
-						new Object[] {
-							query,
-							MapReduceTestUtils.MIN_INPUT_SPLITS,
-							MapReduceTestUtils.MAX_INPUT_SPLITS,
-							2,
-							"centroid",
-							new PersistableStore(
-									dataStorePluginOptions),
-							"bx2",
-							TestUtils.TEMP_DIR + File.separator + MapReduceTestEnvironment.HDFS_BASE_DIRECTORY + "/t2",
-							new NumericRange(
-									4,
-									7),
-							5,
-							2
-						}));
-
-		Assert.assertEquals(
-				0,
-				res2);
-
-		final DataStore dataStore = dataStorePluginOptions.createDataStore();
-		final IndexStore indexStore = dataStorePluginOptions.createIndexStore();
-		final AdapterStore adapterStore = dataStorePluginOptions.createAdapterStore();
-		final int jumpRresultCounLevel1 = countResults(
-				dataStore,
-				indexStore,
-				adapterStore,
-				"bx2",
-				1,
-				1);
-		final int jumpRresultCounLevel2 = countResults(
-				dataStore,
-				indexStore,
-				adapterStore,
-				"bx2",
-				2,
-				jumpRresultCounLevel1);
-		Assert.assertTrue(jumpRresultCounLevel1 >= 2);
-		Assert.assertTrue(jumpRresultCounLevel2 >= 2);
 		// for travis-ci to run, we want to limit the memory consumption
 		System.gc();
 	}

@@ -29,6 +29,8 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 
+import mil.nga.giat.geowave.cli.osm.accumulo.osmschema.ColumnFamily;
+import mil.nga.giat.geowave.cli.osm.accumulo.osmschema.ColumnQualifier;
 import mil.nga.giat.geowave.cli.osm.accumulo.osmschema.Schema;
 import mil.nga.giat.geowave.cli.osm.mapreduce.Convert.SimpleFeatureGenerator;
 import mil.nga.giat.geowave.cli.osm.operations.options.OSMIngestCommandArgs;
@@ -37,7 +39,6 @@ import mil.nga.giat.geowave.cli.osm.types.TypeUtils;
 import mil.nga.giat.geowave.core.geotime.GeometryUtils;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
 import mil.nga.giat.geowave.core.store.data.field.FieldUtils;
-import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloRequiredOptions;
 
 public class OsmProvider
@@ -46,10 +47,8 @@ public class OsmProvider
 	private static final Logger LOGGER = LoggerFactory.getLogger(OsmProvider.class);
 	private Connector conn = null;
 	private BatchScanner bs = null;
-	private final FieldWriter<?, Long> longWriter = FieldUtils.getDefaultWriterForClass(Long.class);
 	private final FieldReader<Long> longReader = FieldUtils.getDefaultReaderForClass(Long.class);
 	private final FieldReader<Double> doubleReader = FieldUtils.getDefaultReaderForClass(Double.class);
-	private static final byte EMPTY_BYTES[] = new byte[0];
 
 	public OsmProvider(
 			OSMIngestCommandArgs args,
@@ -141,11 +140,8 @@ public class OsmProvider
 
 		int i = 0;
 		for (long l : osmunion.Nodes) {
-			// String hash = new String(Schema.getIdHash(l));
-
 			orderedCoords[i] = (coords.get(l));
 			if (orderedCoords[i] == null) {
-				// System.out.println("missing point for way: " + osmunion.Id);
 				missingNodes.add(String.valueOf(l));
 			}
 			i++;
@@ -295,14 +291,14 @@ public class OsmProvider
 		bs.clearColumns();
 		bs.fetchColumn(
 				new Text(
-						Schema.CF.WAY),
+						ColumnFamily.WAY),
 				new Text(
-						Schema.CQ.ID));
+						ColumnQualifier.ID));
 		bs.fetchColumn(
 				new Text(
-						Schema.CF.WAY),
+						ColumnFamily.WAY),
 				new Text(
-						Schema.CQ.REFERENCES));
+						ColumnQualifier.REFERENCES));
 
 		Map<Long, List<Long>> vals = new HashMap<>();
 
@@ -317,12 +313,12 @@ public class OsmProvider
 
 			if (Schema.arraysEqual(
 					row.getKey().getColumnQualifierData(),
-					Schema.CQ.ID)) {
+					ColumnQualifier.ID)) {
 				id = longReader.readField(row.getValue().get());
 			}
 			else if (Schema.arraysEqual(
 					row.getKey().getColumnQualifierData(),
-					Schema.CQ.REFERENCES)) {
+					ColumnQualifier.REFERENCES)) {
 				try {
 					tvals = TypeUtils.deserializeLongArray(
 							row.getValue().get(),
@@ -417,28 +413,26 @@ public class OsmProvider
 			ranges.add(new Range(
 					new Text(
 							row)));
-			// ranges.add(new Range(l.toString()));
 		}
 		ranges = Range.mergeOverlapping(ranges);
 
 		bs.setRanges(ranges);
 		bs.clearColumns();
-		// bs.fetchColumnFamily(new Text(Schema.CF.NODE));
 		bs.fetchColumn(
 				new Text(
-						Schema.CF.NODE),
+						ColumnFamily.NODE),
 				new Text(
-						Schema.CQ.LONGITUDE));
+						ColumnQualifier.LONGITUDE));
 		bs.fetchColumn(
 				new Text(
-						Schema.CF.NODE),
+						ColumnFamily.NODE),
 				new Text(
-						Schema.CQ.LATITUDE));
+						ColumnQualifier.LATITUDE));
 		bs.fetchColumn(
 				new Text(
-						Schema.CF.NODE),
+						ColumnFamily.NODE),
 				new Text(
-						Schema.CQ.ID));
+						ColumnQualifier.ID));
 
 		Map<Long, Coordinate> coords = new HashMap<>();
 
@@ -455,17 +449,17 @@ public class OsmProvider
 
 			if (Schema.arraysEqual(
 					row.getKey().getColumnQualifierData(),
-					Schema.CQ.LONGITUDE)) {
+					ColumnQualifier.LONGITUDE)) {
 				crd.x = doubleReader.readField(row.getValue().get());
 			}
 			else if (Schema.arraysEqual(
 					row.getKey().getColumnQualifierData(),
-					Schema.CQ.LATITUDE)) {
+					ColumnQualifier.LATITUDE)) {
 				crd.y = doubleReader.readField(row.getValue().get());
 			}
 			else if (Schema.arraysEqual(
 					row.getKey().getColumnQualifierData(),
-					Schema.CQ.ID)) {
+					ColumnQualifier.ID)) {
 				id = longReader.readField(row.getValue().get());
 			}
 

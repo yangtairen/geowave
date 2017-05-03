@@ -213,14 +213,12 @@ public class KMeansIterationsJobRunner<T> implements
 				// points? This occurs when the number of centroids exceeds the
 				// number of points in a cluster.
 				// it is an edge case.
-				// deletionKeys.add( prior.getID() );
 				LOGGER.warn("Centroid is no longer viable " + prior.getID() + " from group " + prior.getGroupID());
 				prior = centroid;
 				continue;
 			}
 			// the prior run centroids are still present from the geowave data
-			// store;
-			// their priors do not exist in the map
+			// store; their priors do not exist in the map
 			distance += distanceFunction.measure(
 					prior.getWrappedItem(),
 					centroid.getWrappedItem());
@@ -245,7 +243,6 @@ public class KMeansIterationsJobRunner<T> implements
 			throw new RuntimeException(
 					e);
 		}
-
 		return (distance < convergenceTol) ? 0 : 1;
 	}
 

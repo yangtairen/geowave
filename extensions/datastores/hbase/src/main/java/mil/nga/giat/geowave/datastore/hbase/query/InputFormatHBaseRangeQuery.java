@@ -18,7 +18,6 @@ import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseInputFormatIteratorWrapper;
-import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
 /**
  * * Represents a query operation for a range of HBase row IDs. This class is

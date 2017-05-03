@@ -130,37 +130,6 @@ public class GeoWaveNNIT
 
 		final NNJobRunner jobRunner = new NNJobRunner();
 
-		// final int res = 1;
-		// GeoWaveMain.main(new String[] {
-		// "analytic",
-		// "nn",
-		// "--query.adapters",
-		// "testnn",
-		// "--query.index",
-		// new
-		// SpatialDimensionalityTypeProvider().createPrimaryIndex().getId().getString(),
-		// "-emn",
-		// Integer.toString(MIN_INPUT_SPLITS),
-		// "-emx",
-		// Integer.toString(MAX_INPUT_SPLITS),
-		// "-pmd",
-		// "0.2",
-		// "-pdt",
-		// "0.2,0.2",
-		// "-pc",
-		// OrthodromicDistancePartitioner.class.toString(),
-		// "-oop",
-		// hdfsBaseDirectory + "/t1/pairs",
-		// "-hdfsbase",
-		// hdfsBaseDirectory + "/t1",
-		// "-orc",
-		// "3",
-		// "-ofc",
-		// SequenceFileOutputFormatConfiguration.class.toString(),
-		// "-ifc",
-		// GeoWaveInputFormatConfiguration.class.toString(),
-		// "foo"
-		// });
 		final int res = jobRunner.run(
 				MapReduceTestUtils.getConfiguration(),
 				new PropertyManagement(

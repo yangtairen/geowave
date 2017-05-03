@@ -284,8 +284,6 @@ public class AccumuloDataStatisticsStore extends
 						columnFamily),
 				new Text(
 						columnQualifier));
-
-		// scanner.setRange(Range.);
 		return scanner;
 	}
 }

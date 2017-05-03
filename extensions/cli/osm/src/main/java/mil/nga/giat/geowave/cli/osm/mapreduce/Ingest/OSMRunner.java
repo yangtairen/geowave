@@ -17,10 +17,8 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import mil.nga.giat.geowave.cli.osm.accumulo.osmschema.Schema;
+import mil.nga.giat.geowave.cli.osm.accumulo.osmschema.ColumnFamily;
 import mil.nga.giat.geowave.cli.osm.operations.options.OSMIngestCommandArgs;
 import mil.nga.giat.geowave.cli.osm.types.generated.Node;
 import mil.nga.giat.geowave.cli.osm.types.generated.Relation;
@@ -36,7 +34,6 @@ public class OSMRunner extends
 		Configured implements
 		Tool
 {
-	private static final Logger log = LoggerFactory.getLogger(OSMRunner.class);
 	private org.apache.avro.Schema avroSchema = null;
 	private String inputAvroFile = null;
 
@@ -107,13 +104,13 @@ public class OSMRunner extends
 
 		bao.addLocalityGroup(
 				argv.getOsmTableName(),
-				Schema.CF.NODE);
+				ColumnFamily.NODE);
 		bao.addLocalityGroup(
 				argv.getOsmTableName(),
-				Schema.CF.WAY);
+				ColumnFamily.WAY);
 		bao.addLocalityGroup(
 				argv.getOsmTableName(),
-				Schema.CF.RELATION);
+				ColumnFamily.RELATION);
 	}
 
 	@Override

@@ -408,10 +408,6 @@ public class DataStoreUtils
 		return null;
 	}
 
-	@SuppressWarnings({
-		"rawtypes",
-		"unchecked"
-	})
 	public static <T> FieldInfo<T> getFieldInfo(
 			final PersistentValue<T> fieldValue,
 			final byte[] value,

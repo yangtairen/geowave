@@ -111,7 +111,7 @@ abstract public class AbstractAccumuloSplitsOperation
 
 	protected boolean isPreSplit() {
 		return false;
-	};
+	}
 
 	abstract protected boolean setSplits(
 			Connector connector,

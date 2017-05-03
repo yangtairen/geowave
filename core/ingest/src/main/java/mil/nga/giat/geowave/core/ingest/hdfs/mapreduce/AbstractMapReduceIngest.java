@@ -104,7 +104,7 @@ abstract public class AbstractMapReduceIngest<T extends Persistable & DataAdapte
 					GLOBAL_VISIBILITY_KEY,
 					ingestOptions.getVisibility());
 		}
-		final Job job = new Job(
+		final Job job = Job.getInstance(
 				conf,
 				getJobName());
 		final StringBuilder indexIds = new StringBuilder();

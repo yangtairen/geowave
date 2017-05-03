@@ -396,35 +396,6 @@ public class XZHierarchicalIndexStrategy implements
 		// just pass through raster strategy results since this is only used by
 		// raster data for now
 		return rasterRanges;
-
-		// final BinRange[][] binRangesPerDimension =
-		// BinnedNumericDataset.getBinnedRangesPerDimension(
-		// dataRange,
-		// baseDefinitions);
-		//
-		// MultiDimensionalCoordinateRanges[] ranges = new
-		// MultiDimensionalCoordinateRanges[rasterRanges.length + 2];
-		//
-		// ranges[0] = BinnedSFCUtils.getCoordinateRanges(
-		// binRangesPerDimension,
-		// pointCurve,
-		// baseDefinitions.length,
-		// pointCurveMultiDimensionalId);
-		//
-		// ranges[1] = BinnedSFCUtils.getCoordinateRanges(
-		// binRangesPerDimension,
-		// xzCurve,
-		// baseDefinitions.length,
-		// xzCurveMultiDimensionalId);
-		//
-		// System.arraycopy(
-		// rasterRanges,
-		// 0,
-		// ranges,
-		// 2,
-		// rasterRanges.length);
-		//
-		// return ranges;
 	}
 
 	@Override
@@ -563,5 +534,4 @@ public class XZHierarchicalIndexStrategy implements
 			return jo;
 		}
 	}
-
 }

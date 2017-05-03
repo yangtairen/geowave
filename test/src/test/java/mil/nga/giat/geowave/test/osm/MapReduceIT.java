@@ -9,14 +9,11 @@ import org.apache.accumulo.core.security.Authorizations;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import mil.nga.giat.geowave.cli.osm.operations.IngestOSMToGeoWaveCommand;
 import mil.nga.giat.geowave.cli.osm.operations.StageOSMToHDFSCommand;
 import mil.nga.giat.geowave.core.cli.parser.ManualOperationParams;
 import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions;
-import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloRequiredOptions;
 import mil.nga.giat.geowave.test.AccumuloStoreTestEnvironment;
 import mil.nga.giat.geowave.test.GeoWaveITRunner;
 import mil.nga.giat.geowave.test.TestUtils;
@@ -34,9 +31,6 @@ import net.lingala.zip4j.exception.ZipException;
 })
 public class MapReduceIT
 {
-
-	private final static Logger LOGGER = LoggerFactory.getLogger(MapReduceIT.class);
-
 	protected static final String TEST_RESOURCE_DIR = new File(
 			"./src/test/resources/osm/").getAbsolutePath().toString();
 	protected static final String TEST_DATA_ZIP_RESOURCE_PATH = TEST_RESOURCE_DIR + "/" + "andorra-latest.zip";

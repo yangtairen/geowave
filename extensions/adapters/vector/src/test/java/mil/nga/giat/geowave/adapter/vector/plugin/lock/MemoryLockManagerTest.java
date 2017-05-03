@@ -16,7 +16,6 @@ import org.junit.Test;
 
 public class MemoryLockManagerTest
 {
-
 	@Test
 	public void testRelockLock()
 			throws InterruptedException,
@@ -155,7 +154,6 @@ public class MemoryLockManagerTest
 					public void run() {
 						try {
 							Thread.sleep(4000);
-							// System.out.println("commit");
 							t1.commit();
 						}
 						catch (InterruptedException e) {
@@ -174,18 +172,15 @@ public class MemoryLockManagerTest
 		long currentTime = System.currentTimeMillis();
 		commiter.start();
 		// will block\
-		// System.out.println("t2");
 		memoryLockManager.lock(
 				t2,
 				"f3");
 		final long endTime = System.currentTimeMillis();
-		// System.out.println(endTime + " > " + currentTime);
 		assertTrue((endTime - currentTime) >= 3800);
 
 		commiter.join();
 		t2.commit();
 		t2.close();
 		t1.close();
-
 	}
 }

@@ -2,7 +2,6 @@ package mil.nga.giat.geowave.adapter.vector.plugin.visibility;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
-import mil.nga.giat.geowave.core.store.data.visibility.VisibilityManagement;
 
 import org.opengis.feature.simple.SimpleFeature;
 

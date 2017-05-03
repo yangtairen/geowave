@@ -30,8 +30,6 @@ import mil.nga.giat.geowave.core.store.adapter.exceptions.MismatchedIndexToAdapt
 import mil.nga.giat.geowave.core.store.adapter.statistics.CountDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
-import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeDataStatistics;
-import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
 import mil.nga.giat.geowave.core.store.data.CommonIndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.IndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
@@ -462,7 +460,7 @@ public class MemoryDataStoreTest
 	private class TestQueryFilter implements
 			QueryFilter
 	{
-		final CommonIndexModel indexModel;
+		// final CommonIndexModel indexModel;
 		final double min, max;
 
 		public TestQueryFilter(
@@ -470,7 +468,7 @@ public class MemoryDataStoreTest
 				final double min,
 				final double max ) {
 			super();
-			this.indexModel = indexModel;
+			// this.indexModel = indexModel;
 			this.min = min;
 			this.max = max;
 		}

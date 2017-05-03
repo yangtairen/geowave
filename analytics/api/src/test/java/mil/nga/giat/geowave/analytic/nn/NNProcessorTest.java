@@ -77,6 +77,8 @@ public class NNProcessorTest
 		return new NNProcessor<Integer, Integer>(
 				new Partitioner<Object>() {
 
+					private static final long serialVersionUID = -7110490011327934631L;
+
 					@Override
 					public void initialize(
 							final JobContext context,

@@ -301,6 +301,7 @@ public class NativeReduceContext<KEYIN, VALUEIN> implements
 		return writableContext.getUser();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean getSymlink() {
 		return writableContext.getSymlink();
@@ -323,12 +324,14 @@ public class NativeReduceContext<KEYIN, VALUEIN> implements
 		return writableContext.getCacheFiles();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public Path[] getLocalCacheArchives()
 			throws IOException {
 		return writableContext.getLocalCacheArchives();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public Path[] getLocalCacheFiles()
 			throws IOException {

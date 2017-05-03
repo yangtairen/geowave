@@ -182,6 +182,7 @@ public class StatsManagerTest
 				schema);
 	}
 
+	@SuppressWarnings("unused")
 	private String dump(
 			final String value ) {
 		System.out.println(value);

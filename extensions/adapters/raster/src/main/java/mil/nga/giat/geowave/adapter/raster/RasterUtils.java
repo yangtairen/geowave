@@ -217,13 +217,7 @@ public class RasterUtils
 		// note the following geometry collection may be invalid (say with
 		// overlapping polygons)
 		final Geometry geometryCollection = factory.buildGeometry(geometries);
-		// try {
 		return geometryCollection.union();
-		// }
-		// catch (Exception e) {
-		// LOGGER.warn("Error creating a union of this geometry collection", e);
-		// return geometryCollection;
-		// }
 	}
 
 	private static Coordinate[] getWorldCoordinates(
@@ -1067,29 +1061,16 @@ public class RasterUtils
 		// keep unchanged.
 		SampleDimensionType targetType = sourceIsFloat ? SampleDimensionType.UNSIGNED_8BITS : sourceType;
 
-		// Default setting: no scaling
-		final boolean targetIsFloat = TypeMap.isFloatingPoint(targetType);
 		NumberRange targetRange = TypeMap.getRange(targetType);
 		Category[] categories = new Category[1];
-		final boolean needScaling;
-		if (targetIsFloat) {
-			// Never rescale if the target is floating point numbers.
-			needScaling = false;
-		}
-		else if (sourceIsFloat) {
+		if (sourceIsFloat) {
 			// Always rescale for "float to integer" conversions. In addition,
 			// Use 0 value as a "no data" category for unsigned data type only.
-			needScaling = true;
 			if (!TypeMap.isSigned(targetType)) {
 				categories = new Category[2];
 				categories[1] = Category.NODATA;
 				targetRange = TypeMap.getPositiveRange(targetType);
 			}
-		}
-		else {
-			// In "integer to integer" conversions, rescale only if
-			// the target range is smaller than the source range.
-			needScaling = !targetRange.contains(TypeMap.getRange(sourceType));
 		}
 
 		/*
@@ -1100,28 +1081,6 @@ public class RasterUtils
 		 * have NaN later if the image uses a writable raster.
 		 */
 		for (int b = 0; b < numBands; b++) {
-			// if (needScaling) {
-			// sourceRange = NumberRange.create(
-			// min[b],
-			// max[b]).castTo(
-			// sourceRange.getElementClass());
-			// categories[0] = new Category(
-			// name[b],
-			// null,
-			// targetRange,
-			// sourceRange);
-			// }
-			// else {
-			// categories[0] = new Category(
-			// name[b],
-			// null,
-			// targetRange,
-			// LinearTransform1D.IDENTITY);
-			// }
-			// dst[b] = new GridSampleDimension(
-			// name[b],
-			// categories,
-			// null);
 			categories[0] = new Category(
 					name[b],
 					(Color) null,

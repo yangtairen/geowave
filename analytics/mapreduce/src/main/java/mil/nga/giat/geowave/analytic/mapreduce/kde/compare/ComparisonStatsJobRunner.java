@@ -101,12 +101,13 @@ public class ComparisonStatsJobRunner extends
 									+ kdeCommandLineOptions.getMinLevel() + "_" + kdeCommandLineOptions.getMaxLevel()
 									+ "_" + kdeCommandLineOptions.getCoverageName() + "/basic"),
 					true);
-			final Job combiner = new Job(
-					conf);
-			combiner.setJarByClass(this.getClass());
-			combiner.setJobName(inputDataStoreOptions.getGeowaveNamespace() + "("
+			final String jobName = inputDataStoreOptions.getGeowaveNamespace() + "("
 					+ kdeCommandLineOptions.getCoverageName() + ")" + " levels " + kdeCommandLineOptions.getMinLevel()
-					+ "-" + kdeCommandLineOptions.getMaxLevel() + " combining seasons");
+					+ "-" + kdeCommandLineOptions.getMaxLevel() + " combining seasons";
+			final Job combiner = Job.getInstance(
+					conf,
+					jobName);
+			combiner.setJarByClass(this.getClass());
 			combiner.setMapperClass(ComparisonCombiningStatsMapper.class);
 			combiner.setReducerClass(ComparisonCombiningStatsReducer.class);
 			combiner.setMapOutputKeyClass(LongWritable.class);
@@ -145,12 +146,13 @@ public class ComparisonStatsJobRunner extends
 									"level " + Long.valueOf(l)).getValue());
 				}
 				// Stats Reducer Job configuration parameters
-				final Job ingester = new Job(
-						conf);
-				ingester.setJarByClass(this.getClass());
-				ingester.setJobName(inputDataStoreOptions.getGeowaveNamespace() + "("
+				final String ingestJobName = inputDataStoreOptions.getGeowaveNamespace() + "("
 						+ kdeCommandLineOptions.getCoverageName() + ")" + " levels "
-						+ kdeCommandLineOptions.getMinLevel() + "-" + kdeCommandLineOptions + " Ingest");
+						+ kdeCommandLineOptions.getMinLevel() + "-" + kdeCommandLineOptions + " Ingest";
+				final Job ingester = Job.getInstance(
+						conf,
+						ingestJobName);
+				ingester.setJarByClass(this.getClass());
 				ingester.setMapperClass(ComparisonIdentityMapper.class);
 				ingester.setPartitionerClass(ComparisonCellLevelPartitioner.class);
 				ingester.setReducerClass(ComparisonAccumuloStatsReducer.class);

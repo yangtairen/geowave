@@ -36,8 +36,6 @@ public abstract class FixedBinNumericStatistics<T> extends
 {
 	public static final ByteArrayId STATS_TYPE = new ByteArrayId(
 			"FIXED_BIN_NUMERIC_HISTOGRAM");
-	// private static final NumericHistogramFactory HistFactory = new
-	// MinimalBinDistanceHistogramFactory();
 	private static final NumericHistogramFactory HistFactory = new FixedBinNumericHistogramFactory();
 	NumericHistogram histogram = HistFactory.create(1024);
 
@@ -232,5 +230,4 @@ public abstract class FixedBinNumericStatistics<T> extends
 
 		return jo;
 	}
-
 }

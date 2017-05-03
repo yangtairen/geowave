@@ -36,7 +36,6 @@ import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
-import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
@@ -74,7 +73,7 @@ public class SpatialQueryExample
 		example.runPolygonExamples();
 	}
 
-	private static void setupDataStores()
+	private void setupDataStores()
 			throws AccumuloSecurityException,
 			AccumuloException {
 		// Initialize VectorDataStore and AccumuloAdapterStore

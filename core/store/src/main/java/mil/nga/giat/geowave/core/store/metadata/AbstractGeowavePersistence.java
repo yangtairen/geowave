@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.store.DataStoreOperations;
@@ -25,8 +23,6 @@ import mil.nga.giat.geowave.core.store.DataStoreOperations;
  */
 public abstract class AbstractGeowavePersistence<T extends Persistable>
 {
-	private final static Logger LOGGER = Logger.getLogger(AbstractGeowavePersistence.class);
-
 	// TODO: should we concern ourselves with multiple distributed processes
 	// updating and looking up objects simultaneously that would require some
 	// locking/synchronization mechanism, and even possibly update

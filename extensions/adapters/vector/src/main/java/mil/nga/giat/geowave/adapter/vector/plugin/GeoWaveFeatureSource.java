@@ -24,7 +24,6 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.statistics.CountDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 
-@SuppressWarnings("unchecked")
 public class GeoWaveFeatureSource extends
 		ContentFeatureStore
 {

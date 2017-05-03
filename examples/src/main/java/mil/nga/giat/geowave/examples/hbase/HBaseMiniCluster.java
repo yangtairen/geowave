@@ -110,11 +110,6 @@ public class HBaseMiniCluster
 					"hbase.online.schema.update.enable",
 					"true");
 
-			// Set list of coprocessors here (one for test, so far)
-			// conf.set(
-			// CoprocessorHost.REGION_COPROCESSOR_CONF_KEY,
-			// AggregationEndpoint.class.getName());
-
 			hbaseLocalCluster = new HbaseLocalCluster.Builder()
 					.setHbaseMasterPort(
 							Integer.parseInt(propertyParser.getProperty(ConfigVars.HBASE_MASTER_PORT_KEY)))

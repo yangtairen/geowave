@@ -31,11 +31,6 @@ public class StringSerializationProvider implements
 				return null;
 			}
 			return StringUtils.stringFromBinary(fieldData);
-
-			// for field serialization ensure UTF-8?
-			// return new String(
-			// fieldData,
-			// StringUtils.UTF8_CHAR_SET);
 		}
 	}
 
@@ -51,7 +46,6 @@ public class StringSerializationProvider implements
 			return StringUtils.stringToBinary(fieldValue);
 
 			// for field serialization ensure UTF-8?
-			// return fieldValue.getBytes(StringUtils.UTF8_CHAR_SET);
 		}
 
 		@Override

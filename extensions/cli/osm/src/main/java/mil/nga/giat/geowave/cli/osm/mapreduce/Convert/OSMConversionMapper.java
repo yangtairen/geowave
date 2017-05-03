@@ -21,9 +21,7 @@ import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputKey;
 public class OSMConversionMapper extends
 		Mapper<Key, Value, GeoWaveOutputKey, Object>
 {
-
 	private ByteArrayId indexId = null;
-	private String globalVisibility = "";
 	private final SimpleFeatureGenerator sfg = new SimpleFeatureGenerator();
 	private OsmProvider osmProvider = null;
 
@@ -69,8 +67,6 @@ public class OSMConversionMapper extends
 			InterruptedException {
 		super.setup(context);
 		try {
-			globalVisibility = context.getConfiguration().get(
-					AbstractMapReduceIngest.GLOBAL_VISIBILITY_KEY);
 			final String primaryIndexIdStr = context.getConfiguration().get(
 					AbstractMapReduceIngest.PRIMARY_INDEX_IDS_KEY);
 			if (primaryIndexIdStr != null) {

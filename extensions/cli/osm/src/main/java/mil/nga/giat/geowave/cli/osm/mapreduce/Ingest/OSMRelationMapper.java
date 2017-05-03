@@ -7,8 +7,9 @@ import org.apache.accumulo.core.data.Mutation;
 import org.apache.avro.mapred.AvroKey;
 import org.apache.hadoop.io.NullWritable;
 
+import mil.nga.giat.geowave.cli.osm.accumulo.osmschema.ColumnFamily;
+import mil.nga.giat.geowave.cli.osm.accumulo.osmschema.ColumnQualifier;
 import mil.nga.giat.geowave.cli.osm.accumulo.osmschema.Constants;
-import mil.nga.giat.geowave.cli.osm.accumulo.osmschema.Schema;
 import mil.nga.giat.geowave.cli.osm.types.generated.Primitive;
 import mil.nga.giat.geowave.cli.osm.types.generated.Relation;
 import mil.nga.giat.geowave.cli.osm.types.generated.RelationMember;
@@ -19,7 +20,6 @@ import mil.nga.giat.geowave.cli.osm.types.generated.RelationMember;
 public class OSMRelationMapper extends
 		OSMMapperBase<Relation>
 {
-
 	@Override
 	public void map(
 			AvroKey<Relation> key,
@@ -33,36 +33,34 @@ public class OSMRelationMapper extends
 
 		Mutation m = new Mutation(
 				getIdHash(p.getId()));
-		// Mutation m = new Mutation(_longWriter.writeField(p.getId()));
-		// Mutation m = new Mutation(p.getId().toString());
 
 		put(
 				m,
-				Schema.CF.RELATION,
-				Schema.CQ.ID,
+				ColumnFamily.RELATION,
+				ColumnQualifier.ID,
 				p.getId());
 
 		int i = 0;
 		for (RelationMember rm : relation.getMembers()) {
 			put(
 					m,
-					Schema.CF.RELATION,
-					Schema.CQ.getRelationMember(
-							Schema.CQ.REFERENCE_ROLEID_PREFIX,
+					ColumnFamily.RELATION,
+					ColumnQualifier.getRelationMember(
+							ColumnQualifier.REFERENCE_ROLEID_PREFIX,
 							i),
 					rm.getRole());
 			put(
 					m,
-					Schema.CF.RELATION,
-					Schema.CQ.getRelationMember(
-							Schema.CQ.REFERENCE_MEMID_PREFIX,
+					ColumnFamily.RELATION,
+					ColumnQualifier.getRelationMember(
+							ColumnQualifier.REFERENCE_MEMID_PREFIX,
 							i),
 					rm.getMember());
 			put(
 					m,
-					Schema.CF.RELATION,
-					Schema.CQ.getRelationMember(
-							Schema.CQ.REFERENCE_TYPE_PREFIX,
+					ColumnFamily.RELATION,
+					ColumnQualifier.getRelationMember(
+							ColumnQualifier.REFERENCE_TYPE_PREFIX,
 							i),
 					rm.getMemberType().toString());
 			i++;
@@ -73,8 +71,8 @@ public class OSMRelationMapper extends
 				p.getVersion())) {
 			put(
 					m,
-					Schema.CF.RELATION,
-					Schema.CQ.VERSION,
+					ColumnFamily.RELATION,
+					ColumnQualifier.VERSION,
 					p.getVersion());
 		}
 
@@ -83,8 +81,8 @@ public class OSMRelationMapper extends
 				p.getTimestamp())) {
 			put(
 					m,
-					Schema.CF.RELATION,
-					Schema.CQ.TIMESTAMP,
+					ColumnFamily.RELATION,
+					ColumnQualifier.TIMESTAMP,
 					p.getTimestamp());
 		}
 
@@ -93,8 +91,8 @@ public class OSMRelationMapper extends
 				p.getChangesetId())) {
 			put(
 					m,
-					Schema.CF.RELATION,
-					Schema.CQ.CHANGESET,
+					ColumnFamily.RELATION,
+					ColumnQualifier.CHANGESET,
 					p.getChangesetId());
 		}
 
@@ -103,26 +101,26 @@ public class OSMRelationMapper extends
 				p.getUserId())) {
 			put(
 					m,
-					Schema.CF.RELATION,
-					Schema.CQ.USER_ID,
+					ColumnFamily.RELATION,
+					ColumnQualifier.USER_ID,
 					p.getUserId());
 		}
 
 		put(
 				m,
-				Schema.CF.RELATION,
-				Schema.CQ.USER_TEXT,
+				ColumnFamily.RELATION,
+				ColumnQualifier.USER_TEXT,
 				p.getUserName());
 		put(
 				m,
-				Schema.CF.RELATION,
-				Schema.CQ.OSM_VISIBILITY,
+				ColumnFamily.RELATION,
+				ColumnQualifier.OSM_VISIBILITY,
 				p.getVisible());
 
 		for (Map.Entry<String, String> kvp : p.getTags().entrySet()) {
 			put(
 					m,
-					Schema.CF.RELATION,
+					ColumnFamily.RELATION,
 					kvp.getKey().toString().getBytes(
 							Constants.CHARSET),
 					kvp.getValue().toString());

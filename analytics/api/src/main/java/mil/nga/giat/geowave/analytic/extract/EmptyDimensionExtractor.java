@@ -6,6 +6,8 @@ public abstract class EmptyDimensionExtractor<T> implements
 		DimensionExtractor<T>
 {
 
+	private static final long serialVersionUID = -7902355141515795597L;
+
 	private static final double[] EMPTY_VAL = new double[0];
 	private static final String[] EMPTY_NAME = new String[0];
 

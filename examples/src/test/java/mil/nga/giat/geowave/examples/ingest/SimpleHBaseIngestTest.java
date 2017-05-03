@@ -46,7 +46,6 @@ public class SimpleHBaseIngestTest
 	private static HBaseSecondaryIndexDataStore secondaryIndexStore;
 	private static HBaseDataStore mockDataStore;
 
-	private static String zookeeper;
 	private static HbaseLocalCluster hbaseLocalCluster;
 	private static ZookeeperLocalCluster zookeeperLocalCluster;
 	private static final String HBASE_PROPS_FILE = "hbase.properties";
@@ -88,8 +87,6 @@ public class SimpleHBaseIngestTest
 			e.printStackTrace();
 			Assert.fail();
 		}
-
-		zookeeper = zookeeperLocalCluster.getZookeeperConnectionString();
 
 		try {
 			Configuration conf = new Configuration();
@@ -200,9 +197,7 @@ public class SimpleHBaseIngestTest
 					"Unable to delete mini zookeeper temporary directory",
 					e);
 		}
-
 		hbaseOperations = null;
-		zookeeper = null;
 	}
 
 	@Test

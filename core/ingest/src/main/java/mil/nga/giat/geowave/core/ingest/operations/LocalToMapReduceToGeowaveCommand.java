@@ -231,5 +231,5 @@ public class LocalToMapReduceToGeowaveCommand extends
 	public void setPluginFormats(
 			IngestFormatPluginOptions pluginFormats ) {
 		this.pluginFormats = pluginFormats;
-	};
+	}
 }

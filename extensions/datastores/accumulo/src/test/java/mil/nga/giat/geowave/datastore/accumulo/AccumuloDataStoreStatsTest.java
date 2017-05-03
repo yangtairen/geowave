@@ -207,26 +207,19 @@ public class AccumuloDataStoreStatsTest
 					33)
 		});
 
-		ByteArrayId rowId0, rowId1;
 		try (IndexWriter<TestGeometry> indexWriter = mockDataStore.createWriter(
 				adapter,
 				index)) {
-			rowId0 = indexWriter.write(
-					new TestGeometry(
-							factory.createPoint(new Coordinate(
-									25,
-									32)),
-							"test_pt"),
-					visWriterAAA).get(
-					0);
-			rowId1 = indexWriter.write(
-					new TestGeometry(
-							factory.createPoint(new Coordinate(
-									26,
-									32)),
-							"test_pt_1"),
-					visWriterAAA).get(
-					0);
+			/*
+			 * rowId0 = indexWriter.write( new TestGeometry(
+			 * factory.createPoint(new Coordinate( 25, 32)), "test_pt"),
+			 * visWriterAAA).get( 0);
+			 */
+			/*
+			 * rowId1 = indexWriter.write( new TestGeometry(
+			 * factory.createPoint(new Coordinate( 26, 32)), "test_pt_1"),
+			 * visWriterAAA).get( 0);
+			 */
 			indexWriter.write(
 					new TestGeometry(
 							factory.createPoint(new Coordinate(
@@ -478,13 +471,11 @@ public class AccumuloDataStoreStatsTest
 		try (IndexWriter<TestGeometry> indexWriter = mockDataStore.createWriter(
 				adapter,
 				index)) {
-			rowId0 = indexWriter.write(
-					new TestGeometry(
-							factory.createPoint(new Coordinate(
-									25,
-									32)),
-							"test_pt_2")).get(
-					0);
+			/*
+			 * rowId0 = indexWriter.write( new TestGeometry(
+			 * factory.createPoint(new Coordinate( 25, 32)), "test_pt_2")).get(
+			 * 0);
+			 */
 		}
 
 		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
@@ -760,7 +751,6 @@ public class AccumuloDataStoreStatsTest
 	private static class GeoBoundingBoxStatistics extends
 			BoundingBoxDataStatistics<TestGeometry>
 	{
-
 		@SuppressWarnings("unused")
 		protected GeoBoundingBoxStatistics() {
 			super();
@@ -782,7 +772,5 @@ public class AccumuloDataStoreStatsTest
 			}
 			return null;
 		}
-
 	}
-
 }

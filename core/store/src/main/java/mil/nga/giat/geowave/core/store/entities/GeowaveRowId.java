@@ -1,7 +1,6 @@
 package mil.nga.giat.geowave.core.store.entities;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 

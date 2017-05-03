@@ -16,11 +16,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
-
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.cli.osm.osmfeature.FeatureConfigParser;
 import mil.nga.giat.geowave.cli.osm.osmfeature.types.attributes.AttributeDefinition;
@@ -73,29 +68,10 @@ public class FeatureDefinitionSet
 		final SimpleFeatureTypeBuilder sftb = new SimpleFeatureTypeBuilder();
 		sftb.setName(fd.name);
 		final AttributeTypeBuilder atb = new AttributeTypeBuilder();
-		// Class geomClass = null;
-		// switch (fd.Type) {
-		// case Geometry: {
-		// geomClass = Geometry.class;
-		// break;
-		// }
-		// case Point: {
-		// geomClass = Point.class;
-		// break;
-		// }
-		// case LineString: {
-		// geomClass = LineString.class;
-		// break;
-		// }
-		// case Polygon: {
-		// geomClass = Polygon.class;
-		// }
-		// }
-		// sftb.add(atb.binding(geomClass).nillable(false).buildDescriptor("geometry"));
 		for (AttributeDefinition ad : fd.attributes) {
 			AttributeType at = AttributeTypes.getAttributeType(ad.type);
 			if (ad.name == null) {
-				System.out.println("yo");
+				LOGGER.debug("yo");		// should this be deleted?
 			}
 			if (at != null) {
 				sftb.add(atb.binding(

@@ -228,8 +228,6 @@ public class AdapterBasedPartitionerTest
 		double minY = 0;
 		for (final PartitionData partition : partitions) {
 			final MultiDimensionalNumericData ranges = partitioner.getRangesForPartition(partition);
-			// System.out.println(ranges.getDataPerDimension()[0] + "; "
-			// +ranges.getDataPerDimension()[1] + " = " + partition.isPrimary);
 			maxX = Math.max(
 					maxX,
 					ranges.getMaxValuesPerDimension()[1]);

@@ -11,7 +11,7 @@ public abstract class AnalyticJobRunner extends
 		Configured implements
 		Tool
 {
-	@SuppressWarnings("deprecation")
+
 	public int runJob()
 			throws IOException,
 			InterruptedException,

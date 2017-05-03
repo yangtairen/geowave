@@ -68,10 +68,6 @@ public class QABandToIceMaskConverter implements
 			final int x,
 			final int y,
 			final Raster data ) {
-		// if (x < 0 || y < 0 || x >= data.getWidth() || y >= data.getHeight())
-		// {
-		// return -1;
-		// }
 		final int sample = data.getSample(
 				x,
 				y,

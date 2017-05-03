@@ -82,12 +82,6 @@ public class SimpleIngestIndexWriter extends
 		// This describes how to index the data
 		final PrimaryIndex index = createSpatialIndex();
 
-		// features require a featureID - this should be unqiue as it's a
-		// foreign key on the feature
-		// (i.e. sending in a new feature with the same feature id will
-		// overwrite the existing feature)
-		final int featureId = 0;
-
 		// get a handle on a GeoWave index writer which wraps the Accumulo
 		// BatchWriter, make sure to close it (here we use a try with resources
 		// block to close it automatically)

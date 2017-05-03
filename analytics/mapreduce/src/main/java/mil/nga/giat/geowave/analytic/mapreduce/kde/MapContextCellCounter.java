@@ -15,7 +15,6 @@ public class MapContextCellCounter implements
 
 	private final Context context;
 	private final long minLevel;
-	private final long maxLevel;
 	private final long numLevels;
 	private final long level;
 
@@ -27,7 +26,6 @@ public class MapContextCellCounter implements
 		this.context = context;
 		this.level = level;
 		this.minLevel = minLevel;
-		this.maxLevel = maxLevel;
 		numLevels = (maxLevel - minLevel) + 1;
 	}
 

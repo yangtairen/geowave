@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import mil.nga.giat.geowave.core.geotime.index.dimension.LatitudeDefinition;
 import mil.nga.giat.geowave.core.geotime.index.dimension.LongitudeDefinition;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -32,6 +32,7 @@ import com.vividsolutions.jts.geom.Polygon;
 
 public class GeometryUtilsTest
 {
+	private static final double DOUBLE_TOLERANCE = 1E-10d;
 
 	private Point point3D;
 	private Point point2D;
@@ -66,11 +67,13 @@ public class GeometryUtilsTest
 
 		Assert.assertEquals(
 				origCoords.x,
-				convCoords.x);
+				convCoords.x,
+				DOUBLE_TOLERANCE);
 
 		Assert.assertEquals(
 				origCoords.y,
-				convCoords.y);
+				convCoords.y,
+				DOUBLE_TOLERANCE);
 
 		Assert.assertTrue(Double.isNaN(convCoords.getOrdinate(Coordinate.Z)));
 	}
@@ -90,15 +93,18 @@ public class GeometryUtilsTest
 
 		Assert.assertEquals(
 				origCoords.x,
-				convCoords.x);
+				convCoords.x,
+				DOUBLE_TOLERANCE);
 
 		Assert.assertEquals(
 				origCoords.y,
-				convCoords.y);
+				convCoords.y,
+				DOUBLE_TOLERANCE);
 
 		Assert.assertEquals(
 				origCoords.z,
-				convCoords.z);
+				convCoords.z,
+				DOUBLE_TOLERANCE);
 	}
 
 	@Test

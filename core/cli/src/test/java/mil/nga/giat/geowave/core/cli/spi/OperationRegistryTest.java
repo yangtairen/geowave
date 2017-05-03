@@ -3,7 +3,6 @@ package mil.nga.giat.geowave.core.cli.spi;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.junit.Test;

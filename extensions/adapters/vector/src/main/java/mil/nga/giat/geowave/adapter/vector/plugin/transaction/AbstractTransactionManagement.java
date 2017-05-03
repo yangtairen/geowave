@@ -1,9 +1,9 @@
 package mil.nga.giat.geowave.adapter.vector.plugin.transaction;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+
+import org.opengis.feature.simple.SimpleFeature;
 
 import mil.nga.giat.geowave.adapter.vector.GeotoolsFeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveDataStoreComponents;
@@ -11,12 +11,9 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 
-import org.opengis.feature.simple.SimpleFeature;
-
 public abstract class AbstractTransactionManagement implements
 		GeoWaveTransaction
 {
-
 	protected final GeoWaveDataStoreComponents components;
 
 	public AbstractTransactionManagement(

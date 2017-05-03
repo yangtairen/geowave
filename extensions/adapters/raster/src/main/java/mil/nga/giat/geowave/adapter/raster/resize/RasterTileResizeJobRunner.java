@@ -77,13 +77,13 @@ public class RasterTileResizeJobRunner extends
 		conf.set(
 				NEW_ADAPTER_ID_KEY,
 				rasterResizeOptions.getOutputCoverageName());
-		final Job job = new Job(
-				conf);
+		final String jobName = "Converting " + rasterResizeOptions.getInputCoverageName() + " to tile size="
+				+ rasterResizeOptions.getOutputTileSize();
+		final Job job = Job.getInstance(
+				conf,
+				jobName);
 
 		job.setJarByClass(this.getClass());
-
-		job.setJobName("Converting " + rasterResizeOptions.getInputCoverageName() + " to tile size="
-				+ rasterResizeOptions.getOutputTileSize());
 
 		job.setMapperClass(RasterTileResizeMapper.class);
 		job.setCombinerClass(RasterTileResizeCombiner.class);

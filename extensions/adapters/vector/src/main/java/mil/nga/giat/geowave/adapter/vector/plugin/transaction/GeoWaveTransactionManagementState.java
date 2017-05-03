@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveDataStoreComponents;
 import mil.nga.giat.geowave.adapter.vector.plugin.lock.LockingManagement;
 
-import org.geotools.data.DataSourceException;
 import org.geotools.data.Transaction;
 
 /**

@@ -14,12 +14,6 @@ import javax.ws.rs.core.Response;
 public interface InfoService
 {
 
-	// lists the namespaces in geowave
-	// @GET
-	// @Produces(MediaType.APPLICATION_JSON)
-	// @Path("/namespaces")
-	// public Response getNamespaces();
-
 	// lists the indices associated with the given namespace
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)

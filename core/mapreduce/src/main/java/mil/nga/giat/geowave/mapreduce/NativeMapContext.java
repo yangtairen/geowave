@@ -290,6 +290,7 @@ public class NativeMapContext<KEYIN, VALUEIN> implements
 		return context.getUser();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean getSymlink() {
 		return context.getSymlink();
@@ -312,12 +313,14 @@ public class NativeMapContext<KEYIN, VALUEIN> implements
 		return context.getCacheFiles();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public Path[] getLocalCacheArchives()
 			throws IOException {
 		return context.getLocalCacheArchives();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public Path[] getLocalCacheFiles()
 			throws IOException {

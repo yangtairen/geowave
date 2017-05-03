@@ -129,7 +129,7 @@ public class CentroidManagerGeoWave<T> implements
 	private int level = 0;
 
 	private AnalyticItemWrapperFactory<T> centroidFactory;
-	@SuppressWarnings("rawtypes")
+
 	private GeotoolsFeatureDataAdapter adapter;
 
 	private DataStore dataStore;
@@ -159,7 +159,6 @@ public class CentroidManagerGeoWave<T> implements
 				StringUtils.stringToBinary(centroidDataTypeId)));
 	}
 
-	@SuppressWarnings("unchecked")
 	public CentroidManagerGeoWave(
 			final PropertyManagement properties )
 			throws IOException {
@@ -424,7 +423,6 @@ public class CentroidManagerGeoWave<T> implements
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public AnalyticItemWrapper<T> getCentroid(
 			final String dataId ) {
 		final ByteArrayId adapterId = new ByteArrayId(
@@ -516,7 +514,6 @@ public class CentroidManagerGeoWave<T> implements
 				indexWriter.write(item.getWrappedItem());
 			}
 			it.close();
-			// indexWriter.close();
 		}
 		LOGGER.info("Transfer " + count + " centroids");
 	}
@@ -769,8 +766,6 @@ public class CentroidManagerGeoWave<T> implements
 			final String parentDir,
 			final Class<? extends Geometry> shapeClass )
 			throws IOException {
-		// File shp = new File(parentDir + "/" + this.batchId + ".shp");
-		// File shx = new File(parentDir + "/" + this.batchId + ".shx");
 		final ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
 		final Map<String, Serializable> params = new HashMap<String, Serializable>();
 		try {

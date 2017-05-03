@@ -504,16 +504,15 @@ public class MinimalBinDistanceHistogram implements
 
 	public double getMaxValue() {
 		return maxValue;
-	};
+	}
 
 	public double getMinValue() {
 		return !bins.isEmpty() ? bins.get(0).lowerBound : 0.0;
-	};
+	}
 
 	public static class MinimalBinDistanceHistogramFactory implements
 			NumericHistogramFactory
 	{
-
 		@Override
 		public NumericHistogram create(
 				int bins ) {

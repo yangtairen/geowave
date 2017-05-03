@@ -3,16 +3,10 @@ package mil.nga.giat.geowave.adapter.raster.adapter;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 
-import javax.media.jai.JAI;
-import javax.media.jai.OperationRegistry;
-import javax.media.jai.PropertyGenerator;
 import javax.media.jai.RenderedOp;
-import javax.media.jai.operator.MosaicDescriptor;
-import javax.media.jai.operator.WarpDescriptor;
 
 import org.geotools.resources.coverage.CoverageUtilities;
 
-import com.sun.media.jai.opimage.MosaicRIF;
 import com.sun.media.jai.util.PropertyGeneratorImpl;
 
 public class MosaicPropertyGenerator extends

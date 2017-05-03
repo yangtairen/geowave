@@ -237,7 +237,6 @@ public class KMeansMapReduce
 
 			// do not update the cost, because this cost is associated with the
 			// centroid PRIOR to this update.
-			// centroid.setCost(totals.distance);
 			centroid.resetAssociatonCount();
 			centroid.incrementAssociationCount(totals.getCount());
 

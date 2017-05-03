@@ -99,9 +99,6 @@ public class KMeansDistortionMapReduce
 						2) + Math.pow(
 						p.getCoordinate().y - centroid.getCoordinate().y,
 						2));
-				// + Math.pow(
-				// p.getCoordinate().z - centroid.getCoordinate().z,
-				// 2));
 				outputValWritable.set(
 						expectation,
 						1);

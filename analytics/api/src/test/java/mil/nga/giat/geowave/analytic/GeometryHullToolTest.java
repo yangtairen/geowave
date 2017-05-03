@@ -12,10 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import mil.nga.giat.geowave.analytic.GeometryDataSetGenerator.CurvedDensityDataGeneratorTool;
-import mil.nga.giat.geowave.analytic.GeometryGenerator.DistortationFn;
-import mil.nga.giat.geowave.analytic.distance.CoordinateCircleDistanceFn;
-
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +23,10 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.PrecisionModel;
-import com.vividsolutions.jts.io.WKTReader;
+
+import mil.nga.giat.geowave.analytic.GeometryDataSetGenerator.CurvedDensityDataGeneratorTool;
+import mil.nga.giat.geowave.analytic.GeometryGenerator.DistortationFn;
+import mil.nga.giat.geowave.analytic.distance.CoordinateCircleDistanceFn;
 
 public class GeometryHullToolTest
 {
@@ -357,18 +355,6 @@ public class GeometryHullToolTest
 
 	}
 
-	private final Random r = new Random(
-			7777);
-
-	private Coordinate pickOneAndAugmentOne(
-			final Coordinate[] list ) {
-		final Coordinate select = list[(Math.abs(r.nextInt()) % list.length)];
-		return new Coordinate(
-				select.x + r.nextGaussian(),
-				select.y + r.nextGaussian(),
-				select.z);
-	}
-
 	final Coordinate[] poly1 = new Coordinate[] {
 		new Coordinate(
 				40,
@@ -531,8 +517,6 @@ public class GeometryHullToolTest
 						geo
 					});
 			if (!geo.isSimple()) {
-
-				// assertTrue(false);
 				geo = cg.connect(
 						leftShape,
 						rightShape);
@@ -710,23 +694,13 @@ public class GeometryHullToolTest
 					"hullx_" + name,
 					convexHull.getConvexHull());
 		}
-
-		// final Geometry concaveHull1 = cg.concaveHull1(
-		// convexHull.getConvexHull(),
-		// Arrays.asList(coordinates));
-		// if (save || !concaveHull1.isSimple()) {
-		// writeToShapeFile(
-		// "chull_" + name,
-		// concaveHull1);
-		// }
-
 		return concaveHull;
 	}
 
 	private static void writeToShapeFile(
 			final String name,
 			final Geometry... geos ) {
-		if (true) { // LOGGER.isDebugEnabled()) {
+		if (true) {
 			try {
 				ShapefileTool.writeShape(
 						name,
@@ -735,10 +709,11 @@ public class GeometryHullToolTest
 						geos);
 			}
 			catch (final IOException e) {
-				e.printStackTrace();
+				LOGGER.error(
+						e.getLocalizedMessage(),
+						e);
 			}
 		}
-
 	}
 
 	private static boolean coversPoints(
@@ -858,6 +833,5 @@ public class GeometryHullToolTest
 			}
 			assertTrue(error < 1);
 		}
-
 	}
 }

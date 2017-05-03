@@ -1117,7 +1117,6 @@ public class AccumuloSplitsProviderTest
 	private static class GeoBoundingBoxStatistics extends
 			BoundingBoxDataStatistics<TestGeometry>
 	{
-
 		@SuppressWarnings("unused")
 		protected GeoBoundingBoxStatistics() {
 			super();
@@ -1189,7 +1188,7 @@ public class AccumuloSplitsProviderTest
 				final DataStatisticsStore statsStore,
 				final String[] authorizations ) {
 			return this.rangeMax;
-		};
+		}
 
 		@Override
 		public TreeSet<IntermediateSplitInfo> populateIntermediateSplits(

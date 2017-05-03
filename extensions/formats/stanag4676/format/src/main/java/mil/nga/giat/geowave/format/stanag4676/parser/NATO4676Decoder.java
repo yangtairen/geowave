@@ -46,7 +46,6 @@ import mil.nga.giat.geowave.format.stanag4676.parser.model.TrackPointType;
 import mil.nga.giat.geowave.format.stanag4676.parser.model.TrackStatus;
 import mil.nga.giat.geowave.format.stanag4676.parser.model.TrackerType;
 
-import org.apache.commons.io.IOUtils;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -85,9 +84,9 @@ public class NATO4676Decoder implements
 		NATO4676Message msg = null;
 		try {
 			if (printNotParse) {
-				final String trackStr = IOUtils.toString(
-						is,
-						"UTF-8");
+				/*
+				 * final String trackStr = IOUtils.toString( is, "UTF-8");
+				 */
 				is.reset();
 			}
 			else {
@@ -903,7 +902,6 @@ public class NATO4676Decoder implements
 		while (childIter.hasNext()) {
 			final Element child = childIter.next();
 			final String childName = child.getName();
-			final String childValue = child.getValue();
 			if ("relations".equals(childName)) {
 				// TODO: TrackLineageInformation / LineageRelation
 			}
@@ -984,9 +982,7 @@ public class NATO4676Decoder implements
 		while (childIter.hasNext()) {
 			final Element child = childIter.next();
 			final String childName = child.getName();
-			final String childValue = child.getValue();
 			if ("xxx".equals(childName)) {
-				// area.setXXX(childValue);
 				// TODO: Area , CircularArea, PolygonArea, etc...
 			}
 		}
@@ -1002,7 +998,6 @@ public class NATO4676Decoder implements
 		while (childIter.hasNext()) {
 			final Element child = childIter.next();
 			final String childName = child.getName();
-			final String childValue = child.getValue();
 			if ("areaBoundaryPoints".equals(childName)) {
 				GeodeticPosition pos = readGeodeticPosition(
 						child,
@@ -1026,7 +1021,7 @@ public class NATO4676Decoder implements
 		while (childIter.hasNext()) {
 			final Element child = childIter.next();
 			final String childName = child.getName();
-			final String childValue = child.getValue();
+
 			if ("pointDetailPosition".equals(childName)) {
 				// check which type...
 				final Attribute xsitype = child.getAttribute(

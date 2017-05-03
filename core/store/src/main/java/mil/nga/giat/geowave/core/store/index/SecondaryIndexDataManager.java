@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -179,12 +178,6 @@ public class SecondaryIndexDataManager<T> implements
 				}
 			}
 			// TODO delete statistics
-			// for (final DataStatistics<T> associatedStatistic :
-			// secondaryIndex.getAssociatedStatistics()) {
-			// associatedStatistic.entryDeleted(
-			// entryInfo,
-			// entry);
-			// }
 		}
 
 	}

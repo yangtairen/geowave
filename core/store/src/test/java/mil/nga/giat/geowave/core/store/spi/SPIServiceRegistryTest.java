@@ -41,7 +41,6 @@ public class SPIServiceRegistryTest
 		fsManager.setBaseFile(new File(
 				"."));
 
-		// fsManager.addProvider("jar", new JarFileProvider());
 		fsManager.init();
 		FileObject jarFile = fsManager.resolveFile("jar:src/test/test.jar");
 

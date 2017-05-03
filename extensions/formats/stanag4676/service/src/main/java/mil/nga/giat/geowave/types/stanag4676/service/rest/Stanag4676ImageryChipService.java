@@ -67,8 +67,6 @@ public class Stanag4676ImageryChipService
 	ServletContext context;
 	private static DataStore dataStore;
 
-	// private Map<String, Object> configOptions;
-
 	@GET
 	@Path("image/{mission}/{track}/{year}-{month}-{day}T{hour}:{minute}:{second}.{millis}.jpg")
 	@Produces("image/jpeg")
@@ -262,7 +260,6 @@ public class Stanag4676ImageryChipService
 					@Override
 					public void close()
 							throws IOException {
-						// super.close();
 						// try to delete the file immediately after it is
 						// returned
 
@@ -306,59 +303,6 @@ public class Stanag4676ImageryChipService
 		}
 	}
 
-	// ------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------
-
-	// private static File buildVideo(
-	// final String mission,
-	// final String track,
-	// final TreeMap<Long, BufferedImage> data,
-	// final int width,
-	// final int height,
-	// final double timeScaleFactor )
-	// throws IOException {
-	// final File videoFileDir = Files.createTempDir();
-	// LOGGER.info("Write to tempfile: " + videoFileDir.getAbsolutePath());
-	// videoFileDir.deleteOnExit();
-	// final File videoFile = new File(
-	// videoFileDir,
-	// mission + "_" + track + ".webm");
-	// videoFile.deleteOnExit();
-	// final IMediaWriter writer =
-	// ToolFactory.makeWriter(videoFile.getAbsolutePath());
-	// writer.addVideoStream(
-	// 0,
-	// 0,
-	// ICodec.ID.CODEC_ID_VP8,
-	// width,
-	// height);
-	// final Long startTime = data.firstKey();
-	//
-	// final double timeNormalizationFactor = 1.0 / timeScaleFactor;
-	//
-	// int i = 0;
-	// int y = 0;
-	// for (final Entry<Long, BufferedImage> e : data.entrySet()) {
-	// if ((e.getValue().getWidth() == width) && (e.getValue().getHeight() ==
-	// height)) {
-	// writer.encodeVideo(
-	// 0,
-	// e.getValue(),
-	// (long) ((e.getKey() - startTime) * timeNormalizationFactor),
-	// TimeUnit.MILLISECONDS);
-	// ++y;
-	// }
-	// ++i;
-	// }
-	// writer.close();
-	// LOGGER.error("Found " + y + " of " + i + " old fashioned frames");
-	//
-	// return videoFile;
-	// }
-
-	// ------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------
-
 	private static final int MAX_FRAMES = 2000;
 
 	private static File buildVideo2(
@@ -385,7 +329,6 @@ public class Stanag4676ImageryChipService
 			 */
 			RateControl rc = new NopRateControl(
 					10);
-			// (int) timeScaleFactor);
 
 			VP8Encoder encoder = new VP8Encoder(
 					rc); // qp

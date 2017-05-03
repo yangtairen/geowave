@@ -10,16 +10,9 @@ import java.util.UUID;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-/**
- * Generate clusters of geometries.
- *
- */
-import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryType;
-import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.slf4j.Logger;
@@ -492,120 +485,6 @@ public class GeometryDataSetGenerator
 
 	}
 
-	// public static void main(
-	// final String[] args )
-	// throws Exception {
-	// final Options allOptions = new Options();
-	// DataStoreCommandLineOptions.applyOptions(allOptions);
-	// final Option typeNameOption = new Option(
-	// "typename",
-	// true,
-	// "a name for the feature type (required)");
-	// typeNameOption.setRequired(true);
-	// allOptions.addOption(typeNameOption);
-	// CommandLine commandLine = new BasicParser().parse(
-	// allOptions,
-	// args);
-	//
-	// final CommandLineResult<DataStoreCommandLineOptions> dataStoreOption =
-	// DataStoreCommandLineOptions.parseOptions(
-	// allOptions,
-	// commandLine);
-	// if (dataStoreOption.isCommandLineChange()) {
-	// commandLine = dataStoreOption.getCommandLine();
-	// }
-	// else {
-	// throw new ParseException(
-	// "Unable to parse data store from command line");
-	// }
-	// final DataStore dataStore = dataStoreOption.getResult().createStore();
-	// final String typeName = commandLine.getOptionValue("typename");
-	// final GeometryDataSetGenerator dataGenerator = new
-	// GeometryDataSetGenerator(
-	// new FeatureCentroidDistanceFn(),
-	// getBuilder(typeName));
-	// dataGenerator.writeToGeoWave(
-	// dataStore,
-	// dataGenerator.generatePointSet(
-	// 0.2,
-	// 0.2,
-	// 5,
-	// 5000,
-	// new double[] {
-	// -100,
-	// -45
-	// },
-	// new double[] {
-	// -90,
-	// -35
-	// }));
-	// dataGenerator.writeToGeoWave(
-	// dataStore,
-	// dataGenerator.generatePointSet(
-	// 0.2,
-	// 0.2,
-	// 7,
-	// 5000,
-	// new double[] {
-	// 0,
-	// 0
-	// },
-	// new double[] {
-	// 10,
-	// 10
-	// }));
-	// dataGenerator.writeToGeoWave(
-	// dataStore,
-	// dataGenerator.addRandomNoisePoints(
-	// dataGenerator.generatePointSet(
-	// 0.2,
-	// 0.2,
-	// 6,
-	// 5000,
-	// new double[] {
-	// 65,
-	// 35
-	// },
-	// new double[] {
-	// 75,
-	// 45
-	// }),
-	// 6000,
-	// new double[] {
-	// -90,
-	// -90
-	// },
-	// new double[] {
-	// 90,
-	// 90
-	// }));
-	// }
-
-	private static SimpleFeatureBuilder getBuilder(
-			final String name )
-			throws FactoryException {
-		final SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
-		typeBuilder.setName(name);
-		typeBuilder.setCRS(CRS.decode(
-				"EPSG:4326",
-				true)); // <- Coordinate
-						// reference
-		// add attributes in order
-		typeBuilder.add(
-				"geom",
-				Geometry.class);
-		typeBuilder.add(
-				"name",
-				String.class);
-		typeBuilder.add(
-				"count",
-				Long.class);
-
-		// build the type
-		return new SimpleFeatureBuilder(
-				typeBuilder.buildFeatureType());
-	}
-
 	public static class CurvedDensityDataGeneratorTool
 	{
 
@@ -690,5 +569,4 @@ public class GeometryDataSetGenerator
 					coor.y);
 		}
 	}
-
 }

@@ -69,8 +69,7 @@ public class CommonIndexedPersistenceEncoding extends
 			final Iterator<ByteArrayId> it = untrimmedResult.iterator();
 			while (it.hasNext()) {
 				final ByteArrayId insertionId = it.next();
-				// final MultiDimensionalNumericData md =
-				// correctForNormalizationError(index.getIndexStrategy().getRangeForId(insertionId));
+
 				// used to check the result of the index strategy
 				if (LOGGER.isDebugEnabled() && checkCoverage(
 						boxRangeData,
@@ -174,12 +173,11 @@ public class CommonIndexedPersistenceEncoding extends
 	}
 
 	// Subclasses may want to override this behavior if the belief that the
-	// index strategy is optimal
-	// to avoid the extra cost of checking the result
+	// index strategy is optimal to avoid the extra cost of checking the result
 	protected boolean overlaps(
 			final NumericData[] insertTileRange,
 			final PrimaryIndex index ) {
-		@SuppressWarnings("rawtypes")
+
 		final NumericDimensionDefinition[] dimensions = index.getIndexStrategy().getOrderedDimensionDefinitions();
 		final NumericDimensionField[] fields = index.getIndexModel().getDimensions();
 		Map<Class, NumericDimensionField> dimensionTypeToFieldMap = new HashMap<>();
@@ -242,5 +240,4 @@ public class CommonIndexedPersistenceEncoding extends
 		}
 		return true;
 	}
-
 }

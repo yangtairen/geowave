@@ -40,7 +40,7 @@ public class IngestServiceClient
 				null,
 				null,
 				false);
-	};
+	}
 
 	public boolean localIngest(
 			final File[] inputFiles,
@@ -56,7 +56,7 @@ public class IngestServiceClient
 				null,
 				null,
 				false);
-	};
+	}
 
 	public boolean localIngest(
 			final File[] inputFiles,
@@ -124,7 +124,7 @@ public class IngestServiceClient
 				null,
 				null,
 				false);
-	};
+	}
 
 	public boolean hdfsIngest(
 			final File[] inputFiles,
@@ -140,7 +140,7 @@ public class IngestServiceClient
 				null,
 				null,
 				false);
-	};
+	}
 
 	public boolean hdfsIngest(
 			final File[] inputFiles,

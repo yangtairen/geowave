@@ -243,17 +243,13 @@ public class CompoundIndexStrategy implements
 			// for partitioning it works alright to just use permute ranges from
 			// both sub-strategies but in general this could be too much
 
-			// final int maxEstRangeDecompositionPerStrategy = (int) Math.ceil(
-			// Math.sqrt(
-			// maxEstimatedRangeDecomposition));
 			rangeForStrategy1 = subStrategy1.getQueryRanges(
 					ranges[0],
 					maxEstimatedRangeDecomposition,
 					extractHints(
 							hints,
 							0));
-			// final int maxEstRangeDecompositionStrategy2 =
-			// maxEstimatedRangeDecomposition / rangeForStrategy1.size();
+
 			rangeForStrategy2 = subStrategy2.getQueryRanges(
 					ranges[1],
 					maxEstimatedRangeDecomposition,
@@ -581,6 +577,7 @@ public class CompoundIndexStrategy implements
 		private IndexMetaData metaData;
 		private int index;
 
+		@SuppressWarnings("unused")
 		public CompoundIndexMetaDataWrapper() {}
 
 		public CompoundIndexMetaDataWrapper(

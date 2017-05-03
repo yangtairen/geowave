@@ -218,7 +218,6 @@ public class GeoWaveTransactionManagement extends
 				transaction,
 				bounds,
 				false);
-
 	}
 
 	@Override
@@ -333,24 +332,6 @@ public class GeoWaveTransactionManagement extends
 
 		final Iterator<Pair<SimpleFeature, SimpleFeature>> updateIt = getUpdates();
 
-		// if (addedFidList.size() > 0) {
-		// final String transId = "\\(?" + txID + "\\)?";
-		// final VisibilityTransformer visibilityTransformer = new
-		// VisibilityTransformer(
-		// "&?" + transId,
-		// "");
-		// for (final Collection<ByteArrayId> rowIDs : addedFidList.values()) {
-		// components.replaceDataVisibility(
-		// this,
-		// rowIDs,
-		// visibilityTransformer);
-		// }
-		//
-		// components.replaceStatsVisibility(
-		// this,
-		// visibilityTransformer);
-		// }
-
 		final Iterator<SimpleFeature> removeIt = removedFeatures.values().iterator();
 
 		while (removeIt.hasNext()) {
@@ -385,7 +366,6 @@ public class GeoWaveTransactionManagement extends
 					ReferencedEnvelope.reference(pair.getRight().getBounds()),
 					true);
 		}
-
 		statsCache = null;
 
 	}
@@ -471,7 +451,6 @@ public class GeoWaveTransactionManagement extends
 						// feature))
 						feature = null;
 					}
-
 				}
 				return feature != null;
 			}
@@ -500,8 +479,6 @@ public class GeoWaveTransactionManagement extends
 					throws IOException {
 				it.close();
 			}
-
 		};
 	}
-
 }

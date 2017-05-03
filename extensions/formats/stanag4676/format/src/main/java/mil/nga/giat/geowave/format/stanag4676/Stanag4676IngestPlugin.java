@@ -16,9 +16,21 @@ import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.UUID;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.hadoop.io.Text;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.jaitools.jts.CoordinateSequence2D;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Iterators;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.core.geotime.GeometryUtils;
-import mil.nga.giat.geowave.core.geotime.ingest.SpatialTemporalDimensionalityTypeProvider;
 import mil.nga.giat.geowave.core.geotime.store.dimension.GeometryWrapper;
 import mil.nga.giat.geowave.core.geotime.store.dimension.Time;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -38,7 +50,6 @@ import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.GlobalVisibilityHandler;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
-import mil.nga.giat.geowave.core.store.index.CustomIdIndex;
 import mil.nga.giat.geowave.core.store.index.NullIndex;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.format.stanag4676.image.ImageChip;
@@ -47,19 +58,6 @@ import mil.nga.giat.geowave.format.stanag4676.parser.NATO4676Decoder;
 import mil.nga.giat.geowave.format.stanag4676.parser.TrackFileReader;
 import mil.nga.giat.geowave.format.stanag4676.parser.util.EarthVector;
 import mil.nga.giat.geowave.format.stanag4676.parser.util.Length;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.hadoop.io.Text;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.jaitools.jts.CoordinateSequence2D;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Iterators;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
 
 public class Stanag4676IngestPlugin extends
 		AbstractStageWholeFileToAvro<Object> implements

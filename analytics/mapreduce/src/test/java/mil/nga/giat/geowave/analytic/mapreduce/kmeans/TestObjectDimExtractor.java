@@ -9,6 +9,9 @@ public class TestObjectDimExtractor extends
 		EmptyDimensionExtractor<TestObject> implements
 		DimensionExtractor<TestObject>
 {
+
+	private static final long serialVersionUID = -6020973037010641134L;
+
 	@Override
 	public String getGroupID(
 			TestObject anObject ) {

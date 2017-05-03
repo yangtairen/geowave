@@ -1345,7 +1345,6 @@ public class JDOMUtils
 		final Element boundsEl = parentEl.getChild(tagName);
 
 		if (boundsEl == null) {
-			// logger.info("missing bounds element '" + tagName + "'");
 			return null;
 		}
 		else {
@@ -1458,7 +1457,6 @@ public class JDOMUtils
 		final Element boundsEl = parentEl.getChild(tagName);
 
 		if (boundsEl == null) {
-			// logger.info("missing date element '" + tagName + "'");
 			return null;
 		}
 		else {

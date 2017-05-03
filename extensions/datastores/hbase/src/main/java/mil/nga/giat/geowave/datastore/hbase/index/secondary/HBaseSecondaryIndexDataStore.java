@@ -42,7 +42,7 @@ public class HBaseSecondaryIndexDataStore extends
 {
 	private final static Logger LOGGER = Logger.getLogger(HBaseSecondaryIndexDataStore.class);
 	private final BasicHBaseOperations hbaseOperations;
-	private final HBaseOptions hbaseOptions;
+	// private final HBaseOptions hbaseOptions;
 	private DataStore dataStore = null;
 
 	public HBaseSecondaryIndexDataStore(
@@ -57,7 +57,7 @@ public class HBaseSecondaryIndexDataStore extends
 			final HBaseOptions hbaseOptions ) {
 		super();
 		this.hbaseOperations = hbaseOperations;
-		this.hbaseOptions = hbaseOptions;
+		// this.hbaseOptions = hbaseOptions;
 	}
 
 	@Override

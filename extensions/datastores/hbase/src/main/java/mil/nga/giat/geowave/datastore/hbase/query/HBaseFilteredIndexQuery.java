@@ -92,7 +92,6 @@ public abstract class HBaseFilteredIndexQuery extends
 		return true;
 	}
 
-	@SuppressWarnings("rawtypes")
 	public CloseableIterator<Object> query(
 			final BasicHBaseOperations operations,
 			final AdapterStore adapterStore,

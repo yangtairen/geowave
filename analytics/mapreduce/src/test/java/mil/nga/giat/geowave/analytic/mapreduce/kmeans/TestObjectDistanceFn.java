@@ -9,6 +9,8 @@ import com.vividsolutions.jts.geom.Geometry;
 public class TestObjectDistanceFn implements
 		DistanceFn<TestObject>
 {
+	private static final long serialVersionUID = -6765197258533673031L;
+
 	private DistanceFn<Coordinate> coordinateDistanceFunction = new CoordinateEuclideanDistanceFn();
 
 	private Geometry getGeometry(

@@ -2,13 +2,11 @@ package mil.nga.giat.geowave.test.query;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -395,15 +393,6 @@ public class SpatialTemporalQueryIT
 				Calendar.MILLISECOND,
 				0);
 		return cal;
-	}
-
-	private static void write(
-			final IndexWriter[] writers,
-			final SimpleFeature feature )
-			throws IOException {
-		for (final IndexWriter writer : writers) {
-			writer.write(feature);
-		}
 	}
 
 	private static void ingestTimeRangeData(

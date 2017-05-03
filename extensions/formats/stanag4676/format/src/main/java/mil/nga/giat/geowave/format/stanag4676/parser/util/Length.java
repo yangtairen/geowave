@@ -131,7 +131,6 @@ public class Length implements
 			case Inches:
 				return fromInches(val);
 		}
-
 		return fromKM(val);
 	}
 
@@ -173,7 +172,6 @@ public class Length implements
 			case Inches:
 				return getInches();
 		}
-
 		return getKM();
 	}
 

@@ -116,7 +116,6 @@ public class GeoWaveFeatureReaderTest extends
 		transaction1.commit();
 		transaction1.close();
 
-		// System.out.println(fids);
 		query = new Query(
 				"GeoWaveFeatureReaderTest",
 				ECQL.toFilter("IN ('" + fids.get(0) + "')"),
@@ -124,7 +123,6 @@ public class GeoWaveFeatureReaderTest extends
 					"geometry",
 					"pid"
 				});
-
 	}
 
 	@Test

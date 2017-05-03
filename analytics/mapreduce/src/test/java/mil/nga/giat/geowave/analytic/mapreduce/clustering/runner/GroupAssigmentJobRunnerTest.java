@@ -148,8 +148,7 @@ public class GroupAssigmentJobRunnerTest
 			public Job getJob(
 					final Tool tool )
 					throws IOException {
-				return new Job(
-						tool.getConf());
+				return Job.getInstance(tool.getConf());
 			}
 
 			@Override

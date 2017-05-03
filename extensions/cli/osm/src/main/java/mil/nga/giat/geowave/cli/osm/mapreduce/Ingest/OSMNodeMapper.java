@@ -6,20 +6,16 @@ import java.util.Map;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.avro.mapred.AvroKey;
 import org.apache.hadoop.io.NullWritable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import mil.nga.giat.geowave.cli.osm.accumulo.osmschema.ColumnFamily;
+import mil.nga.giat.geowave.cli.osm.accumulo.osmschema.ColumnQualifier;
 import mil.nga.giat.geowave.cli.osm.accumulo.osmschema.Constants;
-import mil.nga.giat.geowave.cli.osm.accumulo.osmschema.Schema;
 import mil.nga.giat.geowave.cli.osm.types.generated.Node;
 import mil.nga.giat.geowave.cli.osm.types.generated.Primitive;
 
 public class OSMNodeMapper extends
 		OSMMapperBase<Node>
 {
-
-	private static Logger LOGGER = LoggerFactory.getLogger(OSMNodeMapper.class);
-
 	@Override
 	public void map(
 			AvroKey<Node> key,
@@ -33,23 +29,21 @@ public class OSMNodeMapper extends
 
 		Mutation m = new Mutation(
 				getIdHash(p.getId()));
-		// Mutation m = new Mutation(_longWriter.writeField(p.getId()));
-		// Mutation m = new Mutation(p.getId().toString());
 
 		put(
 				m,
-				Schema.CF.NODE,
-				Schema.CQ.ID,
+				ColumnFamily.NODE,
+				ColumnQualifier.ID,
 				p.getId());
 		put(
 				m,
-				Schema.CF.NODE,
-				Schema.CQ.LONGITUDE,
+				ColumnFamily.NODE,
+				ColumnQualifier.LONGITUDE,
 				node.getLongitude());
 		put(
 				m,
-				Schema.CF.NODE,
-				Schema.CQ.LATITUDE,
+				ColumnFamily.NODE,
+				ColumnQualifier.LATITUDE,
 				node.getLatitude());
 
 		if (!Long.valueOf(
@@ -57,8 +51,8 @@ public class OSMNodeMapper extends
 				p.getVersion())) {
 			put(
 					m,
-					Schema.CF.NODE,
-					Schema.CQ.VERSION,
+					ColumnFamily.NODE,
+					ColumnQualifier.VERSION,
 					p.getVersion());
 		}
 
@@ -67,8 +61,8 @@ public class OSMNodeMapper extends
 				p.getTimestamp())) {
 			put(
 					m,
-					Schema.CF.NODE,
-					Schema.CQ.TIMESTAMP,
+					ColumnFamily.NODE,
+					ColumnQualifier.TIMESTAMP,
 					p.getTimestamp());
 		}
 
@@ -77,8 +71,8 @@ public class OSMNodeMapper extends
 				p.getChangesetId())) {
 			put(
 					m,
-					Schema.CF.NODE,
-					Schema.CQ.CHANGESET,
+					ColumnFamily.NODE,
+					ColumnQualifier.CHANGESET,
 					p.getChangesetId());
 		}
 
@@ -87,26 +81,26 @@ public class OSMNodeMapper extends
 				p.getUserId())) {
 			put(
 					m,
-					Schema.CF.NODE,
-					Schema.CQ.USER_ID,
+					ColumnFamily.NODE,
+					ColumnQualifier.USER_ID,
 					p.getUserId());
 		}
 
 		put(
 				m,
-				Schema.CF.NODE,
-				Schema.CQ.USER_TEXT,
+				ColumnFamily.NODE,
+				ColumnQualifier.USER_TEXT,
 				p.getUserName());
 		put(
 				m,
-				Schema.CF.NODE,
-				Schema.CQ.OSM_VISIBILITY,
+				ColumnFamily.NODE,
+				ColumnQualifier.OSM_VISIBILITY,
 				p.getVisible());
 
 		for (Map.Entry<String, String> kvp : p.getTags().entrySet()) {
 			put(
 					m,
-					Schema.CF.NODE,
+					ColumnFamily.NODE,
 					kvp.getKey().toString().getBytes(
 							Constants.CHARSET),
 					kvp.getValue().toString());

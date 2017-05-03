@@ -20,7 +20,6 @@ import org.apache.avro.specific.SpecificRecordBase;
 public class AvroKafkaEncoder<T extends SpecificRecordBase> implements
 		Encoder<T>
 {
-	private final GenericAvroSerializer<T> serializer = new GenericAvroSerializer<T>();
 
 	public AvroKafkaEncoder(
 			final VerifiableProperties verifiableProperties ) {
@@ -30,7 +29,7 @@ public class AvroKafkaEncoder<T extends SpecificRecordBase> implements
 	@Override
 	public byte[] toBytes(
 			final T object ) {
-		return serializer.serialize(
+		return GenericAvroSerializer.serialize(
 				object,
 				object.getSchema());
 	}

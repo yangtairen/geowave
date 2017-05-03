@@ -194,6 +194,8 @@ public class PropertyManagementTest
 		public ParameterHelper getHelper() {
 			return new ParameterHelper<NonSerializableExample>() {
 
+				private static final long serialVersionUID = 1763163503125029777L;
+
 				@Override
 				public Class<NonSerializableExample> getBaseClass() {
 					return NonSerializableExample.class;

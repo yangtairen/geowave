@@ -2,10 +2,14 @@ package mil.nga.giat.geowave.adapter.raster.plugin;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ServiceLoader;
 
 import javax.media.jai.Interpolation;
 import javax.xml.XMLConstants;
@@ -13,8 +17,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import mil.nga.giat.geowave.adapter.auth.AuthorizationFactorySPI;
-import mil.nga.giat.geowave.adapter.auth.EmptyAuthorizationFactory;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -22,6 +24,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import mil.nga.giat.geowave.adapter.auth.AuthorizationFactorySPI;
+import mil.nga.giat.geowave.adapter.auth.EmptyAuthorizationFactory;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
@@ -212,8 +216,6 @@ public class GeoWaveRasterConfig
 				true);
 
 		final DocumentBuilder db = dbf.newDocumentBuilder();
-
-		// db.setEntityResolver(new ConfigEntityResolver(xmlURL));
 		final Document dom = db.parse(input);
 		in.close();
 

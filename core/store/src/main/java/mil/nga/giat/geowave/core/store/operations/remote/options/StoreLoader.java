@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.Parameter;
 
+import mil.nga.giat.geowave.core.cli.api.DefaultPluginOptions;
 import mil.nga.giat.geowave.core.cli.operations.config.options.ConfigOptions;
 import mil.nga.giat.geowave.core.cli.operations.config.security.utils.SecurityUtils;
 import mil.nga.giat.geowave.core.cli.utils.JCommanderParameterUtils;
@@ -79,7 +80,7 @@ public class StoreLoader
 						Parameter parameter = (Parameter) annotation;
 						if (JCommanderParameterUtils.isPassword(parameter)) {
 							String storeFieldName = (namespace != null && !"".equals(namespace.trim())) ? namespace
-									+ "." + DataStorePluginOptions.OPTS + "." + field.getName() : field.getName();
+									+ "." + DefaultPluginOptions.OPTS + "." + field.getName() : field.getName();
 							if (props.containsKey(storeFieldName)) {
 								String value = props.getProperty(storeFieldName);
 								String decryptedValue = value;

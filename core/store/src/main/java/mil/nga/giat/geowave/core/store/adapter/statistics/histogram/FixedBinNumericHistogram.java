@@ -368,11 +368,11 @@ public class FixedBinNumericHistogram implements
 
 	public double getMaxValue() {
 		return maxValue;
-	};
+	}
 
 	public double getMinValue() {
 		return minValue;
-	};
+	}
 
 	public static class FixedBinNumericHistogramFactory implements
 			NumericHistogramFactory

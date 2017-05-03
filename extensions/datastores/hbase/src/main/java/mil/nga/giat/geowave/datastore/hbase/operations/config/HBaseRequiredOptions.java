@@ -3,7 +3,6 @@ package mil.nga.giat.geowave.datastore.hbase.operations.config;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 
-//import mil.nga.giat.geowave.core.cli.converters.RequiredFieldConverter;
 import mil.nga.giat.geowave.core.store.StoreFactoryFamilySpi;
 import mil.nga.giat.geowave.core.store.StoreFactoryOptions;
 import mil.nga.giat.geowave.datastore.hbase.HBaseStoreFactoryFamily;
@@ -11,7 +10,6 @@ import mil.nga.giat.geowave.datastore.hbase.HBaseStoreFactoryFamily;
 public class HBaseRequiredOptions extends
 		StoreFactoryOptions
 {
-
 	public static final String ZOOKEEPER_CONFIG_KEY = "zookeeper";
 
 	@Parameter(names = {

@@ -331,7 +331,6 @@ public class ExtractGeometryFilterVisitorTest
 						null);
 		// for non-inclusive filters we can't extract query geometry and
 		// predicate
-		// assertTrue(Double.isNaN(result.getGeometry().getArea()));
 		assertTrue(result.getCompareOp() == null);
 	}
 

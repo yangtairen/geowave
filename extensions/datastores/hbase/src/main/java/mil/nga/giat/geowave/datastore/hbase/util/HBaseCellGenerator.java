@@ -49,7 +49,7 @@ public class HBaseCellGenerator<T>
 				entry,
 				visibilityWriter);
 		final List<ByteArrayId> rowIds = ingestInfo.getRowIds();
-		@SuppressWarnings("rawtypes")
+
 		final List<FieldInfo<?>> fieldInfoList = ingestInfo.getFieldInfo();
 
 		for (final ByteArrayId rowId : rowIds) {

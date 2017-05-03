@@ -17,6 +17,8 @@ public class TimeDimensionExtractor extends
 		SimpleFeatureGeometryExtractor implements
 		DimensionExtractor<SimpleFeature>
 {
+	private static final long serialVersionUID = 6153996948960513923L;
+
 	private static final String[] TIME_NAME = new String[] {
 		"time"
 	};

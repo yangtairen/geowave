@@ -85,7 +85,7 @@ public class AvroFeatureDataAdapterTest
 
 			schema = DataUtilities.createType(
 					"sp.geostuff",
-					"geometry:Geometry:srid=4326,pop:java.lang.Long,when:Date,whennot:Date,pid:String");// typeBuilder.buildFeatureType();
+					"geometry:Geometry:srid=4326,pop:java.lang.Long,when:Date,whennot:Date,pid:String");
 
 			newFeature = FeatureDataUtils.buildFeature(
 					schema,

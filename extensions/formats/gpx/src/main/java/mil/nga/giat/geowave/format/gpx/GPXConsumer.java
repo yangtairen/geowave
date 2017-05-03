@@ -16,7 +16,6 @@ import java.util.Stack;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
@@ -241,7 +240,6 @@ public class GPXConsumer implements
 				newFeature = postProcess(child);
 				if ((newFeature == null) && !currentElementStack.isEmpty()) {
 					currentElement = currentElementStack.peek();
-					// currentElement.removeChild(child);
 				}
 				else if (currentElementStack.size() == 1) {
 					top.children.remove(child);

@@ -600,7 +600,6 @@ public class GeometryHullTool
 							hullCoordinate),
 					maxAngle);
 		}
-		// return 360 == Math.abs(maxAngle);
 		return (Math.abs(maxAngle) >= 359.999 && Math.abs(maxAngle) <= 360.0001);
 	}
 
