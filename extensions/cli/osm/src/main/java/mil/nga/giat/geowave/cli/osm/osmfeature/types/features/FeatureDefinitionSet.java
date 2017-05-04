@@ -71,7 +71,7 @@ public class FeatureDefinitionSet
 		for (AttributeDefinition ad : fd.attributes) {
 			AttributeType at = AttributeTypes.getAttributeType(ad.type);
 			if (ad.name == null) {
-				LOGGER.debug("yo");		// should this be deleted?
+				LOGGER.debug("yo"); // should this be deleted?
 			}
 			if (at != null) {
 				sftb.add(atb.binding(

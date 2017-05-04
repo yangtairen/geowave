@@ -28,7 +28,7 @@ import org.apache.accumulo.core.client.RowIterator;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.client.admin.NewTableConfiguration;
+//import org.apache.accumulo.core.client.admin.NewTableConfiguration;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
@@ -279,8 +279,12 @@ public class BasicAccumuloOperations implements
 			try {
 				connector.tableOperations().create(
 						qName,
-						(enableVersioning ? new NewTableConfiguration() : new NewTableConfiguration()
-								.withoutDefaultIterators()));
+						enableVersioning/*
+										 * (enableVersioning ? new
+										 * NewTableConfiguration() : new
+										 * NewTableConfiguration()
+										 * .withoutDefaultIterators())
+										 */);
 				if (enableBlockCache) {
 					connector.tableOperations().setProperty(
 							qName,
@@ -876,7 +880,7 @@ public class BasicAccumuloOperations implements
 			try {
 				connector.tableOperations().create(
 						qName,
-						new NewTableConfiguration());
+						true/* new NewTableConfiguration() */);
 			}
 			catch (AccumuloException | AccumuloSecurityException | TableExistsException e) {
 				LOGGER.warn(

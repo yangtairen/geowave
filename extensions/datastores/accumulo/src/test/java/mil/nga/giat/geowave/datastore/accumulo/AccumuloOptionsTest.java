@@ -136,7 +136,8 @@ public class AccumuloOptionsTest
 					"test_pt"));
 
 			// as the table didn't already exist, the flag indicates not to
-			// create it, so no rows will be returned
+			// create
+			// it, so no rows will be returned
 			assertEquals(
 					0,
 					rowIds.size());
@@ -166,7 +167,8 @@ public class AccumuloOptionsTest
 							Collections.singletonList(rowId1))).hasNext());
 
 			// as we have chosen not to persist the index, we will not see an
-			// index entry in the index store
+			// index
+			// entry in the index store
 			assertEquals(
 					false,
 					indexStore.indexExists(index.getId()));
@@ -206,7 +208,8 @@ public class AccumuloOptionsTest
 							Collections.singletonList(rowId2))).next();
 
 			// as we have chosen to persist the index, we will see the index
-			// entry in the index store
+			// entry
+			// in the index store
 			assertEquals(
 					true,
 					indexStore.indexExists(index.getId()));
@@ -215,6 +218,7 @@ public class AccumuloOptionsTest
 			assertEquals(
 					"test_pt_2",
 					geom2.id);
+
 		}
 	}
 
@@ -283,7 +287,8 @@ public class AccumuloOptionsTest
 
 			try {
 				// now that locality groups are turned on, we expect this to
-				// return true
+				// return
+				// true
 				assertEquals(
 						true,
 						accumuloOperations.localityGroupExists(
@@ -304,6 +309,7 @@ public class AccumuloOptionsTest
 			assertEquals(
 					"test_pt_2",
 					geom2.id);
+
 		}
 
 	}
@@ -331,6 +337,7 @@ public class AccumuloOptionsTest
 					new QueryOptions(),
 					new RowIdQuery(
 							Collections.singletonList(rowId1))).hasNext());
+
 		}
 
 		try (IndexWriter<TestGeometry> indexWriter = mockDataStore.createWriter(
@@ -441,10 +448,32 @@ public class AccumuloOptionsTest
 		try (IndexWriter<TestGeometry> indexWriter = mockDataStore.createWriter(
 				adapter0,
 				index)) {
+			indexWriter.write(
+					new TestGeometry(
+							factory.createPoint(new Coordinate(
+									25,
+									32)),
+							"test_pt_0")).get(
+					0);
 		}
 		try (IndexWriter<TestGeometry> indexWriter = mockDataStore.createWriter(
 				adapter1,
 				index)) {
+			indexWriter.write(
+					new TestGeometry(
+							factory.createPoint(new Coordinate(
+									25,
+									32)),
+							"test_pt_0")).get(
+					0);
+
+			indexWriter.write(
+					new TestGeometry(
+							factory.createPoint(new Coordinate(
+									25,
+									32)),
+							"test_pt_1")).get(
+					0);
 		}
 
 		CloseableIterator it = mockDataStore.query(
@@ -527,6 +556,14 @@ public class AccumuloOptionsTest
 		try (IndexWriter<TestGeometry> indexWriter = mockDataStore.createWriter(
 				adapter0,
 				index)) {
+			final ByteArrayId rowId0 = indexWriter.write(
+					new TestGeometry(
+							factory.createPoint(new Coordinate(
+									25,
+									32)),
+							"test_pt_2")).get(
+					0);
+
 		}
 		it = mockDataStore.query(
 				new QueryOptions(),

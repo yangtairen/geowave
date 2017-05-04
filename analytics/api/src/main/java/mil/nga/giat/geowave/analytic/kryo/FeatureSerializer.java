@@ -18,7 +18,8 @@ import com.esotericsoftware.kryo.io.Output;
 import mil.nga.giat.geowave.adapter.vector.FeatureWritable;
 
 public class FeatureSerializer extends
-		Serializer<SimpleFeature> {
+		Serializer<SimpleFeature>
+{
 	final static Logger LOGGER = LoggerFactory.getLogger(FeatureSerializer.class);
 
 	@Override

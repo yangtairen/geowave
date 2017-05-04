@@ -22,7 +22,8 @@ import com.esotericsoftware.kryo.io.Output;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
-public class FeatureSerializationTest {
+public class FeatureSerializationTest
+{
 
 	@Test
 	public void test()
@@ -55,16 +56,25 @@ public class FeatureSerializationTest {
 						-45,
 						45)));
 
-		// by registering the SimpleFeatureImpl class with the FeatureSerializer serializer class, kryo will automatically
-		// use that serializer, so no need to specify the extra parameters in the read & write commands
+		// by registering the SimpleFeatureImpl class with the FeatureSerializer
+		// serializer class, kryo will automatically
+		// use that serializer, so no need to specify the extra parameters in
+		// the read & write commands
 
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		Output output = new Output(bos);
-		kryo.writeObject(output, feature);
+		Output output = new Output(
+				bos);
+		kryo.writeObject(
+				output,
+				feature);
 		output.flush();
 		output.close();
 
-		final SimpleFeature f2 = kryo.readObject(new Input(new ByteArrayInputStream(bos.toByteArray())), SimpleFeatureImpl.class);
+		final SimpleFeature f2 = kryo.readObject(
+				new Input(
+						new ByteArrayInputStream(
+								bos.toByteArray())),
+				SimpleFeatureImpl.class);
 		assertEquals(
 				feature,
 				f2);
