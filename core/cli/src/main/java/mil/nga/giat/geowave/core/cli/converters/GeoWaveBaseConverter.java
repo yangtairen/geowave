@@ -7,9 +7,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.beust.jcommander.JCommander;
 import com.beust.jcommander.converters.BaseConverter;
 
 import jline.console.ConsoleReader;
@@ -80,21 +82,29 @@ public abstract class GeoWaveBaseConverter<T> extends
 				});
 
 		String value = null;
-		try {
-			ConsoleReader reader = new ConsoleReader();
-			if (defaultEchoEnabled) {
-				value = reader.readLine(promptMessage);
-			}
-			else {
-				value = reader.readLine(
-						promptMessage,
-						'*');
-			}
+		if (SystemUtils.IS_OS_WINDOWS) {
+			char[] entered = JCommander.getConsole().readPassword(
+					defaultEchoEnabled);
+			value = new String(
+					entered);
 		}
-		catch (IOException e) {
-			LOGGER.error(
-					"An error occurred reading value from console: " + e.getLocalizedMessage(),
-					e);
+		else {
+			try {
+				ConsoleReader reader = new ConsoleReader();
+				if (defaultEchoEnabled) {
+					value = reader.readLine(promptMessage);
+				}
+				else {
+					value = reader.readLine(
+							promptMessage,
+							'*');
+				}
+			}
+			catch (IOException e) {
+				LOGGER.error(
+						"An error occurred reading value from console: " + e.getLocalizedMessage(),
+						e);
+			}
 		}
 		return value;
 	}
@@ -126,21 +136,29 @@ public abstract class GeoWaveBaseConverter<T> extends
 				});
 
 		String password = null;
-		try {
-			ConsoleReader reader = new ConsoleReader();
-			if (passwordEchoEnabled) {
-				password = reader.readLine(promptMessage);
-			}
-			else {
-				password = reader.readLine(
-						promptMessage,
-						'*');
-			}
+		if (SystemUtils.IS_OS_WINDOWS) {
+			char[] entered = JCommander.getConsole().readPassword(
+					passwordEchoEnabled);
+			password = new String(
+					entered);
 		}
-		catch (IOException e) {
-			LOGGER.error(
-					"An error occurred reading password from console: " + e.getLocalizedMessage(),
-					e);
+		else {
+			try {
+				ConsoleReader reader = new ConsoleReader();
+				if (passwordEchoEnabled) {
+					password = reader.readLine(promptMessage);
+				}
+				else {
+					password = reader.readLine(
+							promptMessage,
+							'*');
+				}
+			}
+			catch (IOException e) {
+				LOGGER.error(
+						"An error occurred reading password from console: " + e.getLocalizedMessage(),
+						e);
+			}
 		}
 		return password;
 	}
