@@ -15,26 +15,27 @@ import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.metadata.MetadataWriter;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 
 public interface DataStoreOperations
 {
 
 	public boolean indexExists(
-			final ByteArrayId indexId )
+			ByteArrayId indexId )
 			throws IOException;
 
 	public void deleteAll()
 			throws Exception;
 
 	public boolean deleteAll(
-			final ByteArrayId indexId,
-			final ByteArrayId adapterId,
-			final String... additionalAuthorizations );
+			ByteArrayId indexId,
+			ByteArrayId adapterId,
+			String... additionalAuthorizations );
 
 	public boolean insureAuthorizations(
-			final String clientUser,
-			final String... authorizations );
+			String clientUser,
+			String... authorizations );
 
 	/**
 	 * Creates a new writer that can be used by an index.
@@ -56,10 +57,14 @@ public interface DataStoreOperations
 	 *             The table does not exist in this Accumulo instance
 	 */
 	public Writer createWriter(
-			final ByteArrayId indexId,
-			final ByteArrayId adapterId,
+			ByteArrayId indexId,
+			ByteArrayId adapterId,
 			DataStoreOptions options,
-			final Set<ByteArrayId> splits );
+			Set<ByteArrayId> splits );
+	
+	public MetadataWriter createMetadataWriter(
+			String metadataTypeName,
+			DataStoreOptions options );
 
 	public Reader createReader(
 			PrimaryIndex index,
