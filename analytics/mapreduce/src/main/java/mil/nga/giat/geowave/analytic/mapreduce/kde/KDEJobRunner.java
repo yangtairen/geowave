@@ -130,10 +130,12 @@ public class KDEJobRunner extends
 			rasterResizeOutputDataStoreOptions = null;
 			kdeCoverageName = kdeCommandLineOptions.getCoverageName();
 		}
+		if (kdeCommandLineOptions.getHdfsHostPort() != null && kdeCommandLineOptions.getJobTrackerOrResourceManHostPort() != null){
 		GeoWaveConfiguratorBase.setRemoteInvocationParams(
 				kdeCommandLineOptions.getHdfsHostPort(),
 				kdeCommandLineOptions.getJobTrackerOrResourceManHostPort(),
 				conf);
+		}
 		conf.setInt(
 				MAX_LEVEL_KEY,
 				kdeCommandLineOptions.getMaxLevel());
