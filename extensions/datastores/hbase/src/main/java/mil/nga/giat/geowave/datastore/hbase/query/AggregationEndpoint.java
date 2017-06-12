@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2013-2017 Contributors to the Eclipse Foundation
- * 
+ *
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  * All rights reserved. This program and the accompanying materials
@@ -38,8 +38,8 @@ import com.google.protobuf.Service;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Mergeable;
-import mil.nga.giat.geowave.core.index.Persistable;
-import mil.nga.giat.geowave.core.index.PersistenceUtils;
+import mil.nga.giat.geowave.core.index.persist.Persistable;
+import mil.nga.giat.geowave.core.index.persist.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 import mil.nga.giat.geowave.datastore.hbase.query.protobuf.AggregationProtos;
@@ -49,7 +49,8 @@ public class AggregationEndpoint extends
 		Coprocessor,
 		CoprocessorService
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(AggregationEndpoint.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(
+			AggregationEndpoint.class);
 
 	private RegionCoprocessorEnvironment env;
 
@@ -90,26 +91,16 @@ public class AggregationEndpoint extends
 		ByteString value = ByteString.EMPTY;
 
 		// Get the aggregation type
-		final String aggregationType = request.getAggregation().getName();
-		Aggregation aggregation = null;
+		final Aggregation aggregation = (Aggregation) PersistenceUtils.fromClassId(
+				request.getAggregation().getClassId().toByteArray());
 
-		try {
-			aggregation = (Aggregation) Class.forName(
-					aggregationType).newInstance();
-
-			// Handle aggregation params
-			if (request.getAggregation().hasParams()) {
-				final byte[] parameterBytes = request.getAggregation().getParams().toByteArray();
-				final Persistable aggregationParams = PersistenceUtils.fromBinary(
-						parameterBytes,
-						Persistable.class);
-				aggregation.setParameters(aggregationParams);
-			}
-		}
-		catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-			LOGGER.error(
-					"Could not create instance of Aggregation Type (" + aggregationType + ")",
-					e);
+		// Handle aggregation params
+		if (request.getAggregation().hasParams()) {
+			final byte[] parameterBytes = request.getAggregation().getParams().toByteArray();
+			final Persistable aggregationParams = PersistenceUtils.fromBinary(
+					parameterBytes);
+			aggregation.setParameters(
+					aggregationParams);
 		}
 		HBaseDistributableFilter hdFilter = null;
 		if (aggregation != null) {
@@ -118,7 +109,8 @@ public class AggregationEndpoint extends
 				final byte[] rfilterBytes = request.getRangeFilter().toByteArray();
 
 				try {
-					final MultiRowRangeFilter rangeFilter = MultiRowRangeFilter.parseFrom(rfilterBytes);
+					final MultiRowRangeFilter rangeFilter = MultiRowRangeFilter.parseFrom(
+							rfilterBytes);
 					filterList = new FilterList(
 							rangeFilter);
 				}
@@ -129,20 +121,23 @@ public class AggregationEndpoint extends
 				}
 			}
 			else {
-				LOGGER.error("Input range filter is undefined.");
+				LOGGER.error(
+						"Input range filter is undefined.");
 			}
 			if (request.hasNumericIndexStrategyFilter()) {
 				final byte[] nisFilterBytes = request.getNumericIndexStrategyFilter().toByteArray();
 
 				try {
 					final HBaseNumericIndexStrategyFilter numericIndexStrategyFilter = HBaseNumericIndexStrategyFilter
-							.parseFrom(nisFilterBytes);
+							.parseFrom(
+									nisFilterBytes);
 					if (filterList == null) {
 						filterList = new FilterList(
 								numericIndexStrategyFilter);
 					}
 					else {
-						filterList.addFilter(numericIndexStrategyFilter);
+						filterList.addFilter(
+								numericIndexStrategyFilter);
 					}
 				}
 				catch (final Exception e) {
@@ -173,15 +168,18 @@ public class AggregationEndpoint extends
 									hdFilter);
 						}
 						else {
-							filterList.addFilter(hdFilter);
+							filterList.addFilter(
+									hdFilter);
 						}
 					}
 					else {
-						LOGGER.error("Error creating distributable filter.");
+						LOGGER.error(
+								"Error creating distributable filter.");
 					}
 				}
 				else {
-					LOGGER.error("Input distributable filter is undefined.");
+					LOGGER.error(
+							"Input distributable filter is undefined.");
 				}
 			}
 			catch (final Exception e) {
@@ -192,11 +190,13 @@ public class AggregationEndpoint extends
 
 			if (request.hasAdapter()) {
 				final byte[] adapterBytes = request.getAdapter().toByteArray();
-				final ByteBuffer buf = ByteBuffer.wrap(adapterBytes);
+				final ByteBuffer buf = ByteBuffer.wrap(
+						adapterBytes);
 				buf.get();
 				final int length = buf.getInt();
 				final byte[] adapterIdBytes = new byte[length];
-				buf.get(adapterIdBytes);
+				buf.get(
+						adapterIdBytes);
 				adapterId = new ByteArrayId(
 						adapterIdBytes);
 			}
@@ -216,8 +216,10 @@ public class AggregationEndpoint extends
 						request.getBlockCaching(),
 						request.getCacheSize());
 
-				final byte[] bvalue = PersistenceUtils.toBinary(mvalue);
-				value = ByteString.copyFrom(bvalue);
+				final byte[] bvalue = PersistenceUtils.toBinary(
+						mvalue);
+				value = ByteString.copyFrom(
+						bvalue);
 			}
 			catch (final IOException ioe) {
 				LOGGER.error(
@@ -238,7 +240,8 @@ public class AggregationEndpoint extends
 		response = AggregationProtos.AggregationResponse.newBuilder().setValue(
 				value).build();
 
-		done.run(response);
+		done.run(
+				response);
 	}
 
 	private Mergeable getValue(
@@ -251,18 +254,23 @@ public class AggregationEndpoint extends
 			final int scanCacheSize )
 			throws IOException {
 		final Scan scan = new Scan();
-		scan.setMaxVersions(1);
-		scan.setCacheBlocks(blockCaching);
+		scan.setMaxVersions(
+				1);
+		scan.setCacheBlocks(
+				blockCaching);
 
 		if (scanCacheSize != HConstants.DEFAULT_HBASE_CLIENT_SCANNER_CACHING) {
-			scan.setCaching(scanCacheSize);
+			scan.setCaching(
+					scanCacheSize);
 		}
 
 		if (filter != null) {
-			scan.setFilter(filter);
+			scan.setFilter(
+					filter);
 		}
 		if (adapterId != null) {
-			scan.addFamily(adapterId.getBytes());
+			scan.addFamily(
+					adapterId.getBytes());
 		}
 
 		try (InternalScanner scanner = env.getRegion().getScanner(
@@ -270,20 +278,25 @@ public class AggregationEndpoint extends
 			final List<Cell> results = new ArrayList<Cell>();
 			boolean hasNext;
 			do {
-				hasNext = scanner.next(results);
+				hasNext = scanner.next(
+						results);
 				if (!results.isEmpty()) {
 					if ((dataAdapter != null) && (hdFilter != null)) {
-						final Object row = hdFilter.decodeRow(dataAdapter);
+						final Object row = hdFilter.decodeRow(
+								dataAdapter);
 
 						if (row != null) {
-							aggregation.aggregate(row);
+							aggregation.aggregate(
+									row);
 						}
 					}
 					else if (hdFilter != null) {
-						aggregation.aggregate(hdFilter.getPersistenceEncoding());
+						aggregation.aggregate(
+								hdFilter.getPersistenceEncoding());
 					}
 					else {
-						aggregation.aggregate(null);
+						aggregation.aggregate(
+								null);
 					}
 					results.clear();
 				}

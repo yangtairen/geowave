@@ -356,11 +356,6 @@ public class TwitterIngestPlugin extends
 			super(
 					parentPlugin);
 		}
-
-		@Override
-		public IngestTwitterFromHdfs getPersistable() {
-			return new IngestTwitterFromHdfs();
-		}
 	}
 
 	@Override
@@ -369,10 +364,5 @@ public class TwitterIngestPlugin extends
 			GeometryWrapper.class,
 			Time.class
 		};
-	}
-
-	@Override
-	public TwitterIngestPlugin getPersistable() {
-		return new TwitterIngestPlugin();
 	}
 }

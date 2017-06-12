@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2013-2017 Contributors to the Eclipse Foundation
- * 
+ *
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  * All rights reserved. This program and the accompanying materials
@@ -31,8 +31,8 @@ import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
 import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinateRangesArray;
-import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
+import mil.nga.giat.geowave.core.index.persist.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIterator.Wrapper;
@@ -57,7 +57,8 @@ public class HBaseConstraintsQuery extends
 {
 	protected final ConstraintsQuery base;
 
-	private final static Logger LOGGER = LoggerFactory.getLogger(HBaseConstraintsQuery.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(
+			HBaseConstraintsQuery.class);
 
 	public HBaseConstraintsQuery(
 			final List<ByteArrayId> adapterIds,
@@ -73,8 +74,10 @@ public class HBaseConstraintsQuery extends
 		this(
 				adapterIds,
 				index,
-				query != null ? query.getIndexConstraints(index.getIndexStrategy()) : null,
-				query != null ? query.createFilters(index.getIndexModel()) : null,
+				query != null ? query.getIndexConstraints(
+						index.getIndexStrategy()) : null,
+				query != null ? query.createFilters(
+						index.getIndexModel()) : null,
 				clientDedupeFilter,
 				scanCallback,
 				aggregation,
@@ -117,7 +120,8 @@ public class HBaseConstraintsQuery extends
 		if (isAggregation()) {
 			// Because aggregations are done client-side make sure to set
 			// the adapter ID here
-			this.adapterIds = Collections.singletonList(aggregation.getLeft().getAdapterId());
+			this.adapterIds = Collections.singletonList(
+					aggregation.getLeft().getAdapterId());
 		}
 	}
 
@@ -152,15 +156,18 @@ public class HBaseConstraintsQuery extends
 						0,
 						new CoordinateRangeQueryFilter(
 								index.getIndexStrategy(),
-								coords.toArray(new MultiDimensionalCoordinateRangesArray[] {})));
+								coords.toArray(
+										new MultiDimensionalCoordinateRangesArray[] {})));
 			}
 		}
 		else {
 			// Without custom filters, we need all the filters on the client
 			// side
 			for (final QueryFilter distributable : base.distributableFilters) {
-				if (!filters.contains(distributable)) {
-					filters.add(distributable);
+				if (!filters.contains(
+						distributable)) {
+					filters.add(
+							distributable);
 				}
 			}
 		}
@@ -208,7 +215,8 @@ public class HBaseConstraintsQuery extends
 					while (it.hasNext()) {
 						final Object input = it.next();
 						if (input != null) {
-							aggregationFunction.aggregate(input);
+							aggregationFunction.aggregate(
+									input);
 						}
 					}
 					try {
@@ -221,7 +229,8 @@ public class HBaseConstraintsQuery extends
 					}
 
 					return new Wrapper(
-							Iterators.singletonIterator(aggregationFunction.getResult()));
+							Iterators.singletonIterator(
+									aggregationFunction.getResult()));
 				}
 			}
 
@@ -239,7 +248,8 @@ public class HBaseConstraintsQuery extends
 			final BasicHBaseOperations operations,
 			final AdapterStore adapterStore,
 			final Integer limit ) {
-		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
+		final String tableName = StringUtils.stringFromBinary(
+				index.getId().getBytes());
 		Mergeable total = null;
 
 		try {
@@ -255,56 +265,82 @@ public class HBaseConstraintsQuery extends
 
 			final AggregationProtos.AggregationType.Builder aggregationBuilder = AggregationProtos.AggregationType
 					.newBuilder();
-			aggregationBuilder.setName(aggregation.getClass().getName());
+			aggregationBuilder.setClassId(
+					ByteString.copyFrom(
+							PersistenceUtils.toClassId(
+									aggregation)));
 
 			if (aggregation.getParameters() != null) {
-				final byte[] paramBytes = PersistenceUtils.toBinary(aggregation.getParameters());
-				aggregationBuilder.setParams(ByteString.copyFrom(paramBytes));
+				final byte[] paramBytes = PersistenceUtils.toBinary(
+						aggregation.getParameters());
+				aggregationBuilder.setParams(
+						ByteString.copyFrom(
+								paramBytes));
 			}
 
 			final AggregationProtos.AggregationRequest.Builder requestBuilder = AggregationProtos.AggregationRequest
 					.newBuilder();
-			requestBuilder.setAggregation(aggregationBuilder.build());
+			requestBuilder.setAggregation(
+					aggregationBuilder.build());
 			if ((base.distributableFilters != null) && !base.distributableFilters.isEmpty()) {
-				final byte[] filterBytes = PersistenceUtils.toBinary(base.distributableFilters);
-				final ByteString filterByteString = ByteString.copyFrom(filterBytes);
+				final byte[] filterBytes = PersistenceUtils.toBinary(
+						base.distributableFilters);
+				final ByteString filterByteString = ByteString.copyFrom(
+						filterBytes);
 
-				requestBuilder.setFilter(filterByteString);
+				requestBuilder.setFilter(
+						filterByteString);
 			}
 			else {
 				final List<MultiDimensionalCoordinateRangesArray> coords = base.getCoordinateRanges();
 				if (!coords.isEmpty()) {
 					final byte[] filterBytes = new HBaseNumericIndexStrategyFilter(
 							index.getIndexStrategy(),
-							coords.toArray(new MultiDimensionalCoordinateRangesArray[] {})).toByteArray();
+							coords.toArray(
+									new MultiDimensionalCoordinateRangesArray[] {})).toByteArray();
 					final ByteString filterByteString = ByteString.copyFrom(
 							new byte[] {
 								0
 							}).concat(
-							ByteString.copyFrom(filterBytes));
+									ByteString.copyFrom(
+											filterBytes));
 
-					requestBuilder.setNumericIndexStrategyFilter(filterByteString);
+					requestBuilder.setNumericIndexStrategyFilter(
+							filterByteString);
 				}
 			}
-			requestBuilder.setModel(ByteString.copyFrom(PersistenceUtils.toBinary(index.getIndexModel())));
+			requestBuilder.setModel(
+					ByteString.copyFrom(
+							PersistenceUtils.toBinary(
+									index.getIndexModel())));
 
-			final MultiRowRangeFilter multiFilter = getMultiRowRangeFilter(base.getAllRanges());
+			final MultiRowRangeFilter multiFilter = getMultiRowRangeFilter(
+					base.getAllRanges());
 			if (multiFilter != null) {
-				requestBuilder.setRangeFilter(ByteString.copyFrom(multiFilter.toByteArray()));
+				requestBuilder.setRangeFilter(
+						ByteString.copyFrom(
+								multiFilter.toByteArray()));
 			}
 			if (base.aggregation.getLeft() != null) {
 				final ByteArrayId adapterId = base.aggregation.getLeft().getAdapterId();
 				if (isCommonIndexAggregation()) {
-					requestBuilder.setAdapterId(ByteString.copyFrom(adapterId.getBytes()));
+					requestBuilder.setAdapterId(
+							ByteString.copyFrom(
+									adapterId.getBytes()));
 				}
 				else {
-					final DataAdapter dataAdapter = adapterStore.getAdapter(adapterId);
-					requestBuilder.setAdapter(ByteString.copyFrom(PersistenceUtils.toBinary(dataAdapter)));
+					final DataAdapter dataAdapter = adapterStore.getAdapter(
+							adapterId);
+					requestBuilder.setAdapter(
+							ByteString.copyFrom(
+									PersistenceUtils.toBinary(
+											dataAdapter)));
 				}
 			}
 			final AggregationProtos.AggregationRequest request = requestBuilder.build();
 
-			final Table table = operations.getTable(tableName);
+			final Table table = operations.getTable(
+					tableName);
 
 			byte[] startRow = null;
 			byte[] endRow = null;
@@ -342,21 +378,23 @@ public class HBaseConstraintsQuery extends
 				final ByteString value = entry.getValue();
 				if ((value != null) && !value.isEmpty()) {
 					final byte[] bvalue = value.toByteArray();
-					final Mergeable mvalue = PersistenceUtils.fromBinary(
-							bvalue,
-							Mergeable.class);
+					final Mergeable mvalue = (Mergeable) PersistenceUtils.fromBinary(
+							bvalue);
 
-					LOGGER.debug("Value from region " + regionCount + " is " + mvalue);
+					LOGGER.debug(
+							"Value from region " + regionCount + " is " + mvalue);
 
 					if (total == null) {
 						total = mvalue;
 					}
 					else {
-						total.merge(mvalue);
+						total.merge(
+								mvalue);
 					}
 				}
 				else {
-					LOGGER.debug("Empty response for region " + regionCount);
+					LOGGER.debug(
+							"Empty response for region " + regionCount);
 				}
 			}
 
@@ -373,6 +411,7 @@ public class HBaseConstraintsQuery extends
 		}
 
 		return new Wrapper(
-				total != null ? Iterators.singletonIterator(total) : Iterators.emptyIterator());
+				total != null ? Iterators.singletonIterator(
+						total) : Iterators.emptyIterator());
 	}
 }
