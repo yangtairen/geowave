@@ -15,6 +15,8 @@ import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.metadata.MetadataDeleter;
+import mil.nga.giat.geowave.core.store.metadata.MetadataReader;
 import mil.nga.giat.geowave.core.store.metadata.MetadataWriter;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 
@@ -61,8 +63,16 @@ public interface DataStoreOperations
 			ByteArrayId adapterId,
 			DataStoreOptions options,
 			Set<ByteArrayId> splits );
-	
+
 	public MetadataWriter createMetadataWriter(
+			String metadataTypeName,
+			DataStoreOptions options );
+
+	public MetadataReader createMetadataReader(
+			String metadataTypeName,
+			DataStoreOptions options );
+
+	public MetadataDeleter createMetadataDeleter(
 			String metadataTypeName,
 			DataStoreOptions options );
 

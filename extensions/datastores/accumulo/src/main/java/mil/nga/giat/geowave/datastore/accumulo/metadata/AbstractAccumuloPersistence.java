@@ -25,7 +25,7 @@ import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.base.Writer;
-import mil.nga.giat.geowave.core.store.metadata.AbstractGeowavePersistence;
+import mil.nga.giat.geowave.core.store.metadata.AbstractGeoWavePersistence;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
 import mil.nga.giat.geowave.datastore.accumulo.util.ScannerClosableWrapper;
@@ -43,7 +43,7 @@ import mil.nga.giat.geowave.datastore.accumulo.util.ScannerClosableWrapper;
  *            The type of persistable object that this stores
  */
 abstract public class AbstractAccumuloPersistence<T extends Persistable> extends
-		AbstractGeowavePersistence<T>
+		AbstractGeoWavePersistence<T>
 {
 	private final static Logger LOGGER = Logger.getLogger(AbstractAccumuloPersistence.class);
 	protected final AccumuloOperations accumuloOperations;

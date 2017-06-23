@@ -51,6 +51,12 @@ import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.metadata.BasicOptionProvider;
+import mil.nga.giat.geowave.core.store.metadata.Column;
+import mil.nga.giat.geowave.core.store.metadata.IteratorConfig;
+import mil.nga.giat.geowave.core.store.metadata.MergingCombiner;
+import mil.nga.giat.geowave.core.store.metadata.MergingVisibilityCombiner;
+import mil.nga.giat.geowave.core.store.metadata.MetadataWriter;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloRequiredOptions;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
@@ -1028,5 +1034,46 @@ public class BasicAccumuloOperations implements
 					e);
 		}
 		return null;
+	}
+
+	@Override
+	public MetadataWriter createMetadataWriter(
+			String metadataTypeName,
+			DataStoreOptions options ) {
+		return null;
+	}
+//below from datastatisticsstore needs to be incorporated into creating the writer 
+	@Override
+	protected IteratorConfig[] getIteratorConfig() {
+		final Column adapterColumn = new Column(
+				STATISTICS_CF);
+		final Map<String, String> options = new HashMap<String, String>();
+		options.put(
+				MergingCombiner.COLUMNS_OPTION,
+				ColumnSet.encodeColumns(
+						adapterColumn.getFirst(),
+						adapterColumn.getSecond()));
+		final IteratorConfig statsCombiner = new IteratorConfig(
+				EnumSet.allOf(
+						IteratorScope.class),
+				STATS_COMBINER_PRIORITY,
+				STATISTICS_COMBINER_NAME,
+				MergingCombiner.class.getName(),
+				new BasicOptionProvider(
+						options));
+		return new IteratorConfig[] {
+			statsCombiner
+		};
+	}
+
+	//below from datastatisticsstore needs to be incorporated into creating the reader 
+	@Override
+	protected IteratorSetting[] getScanSettings() {
+		final IteratorSetting statsMultiVisibilityCombiner = new IteratorSetting(
+				STATS_MULTI_VISIBILITY_COMBINER_PRIORITY,
+				MergingVisibilityCombiner.class);
+		return new IteratorSetting[] {
+			statsMultiVisibilityCombiner
+		};
 	}
 }
