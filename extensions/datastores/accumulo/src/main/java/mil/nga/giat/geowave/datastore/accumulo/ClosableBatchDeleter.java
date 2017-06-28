@@ -12,11 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.base.Deleter;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveKey;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
+import mil.nga.giat.geowave.core.store.operations.Deleter;
 
 public class ClosableBatchDeleter implements
-		Deleter<AccumuloRow>
+		Deleter
 {
 	private static Logger LOGGER = LoggerFactory.getLogger(
 			ClosableBatchDeleter.class);
@@ -41,7 +42,7 @@ public class ClosableBatchDeleter implements
 
 	@Override
 	public void delete(
-			final AccumuloRow row,
+			final GeoWaveRow row,
 			final DataAdapter<?> adapter ) {
 		final List<Range> rowRanges = new ArrayList<Range>();
 		if (isAltIndex) {

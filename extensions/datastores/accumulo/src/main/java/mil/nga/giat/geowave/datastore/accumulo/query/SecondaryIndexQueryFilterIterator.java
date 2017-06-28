@@ -67,6 +67,7 @@ public class SecondaryIndexQueryFilterIterator extends
 							null, // not needed
 							null, // not needed
 							null, // not needed
+							null, // not needed
 							0, // not needed
 							new PersistentDataset<ByteArrayId>(
 									new PersistentValue<ByteArrayId>(

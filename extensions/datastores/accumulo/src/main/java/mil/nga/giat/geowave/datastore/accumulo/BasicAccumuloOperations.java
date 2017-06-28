@@ -20,6 +20,7 @@ import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.BatchDeleter;
 import org.apache.accumulo.core.client.BatchScanner;
+import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.BatchWriterConfig;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Instance;
@@ -27,6 +28,7 @@ import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.RowIterator;
 import org.apache.accumulo.core.client.Scanner;
+import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.conf.Property;
@@ -34,31 +36,46 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.IteratorUtil.IteratorScope;
+import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.QueryRanges;
+import mil.nga.giat.geowave.core.index.ByteArrayRange;
+import mil.nga.giat.geowave.core.index.ByteArrayUtils;
+import mil.nga.giat.geowave.core.index.IndexUtils;
+import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinateRangesArray;
+import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinateRangesArray.ArrayOfArrays;
+import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.base.Deleter;
-import mil.nga.giat.geowave.core.store.base.Reader;
-import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
-import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
-import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.core.store.metadata.BasicOptionProvider;
-import mil.nga.giat.geowave.core.store.metadata.Column;
-import mil.nga.giat.geowave.core.store.metadata.IteratorConfig;
-import mil.nga.giat.geowave.core.store.metadata.MergingCombiner;
-import mil.nga.giat.geowave.core.store.metadata.MergingVisibilityCombiner;
-import mil.nga.giat.geowave.core.store.metadata.MetadataWriter;
+import mil.nga.giat.geowave.core.store.metadata.AbstractGeoWavePersistence;
+import mil.nga.giat.geowave.core.store.operations.Deleter;
+import mil.nga.giat.geowave.core.store.operations.MetadataDeleter;
+import mil.nga.giat.geowave.core.store.operations.MetadataReader;
+import mil.nga.giat.geowave.core.store.operations.MetadataType;
+import mil.nga.giat.geowave.core.store.operations.MetadataWriter;
+import mil.nga.giat.geowave.core.store.operations.Reader;
+import mil.nga.giat.geowave.core.store.operations.ReaderParams;
+import mil.nga.giat.geowave.core.store.operations.Writer;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
+import mil.nga.giat.geowave.core.store.query.aggregate.CommonIndexAggregation;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloMetadataDeleter;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloMetadataReader;
+import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloMetadataWriter;
+import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions;
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloRequiredOptions;
+import mil.nga.giat.geowave.datastore.accumulo.query.AggregationIterator;
+import mil.nga.giat.geowave.datastore.accumulo.query.AttributeSubsettingIterator;
+import mil.nga.giat.geowave.datastore.accumulo.query.FixedCardinalitySkippingIterator;
+import mil.nga.giat.geowave.datastore.accumulo.query.NumericIndexStrategyFilterIterator;
+import mil.nga.giat.geowave.datastore.accumulo.query.QueryFilterIterator;
+import mil.nga.giat.geowave.datastore.accumulo.query.WholeRowAggregationIterator;
+import mil.nga.giat.geowave.datastore.accumulo.query.WholeRowQueryFilterIterator;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.ConnectorPool;
 
@@ -87,6 +104,7 @@ public class BasicAccumuloOperations implements
 	private long cacheTimeoutMillis;
 	private String password;
 	private final Map<String, Set<String>> insuredAuthorizationCache;
+	private final AccumuloOptions options;
 
 	/**
 	 * This is will create an Accumulo connector based on passed in connection
@@ -117,18 +135,21 @@ public class BasicAccumuloOperations implements
 			final String instanceName,
 			final String userName,
 			final String password,
-			final String tableNamespace )
+			final String tableNamespace,
+			final AccumuloOptions options )
 			throws AccumuloException,
 			AccumuloSecurityException {
 		this(
 				null,
-				tableNamespace);
+				tableNamespace,
+				options);
 		this.password = password;
 		connector = ConnectorPool.getInstance().getConnector(
 				zookeeperUrl,
 				instanceName,
 				userName,
 				password);
+
 	}
 
 	/**
@@ -139,10 +160,12 @@ public class BasicAccumuloOperations implements
 	 *            The connector to use for all operations
 	 */
 	public BasicAccumuloOperations(
-			final Connector connector ) {
+			final Connector connector,
+			final AccumuloOptions options ) {
 		this(
 				connector,
-				DEFAULT_TABLE_NAMESPACE);
+				DEFAULT_TABLE_NAMESPACE,
+				options);
 	}
 
 	/**
@@ -158,14 +181,16 @@ public class BasicAccumuloOperations implements
 	 */
 	public BasicAccumuloOperations(
 			final Connector connector,
-			final String tableNamespace ) {
+			final String tableNamespace,
+			final AccumuloOptions options ) {
 		this(
 				DEFAULT_NUM_THREADS,
 				DEFAULT_TIMEOUT_MILLIS,
 				DEFAULT_BYTE_BUFFER_SIZE,
 				DEFAULT_AUTHORIZATION,
 				tableNamespace,
-				connector);
+				connector,
+				options);
 	}
 
 	/**
@@ -192,13 +217,15 @@ public class BasicAccumuloOperations implements
 			final long byteBufferSize,
 			final String authorization,
 			final String tableNamespace,
-			final Connector connector ) {
+			final Connector connector,
+			final AccumuloOptions options ) {
 		this.numThreads = numThreads;
 		this.timeoutMillis = timeoutMillis;
 		this.byteBufferSize = byteBufferSize;
 		this.authorization = authorization;
 		this.tableNamespace = tableNamespace;
 		this.connector = connector;
+		this.options = options;
 		locGrpCache = new HashMap<String, Long>();
 		insuredAuthorizationCache = new HashMap<String, Set<String>>();
 		cacheTimeoutMillis = TimeUnit.DAYS.toMillis(
@@ -844,7 +871,8 @@ public class BasicAccumuloOperations implements
 				options.getInstance(),
 				options.getUser(),
 				options.getPassword(),
-				options.getGeowaveNamespace());
+				options.getGeowaveNamespace(),
+				(AccumuloOptions) options.getStoreOptions());
 	}
 
 	public static Connector getConnector(
@@ -967,24 +995,286 @@ public class BasicAccumuloOperations implements
 
 	}
 
+	protected ScannerBase getScanner(
+			final ReaderParams params ) {
+		final List<ByteArrayRange> ranges = params.getQueryRanges().getCompositeQueryRanges();
+		final String tableName = StringUtils.stringFromBinary(
+				params.getIndex().getId().getBytes());
+		ScannerBase scanner;
+		try {
+			if (!params.isAggregation() && (ranges != null) && (ranges.size() == 1)) {
+				scanner = createScanner(
+						tableName,
+						params.getAdditionalAuthorizations());
+				final ByteArrayRange r = ranges.get(
+						0);
+				if (r.isSingleValue()) {
+					((Scanner) scanner).setRange(
+							Range.exact(
+									new Text(
+											r.getStart().getBytes())));
+				}
+				else {
+					((Scanner) scanner).setRange(
+							AccumuloUtils.byteArrayRangeToAccumuloRange(
+									r));
+				}
+				if ((params.getLimit() != null) && (params.getLimit() > 0)
+						&& (params.getLimit() < ((Scanner) scanner).getBatchSize())) {
+					// do allow the limit to be set to some enormous size.
+					((Scanner) scanner).setBatchSize(
+							Math.min(
+									1024,
+									params.getLimit()));
+				}
+			}
+			else {
+				scanner = createBatchScanner(
+						tableName,
+						params.getAdditionalAuthorizations());
+				((BatchScanner) scanner).setRanges(
+						AccumuloUtils.byteArrayRangesToAccumuloRanges(
+								ranges));
+			}
+			if (params.getMaxResolutionSubsamplingPerDimension() != null) {
+				if (params.getMaxResolutionSubsamplingPerDimension().length != params
+						.getIndex()
+						.getIndexStrategy()
+						.getOrderedDimensionDefinitions().length) {
+					LOGGER.warn(
+							"Unable to subsample for table '" + tableName + "'. Subsample dimensions = "
+									+ params.getMaxResolutionSubsamplingPerDimension().length
+									+ " when indexed dimensions = "
+									+ params.getIndex().getIndexStrategy().getOrderedDimensionDefinitions().length);
+				}
+				else {
+
+					final int cardinalityToSubsample = (int) Math.round(
+							IndexUtils.getDimensionalBitsUsed(
+									params.getIndex().getIndexStrategy(),
+									params.getMaxResolutionSubsamplingPerDimension())
+									+ (8 * params.getIndex().getIndexStrategy().getPartitionKeyLength()));
+
+					final IteratorSetting iteratorSettings = new IteratorSetting(
+							FixedCardinalitySkippingIterator.CARDINALITY_SKIPPING_ITERATOR_PRIORITY,
+							FixedCardinalitySkippingIterator.CARDINALITY_SKIPPING_ITERATOR_NAME,
+							FixedCardinalitySkippingIterator.class);
+					iteratorSettings.addOption(
+							FixedCardinalitySkippingIterator.CARDINALITY_SKIP_INTERVAL,
+							Integer.toString(
+									cardinalityToSubsample));
+					scanner.addScanIterator(
+							iteratorSettings);
+				}
+			}
+		}
+		catch (final TableNotFoundException e) {
+			LOGGER.warn(
+					"Unable to query table '" + tableName + "'.  Table does not exist.",
+					e);
+			return null;
+		}
+		if ((params.getAdapterIds() != null) && !params.getAdapterIds().isEmpty()) {
+			for (final ByteArrayId adapterId : params.getAdapterIds()) {
+				scanner.fetchColumnFamily(
+						new Text(
+								adapterId.getBytes()));
+			}
+		}
+		return scanner;
+	}
+
+	protected void addConstraintsScanIteratorSettings(
+			final ReaderParams params,
+			final ScannerBase scanner,
+			final DataStoreOptions options ) {
+		addFieldSubsettingToIterator(
+				params,
+				scanner);
+		IteratorSetting iteratorSettings = null;
+		if (params.isAggregation()) {
+			if (params.isWholeRow()) {
+				iteratorSettings = new IteratorSetting(
+						QueryFilterIterator.QUERY_ITERATOR_PRIORITY,
+						QueryFilterIterator.QUERY_ITERATOR_NAME,
+						WholeRowAggregationIterator.class);
+			}
+			else {
+				iteratorSettings = new IteratorSetting(
+						QueryFilterIterator.QUERY_ITERATOR_PRIORITY,
+						QueryFilterIterator.QUERY_ITERATOR_NAME,
+						AggregationIterator.class);
+			}
+			if (!(params.getAggregation().getRight() instanceof CommonIndexAggregation)
+					&& (params.getAggregation().getLeft() != null)) {
+				iteratorSettings.addOption(
+						AggregationIterator.ADAPTER_OPTION_NAME,
+						ByteArrayUtils.byteArrayToString(
+								PersistenceUtils.toBinary(
+										params.getAggregation().getLeft())));
+			}
+			final Aggregation aggr = params.getAggregation().getRight();
+			iteratorSettings.addOption(
+					AggregationIterator.AGGREGATION_OPTION_NAME,
+					aggr.getClass().getName());
+			if (aggr.getParameters() != null) { // sets the parameters
+				iteratorSettings.addOption(
+						AggregationIterator.PARAMETER_OPTION_NAME,
+						ByteArrayUtils.byteArrayToString(
+								(PersistenceUtils.toBinary(
+										aggr.getParameters()))));
+			}
+			iteratorSettings.addOption(
+					AggregationIterator.CONSTRAINTS_OPTION_NAME,
+					ByteArrayUtils.byteArrayToString(
+							(PersistenceUtils.toBinary(
+									params.getConstraints()))));
+			iteratorSettings.addOption(
+					AggregationIterator.INDEX_STRATEGY_OPTION_NAME,
+					ByteArrayUtils.byteArrayToString(
+							PersistenceUtils.toBinary(
+									params.getIndex().getIndexStrategy())));
+			// the index model must be provided for the aggregation iterator to
+			// deserialize each entry
+			iteratorSettings.addOption(
+					QueryFilterIterator.MODEL,
+					ByteArrayUtils.byteArrayToString(
+							PersistenceUtils.toBinary(
+									params.getIndex().getIndexModel())));
+			// don't bother setting max decomposition because it is just the
+			// default anyways
+		}
+
+		boolean usingDistributableFilter = false;
+		if ((params.getFilter() != null) && options.isServerSideLibraryEnabled()) {
+			usingDistributableFilter = true;
+			if (iteratorSettings == null) {
+				if (params.isWholeRow()) {
+					iteratorSettings = new IteratorSetting(
+							QueryFilterIterator.QUERY_ITERATOR_PRIORITY,
+							QueryFilterIterator.QUERY_ITERATOR_NAME,
+							WholeRowQueryFilterIterator.class);
+				}
+				else {
+					iteratorSettings = new IteratorSetting(
+							QueryFilterIterator.QUERY_ITERATOR_PRIORITY,
+							QueryFilterIterator.QUERY_ITERATOR_NAME,
+							QueryFilterIterator.class);
+				}
+			}
+			iteratorSettings.addOption(
+					QueryFilterIterator.FILTER,
+					ByteArrayUtils.byteArrayToString(
+							PersistenceUtils.toBinary(
+									params.getFilter())));
+			if (!iteratorSettings.getOptions().containsKey(
+					QueryFilterIterator.MODEL)) {
+				// it may already be added as an option if its an aggregation
+				iteratorSettings.addOption(
+						QueryFilterIterator.MODEL,
+						ByteArrayUtils.byteArrayToString(
+								PersistenceUtils.toBinary(
+										params.getIndex().getIndexModel())));
+			}
+		}
+		else if ((iteratorSettings == null) && params.isWholeRow()) {
+			// we have to at least use a whole row iterator
+			iteratorSettings = new IteratorSetting(
+					QueryFilterIterator.QUERY_ITERATOR_PRIORITY,
+					QueryFilterIterator.QUERY_ITERATOR_NAME,
+					WholeRowIterator.class);
+		}
+		if (!usingDistributableFilter) {
+			// it ends up being duplicative and slower to add both a
+			// distributable query and the index constraints, but one of the two
+			// is important to limit client-side filtering
+			addIndexFilterToIterator(
+					params,
+					scanner);
+		}
+		if (iteratorSettings != null) {
+			scanner.addScanIterator(
+					iteratorSettings);
+		}
+	}
+
+	protected void addIndexFilterToIterator(
+			final ReaderParams params,
+			final ScannerBase scanner ) {
+		final List<MultiDimensionalCoordinateRangesArray> coords = params.getCoordinateRanges();
+		if (!coords.isEmpty()) {
+			final IteratorSetting iteratorSetting = new IteratorSetting(
+					NumericIndexStrategyFilterIterator.IDX_FILTER_ITERATOR_PRIORITY,
+					NumericIndexStrategyFilterIterator.IDX_FILTER_ITERATOR_NAME,
+					NumericIndexStrategyFilterIterator.class);
+
+			iteratorSetting.addOption(
+					NumericIndexStrategyFilterIterator.INDEX_STRATEGY_KEY,
+					ByteArrayUtils.byteArrayToString(
+							PersistenceUtils.toBinary(
+									params.getIndex().getIndexStrategy())));
+
+			iteratorSetting.addOption(
+					NumericIndexStrategyFilterIterator.COORDINATE_RANGE_KEY,
+					ByteArrayUtils.byteArrayToString(
+							new ArrayOfArrays(
+									coords.toArray(
+											new MultiDimensionalCoordinateRangesArray[] {})).toBinary()));
+			scanner.addScanIterator(
+					iteratorSetting);
+		}
+	}
+
+	protected void addFieldSubsettingToIterator(
+			final ReaderParams params,
+			final ScannerBase scanner ) {
+		if ((params.getFieldSubsets() != null) && !params.isAggregation()) {
+			final List<String> fieldIds = params.getFieldSubsets().getLeft();
+			final DataAdapter<?> associatedAdapter = params.getFieldSubsets().getRight();
+			if ((fieldIds != null) && (!fieldIds.isEmpty()) && (associatedAdapter != null)) {
+				final IteratorSetting iteratorSetting = AttributeSubsettingIterator.getIteratorSetting();
+
+				AttributeSubsettingIterator.setFieldIds(
+						iteratorSetting,
+						associatedAdapter,
+						fieldIds,
+						params.getIndex().getIndexModel());
+
+				iteratorSetting.addOption(
+						AttributeSubsettingIterator.WHOLE_ROW_ENCODED_KEY,
+						Boolean.toString(
+								params.isWholeRow()));
+				scanner.addScanIterator(
+						iteratorSetting);
+			}
+		}
+	}
+
+	protected void addRowScanIteratorSettings(
+			final ReaderParams params,
+			final ScannerBase scanner ) {
+		addFieldSubsettingToIterator(
+				params,
+				scanner);
+		if (params.isWholeRow()) {
+			// we have to at least use a whole row iterator
+			final IteratorSetting iteratorSettings = new IteratorSetting(
+					QueryFilterIterator.QUERY_ITERATOR_PRIORITY,
+					QueryFilterIterator.QUERY_ITERATOR_NAME,
+					WholeRowIterator.class);
+			scanner.addScanIterator(
+					iteratorSettings);
+		}
+	}
+
 	@Override
 	public Reader createReader(
-			final PrimaryIndex index,
-			final List<ByteArrayId> adapterIds,
-			final double[] maxResolutionSubsamplingPerDimension,
-			final Pair<DataAdapter<?>, Aggregation<?, ?, ?>> aggregation,
-			final Pair<List<String>, DataAdapter<?>> fieldSubsets,
-			final boolean isWholeRow,
-			final QueryRanges ranges,
-			final DistributableQueryFilter filter,
-			final Integer limit,
-			final String... additionalAuthorizations ) {
-		// TODO Auto-generated method stub
+			final ReaderParams params ) {
 		return null;
 	}
 
 	@Override
-	public Deleter<? extends GeoWaveRow> createDeleter(
+	public Deleter createDeleter(
 			final ByteArrayId indexId,
 			final String... authorizations )
 			throws Exception {
@@ -1002,11 +1292,8 @@ public class BasicAccumuloOperations implements
 	public Writer createWriter(
 			final ByteArrayId indexId,
 			final ByteArrayId adapterId,
-			final DataStoreOptions options,
 			final Set<ByteArrayId> splits ) {
 		final String tableName = indexId.getString();
-		final String qName = getQualifiedTableName(
-				tableName);
 		if (options.isCreateTable()) {
 			createTable(
 					tableName,
@@ -1014,19 +1301,11 @@ public class BasicAccumuloOperations implements
 					options.isEnableBlockCache(),
 					splits);
 		}
-		final BatchWriterConfig config = new BatchWriterConfig();
-		config.setMaxMemory(
-				byteBufferSize);
-		config.setMaxLatency(
-				timeoutMillis,
-				TimeUnit.MILLISECONDS);
-		config.setMaxWriteThreads(
-				numThreads);
+
 		try {
 			return new mil.nga.giat.geowave.datastore.accumulo.BatchWriterWrapper(
-					connector.createBatchWriter(
-							qName,
-							config));
+					createBatchWriter(
+							tableName));
 		}
 		catch (final TableNotFoundException e) {
 			LOGGER.error(
@@ -1036,44 +1315,91 @@ public class BasicAccumuloOperations implements
 		return null;
 	}
 
-	@Override
-	public MetadataWriter createMetadataWriter(
-			String metadataTypeName,
-			DataStoreOptions options ) {
-		return null;
-	}
-//below from datastatisticsstore needs to be incorporated into creating the writer 
-	@Override
-	protected IteratorConfig[] getIteratorConfig() {
-		final Column adapterColumn = new Column(
-				STATISTICS_CF);
-		final Map<String, String> options = new HashMap<String, String>();
-		options.put(
-				MergingCombiner.COLUMNS_OPTION,
-				ColumnSet.encodeColumns(
-						adapterColumn.getFirst(),
-						adapterColumn.getSecond()));
-		final IteratorConfig statsCombiner = new IteratorConfig(
-				EnumSet.allOf(
-						IteratorScope.class),
-				STATS_COMBINER_PRIORITY,
-				STATISTICS_COMBINER_NAME,
-				MergingCombiner.class.getName(),
-				new BasicOptionProvider(
-						options));
-		return new IteratorConfig[] {
-			statsCombiner
-		};
+	public BatchWriter createBatchWriter(
+			final String tableName )
+			throws TableNotFoundException {
+		final String qName = getQualifiedTableName(
+				tableName);
+		final BatchWriterConfig config = new BatchWriterConfig();
+		config.setMaxMemory(
+				byteBufferSize);
+		config.setMaxLatency(
+				timeoutMillis,
+				TimeUnit.MILLISECONDS);
+		config.setMaxWriteThreads(
+				numThreads);
+		return connector.createBatchWriter(
+				qName,
+				config);
+
 	}
 
-	//below from datastatisticsstore needs to be incorporated into creating the reader 
+	private boolean iteratorsAttached = false;
+
 	@Override
-	protected IteratorSetting[] getScanSettings() {
-		final IteratorSetting statsMultiVisibilityCombiner = new IteratorSetting(
-				STATS_MULTI_VISIBILITY_COMBINER_PRIORITY,
-				MergingVisibilityCombiner.class);
-		return new IteratorSetting[] {
-			statsMultiVisibilityCombiner
-		};
+	public MetadataWriter createMetadataWriter(
+			final MetadataType metadataType ) {
+		if (options.isCreateTable()) {
+			// this checks for existence prior to create
+			createTable(
+					AbstractGeoWavePersistence.METADATA_TABLE,
+					true,
+					options.isEnableBlockCache(),
+					null);
+		}
+		if (MetadataType.STATS.equals(
+				metadataType) && options.isServerSideLibraryEnabled()) {
+			synchronized (this) {
+				if (!iteratorsAttached) {
+					iteratorsAttached = true;
+					final IteratorConfig[] configs = AccumuloMetadataWriter.getStatsIteratorConfig();
+					if ((configs != null) && (configs.length > 0)) {
+						try {
+							attachIterators(
+									AbstractGeoWavePersistence.METADATA_TABLE,
+									true,
+									true,
+									true,
+									null,
+									configs);
+						}
+						catch (final TableNotFoundException e) {
+							LOGGER.error(
+									"Cannot attach stats iterator, table not found",
+									e);
+						}
+					}
+				}
+			}
+		}
+		try {
+			return new AccumuloMetadataWriter(
+					createBatchWriter(
+							AbstractGeoWavePersistence.METADATA_TABLE),
+					metadataType);
+		}
+		catch (final TableNotFoundException e) {
+			LOGGER.error(
+					"Unable to create metadata writer",
+					e);
+		}
+		return null;
+	}
+
+	@Override
+	public MetadataReader createMetadataReader(
+			final MetadataType metadataType ) {
+		return new AccumuloMetadataReader(
+				this,
+				options,
+				metadataType);
+	}
+
+	@Override
+	public MetadataDeleter createMetadataDeleter(
+			final MetadataType metadataType ) {
+		return new AccumuloMetadataDeleter(
+				this,
+				metadataType);
 	}
 }

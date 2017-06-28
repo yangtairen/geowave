@@ -20,7 +20,6 @@ import mil.nga.giat.geowave.core.store.AdapterToIndexMapping;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.DataStore;
-import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.AdapterIndexMappingStore;
@@ -33,9 +32,6 @@ import mil.nga.giat.geowave.core.store.adapter.exceptions.MismatchedIndexToAdapt
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DuplicateEntryCount;
-import mil.nga.giat.geowave.core.store.base.query.BaseConstraintsQuery;
-import mil.nga.giat.geowave.core.store.base.query.BaseRowIdsQuery;
-import mil.nga.giat.geowave.core.store.base.query.BaseRowPrefixQuery;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
 import mil.nga.giat.geowave.core.store.callback.IngestCallbackList;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
@@ -57,6 +53,8 @@ import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStore;
 import mil.nga.giat.geowave.core.store.index.writer.IndependentAdapterIndexWriter;
 import mil.nga.giat.geowave.core.store.index.writer.IndexCompositeWriter;
 import mil.nga.giat.geowave.core.store.memory.MemoryAdapterStore;
+import mil.nga.giat.geowave.core.store.operations.DataStoreOperations;
+import mil.nga.giat.geowave.core.store.operations.Deleter;
 import mil.nga.giat.geowave.core.store.query.DataIdQuery;
 import mil.nga.giat.geowave.core.store.query.EverythingQuery;
 import mil.nga.giat.geowave.core.store.query.PrefixIdQuery;
@@ -65,7 +63,7 @@ import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.core.store.query.RowIdQuery;
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 
-public abstract class BaseDataStore<R extends GeoWaveRow> implements
+public class BaseDataStore<R extends GeoWaveRow> implements
 		DataStore
 {
 	private final static Logger LOGGER = Logger.getLogger(
@@ -613,7 +611,9 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 				Collections.singletonList(
 						adapter.getAdapterId()),
 				index,
-				new DataIdQuery(adapter.getAdapterId(), dataIds),
+				new DataIdQuery(
+						adapter.getAdapterId(),
+						dataIds),
 				dedupeFilter,
 				queryOptions,
 				tempAdapterStore);
@@ -726,12 +726,6 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 				sanitizedQueryOptions.getLimit());
 	}
 
-	protected abstract <T> void addAltIndexCallback(
-			List<IngestCallback<T>> callbacks,
-			String indexName,
-			DataAdapter<T> adapter,
-			ByteArrayId primaryIndexId );
-
 	protected <T> IndexWriter<T> createIndexWriter(
 			final WritableDataAdapter<T> adapter,
 			final PrimaryIndex index,
@@ -748,9 +742,106 @@ public abstract class BaseDataStore<R extends GeoWaveRow> implements
 				closable);
 	}
 
-	protected abstract <T> void initOnIndexWriterCreate(
+	protected <T> void initOnIndexWriterCreate(
 			final DataAdapter<T> adapter,
-			final PrimaryIndex index );
+			final PrimaryIndex index ) {}
+
+	protected <T> void addAltIndexCallback(
+			final List<IngestCallback<T>> callbacks,
+			final String indexName,
+			final DataAdapter<T> adapter,
+			final ByteArrayId primaryIndexId ) {
+		try {
+			callbacks.add(
+					new AltIndexCallback<T>(
+							indexName,
+							(WritableDataAdapter<T>) adapter,
+							primaryIndexId));
+
+		}
+		catch (final Exception e) {
+			LOGGER.error(
+					"Unable to create table table for alt index to  [" + indexName + "]",
+					e);
+		}
+	}
+
+	private class AltIndexCallback<T> implements
+			IngestCallback<T>
+	{
+		private final ByteArrayId EMPTY_VISIBILITY = new ByteArrayId(
+				new byte[0]);
+		private final ByteArrayId EMPTY_FIELD_ID = new ByteArrayId(
+				new byte[0]);
+		private final WritableDataAdapter<T> adapter;
+		private final String altIdxTableName;
+		private final ByteArrayId primaryIndexId;
+		private final ByteArrayId altIndexId;
+
+		public AltIndexCallback(
+				final String indexName,
+				final WritableDataAdapter<T> adapter,
+				final ByteArrayId primaryIndexId ) {
+			this.adapter = adapter;
+			altIdxTableName = indexName + ALT_INDEX_TABLE;
+			altIndexId = new ByteArrayId(
+					altIdxTableName);
+			this.primaryIndexId = primaryIndexId;
+			try {
+				if (baseOperations.indexExists(
+						new ByteArrayId(
+								indexName))) {
+					if (!baseOperations.indexExists(
+							new ByteArrayId(
+									altIdxTableName))) {
+						throw new IllegalArgumentException(
+								"Requested alternate index table does not exist.");
+					}
+				}
+				else {
+					// index table does not exist yet
+					if (baseOperations.indexExists(
+							new ByteArrayId(
+									altIdxTableName))) {
+						baseOperations.deleteAll(
+								new ByteArrayId(
+										altIdxTableName),
+								null);
+						LOGGER.warn(
+								"Deleting current alternate index table [" + altIdxTableName
+										+ "] as main table does not yet exist.");
+					}
+				}
+			}
+			catch (final IOException e) {
+				LOGGER.error(
+						"Exception checking for index " + indexName + ": " + e);
+			}
+		}
+
+		@Override
+		public void entryIngested(
+				final T entry,
+				final GeoWaveRow... geowaveRows ) {
+			for (final GeoWaveRow geowaveRow : geowaveRows) {
+				final ByteArrayId dataId = adapter.getDataId(
+						entry);
+				if ((dataId != null) && (dataId.getBytes() != null) && (dataId.getBytes().length > 0)) {
+					secondaryIndexDataStore.storeJoinEntry(
+							altIndexId,
+							dataId,
+							adapter.getAdapterId(),
+							EMPTY_FIELD_ID,
+							primaryIndexId,
+							new ByteArrayId(
+									geowaveRow.getPartitionKey()),
+							new ByteArrayId(
+									geowaveRow.getSortKey()),
+							EMPTY_VISIBILITY);
+				}
+			}
+		}
+	}
 
 	/**
 	 * Basic method that decodes a native row Currently overridden by Accumulo

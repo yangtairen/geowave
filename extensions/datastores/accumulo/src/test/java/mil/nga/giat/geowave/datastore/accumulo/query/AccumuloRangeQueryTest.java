@@ -52,6 +52,7 @@ import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
 import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions;
 
 public class AccumuloRangeQueryTest
 {
@@ -87,9 +88,13 @@ public class AccumuloRangeQueryTest
 				"root",
 				new PasswordToken(
 						new byte[0]));
+
+		final AccumuloOptions options = new AccumuloOptions();
 		mockDataStore = new AccumuloDataStore(
 				new BasicAccumuloOperations(
-						mockConnector));
+						mockConnector,
+						options),
+				options);
 
 		index = new SpatialDimensionalityTypeProvider().createPrimaryIndex();
 		adapter = new TestGeometryAdapter();

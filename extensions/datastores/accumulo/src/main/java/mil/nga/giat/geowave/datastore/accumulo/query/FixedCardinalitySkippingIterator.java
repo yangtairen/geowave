@@ -27,9 +27,9 @@ public class FixedCardinalitySkippingIterator extends
 		SkippingIterator implements
 		InterruptibleIterator
 {
-	protected static final String CARDINALITY_SKIPPING_ITERATOR_NAME = "CARDINALITY_SKIPPING_ITERATOR";
-	protected static final int CARDINALITY_SKIPPING_ITERATOR_PRIORITY = 35;
-	protected static final String CARDINALITY_SKIP_INTERVAL = "cardinality";
+	public static final String CARDINALITY_SKIPPING_ITERATOR_NAME = "CARDINALITY_SKIPPING_ITERATOR";
+	public static final int CARDINALITY_SKIPPING_ITERATOR_PRIORITY = 35;
+	public static final String CARDINALITY_SKIP_INTERVAL = "cardinality";
 	protected Text nextRow;
 	protected Integer bitPosition;
 	protected Collection<ByteSequence> columnFamilies;

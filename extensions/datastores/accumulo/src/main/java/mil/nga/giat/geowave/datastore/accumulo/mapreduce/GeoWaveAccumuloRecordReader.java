@@ -12,15 +12,21 @@ import org.apache.accumulo.core.data.Range;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
+import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.ByteArrayRange;
+import mil.nga.giat.geowave.core.index.QueryRanges;
+import mil.nga.giat.geowave.core.index.SinglePartitionInsertionIds;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.base.BaseDataStore;
+import mil.nga.giat.geowave.core.store.filter.FilterList;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.operations.ReaderParams;
 import mil.nga.giat.geowave.core.store.query.DistributableQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
+import mil.nga.giat.geowave.core.store.util.NativeEntryIteratorWrapper;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.query.InputFormatAccumuloRangeQuery;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
 import mil.nga.giat.geowave.mapreduce.splits.GeoWaveRecordReader;
 import mil.nga.giat.geowave.mapreduce.splits.GeoWaveRowRange;
@@ -37,7 +43,8 @@ public class GeoWaveAccumuloRecordReader<T> extends
 		GeoWaveRecordReader<T>
 {
 
-	protected static final Logger LOGGER = Logger.getLogger(GeoWaveAccumuloRecordReader.class);
+	protected static final Logger LOGGER = Logger.getLogger(
+			GeoWaveAccumuloRecordReader.class);
 	protected Key currentAccumuloKey = null;
 	protected AccumuloOperations accumuloOperations;
 
@@ -59,22 +66,50 @@ public class GeoWaveAccumuloRecordReader<T> extends
 
 	@Override
 	protected CloseableIterator<?> queryRange(
-			PrimaryIndex i,
-			GeoWaveRowRange range,
-			List<QueryFilter> queryFilters,
-			QueryOptions rangeQueryOptions ) {
-		return new InputFormatAccumuloRangeQuery(
-				dataStore,
-				adapterStore,
-				i,
-				AccumuloSplitsProvider.unwrapRange(range),
-				queryFilters,
-				isOutputWritable,
-				rangeQueryOptions).query(
-				accumuloOperations,
-				adapterStore,
-				rangeQueryOptions.getMaxResolutionSubsamplingPerDimension(),
-				rangeQueryOptions.getLimit());
+			final PrimaryIndex i,
+			final GeoWaveRowRange range,
+			final List<QueryFilter> queryFilters,
+			final QueryOptions rangeQueryOptions ) {
+
+		final QueryFilter singleFilter = queryFilters.isEmpty() ? null : queryFilters.size() == 1 ? queryFilters.get(
+				0)
+				: new FilterList<QueryFilter>(
+						queryFilters);
+		try {
+			return (CloseableIterator<?>) new NativeEntryIteratorWrapper(
+					dataStore,
+					adapterStore,
+					i,
+					accumuloOperations.createReader(
+							new ReaderParams(
+									i,
+									rangeQueryOptions.getAdapterIds(
+											adapterStore),
+									rangeQueryOptions.getMaxResolutionSubsamplingPerDimension(),
+									rangeQueryOptions.getAggregation(),
+									rangeQueryOptions.getFieldIdsAdapterPair(),
+									true,
+									new QueryRanges(
+											new ByteArrayRange(
+													new ByteArrayId(
+															range.getStartKey()),
+													new ByteArrayId(
+															range.getEndKey()))),
+									null,
+									queryOptions.getLimit(),
+									null,
+									null,
+									rangeQueryOptions.getAuthorizations())),
+					singleFilter,
+					null,
+					true);
+		}
+		catch (final IOException e) {
+			LOGGER.warn(
+					"Unable to get adapter IDs",
+					e);
+		}
+		return new CloseableIterator.Empty();
 	}
 
 	@Override
@@ -91,11 +126,19 @@ public class GeoWaveAccumuloRecordReader<T> extends
 					if (currentGeoWaveKey == null) {
 						currentAccumuloKey = null;
 					}
-					else if (currentGeoWaveKey.getInsertionId() != null) {
-						// just use the insertion ID for progress
+					else if ((currentGeoWaveKey.getPartitionKey() != null)
+							|| (currentGeoWaveKey.getSortKey() != null)) {
+						// just use the concatenation of partition and sort keys
+						// for progress
 						currentAccumuloKey = new Key(
 								new Text(
-										currentGeoWaveKey.getInsertionId().getBytes()));
+										new SinglePartitionInsertionIds(
+												currentGeoWaveKey.getPartitionKey(),
+												currentGeoWaveKey.getSortKey())
+														.getCompositeInsertionIds()
+														.get(
+																0)
+														.getBytes()));
 					}
 					currentValue = entry.getValue();
 				}
@@ -114,14 +157,17 @@ public class GeoWaveAccumuloRecordReader<T> extends
 		if (currentGeoWaveRangeIndexPair == null) {
 			return 0.0f;
 		}
-		final ProgressPerRange progress = progressPerRange.get(currentGeoWaveRangeIndexPair);
+		final ProgressPerRange progress = progressPerRange.get(
+				currentGeoWaveRangeIndexPair);
 		if (progress == null) {
 			return getProgressForRange(
-					AccumuloSplitsProvider.unwrapRange(currentGeoWaveRangeIndexPair.getRange()),
+					AccumuloSplitsProvider.unwrapRange(
+							currentGeoWaveRangeIndexPair.getRange()),
 					currentAccumuloKey);
 		}
 		return getOverallProgress(
-				AccumuloSplitsProvider.unwrapRange(currentGeoWaveRangeIndexPair.getRange()),
+				AccumuloSplitsProvider.unwrapRange(
+						currentGeoWaveRangeIndexPair.getRange()),
 				currentAccumuloKey,
 				progress);
 	}
@@ -133,7 +179,8 @@ public class GeoWaveAccumuloRecordReader<T> extends
 		final float rangeProgress = getProgressForRange(
 				range,
 				currentKey);
-		return progress.getOverallProgress(rangeProgress);
+		return progress.getOverallProgress(
+				rangeProgress);
 	}
 
 	private static float getProgressForRange(
@@ -158,8 +205,9 @@ public class GeoWaveAccumuloRecordReader<T> extends
 						position.getBackingArray(),
 						maxDepth));
 		return (float) (positionBI.subtract(
-				startBI).doubleValue() / endBI.subtract(
-				startBI).doubleValue());
+				startBI).doubleValue()
+				/ endBI.subtract(
+						startBI).doubleValue());
 	}
 
 	private static float getProgressForRange(

@@ -23,7 +23,7 @@ import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataAdapter;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataManager;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStore;
 
-public class DataStoreCallbackManager
+class DataStoreCallbackManager
 {
 
 	final private DataStatisticsStore statsStore;

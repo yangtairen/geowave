@@ -4,7 +4,9 @@ import java.io.Closeable;
 
 import org.apache.log4j.Logger;
 
-public class ReaderClosableWrapper implements
+import mil.nga.giat.geowave.core.store.operations.Reader;
+
+class ReaderClosableWrapper implements
 		Closeable
 {
 	private final static Logger LOGGER = Logger.getLogger(

@@ -12,8 +12,14 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
-import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveMetadata;
+import mil.nga.giat.geowave.core.store.operations.DataStoreOperations;
+import mil.nga.giat.geowave.core.store.operations.MetadataDeleter;
+import mil.nga.giat.geowave.core.store.operations.MetadataQuery;
+import mil.nga.giat.geowave.core.store.operations.MetadataReader;
+import mil.nga.giat.geowave.core.store.operations.MetadataType;
+import mil.nga.giat.geowave.core.store.operations.MetadataWriter;
 
 /**
  * This abstract class does most of the work for storing persistable objects in
@@ -38,35 +44,26 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 	// notifications?
 	protected static final int MAX_ENTRIES = 100;
 	public final static String METADATA_TABLE = "GEOWAVE_METADATA";
+	private final static ByteArrayId METADATA_INDEX_ID = new ByteArrayId(METADATA_TABLE);
 	protected final DataStoreOperations operations;
 	protected final DataStoreOptions options;
-	protected final PersistenceType type;
+	protected final MetadataType type;
 
-	protected final Map<ByteArrayId, T> cache = Collections.synchronizedMap(
-			new LinkedHashMap<ByteArrayId, T>(
-					MAX_ENTRIES + 1,
-					.75F,
-					true) {
-				private static final long serialVersionUID = 1L;
+	protected final Map<ByteArrayId, T> cache=Collections.synchronizedMap(new LinkedHashMap<ByteArrayId,T>(MAX_ENTRIES+1,.75F,true){private static final long serialVersionUID=1L;
 
-				@Override
-				public boolean removeEldestEntry(
-						final Map.Entry<ByteArrayId, T> eldest ) {
-					return size() > MAX_ENTRIES;
-				}
-			});
+	@Override public boolean removeEldestEntry(final Map.Entry<ByteArrayId,T>eldest){return size()>MAX_ENTRIES;}});
 
 	public AbstractGeoWavePersistence(
 			final DataStoreOperations operations,
 			final DataStoreOptions options,
-			final PersistenceType type ) {
+			final MetadataType type ) {
 		this.operations = operations;
 		this.options = options;
 		this.type = type;
 	}
 
-	protected String getPersistenceTypeName() {
-		return type.toString();
+	protected MetadataType getType() {
+		return type;
 	}
 
 	protected ByteArrayId getSecondaryId(
@@ -182,8 +179,7 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 				object);
 
 		final MetadataWriter writer = operations.createMetadataWriter(
-				getPersistenceTypeName(),
-				options);
+				getType());
 
 		final GeoWaveMetadata metadata = new GeoWaveMetadata(
 				id.getBytes(),
@@ -225,9 +221,20 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 		if (cacheResult != null) {
 			return (T) cacheResult;
 		}
+		try {
+			if (!operations.indexExists(
+					METADATA_INDEX_ID)) {
+				return null;
+			}
+		}
+		catch (final IOException e1) {
+			LOGGER.error(
+					"Unable to check for existence of metadata to get object",
+					e1);
+			return null;
+		}
 		final MetadataReader reader = operations.createMetadataReader(
-				getPersistenceTypeName(),
-				options);
+				getType());
 		try (final CloseableIterator<GeoWaveMetadata> it = reader.query(
 				new MetadataQuery(
 						primaryId.getBytes(),
@@ -275,9 +282,20 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 
 	private CloseableIterator<T> internalGetObjects(
 			final MetadataQuery query ) {
+		try {
+			if (!operations.indexExists(
+					METADATA_INDEX_ID)) {
+				return new CloseableIterator.Empty<>();
+			}
+		}
+		catch (final IOException e1) {
+			LOGGER.error(
+					"Unable to check for existence of metadata to get objects",
+					e1);
+			return new CloseableIterator.Empty<>();
+		}
 		final MetadataReader reader = operations.createMetadataReader(
-				getPersistenceTypeName(),
-				options);
+				getType());
 		final CloseableIterator<GeoWaveMetadata> it = reader.query(
 				query);
 		return new NativeIteratorWrapper(
@@ -314,9 +332,20 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
+		try {
+			if (!operations.indexExists(
+					METADATA_INDEX_ID)) {
+				return false;
+			}
+		}
+		catch (final IOException e1) {
+			LOGGER.error(
+					"Unable to check for existence of metadata to delete objects",
+					e1);
+			return false;
+		}
 		try (final MetadataDeleter deleter = operations.createMetadataDeleter(
-				getPersistenceTypeName(),
-				options)) {
+				getType())) {
 			if (primaryId != null) {
 				return deleter.delete(
 						new MetadataQuery(
@@ -326,8 +355,7 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 			}
 			boolean retVal = false;
 			final MetadataReader reader = operations.createMetadataReader(
-					getPersistenceTypeName(),
-					options);
+					getType());
 			try (final CloseableIterator<GeoWaveMetadata> it = reader.query(
 					new MetadataQuery(
 							null,

@@ -2,10 +2,11 @@ package mil.nga.giat.geowave.core.store.metadata;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
-import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.operations.DataStoreOperations;
+import mil.nga.giat.geowave.core.store.operations.MetadataType;
 
 /**
  * This class will persist Data Adapters within an Accumulo table for GeoWave
@@ -26,7 +27,7 @@ public class AdapterStoreImpl extends
 		super(
 				operations,
 				options,
-				PersistenceType.ADAPTER);
+				MetadataType.ADAPTER);
 	}
 
 	@Override

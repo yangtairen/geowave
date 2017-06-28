@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
+
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Coordinate;
 import mil.nga.giat.geowave.core.index.CoordinateRange;
@@ -52,7 +54,9 @@ public class MockComponents
 
 		public MockAbstractDataAdapter(
 				final ByteArrayId id ) {
-			super();
+			super(
+					Lists.newArrayList(),
+					Lists.newArrayList());
 			this.id = id;
 			final List<IndexFieldHandler<Integer, TestIndexFieldType, Object>> handlers = new ArrayList<IndexFieldHandler<Integer, TestIndexFieldType, Object>>();
 			handlers.add(
@@ -623,14 +627,12 @@ public class MockComponents
 
 		@Override
 		public byte[] toBinary() {
-			return null;
+			return new byte[] {};
 		}
 
 		@Override
 		public void fromBinary(
-				final byte[] bytes ) {
-
-		}
+				final byte[] bytes ) {}
 
 		@Override
 		public QueryRanges getQueryRanges(
@@ -699,13 +701,14 @@ public class MockComponents
 		public MultiDimensionalCoordinateRanges[] getCoordinateRangesPerDimension(
 				final MultiDimensionalNumericData dataRange,
 				final IndexMetaData... hints ) {
-			final CoordinateRange[][] coordinateRangesPerDimension = new CoordinateRange[dataRange.getDimensionCount()][];
+			final CoordinateRange[][] coordinateRangesPerDimension = new CoordinateRange[dataRange
+					.getDimensionCount()][];
 			for (int d = 0; d < coordinateRangesPerDimension.length; d++) {
 				coordinateRangesPerDimension[d] = new CoordinateRange[1];
-					coordinateRangesPerDimension[d][0] = new CoordinateRange(
-							(long)dataRange.getMinValuesPerDimension()[0],
-							(long)dataRange.getMaxValuesPerDimension()[0],
-							new byte[]{});
+				coordinateRangesPerDimension[d][0] = new CoordinateRange(
+						(long) dataRange.getMinValuesPerDimension()[0],
+						(long) dataRange.getMaxValuesPerDimension()[0],
+						new byte[] {});
 			}
 			return new MultiDimensionalCoordinateRanges[] {
 				new MultiDimensionalCoordinateRanges(
@@ -747,7 +750,15 @@ public class MockComponents
 		public MultiDimensionalCoordinates getCoordinatesPerDimension(
 				final ByteArrayId partitionKey,
 				final ByteArrayId sortKey ) {
-			return new MultiDimensionalCoordinates(new byte[]{}, new Coordinate[]{new Coordinate((long)Double.parseDouble(new String(partitionKey.getBytes())), new byte[]{})});
+			return new MultiDimensionalCoordinates(
+					new byte[] {},
+					new Coordinate[] {
+						new Coordinate(
+								(long) Double.parseDouble(
+										new String(
+												partitionKey.getBytes())),
+								new byte[] {})
+					});
 		}
 
 		@Override
@@ -799,7 +810,7 @@ public class MockComponents
 
 		@Override
 		public byte[] toBinary() {
-			return null;
+			return new byte[] {};
 		}
 
 		@Override

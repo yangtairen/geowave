@@ -7,7 +7,7 @@ import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 
-public class IntermediaryReadEntryInfo<T>
+class IntermediaryReadEntryInfo<T>
 {
 	private final PersistentDataset<CommonIndexValue> indexData = new PersistentDataset<CommonIndexValue>();
 	private final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();

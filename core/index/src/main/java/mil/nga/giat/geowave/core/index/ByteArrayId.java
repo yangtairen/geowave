@@ -134,7 +134,7 @@ public class ByteArrayId implements
 	@Override
 	public int compareTo(
 			final ByteArrayId o ) {
-		if (o == null){
+		if (o == null) {
 			return -1;
 		}
 		for (int i = 0, j = 0; (i < id.length) && (j < o.id.length); i++, j++) {
@@ -159,6 +159,8 @@ public class ByteArrayId implements
 		}
 
 		if (offset == 0) {
+			// TODO: is this correct? an empty byte array sorts before a single
+			// byte {0xFF}
 			return new byte[0];
 		}
 

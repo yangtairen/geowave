@@ -3,6 +3,7 @@ package mil.nga.giat.geowave.datastore.accumulo.operations.config;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 
+import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.StoreFactoryFamilySpi;
 import mil.nga.giat.geowave.core.store.StoreFactoryOptions;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloStoreFactoryFamily;
@@ -85,11 +86,7 @@ public class AccumuloRequiredOptions extends
 		this.password = password;
 	}
 
-	public AccumuloOptions getAdditionalOptions() {
-		return additionalOptions;
-	}
-
-	public void setAdditionalOptions(
+	public void setStoreOptions(
 			final AccumuloOptions additionalOptions ) {
 		this.additionalOptions = additionalOptions;
 	}
@@ -97,5 +94,10 @@ public class AccumuloRequiredOptions extends
 	@Override
 	public StoreFactoryFamilySpi getStoreFactory() {
 		return new AccumuloStoreFactoryFamily();
+	}
+
+	@Override
+	public DataStoreOptions getStoreOptions() {
+		return additionalOptions;
 	}
 }

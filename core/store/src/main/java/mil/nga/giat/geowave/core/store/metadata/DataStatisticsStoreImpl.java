@@ -8,10 +8,12 @@ import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
-import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveMetadata;
+import mil.nga.giat.geowave.core.store.operations.DataStoreOperations;
+import mil.nga.giat.geowave.core.store.operations.MetadataType;
 
 /**
  * This class will persist Index objects within an Accumulo table for GeoWave
@@ -40,7 +42,7 @@ public class DataStatisticsStoreImpl extends
 		super(
 				operations,
 				options,
-				PersistenceType.STATS);
+				MetadataType.STATS);
 	}
 
 	@Override

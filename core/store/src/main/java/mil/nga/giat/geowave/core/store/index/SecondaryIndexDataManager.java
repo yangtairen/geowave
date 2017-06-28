@@ -3,7 +3,6 @@ package mil.nga.giat.geowave.core.store.index;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -11,12 +10,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
-import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo;
-import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.callback.DeleteCallback;
 import mil.nga.giat.geowave.core.store.callback.IngestCallback;
-import mil.nga.giat.geowave.core.store.data.PersistentValue;
-import mil.nga.giat.geowave.core.store.data.field.FieldUtils;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveValueImpl;
@@ -38,7 +33,7 @@ public class SecondaryIndexDataManager<T> implements
 	private final SecondaryIndexDataAdapter<T> adapter;
 	private final SecondaryIndexDataStore secondaryIndexStore;
 	private final CommonIndexModel primaryIndexModel;
-	private ByteArrayId primaryIndexId;
+	private final ByteArrayId primaryIndexId;
 
 	public SecondaryIndexDataManager(
 			final SecondaryIndexDataStore secondaryIndexStore,
@@ -53,27 +48,27 @@ public class SecondaryIndexDataManager<T> implements
 
 	public void entryCallback(
 			final T entry,
-			boolean delete,
+			final boolean delete,
 			final GeoWaveRow... kvs ) {
 		// loop secondary indices for adapter
 		final InsertionIds primaryIndexInsertionIds = DataStoreUtils.keysToInsertionIds(
 				kvs);
 		for (final SecondaryIndex<T> secondaryIndex : adapter.getSupportedSecondaryIndices()) {
 			final ByteArrayId indexedAttributeFieldId = secondaryIndex.getFieldId();
-			int position = adapter.getPositionOfOrderedField(
+			final int position = adapter.getPositionOfOrderedField(
 					primaryIndexModel,
 					indexedAttributeFieldId);
 			Object fieldValue = null;
 			byte[] visibility = null;
 			// find the field value and deserialize it
-			for (GeoWaveValue v : kvs[0].getFieldValues()) {
+			for (final GeoWaveValue v : kvs[0].getFieldValues()) {
 				if (BitmaskUtils.getFieldPositions(
 						v.getFieldMask()).contains(
 								position)) {
 					final byte[] fieldSubsetBitmask = BitmaskUtils.generateCompositeBitmask(
 							position);
 
-					byte[] byteValue = BitmaskUtils.constructNewValue(
+					final byte[] byteValue = BitmaskUtils.constructNewValue(
 							v.getValue(),
 							v.getFieldMask(),
 							fieldSubsetBitmask);
@@ -210,18 +205,6 @@ public class SecondaryIndexDataManager<T> implements
 				true,
 				kvs);
 
-	}
-
-	private FieldInfo<?> getFieldInfo(
-			final IntermediaryWriteEntryInfo entryInfo,
-			final ByteArrayId fieldID ) {
-		for (final FieldInfo<?> info : entryInfo.getFieldInfo()) {
-			if (info.getDataValue().getId().equals(
-					fieldID)) {
-				return info;
-			}
-		}
-		return null;
 	}
 
 	@Override

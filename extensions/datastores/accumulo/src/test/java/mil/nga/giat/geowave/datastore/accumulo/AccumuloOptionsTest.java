@@ -31,10 +31,12 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.AbstractDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler;
 import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler.RowBuilder;
 import mil.nga.giat.geowave.core.store.adapter.PersistentIndexFieldHandler;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
 import mil.nga.giat.geowave.core.store.data.field.FieldUtils;
@@ -42,16 +44,17 @@ import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
 import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.metadata.AdapterIndexMappingStoreImpl;
+import mil.nga.giat.geowave.core.store.metadata.AdapterStoreImpl;
+import mil.nga.giat.geowave.core.store.metadata.DataStatisticsStoreImpl;
+import mil.nga.giat.geowave.core.store.metadata.IndexStoreImpl;
 import mil.nga.giat.geowave.core.store.query.DataIdQuery;
 import mil.nga.giat.geowave.core.store.query.EverythingQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.core.store.query.RowIdQuery;
 import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterIndexMappingStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions;
 
 public class AccumuloOptionsTest
@@ -65,11 +68,11 @@ public class AccumuloOptionsTest
 
 	AccumuloOperations accumuloOperations;
 
-	AccumuloIndexStore indexStore;
+	IndexStore indexStore;
 
-	AccumuloAdapterStore adapterStore;
+	AdapterStore adapterStore;
 
-	AccumuloDataStatisticsStore statsStore;
+	DataStatisticsStore statsStore;
 
 	AccumuloDataStore mockDataStore;
 
@@ -90,17 +93,22 @@ public class AccumuloOptionsTest
 					"Failed to create mock accumulo connection",
 					e);
 		}
+		final AccumuloOptions options = new AccumuloOptions();
 		accumuloOperations = new BasicAccumuloOperations(
-				mockConnector);
+				mockConnector,
+				options);
 
-		indexStore = new AccumuloIndexStore(
-				accumuloOperations);
+		indexStore = new IndexStoreImpl(
+				accumuloOperations,
+				options);
 
-		adapterStore = new AccumuloAdapterStore(
-				accumuloOperations);
+		adapterStore = new AdapterStoreImpl(
+				accumuloOperations,
+				options);
 
-		statsStore = new AccumuloDataStatisticsStore(
-				accumuloOperations);
+		statsStore = new DataStatisticsStoreImpl(
+				accumuloOperations,
+				options);
 
 		secondaryIndexDataStore = new AccumuloSecondaryIndexDataStore(
 				accumuloOperations,
@@ -111,8 +119,9 @@ public class AccumuloOptionsTest
 				adapterStore,
 				statsStore,
 				secondaryIndexDataStore,
-				new AccumuloAdapterIndexMappingStore(
-						accumuloOperations),
+				new AdapterIndexMappingStoreImpl(
+						accumuloOperations,
+						options),
 				accumuloOperations,
 				accumuloOptions);
 	}

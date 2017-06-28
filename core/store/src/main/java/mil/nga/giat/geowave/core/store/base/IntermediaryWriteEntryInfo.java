@@ -22,7 +22,7 @@ import mil.nga.giat.geowave.core.store.entities.GeoWaveValueImpl;
  * key-value rows.
  *
  */
-public class IntermediaryWriteEntryInfo
+class IntermediaryWriteEntryInfo
 {
 	public static class FieldInfo<T>
 	{

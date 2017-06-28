@@ -1,28 +1,43 @@
 package mil.nga.giat.geowave.datastore.accumulo.index.secondary;
 
+import mil.nga.giat.geowave.core.store.StoreFactoryHelper;
 import mil.nga.giat.geowave.core.store.StoreFactoryOptions;
 import mil.nga.giat.geowave.core.store.index.SecondaryIndexDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AbstractAccumuloStoreFactory;
+import mil.nga.giat.geowave.core.store.metadata.SecondaryIndexStoreFactory;
+import mil.nga.giat.geowave.core.store.operations.DataStoreOperations;
+import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions;
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloRequiredOptions;
 
 public class AccumuloSecondaryIndexDataStoreFactory extends
-		AbstractAccumuloStoreFactory<SecondaryIndexDataStore>
+		SecondaryIndexStoreFactory
 {
+	public AccumuloSecondaryIndexDataStoreFactory(
+			final String typeName,
+			final String description,
+			final StoreFactoryHelper helper ) {
+		super(
+				typeName,
+				description,
+				helper);
+	}
 
 	@Override
 	public SecondaryIndexDataStore createStore(
-			StoreFactoryOptions options ) {
+			final StoreFactoryOptions options ) {
 		if (!(options instanceof AccumuloRequiredOptions)) {
 			throw new AssertionError(
 					"Expected " + AccumuloRequiredOptions.class.getSimpleName());
 		}
-		AccumuloRequiredOptions opts = (AccumuloRequiredOptions) options;
-		if (opts.getAdditionalOptions() == null) {
-			opts.setAdditionalOptions(new AccumuloOptions());
+		final AccumuloRequiredOptions opts = (AccumuloRequiredOptions) options;
+		if (opts.getStoreOptions() == null) {
+			opts.setStoreOptions(
+					new AccumuloOptions());
 		}
+		final DataStoreOperations accumuloOperations = helper.createOperations(
+				opts);
 		return new AccumuloSecondaryIndexDataStore(
-				createOperations(opts),
-				opts.getAdditionalOptions());
+				(AccumuloOperations) accumuloOperations,
+				(AccumuloOptions) opts.getStoreOptions());
 	}
 }

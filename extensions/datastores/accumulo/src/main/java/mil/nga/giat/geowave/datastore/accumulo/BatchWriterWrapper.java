@@ -1,8 +1,5 @@
 package mil.nga.giat.geowave.datastore.accumulo;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
@@ -10,11 +7,10 @@ import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
-import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.store.base.Writer;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveKey;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
+import mil.nga.giat.geowave.core.store.operations.Writer;
 
 /**
  * This is a basic wrapper around the Accumulo batch writer so that write
@@ -95,8 +91,8 @@ public class BatchWriterWrapper implements
 
 	@Override
 	public void write(
-			GeoWaveRow[] rows ) {
-		for (GeoWaveRow row : rows) {
+			final GeoWaveRow[] rows ) {
+		for (final GeoWaveRow row : rows) {
 			write(
 					row);
 		}
@@ -104,15 +100,15 @@ public class BatchWriterWrapper implements
 
 	@Override
 	public void write(
-			GeoWaveRow row ) {
+			final GeoWaveRow row ) {
 		write(rowToMutation(row));
 	}
 
 	private static Mutation rowToMutation(
-			GeoWaveRow row ) {
+			final GeoWaveRow row ) {
 		final Mutation mutation = new Mutation(GeoWaveKey.getCompositeId(row));
 		for (final GeoWaveValue value : row.getFieldValues()) {
-			if (value.getVisibility() != null && value.getVisibility().length > 0) {
+			if ((value.getVisibility() != null) && (value.getVisibility().length > 0)) {
 				mutation.put(
 						new Text(row.getAdapterId()),
 						new Text(

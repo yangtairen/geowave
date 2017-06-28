@@ -2,10 +2,11 @@ package mil.nga.giat.geowave.core.store.metadata;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.AdapterToIndexMapping;
-import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.adapter.AdapterIndexMappingStore;
 import mil.nga.giat.geowave.core.store.adapter.exceptions.MismatchedIndexToAdapterMapping;
+import mil.nga.giat.geowave.core.store.operations.DataStoreOperations;
+import mil.nga.giat.geowave.core.store.operations.MetadataType;
 
 /**
  * This class will persist Adapter Index Mappings within an Accumulo table for
@@ -30,7 +31,7 @@ public class AdapterIndexMappingStoreImpl extends
 		super(
 				operations,
 				options,
-				PersistenceType.AIM);
+				MetadataType.AIM);
 	}
 
 	public boolean mappingExists(

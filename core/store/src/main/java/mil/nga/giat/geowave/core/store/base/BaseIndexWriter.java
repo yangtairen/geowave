@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.index.InsertionIds;
 import mil.nga.giat.geowave.core.index.StringUtils;
-import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
@@ -27,9 +26,11 @@ import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.operations.DataStoreOperations;
+import mil.nga.giat.geowave.core.store.operations.Writer;
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 
-public class BaseIndexWriter<T> implements
+class BaseIndexWriter<T> implements
 		IndexWriter<T>
 {
 	private final static Logger LOGGER = Logger.getLogger(
@@ -187,7 +188,7 @@ public class BaseIndexWriter<T> implements
 							entry).getString() + "] not saved.");
 		}
 
-		fieldInfoList = DataStoreUtils.composeFlattenedFields(
+		fieldInfoList = BaseDataStoreUtils.composeFlattenedFields(
 				fieldInfoList,
 				index.getIndexModel(),
 				adapter);
@@ -286,7 +287,6 @@ public class BaseIndexWriter<T> implements
 				writer = operations.createWriter(
 						index.getId(),
 						adapter.getAdapterId(),
-						options,
 						index.getIndexStrategy().getPartitionKeys());
 			}
 			catch (final Exception e) {

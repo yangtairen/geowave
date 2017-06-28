@@ -2,10 +2,11 @@ package mil.nga.giat.geowave.core.store.metadata;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
-import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
+import mil.nga.giat.geowave.core.store.operations.DataStoreOperations;
+import mil.nga.giat.geowave.core.store.operations.MetadataType;
 
 /**
  * This class will persist Index objects within an Accumulo table for GeoWave
@@ -26,7 +27,7 @@ public class IndexStoreImpl extends
 		super(
 				operations,
 				options,
-				PersistenceType.INDEX);
+				MetadataType.INDEX);
 	}
 
 	@Override

@@ -9,24 +9,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.InsertionIds;
-import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
-import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
-import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
-import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo;
-import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
-import mil.nga.giat.geowave.core.store.callback.IngestCallback;
-import mil.nga.giat.geowave.core.store.data.PersistentDataset;
-import mil.nga.giat.geowave.core.store.data.PersistentValue;
-import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
-import mil.nga.giat.geowave.core.store.data.field.FieldReader;
-import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
-import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
-import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
-import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
-
 public class MemoryStoreUtils
 {
 	private final static Logger LOGGER = Logger.getLogger(MemoryStoreUtils.class);

@@ -34,6 +34,7 @@ import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.EntryVisibilityHandler;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.AbstractDataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler;
 import mil.nga.giat.geowave.core.store.adapter.NativeFieldHandler.RowBuilder;
@@ -41,6 +42,7 @@ import mil.nga.giat.geowave.core.store.adapter.PersistentIndexFieldHandler;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.CountDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DefaultFieldStatisticVisibility;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatisticsProvider;
@@ -55,15 +57,16 @@ import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
+import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.metadata.AdapterIndexMappingStoreImpl;
+import mil.nga.giat.geowave.core.store.metadata.AdapterStoreImpl;
+import mil.nga.giat.geowave.core.store.metadata.DataStatisticsStoreImpl;
+import mil.nga.giat.geowave.core.store.metadata.IndexStoreImpl;
 import mil.nga.giat.geowave.core.store.query.DataIdQuery;
 import mil.nga.giat.geowave.core.store.query.EverythingQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterIndexMappingStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions;
 
 public class AccumuloDataStoreStatsTest
@@ -77,11 +80,11 @@ public class AccumuloDataStoreStatsTest
 
 	AccumuloOperations accumuloOperations;
 
-	AccumuloIndexStore indexStore;
+	IndexStore indexStore;
 
-	AccumuloAdapterStore adapterStore;
+	AdapterStore adapterStore;
 
-	AccumuloDataStatisticsStore statsStore;
+	DataStatisticsStore statsStore;
 
 	AccumuloDataStore mockDataStore;
 
@@ -102,29 +105,30 @@ public class AccumuloDataStoreStatsTest
 					"Failed to create mock accumulo connection",
 					e);
 		}
+		AccumuloOptions options = new AccumuloOptions();
 		accumuloOperations = new BasicAccumuloOperations(
-				mockConnector);
+				mockConnector,options);
 
-		indexStore = new AccumuloIndexStore(
-				accumuloOperations);
+		indexStore = new IndexStoreImpl(
+				accumuloOperations,options);
 
-		adapterStore = new AccumuloAdapterStore(
-				accumuloOperations);
+		adapterStore = new AdapterStoreImpl(
+				accumuloOperations,options);
 
-		statsStore = new AccumuloDataStatisticsStore(
-				accumuloOperations);
+		statsStore = new DataStatisticsStoreImpl(
+				accumuloOperations,options);
 
 		secondaryIndexDataStore = new AccumuloSecondaryIndexDataStore(
 				accumuloOperations,
-				new AccumuloOptions());
+				options);
 
 		mockDataStore = new AccumuloDataStore(
 				indexStore,
 				adapterStore,
 				statsStore,
 				secondaryIndexDataStore,
-				new AccumuloAdapterIndexMappingStore(
-						accumuloOperations),
+				new AdapterIndexMappingStoreImpl(
+						accumuloOperations,options),
 				accumuloOperations,
 				accumuloOptions);
 	}
@@ -516,7 +520,7 @@ public class AccumuloDataStoreStatsTest
 		assertTrue(
 				countStats != null);
 
-		statsStore.deleteObjects(
+		statsStore.removeAllStatistics(
 				adapter.getAdapterId(),
 				"bbb");
 

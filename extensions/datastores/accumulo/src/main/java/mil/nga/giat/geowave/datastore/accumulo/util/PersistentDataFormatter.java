@@ -11,6 +11,8 @@ import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.base.EntryRowID;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKey;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyImpl;
 
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
@@ -141,7 +143,7 @@ public class PersistentDataFormatter implements
 
 		Key key = entry.getKey();
 
-		EntryRowID rowId = new EntryRowID(
+		GeoWaveKey rowId = new GeoWaveKeyImpl(
 				key.getRow().getBytes());
 
 		byte[] insertionIdBytes;

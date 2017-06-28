@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import mil.nga.giat.geowave.core.index.StringUtils;
-import mil.nga.giat.geowave.core.store.base.Writer;
+import mil.nga.giat.geowave.core.store.operations.Writer;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
