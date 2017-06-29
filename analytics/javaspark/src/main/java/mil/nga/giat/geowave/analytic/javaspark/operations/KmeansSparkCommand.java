@@ -57,7 +57,8 @@ public class KmeansSparkCommand extends
 		DefaultOperation implements
 		Command
 {
-	private final static Logger LOGGER = LoggerFactory.getLogger(KmeansSparkCommand.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(
+			KmeansSparkCommand.class);
 
 	@Parameter(description = "<input storename> <output storename>")
 	private List<String> parameters = new ArrayList<String>();
@@ -73,7 +74,7 @@ public class KmeansSparkCommand extends
 
 	@Override
 	public void execute(
-			OperationParams params )
+			final OperationParams params )
 			throws Exception {
 		// Ensure we have all the required arguments
 		if (parameters.size() != 2) {
@@ -81,18 +82,21 @@ public class KmeansSparkCommand extends
 					"Requires arguments: <input storename> <output storename>");
 		}
 
-		String inputStoreName = parameters.get(0);
-		String outputStoreName = parameters.get(1);
+		final String inputStoreName = parameters.get(
+				0);
+		final String outputStoreName = parameters.get(
+				1);
 
 		// Config file
-		File configFile = (File) params.getContext().get(
+		final File configFile = (File) params.getContext().get(
 				ConfigOptions.PROPERTIES_FILE_CONTEXT);
 
 		// Attempt to load stores.
 		if (inputDataStore == null) {
-			StoreLoader inputStoreLoader = new StoreLoader(
+			final StoreLoader inputStoreLoader = new StoreLoader(
 					inputStoreName);
-			if (!inputStoreLoader.loadFromConfig(configFile)) {
+			if (!inputStoreLoader.loadFromConfig(
+					configFile)) {
 				throw new ParameterException(
 						"Cannot find input store: " + inputStoreLoader.getStoreName());
 			}
@@ -100,9 +104,10 @@ public class KmeansSparkCommand extends
 		}
 
 		if (outputDataStore == null) {
-			StoreLoader outputStoreLoader = new StoreLoader(
+			final StoreLoader outputStoreLoader = new StoreLoader(
 					outputStoreName);
-			if (!outputStoreLoader.loadFromConfig(configFile)) {
+			if (!outputStoreLoader.loadFromConfig(
+					configFile)) {
 				throw new ParameterException(
 						"Cannot find output store: " + outputStoreLoader.getStoreName());
 			}
@@ -110,7 +115,7 @@ public class KmeansSparkCommand extends
 		}
 
 		// Save a reference to the store in the property management.
-		PersistableStore persistedStore = new PersistableStore(
+		final PersistableStore persistedStore = new PersistableStore(
 				inputDataStore);
 		final PropertyManagement properties = new PropertyManagement();
 		properties.store(
@@ -118,20 +123,25 @@ public class KmeansSparkCommand extends
 				persistedStore);
 
 		// Convert properties from DBScanOptions and CommonOptions
-		PropertyManagementConverter converter = new PropertyManagementConverter(
+		final PropertyManagementConverter converter = new PropertyManagementConverter(
 				properties);
-		converter.readProperties(kMeansSparkOptions);
+		converter.readProperties(
+				kMeansSparkOptions);
 
-		KMeansRunner runner = new KMeansRunner(
+		final KMeansRunner runner = new KMeansRunner(
 				kMeansSparkOptions.getAppName(),
 				kMeansSparkOptions.getMaster());
 
-		runner.setInputDataStore(inputDataStore);
-		runner.setNumClusters(kMeansSparkOptions.getNumClusters());
-		runner.setNumIterations(kMeansSparkOptions.getNumIterations());
+		runner.setInputDataStore(
+				inputDataStore);
+		runner.setNumClusters(
+				kMeansSparkOptions.getNumClusters());
+		runner.setNumIterations(
+				kMeansSparkOptions.getNumIterations());
 
 		if (kMeansSparkOptions.getEpsilon() != null) {
-			runner.setEpsilon(kMeansSparkOptions.getEpsilon());
+			runner.setEpsilon(
+					kMeansSparkOptions.getEpsilon());
 		}
 
 		stopwatch.reset();
@@ -141,22 +151,24 @@ public class KmeansSparkCommand extends
 			runner.run();
 
 		}
-		catch (IOException e) {
+		catch (final IOException e) {
 			throw new RuntimeException(
 					"Failed to execute: " + e.getMessage());
 		}
 
 		stopwatch.stop();
 
-		KMeansModel clusterModel = runner.getOutputModel();
+		final KMeansModel clusterModel = runner.getOutputModel();
 
-		LOGGER.warn("KMeans runner took " + stopwatch.getTimeString());
+		LOGGER.warn(
+				"KMeans runner took " + stopwatch.getTimeString());
 
 		// output cluster centroids (and hulls) to output datastore
-		writeClusterCentroids(clusterModel);
+		writeClusterCentroids(
+				clusterModel);
 
 		if (kMeansSparkOptions.isGenerateHulls()) {
-			JavaRDD<Vector> inputCentroids = runner.getInputCentroids();
+			final JavaRDD<Vector> inputCentroids = runner.getInputCentroids();
 			generateHulls(
 					inputCentroids,
 					clusterModel);
@@ -164,17 +176,20 @@ public class KmeansSparkCommand extends
 	}
 
 	private void writeClusterCentroids(
-			KMeansModel clusterModel ) {
+			final KMeansModel clusterModel ) {
 		final SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
-		typeBuilder.setName("kmeans-centroids");
-		typeBuilder.setNamespaceURI(BasicFeatureTypes.DEFAULT_NAMESPACE);
+		typeBuilder.setName(
+				"kmeans-centroids");
+		typeBuilder.setNamespaceURI(
+				BasicFeatureTypes.DEFAULT_NAMESPACE);
 
 		try {
-			typeBuilder.setCRS(CRS.decode(
-					"EPSG:4326",
-					true));
+			typeBuilder.setCRS(
+					CRS.decode(
+							"EPSG:4326",
+							true));
 		}
-		catch (FactoryException fex) {
+		catch (final FactoryException fex) {
 			LOGGER.error(
 					fex.getMessage(),
 					fex);
@@ -182,15 +197,23 @@ public class KmeansSparkCommand extends
 
 		final AttributeTypeBuilder attrBuilder = new AttributeTypeBuilder();
 
-		typeBuilder.add(attrBuilder.binding(
-				Geometry.class).nillable(
-				false).buildDescriptor(
-				Geometry.class.getName().toString()));
+		typeBuilder.add(
+				attrBuilder
+						.binding(
+								Geometry.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								Geometry.class.getName().toString()));
 
-		typeBuilder.add(attrBuilder.binding(
-				String.class).nillable(
-				false).buildDescriptor(
-				"KMeansData"));
+		typeBuilder.add(
+				attrBuilder
+						.binding(
+								String.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"KMeansData"));
 
 		final SimpleFeatureType sfType = typeBuilder.buildFeatureType();
 		final SimpleFeatureBuilder sfBuilder = new SimpleFeatureBuilder(
@@ -199,38 +222,43 @@ public class KmeansSparkCommand extends
 		final FeatureDataAdapter featureAdapter = new FeatureDataAdapter(
 				sfType);
 
-		DataStore featureStore = outputDataStore.createDataStore();
-		PrimaryIndex featureIndex = new SpatialDimensionalityTypeProvider().createPrimaryIndex();
+		final DataStore featureStore = outputDataStore.createDataStore();
+		final PrimaryIndex featureIndex = new SpatialDimensionalityTypeProvider().createPrimaryIndex();
 
 		try (IndexWriter writer = featureStore.createWriter(
 				featureAdapter,
 				featureIndex)) {
 			int i = 0;
-			for (Vector center : clusterModel.clusterCenters()) {
-				double lon = center.apply(0);
-				double lat = center.apply(1);
+			for (final Vector center : clusterModel.clusterCenters()) {
+				final double lon = center.apply(
+						0);
+				final double lat = center.apply(
+						1);
 
 				sfBuilder.set(
 						Geometry.class.getName(),
-						GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(
-								lon,
-								lat)));
+						GeometryUtils.GEOMETRY_FACTORY.createPoint(
+								new Coordinate(
+										lon,
+										lat)));
 
 				sfBuilder.set(
 						"KMeansData",
 						"KMeansCentroid");
 
-				final SimpleFeature sf = sfBuilder.buildFeature("Centroid-" + i++);
+				final SimpleFeature sf = sfBuilder.buildFeature(
+						"Centroid-" + i++);
 
-				writer.write(sf);
+				writer.write(
+						sf);
 			}
 		}
-		catch (MismatchedIndexToAdapterMapping e) {
+		catch (final MismatchedIndexToAdapterMapping e) {
 			LOGGER.error(
 					e.getMessage(),
 					e);
 		}
-		catch (IOException e) {
+		catch (final IOException e) {
 			LOGGER.error(
 					e.getMessage(),
 					e);
@@ -238,28 +266,31 @@ public class KmeansSparkCommand extends
 	}
 
 	private void generateHulls(
-			JavaRDD<Vector> inputCentroids,
-			KMeansModel clusterModel ) {
+			final JavaRDD<Vector> inputCentroids,
+			final KMeansModel clusterModel ) {
 		stopwatch.reset();
 		stopwatch.start();
 
-		JavaPairRDD<Integer, Geometry> hullRdd = KMeansHullGenerator.generateHullsRDD(
+		final JavaPairRDD<Integer, Geometry> hullRdd = KMeansHullGenerator.generateHullsRDD(
 				inputCentroids,
 				clusterModel);
 
 		stopwatch.stop();
-		LOGGER.warn("KMeansHullGenerator took " + stopwatch.getTimeString() + " for " + inputCentroids.count()
-				+ " points");
+		LOGGER.warn(
+				"KMeansHullGenerator took " + stopwatch.getTimeString() + " for " + inputCentroids.count() + " points");
 
 		final SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
-		typeBuilder.setName("kmeans-hulls");
-		typeBuilder.setNamespaceURI(BasicFeatureTypes.DEFAULT_NAMESPACE);
+		typeBuilder.setName(
+				"kmeans-hulls");
+		typeBuilder.setNamespaceURI(
+				BasicFeatureTypes.DEFAULT_NAMESPACE);
 		try {
-			typeBuilder.setCRS(CRS.decode(
-					"EPSG:4326",
-					true));
+			typeBuilder.setCRS(
+					CRS.decode(
+							"EPSG:4326",
+							true));
 		}
-		catch (FactoryException e) {
+		catch (final FactoryException e) {
 			LOGGER.error(
 					e.getMessage(),
 					e);
@@ -267,15 +298,23 @@ public class KmeansSparkCommand extends
 
 		final AttributeTypeBuilder attrBuilder = new AttributeTypeBuilder();
 
-		typeBuilder.add(attrBuilder.binding(
-				Geometry.class).nillable(
-				false).buildDescriptor(
-				Geometry.class.getName().toString()));
+		typeBuilder.add(
+				attrBuilder
+						.binding(
+								Geometry.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								Geometry.class.getName().toString()));
 
-		typeBuilder.add(attrBuilder.binding(
-				String.class).nillable(
-				false).buildDescriptor(
-				"KMeansData"));
+		typeBuilder.add(
+				attrBuilder
+						.binding(
+								String.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"KMeansData"));
 
 		final SimpleFeatureType sfType = typeBuilder.buildFeatureType();
 		final SimpleFeatureBuilder sfBuilder = new SimpleFeatureBuilder(
@@ -284,34 +323,36 @@ public class KmeansSparkCommand extends
 		final FeatureDataAdapter featureAdapter = new FeatureDataAdapter(
 				sfType);
 
-		DataStore featureStore = outputDataStore.createDataStore();
-		PrimaryIndex featureIndex = new SpatialDimensionalityTypeProvider().createPrimaryIndex();
+		final DataStore featureStore = outputDataStore.createDataStore();
+		final PrimaryIndex featureIndex = new SpatialDimensionalityTypeProvider().createPrimaryIndex();
 
 		try (IndexWriter writer = featureStore.createWriter(
 				featureAdapter,
 				featureIndex)) {
 
 			int i = 0;
-			for (Tuple2<Integer,Geometry> hull : hullRdd.collect()) {
+			for (final Tuple2<Integer, Geometry> hull : hullRdd.collect()) {
 				sfBuilder.set(
 						Geometry.class.getName(),
-						hull);
+						hull._2);
 
 				sfBuilder.set(
 						"KMeansData",
 						"KMeansHull");
 
-				final SimpleFeature sf = sfBuilder.buildFeature("Hull-" + i++);
+				final SimpleFeature sf = sfBuilder.buildFeature(
+						"Hull-" + i++);
 
-				writer.write(sf);
+				writer.write(
+						sf);
 			}
 		}
-		catch (MismatchedIndexToAdapterMapping e) {
+		catch (final MismatchedIndexToAdapterMapping e) {
 			LOGGER.error(
 					e.getMessage(),
 					e);
 		}
-		catch (IOException e) {
+		catch (final IOException e) {
 			LOGGER.error(
 					e.getMessage(),
 					e);
@@ -323,9 +364,10 @@ public class KmeansSparkCommand extends
 	}
 
 	public void setParameters(
-			String storeName ) {
-		this.parameters = new ArrayList<String>();
-		this.parameters.add(storeName);
+			final String storeName ) {
+		parameters = new ArrayList<String>();
+		parameters.add(
+				storeName);
 	}
 
 	public DataStorePluginOptions getInputStoreOptions() {
@@ -333,8 +375,8 @@ public class KmeansSparkCommand extends
 	}
 
 	public void setInputStoreOptions(
-			DataStorePluginOptions inputStoreOptions ) {
-		this.inputDataStore = inputStoreOptions;
+			final DataStorePluginOptions inputStoreOptions ) {
+		inputDataStore = inputStoreOptions;
 	}
 
 	public DataStorePluginOptions getOutputStoreOptions() {
@@ -342,8 +384,8 @@ public class KmeansSparkCommand extends
 	}
 
 	public void setOutputStoreOptions(
-			DataStorePluginOptions outputStoreOptions ) {
-		this.outputDataStore = outputStoreOptions;
+			final DataStorePluginOptions outputStoreOptions ) {
+		outputDataStore = outputStoreOptions;
 	}
 
 	public KMeansSparkOptions getKMeansSparkOptions() {
@@ -351,7 +393,7 @@ public class KmeansSparkCommand extends
 	}
 
 	public void setKMeansSparkOptions(
-			KMeansSparkOptions kMeansSparkOptions ) {
+			final KMeansSparkOptions kMeansSparkOptions ) {
 		this.kMeansSparkOptions = kMeansSparkOptions;
 	}
 }

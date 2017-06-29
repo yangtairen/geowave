@@ -53,12 +53,6 @@ public class KMeansHullGenerator
 		// Create the convex hull for each kmeans centroid
 		final JavaPairRDD<Integer, Geometry> hullRDD = pointGroupRDD.mapValues(
 				new Function<Iterable<Vector>, Geometry>() {
-
-					/**
-					 *
-					 */
-					private static final long serialVersionUID = 1L;
-
 					@Override
 					public Geometry call(
 							final Iterable<Vector> it )
