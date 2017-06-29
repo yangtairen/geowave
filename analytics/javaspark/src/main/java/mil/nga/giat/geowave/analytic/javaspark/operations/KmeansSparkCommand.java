@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vector;
@@ -48,6 +49,7 @@ import mil.nga.giat.geowave.core.store.adapter.exceptions.MismatchedIndexToAdapt
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions;
 import mil.nga.giat.geowave.core.store.operations.remote.options.StoreLoader;
+import scala.Tuple2;
 
 @GeowaveOperation(name = "kmeansspark", parentOperation = AnalyticSection.class)
 @Parameters(commandDescription = "KMeans Clustering via Spark ML")
@@ -241,7 +243,7 @@ public class KmeansSparkCommand extends
 		stopwatch.reset();
 		stopwatch.start();
 
-		JavaRDD<Geometry> hullsRDD = KMeansHullGenerator.generateHullsRDD(
+		JavaPairRDD<Integer, Geometry> hullRdd = KMeansHullGenerator.generateHullsRDD(
 				inputCentroids,
 				clusterModel);
 
@@ -290,7 +292,7 @@ public class KmeansSparkCommand extends
 				featureIndex)) {
 
 			int i = 0;
-			for (Geometry hull : hullsRDD.collect()) {
+			for (Tuple2<Integer,Geometry> hull : hullRdd.collect()) {
 				sfBuilder.set(
 						Geometry.class.getName(),
 						hull);
