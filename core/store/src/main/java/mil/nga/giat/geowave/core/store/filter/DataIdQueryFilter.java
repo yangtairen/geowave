@@ -11,16 +11,12 @@ import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 public class DataIdQueryFilter implements
 		DistributableQueryFilter
 {
-	private ByteArrayId adapterId;
 	private List<ByteArrayId> dataIds;
 
 	protected DataIdQueryFilter() {}
 
 	public DataIdQueryFilter(
-			final ByteArrayId adapterId,
-
-			List<ByteArrayId> dataIds ) {
-		this.adapterId = adapterId;
+			final List<ByteArrayId> dataIds ) {
 		this.dataIds = dataIds;
 	}
 
@@ -28,47 +24,47 @@ public class DataIdQueryFilter implements
 	public boolean accept(
 			final CommonIndexModel indexModel,
 			final IndexedPersistenceEncoding persistenceEncoding ) {
-		return adapterId.equals(persistenceEncoding.getAdapterId())
-				&& dataIds.contains(persistenceEncoding.getDataId());
+		return dataIds.contains(
+				persistenceEncoding.getDataId());
 	}
 
 	@Override
 	public byte[] toBinary() {
 		int size = 4;
-		final byte[] adapterIdBytes = adapterId.getBytes();
-		size += adapterIdBytes.length;
 		for (ByteArrayId id : dataIds) {
 			size += (id.getBytes().length + 4);
 		}
-		ByteBuffer buf = ByteBuffer.allocate(size);
-		buf.putInt(dataIds.size());
-		for (ByteArrayId id : dataIds) {
+		final ByteBuffer buf = ByteBuffer.allocate(
+				size);
+		buf.putInt(
+				dataIds.size());
+		for (final ByteArrayId id : dataIds) {
 			final byte[] idBytes = id.getBytes();
-			buf.putInt(idBytes.length);
-			buf.put(idBytes);
+			buf.putInt(
+					idBytes.length);
+			buf.put(
+					idBytes);
 		}
-		buf.put(adapterIdBytes);
 		return buf.array();
 	}
 
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		ByteBuffer buf = ByteBuffer.wrap(bytes);
-		int size = buf.getInt();
+		final ByteBuffer buf = ByteBuffer.wrap(
+				bytes);
+		final int size = buf.getInt();
 		dataIds = new ArrayList<ByteArrayId>(
 				size);
 		for (int i = 0; i < size; i++) {
 			final int bsize = buf.getInt();
 			final byte[] dataIdBytes = new byte[bsize];
-			buf.get(dataIdBytes);
-			dataIds.add(new ByteArrayId(
-					dataIdBytes));
+			buf.get(
+					dataIdBytes);
+			dataIds.add(
+					new ByteArrayId(
+							dataIdBytes));
 		}
-		final byte[] adapterIdBytes = new byte[bytes.length - buf.position()];
-		buf.get(adapterIdBytes);
-		this.adapterId = new ByteArrayId(
-				adapterIdBytes);
 	}
 
 }

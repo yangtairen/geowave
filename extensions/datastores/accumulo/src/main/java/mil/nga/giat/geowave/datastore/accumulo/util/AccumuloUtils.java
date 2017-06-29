@@ -65,15 +65,14 @@ import mil.nga.giat.geowave.core.store.metadata.IndexStoreImpl;
 import mil.nga.giat.geowave.core.store.operations.Writer;
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloRow;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig;
 import mil.nga.giat.geowave.datastore.accumulo.IteratorConfig.OptionProvider;
+import mil.nga.giat.geowave.datastore.accumulo.cli.config.AccumuloOptions;
+import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 import mil.nga.giat.geowave.datastore.accumulo.RowMergingAdapterOptionProvider;
 import mil.nga.giat.geowave.datastore.accumulo.RowMergingCombiner;
 import mil.nga.giat.geowave.datastore.accumulo.RowMergingVisibilityCombiner;
-import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions;
 
 /**
  * A set of convenience methods for common operations on Accumulo within
@@ -177,7 +176,7 @@ public class AccumuloUtils
 
 		AccumuloOptions options = new AccumuloOptions();
 		final AdapterStore adapterStore = new AdapterStoreImpl(
-				new BasicAccumuloOperations(
+				new AccumuloOperations(
 						connector,
 						namespace,options),options);
 
@@ -209,7 +208,7 @@ public class AccumuloUtils
 		final List<Index<?, ?>> indices = new ArrayList<Index<?, ?>>();
 		AccumuloOptions options = new AccumuloOptions();
 		final IndexStore indexStore = new IndexStoreImpl(
-				new BasicAccumuloOperations(
+				new AccumuloOperations(
 						connector,
 						namespace,options),options);
 
@@ -250,7 +249,7 @@ public class AccumuloUtils
 			AccumuloSecurityException,
 			IOException,
 			TableNotFoundException {
-		final AccumuloOperations operations = new BasicAccumuloOperations(
+		final AccumuloOperations operations = new AccumuloOperations(
 				connector,
 				namespace,new AccumuloOptions());
 		final RoundRobinKeyIndexStrategy partitions = new RoundRobinKeyIndexStrategy(
@@ -508,7 +507,7 @@ public class AccumuloUtils
 			AccumuloSecurityException,
 			IOException,
 			TableNotFoundException {
-		final AccumuloOperations operations = new BasicAccumuloOperations(
+		final AccumuloOperations operations = new AccumuloOperations(
 				connector,
 				namespace,new AccumuloOptions());
 		// get unqualified table name
@@ -539,7 +538,7 @@ public class AccumuloUtils
 			AccumuloSecurityException,
 			IOException,
 			TableNotFoundException {
-		final AccumuloOperations operations = new BasicAccumuloOperations(
+		final AccumuloOperations operations = new AccumuloOperations(
 				connector,
 				namespace,
 				new AccumuloOptions());
@@ -571,7 +570,7 @@ public class AccumuloUtils
 			IOException {
 		long counter = 0L;
 		final AccumuloOptions options = new AccumuloOptions();
-		final AccumuloOperations operations = new BasicAccumuloOperations(
+		final AccumuloOperations operations = new AccumuloOperations(
 				connector,
 				namespace,
 				options);
@@ -642,7 +641,7 @@ public class AccumuloUtils
 			TableNotFoundException {
 		CloseableIterator<Entry<Key, Value>> iterator = null;
 		final AccumuloOptions options = new AccumuloOptions();
-		final AccumuloOperations operations = new BasicAccumuloOperations(
+		final AccumuloOperations operations = new AccumuloOperations(
 				connector,
 				namespace,
 				new AccumuloOptions());

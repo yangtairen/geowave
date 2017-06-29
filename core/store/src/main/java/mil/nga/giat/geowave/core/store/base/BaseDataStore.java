@@ -57,10 +57,10 @@ import mil.nga.giat.geowave.core.store.operations.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.operations.Deleter;
 import mil.nga.giat.geowave.core.store.query.DataIdQuery;
 import mil.nga.giat.geowave.core.store.query.EverythingQuery;
+import mil.nga.giat.geowave.core.store.query.InsertionIdQuery;
 import mil.nga.giat.geowave.core.store.query.PrefixIdQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
-import mil.nga.giat.geowave.core.store.query.RowIdQuery;
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 
 public class BaseDataStore<R extends GeoWaveRow> implements
@@ -224,32 +224,17 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 							indexStore)) {
 				final List<ByteArrayId> adapterIdsToQuery = new ArrayList<>();
 				for (final DataAdapter<Object> adapter : indexAdapterPair.getRight()) {
-					if (sanitizedQuery instanceof RowIdQuery) {
+					if (sanitizedQuery instanceof InsertionIdQuery) {
 						sanitizedQueryOptions.setLimit(
 								-1);
 						results.add(
-								queryRowIds(
+								queryInsertionId(
 										adapter,
 										indexAdapterPair.getLeft(),
-										((RowIdQuery) sanitizedQuery).getRowIds(),
+										(InsertionIdQuery) sanitizedQuery,
 										filter,
 										sanitizedQueryOptions,
 										tempAdapterStore));
-						continue;
-					}
-					else if (sanitizedQuery instanceof DataIdQuery) {
-						final DataIdQuery idQuery = (DataIdQuery) sanitizedQuery;
-						if (idQuery.getAdapterId().equals(
-								adapter.getAdapterId())) {
-							results.add(
-									getEntries(
-											indexAdapterPair.getLeft(),
-											idQuery.getDataIds(),
-											(DataAdapter<Object>) adapterStore.getAdapter(
-													idQuery.getAdapterId()),
-											filter,
-											sanitizedQueryOptions));
-						}
 						continue;
 					}
 					else if (sanitizedQuery instanceof PrefixIdQuery) {
@@ -299,64 +284,6 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 				Iterators.concat(
 						new CastIterator<T>(
 								results.iterator())));
-	}
-
-	@SuppressWarnings("unchecked")
-	protected CloseableIterator<Object> getEntries(
-			final PrimaryIndex index,
-			final List<ByteArrayId> dataIds,
-			final DataAdapter<Object> adapter,
-			final DedupeFilter dedupeFilter,
-			final QueryOptions sanitizedQueryOptions )
-			throws IOException {
-		final String altIdxTableName = index.getId().getString() + ALT_INDEX_TABLE;
-
-		MemoryAdapterStore tempAdapterStore;
-
-		tempAdapterStore = new MemoryAdapterStore(
-				new DataAdapter[] {
-					adapter
-				});
-
-		if (baseOptions.isUseAltIndex() && baseOperations.indexExists(
-				new ByteArrayId(
-						altIdxTableName))) {
-			final InsertionIds rowIds = getAltIndexInsertionIds(
-					altIdxTableName,
-					dataIds,
-					adapter.getAdapterId());
-
-			if (!rowIds.isEmpty()) {
-
-				final QueryOptions options = new QueryOptions();
-				options.setScanCallback(
-						sanitizedQueryOptions.getScanCallback());
-				options.setAuthorizations(
-						sanitizedQueryOptions.getAuthorizations());
-				options.setMaxResolutionSubsamplingPerDimension(
-						sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension());
-				options.setLimit(
-						-1);
-
-				return queryRowIds(
-						adapter,
-						index,
-						rowIds,
-						dedupeFilter,
-						options,
-						tempAdapterStore);
-			}
-		}
-		else {
-			return getEntryRows(
-					index,
-					tempAdapterStore,
-					dataIds,
-					adapter,
-					dedupeFilter,
-					sanitizedQueryOptions);
-		}
-		return new CloseableIterator.Empty();
 	}
 
 	@Override
@@ -473,25 +400,16 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 							callback);
 					final List<ByteArrayId> adapterIds = Collections.singletonList(
 							adapter.getAdapterId());
-					if (query instanceof RowIdQuery) {
+					if (query instanceof InsertionIdQuery) {
 						queryOptions.setLimit(
 								-1);
-						dataIt = queryRowIds(
+						dataIt = queryInsertionId(
 								adapter,
 								index,
-								((RowIdQuery) query).getRowIds(),
+								(InsertionIdQuery) query,
 								null,
 								queryOptions,
 								adapterStore);
-					}
-					else if (query instanceof DataIdQuery) {
-						final DataIdQuery idQuery = (DataIdQuery) query;
-						dataIt = getEntries(
-								index,
-								idQuery.getDataIds(),
-								adapter,
-								null,
-								queryOptions);
 					}
 					else if (query instanceof PrefixIdQuery) {
 						dataIt = queryRowPrefix(
@@ -532,6 +450,7 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 			LOGGER.error(
 					"Failed delete operation " + query.toString(),
 					e);
+			e.printStackTrace();
 			return false;
 		}
 		finally {
@@ -612,7 +531,6 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 						adapter.getAdapterId()),
 				index,
 				new DataIdQuery(
-						adapter.getAdapterId(),
 						dataIds),
 				dedupeFilter,
 				queryOptions,
@@ -687,35 +605,29 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 
 	}
 
-	protected CloseableIterator<Object> queryRowIds(
+	protected CloseableIterator<Object> queryInsertionId(
 			final DataAdapter<Object> adapter,
 			final PrimaryIndex index,
-			final InsertionIds rowIds,
+			final InsertionIdQuery query,
 			final DedupeFilter filter,
 			final QueryOptions sanitizedQueryOptions,
 			final AdapterStore tempAdapterStore ) {
-		// final DifferingFieldVisibilityEntryCount visibilityCounts =
-		// DifferingFieldVisibilityEntryCount
-		// .getVisibilityCounts(
-		// index,
-		// Collections.singletonList(adapter.getAdapterId()),
-		// statisticsStore,
-		// sanitizedQueryOptions.getAuthorizations());
-		// boolean isWholeRow = (visibilityCounts == null) ||
-		// visibilityCounts.isAnyEntryDifferingFieldVisiblity();
-		// return baseOperations.createReader(index, adapter.getAdapterId(),
-		// sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension(),
-		// sanitizedQueryOptions.getAggregation(), isWholeRow, rowIds, filter,
-		// sanitizedQueryOptions.getLimit(),
-		// sanitizedQueryOptions.getAuthorizations());
+		final DifferingFieldVisibilityEntryCount visibilityCounts = DifferingFieldVisibilityEntryCount
+				.getVisibilityCounts(
+						index,
+						Collections.singletonList(
+								adapter.getAdapterId()),
+						statisticsStore,
+						sanitizedQueryOptions.getAuthorizations());
 
-		final BaseRowIdsQuery<Object> q = new BaseRowIdsQuery<Object>(
+		final BaseInsertionIdQuery<Object> q = new BaseInsertionIdQuery<Object>(
 				this,
 				adapter,
 				index,
-				rowIds,
+				query,
 				(ScanCallback<Object, ?>) sanitizedQueryOptions.getScanCallback(),
 				filter,
+				visibilityCounts,
 				sanitizedQueryOptions.getAuthorizations());
 
 		return q.query(

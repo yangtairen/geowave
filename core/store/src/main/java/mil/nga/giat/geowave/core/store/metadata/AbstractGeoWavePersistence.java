@@ -44,14 +44,25 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 	// notifications?
 	protected static final int MAX_ENTRIES = 100;
 	public final static String METADATA_TABLE = "GEOWAVE_METADATA";
-	private final static ByteArrayId METADATA_INDEX_ID = new ByteArrayId(METADATA_TABLE);
+	private final static ByteArrayId METADATA_INDEX_ID = new ByteArrayId(
+			METADATA_TABLE);
 	protected final DataStoreOperations operations;
 	protected final DataStoreOptions options;
 	protected final MetadataType type;
 
-	protected final Map<ByteArrayId, T> cache=Collections.synchronizedMap(new LinkedHashMap<ByteArrayId,T>(MAX_ENTRIES+1,.75F,true){private static final long serialVersionUID=1L;
+	protected final Map<ByteArrayId, T> cache = Collections.synchronizedMap(
+			new LinkedHashMap<ByteArrayId, T>(
+					MAX_ENTRIES + 1,
+					.75F,
+					true) {
+				private static final long serialVersionUID = 1L;
 
-	@Override public boolean removeEldestEntry(final Map.Entry<ByteArrayId,T>eldest){return size()>MAX_ENTRIES;}});
+				@Override
+				public boolean removeEldestEntry(
+						final Map.Entry<ByteArrayId, T> eldest ) {
+					return size() > MAX_ENTRIES;
+				}
+			});
 
 	public AbstractGeoWavePersistence(
 			final DataStoreOperations operations,
@@ -178,20 +189,19 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 				secondaryId,
 				object);
 
-		final MetadataWriter writer = operations.createMetadataWriter(
-				getType());
-
-		final GeoWaveMetadata metadata = new GeoWaveMetadata(
-				id.getBytes(),
-				secondaryId != null ? secondaryId.getBytes() : null,
-				getVisibility(
-						object),
-				PersistenceUtils.toBinary(
-						object));
-		writer.write(
-				metadata);
-		try {
-			writer.close();
+		try (final MetadataWriter writer = operations.createMetadataWriter(
+				getType())) {
+			if (writer != null) {
+				final GeoWaveMetadata metadata = new GeoWaveMetadata(
+						id.getBytes(),
+						secondaryId != null ? secondaryId.getBytes() : null,
+						getVisibility(
+								object),
+						PersistenceUtils.toBinary(
+								object));
+				writer.write(
+						metadata);
+			}
 		}
 		catch (final Exception e) {
 			LOGGER.warn(
@@ -238,7 +248,7 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 		try (final CloseableIterator<GeoWaveMetadata> it = reader.query(
 				new MetadataQuery(
 						primaryId.getBytes(),
-						secondaryId.getBytes(),
+						secondaryId == null ? null : secondaryId.getBytes(),
 						authorizations))) {
 			if (!it.hasNext()) {
 				LOGGER.warn(

@@ -15,26 +15,18 @@ import mil.nga.giat.geowave.core.store.index.Index;
 public class DataIdQuery implements
 		Query
 {
-	private ByteArrayId adapterId;
-	private List<ByteArrayId> dataIds;
+	private final List<ByteArrayId> dataIds;
 
 	public DataIdQuery(
-			ByteArrayId adapterId,
-			ByteArrayId dataId ) {
-		this.adapterId = adapterId;
-		this.dataIds = Collections.singletonList(dataId);
+			final ByteArrayId dataId ) {
+		dataIds = Collections.singletonList(
+				dataId);
 	}
 
 	public DataIdQuery(
-			ByteArrayId adapterId,
-			List<ByteArrayId> dataIds ) {
-		this.adapterId = adapterId;
+			final List<ByteArrayId> dataIds ) {
 		this.dataIds = new ArrayList<ByteArrayId>(
 				dataIds);
-	}
-
-	public ByteArrayId getAdapterId() {
-		return adapterId;
 	}
 
 	public List<ByteArrayId> getDataIds() {
@@ -43,17 +35,17 @@ public class DataIdQuery implements
 
 	@Override
 	public List<QueryFilter> createFilters(
-			CommonIndexModel indexModel ) {
-		List<QueryFilter> filters = new ArrayList<QueryFilter>();
-		filters.add(new DataIdQueryFilter(
-				adapterId,
-				dataIds));
+			final CommonIndexModel indexModel ) {
+		final List<QueryFilter> filters = new ArrayList<QueryFilter>();
+		filters.add(
+				new DataIdQueryFilter(
+						dataIds));
 		return filters;
 	}
 
 	@Override
 	public boolean isSupported(
-			Index index ) {
+			final Index index ) {
 		return true;
 	}
 

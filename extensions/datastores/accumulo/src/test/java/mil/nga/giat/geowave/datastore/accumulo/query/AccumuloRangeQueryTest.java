@@ -51,8 +51,8 @@ import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.BasicAccumuloOperations;
-import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions;
+import mil.nga.giat.geowave.datastore.accumulo.cli.config.AccumuloOptions;
+import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 
 public class AccumuloRangeQueryTest
 {
@@ -91,7 +91,7 @@ public class AccumuloRangeQueryTest
 
 		final AccumuloOptions options = new AccumuloOptions();
 		mockDataStore = new AccumuloDataStore(
-				new BasicAccumuloOperations(
+				new AccumuloOperations(
 						mockConnector,
 						options),
 				options);

@@ -8,7 +8,8 @@ import org.slf4j.LoggerFactory;
 import mil.nga.giat.geowave.core.store.StoreFactoryHelper;
 import mil.nga.giat.geowave.core.store.StoreFactoryOptions;
 import mil.nga.giat.geowave.core.store.operations.DataStoreOperations;
-import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloRequiredOptions;
+import mil.nga.giat.geowave.datastore.accumulo.cli.config.AccumuloRequiredOptions;
+import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 
 public class AccumuloFactoryHelper implements
 		StoreFactoryHelper
@@ -25,7 +26,7 @@ public class AccumuloFactoryHelper implements
 	public DataStoreOperations createOperations(
 			final StoreFactoryOptions options ) {
 		try {
-			return BasicAccumuloOperations.createOperations(
+			return AccumuloOperations.createOperations(
 					(AccumuloRequiredOptions) options);
 		}
 		catch (AccumuloException | AccumuloSecurityException e) {

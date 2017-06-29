@@ -66,8 +66,9 @@ import mil.nga.giat.geowave.core.store.metadata.IndexStoreImpl;
 import mil.nga.giat.geowave.core.store.query.DataIdQuery;
 import mil.nga.giat.geowave.core.store.query.EverythingQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
+import mil.nga.giat.geowave.datastore.accumulo.cli.config.AccumuloOptions;
 import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions;
+import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 
 public class AccumuloDataStoreStatsTest
 {
@@ -106,7 +107,7 @@ public class AccumuloDataStoreStatsTest
 					e);
 		}
 		AccumuloOptions options = new AccumuloOptions();
-		accumuloOperations = new BasicAccumuloOperations(
+		accumuloOperations = new AccumuloOperations(
 				mockConnector,options);
 
 		indexStore = new IndexStoreImpl(
@@ -344,7 +345,6 @@ public class AccumuloDataStoreStatsTest
 							"aaa"
 						}),
 				new DataIdQuery(
-						adapter.getAdapterId(),
 						new ByteArrayId(
 								"test_pt_2".getBytes(
 										StringUtils.GEOWAVE_CHAR_SET))));
@@ -372,6 +372,13 @@ public class AccumuloDataStoreStatsTest
 					count);
 		}
 
+		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
+				adapter.getAdapterId(),
+				CountDataStatistics.STATS_ID,
+				"aaa","bbb");
+		assertEquals(
+				3,
+				countStats.getCount());
 		mockDataStore.delete(
 				new QueryOptions(
 						adapter,
@@ -382,7 +389,6 @@ public class AccumuloDataStoreStatsTest
 							"aaa"
 						}),
 				new DataIdQuery(
-						adapter.getAdapterId(),
 						new ByteArrayId(
 								"test_pt".getBytes(
 										StringUtils.GEOWAVE_CHAR_SET))));
@@ -408,6 +414,15 @@ public class AccumuloDataStoreStatsTest
 					count);
 		}
 
+
+		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
+				adapter.getAdapterId(),
+				CountDataStatistics.STATS_ID,
+				"aaa","bbb");
+
+		assertEquals(
+				2,
+				countStats.getCount());
 		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
@@ -415,7 +430,7 @@ public class AccumuloDataStoreStatsTest
 		assertEquals(
 				1,
 				countStats.getCount());
-
+		//TODO there is a count of -1 with bbb that shouldn't be in the stats
 		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,

@@ -19,7 +19,7 @@ import mil.nga.giat.geowave.core.cli.operations.config.options.ConfigOptions;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.cli.remote.options.DataStorePluginOptions;
 import mil.nga.giat.geowave.core.store.cli.remote.options.StoreLoader;
-import mil.nga.giat.geowave.core.store.query.AdapterIdQuery;
+import mil.nga.giat.geowave.core.store.query.EverythingQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
 
 @GeowaveOperation(name = "rmadapter", parentOperation = RemoteSection.class)
@@ -28,7 +28,8 @@ public class RemoveAdapterCommand extends
 		DefaultOperation implements
 		Command
 {
-	private final static Logger LOGGER = LoggerFactory.getLogger(RemoveAdapterCommand.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(
+			RemoveAdapterCommand.class);
 
 	@Parameter(description = "<store name> <adapterId>")
 	private List<String> parameters = new ArrayList<String>();
@@ -37,7 +38,7 @@ public class RemoveAdapterCommand extends
 
 	@Override
 	public void execute(
-			OperationParams params ) {
+			final OperationParams params ) {
 
 		// Ensure we have all the required arguments
 		if (parameters.size() != 2) {
@@ -45,31 +46,36 @@ public class RemoveAdapterCommand extends
 					"Requires arguments: <store name> <adapterId>");
 		}
 
-		String inputStoreName = parameters.get(0);
-		String adapterId = parameters.get(1);
+		final String inputStoreName = parameters.get(
+				0);
+		final String adapterId = parameters.get(
+				1);
 
 		// Attempt to load store.
-		File configFile = (File) params.getContext().get(
+		final File configFile = (File) params.getContext().get(
 				ConfigOptions.PROPERTIES_FILE_CONTEXT);
 
 		// Attempt to load input store.
 		if (inputStoreOptions == null) {
-			StoreLoader inputStoreLoader = new StoreLoader(
+			final StoreLoader inputStoreLoader = new StoreLoader(
 					inputStoreName);
-			if (!inputStoreLoader.loadFromConfig(configFile)) {
+			if (!inputStoreLoader.loadFromConfig(
+					configFile)) {
 				throw new ParameterException(
 						"Cannot find store name: " + inputStoreLoader.getStoreName());
 			}
 			inputStoreOptions = inputStoreLoader.getDataStorePlugin();
 		}
 
-		LOGGER.info("Deleting everything in store: " + inputStoreName + " with adapter id: " + adapterId);
-
+		LOGGER.info(
+				"Deleting everything in store: " + inputStoreName + " with adapter id: " + adapterId);
+		final QueryOptions options = new QueryOptions();
+		options.setAdapterId(
+				new ByteArrayId(
+						adapterId));
 		inputStoreOptions.createDataStore().delete(
-				new QueryOptions(),
-				new AdapterIdQuery(
-						new ByteArrayId(
-								adapterId)));
+				options,
+				new EverythingQuery());
 
 	}
 
@@ -78,11 +84,13 @@ public class RemoveAdapterCommand extends
 	}
 
 	public void setParameters(
-			String storeName,
-			String adapterId ) {
-		this.parameters = new ArrayList<String>();
-		this.parameters.add(storeName);
-		this.parameters.add(adapterId);
+			final String storeName,
+			final String adapterId ) {
+		parameters = new ArrayList<String>();
+		parameters.add(
+				storeName);
+		parameters.add(
+				adapterId);
 	}
 
 	public DataStorePluginOptions getInputStoreOptions() {
@@ -90,7 +98,7 @@ public class RemoveAdapterCommand extends
 	}
 
 	public void setInputStoreOptions(
-			DataStorePluginOptions inputStoreOptions ) {
+			final DataStorePluginOptions inputStoreOptions ) {
 		this.inputStoreOptions = inputStoreOptions;
 	}
 

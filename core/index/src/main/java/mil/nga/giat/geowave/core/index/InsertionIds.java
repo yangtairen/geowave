@@ -127,14 +127,13 @@ public class InsertionIds implements
 										Collections2.transform(
 												input.getSortKeys(),
 												new Function<ByteArrayId, ByteArrayRange>() {
-
 													@Override
 													public ByteArrayRange apply(
 															final ByteArrayId input ) {
 														return new ByteArrayRange(
 																input,
 																input,
-																true);
+																false);
 													}
 												}));
 							}

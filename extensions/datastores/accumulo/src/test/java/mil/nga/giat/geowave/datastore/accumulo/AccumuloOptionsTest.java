@@ -52,10 +52,11 @@ import mil.nga.giat.geowave.core.store.metadata.DataStatisticsStoreImpl;
 import mil.nga.giat.geowave.core.store.metadata.IndexStoreImpl;
 import mil.nga.giat.geowave.core.store.query.DataIdQuery;
 import mil.nga.giat.geowave.core.store.query.EverythingQuery;
+import mil.nga.giat.geowave.core.store.query.InsertionIdQuery;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
-import mil.nga.giat.geowave.core.store.query.RowIdQuery;
+import mil.nga.giat.geowave.datastore.accumulo.cli.config.AccumuloOptions;
 import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions;
+import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 
 public class AccumuloOptionsTest
 {
@@ -94,25 +95,25 @@ public class AccumuloOptionsTest
 					e);
 		}
 		final AccumuloOptions options = new AccumuloOptions();
-		accumuloOperations = new BasicAccumuloOperations(
+		accumuloOperations = new AccumuloOperations(
 				mockConnector,
-				options);
+				accumuloOptions);
 
 		indexStore = new IndexStoreImpl(
 				accumuloOperations,
-				options);
+				accumuloOptions);
 
 		adapterStore = new AdapterStoreImpl(
 				accumuloOperations,
-				options);
+				accumuloOptions);
 
 		statsStore = new DataStatisticsStoreImpl(
 				accumuloOperations,
-				options);
+				accumuloOptions);
 
 		secondaryIndexDataStore = new AccumuloSecondaryIndexDataStore(
 				accumuloOperations,
-				new AccumuloOptions());
+				accumuloOptions);
 
 		mockDataStore = new AccumuloDataStore(
 				indexStore,
@@ -184,10 +185,13 @@ public class AccumuloOptionsTest
 			assertFalse(
 					mockDataStore
 							.query(
-									new QueryOptions(),
-									new RowIdQuery(
+									new QueryOptions(
+											adapter,
+											(PrimaryIndex)null),
+									new InsertionIdQuery(
 											rowId1.getLeft(),
-											rowId1.getRight()))
+											rowId1.getRight(),
+											new ByteArrayId("test_pt_1")))
 							.hasNext());
 
 			// as we have chosen not to persist the index, we will not see an
@@ -204,9 +208,10 @@ public class AccumuloOptionsTest
 							new QueryOptions(
 									adapter,
 									index),
-							new RowIdQuery(
+							new InsertionIdQuery(
 									rowId1.getLeft(),
-									rowId1.getRight()))
+									rowId1.getRight(),
+									new ByteArrayId("test_pt_1")))
 					.next();
 
 			// even though we didn't persist the index, the test point was still
@@ -235,10 +240,11 @@ public class AccumuloOptionsTest
 
 			final TestGeometry geom2 = (TestGeometry) mockDataStore
 					.query(
-							new QueryOptions(),
-							new RowIdQuery(
+							new QueryOptions(adapter, index),
+							new InsertionIdQuery(
 									rowId2.getLeft(),
-									rowId2.getRight()))
+									rowId2.getRight(),
+									new ByteArrayId("test_pt_2")))
 					.next();
 
 			// as we have chosen to persist the index, we will see the index
@@ -301,10 +307,11 @@ public class AccumuloOptionsTest
 
 			final TestGeometry geom1 = (TestGeometry) mockDataStore
 					.query(
-							new QueryOptions(),
-							new RowIdQuery(
+							new QueryOptions(adapter, index),
+							new InsertionIdQuery(
 									rowId1.getLeft(),
-									rowId1.getRight()))
+									rowId1.getRight(),
+									new ByteArrayId("test_pt_1")))
 					.next();
 
 			// of course, the point is actually stored in this case
@@ -347,10 +354,11 @@ public class AccumuloOptionsTest
 			}
 			final TestGeometry geom2 = (TestGeometry) mockDataStore
 					.query(
-							new QueryOptions(),
-							new RowIdQuery(
+							new QueryOptions(adapter, index),
+							new InsertionIdQuery(
 									rowId2.getLeft(),
-									rowId2.getRight()))
+									rowId2.getRight(),
+									new ByteArrayId("test_pt_2")))
 					.next();
 
 			// of course, the point is actually stored in this case
@@ -387,10 +395,11 @@ public class AccumuloOptionsTest
 			assertFalse(
 					mockDataStore
 							.query(
-									new QueryOptions(),
-									new RowIdQuery(
+									new QueryOptions(adapter.getAdapterId(), index.getId()),
+									new InsertionIdQuery(
 											rowId1.getLeft(),
-											rowId1.getRight()))
+											rowId1.getRight(),
+											new ByteArrayId("test_pt_1")))
 							.hasNext());
 
 		}
@@ -411,10 +420,11 @@ public class AccumuloOptionsTest
 			assertFalse(
 					mockDataStore
 							.query(
-									new QueryOptions(),
-									new RowIdQuery(
+									new QueryOptions(adapter.getAdapterId(), index.getId()),
+									new InsertionIdQuery(
 											rowId1.getLeft(),
-											rowId1.getRight()))
+											rowId1.getRight(),
+											new ByteArrayId("test_pt_1")))
 							.hasNext());
 
 			try (final CloseableIterator<TestGeometry> geomItr = mockDataStore.query(
@@ -458,10 +468,11 @@ public class AccumuloOptionsTest
 					.getFirstPartitionAndSortKeyPair();
 
 			try (final CloseableIterator<?> geomItr = mockDataStore.query(
-					new QueryOptions(),
-					new RowIdQuery(
+					new QueryOptions(adapter.getAdapterId(), index.getId()),
+					new InsertionIdQuery(
 							rowId2.getLeft(),
-							rowId2.getRight()))) {
+							rowId2.getRight(),
+							new ByteArrayId("test_pt_2")))) {
 				assertTrue(
 						geomItr.hasNext());
 				final TestGeometry geom2 = (TestGeometry) geomItr.next();
@@ -474,8 +485,8 @@ public class AccumuloOptionsTest
 
 			try (final CloseableIterator<TestGeometry> geomItr = mockDataStore.query(
 					new QueryOptions(
-							adapter,
-							index),
+							adapter.getAdapterId(),
+							index.getId()),
 					null)) {
 
 				while (geomItr.hasNext()) {
@@ -634,7 +645,7 @@ public class AccumuloOptionsTest
 		try (IndexWriter<TestGeometry> indexWriter = mockDataStore.createWriter(
 				adapter0,
 				index)) {
-			final Pair<ByteArrayId, ByteArrayId> rowId0 = indexWriter
+			indexWriter
 					.write(
 							new TestGeometry(
 									factory.createPoint(
@@ -663,7 +674,6 @@ public class AccumuloOptionsTest
 								adapter1,
 								index),
 						new DataIdQuery(
-								adapter1.getAdapterId(),
 								new ByteArrayId(
 										"test_pt_1"))));
 

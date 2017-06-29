@@ -241,15 +241,21 @@ public class QueryOptions implements
 
 	}
 
-	public void setAdapter(
-			final List<ByteArrayId> adapters ) {
-		if (adapters != null) {
-			this.adapters = null;
-			adapterIds = adapters;
+	public void setAdapterId(
+			final ByteArrayId adapterId ) {
+		adapterIds = Arrays.asList(
+				adapterId);
+	}
+
+	public void setAdapterIds(
+			final List<ByteArrayId> adapterIds ) {
+		if (adapterIds != null) {
+			adapters = null;
+			this.adapterIds = adapterIds;
 		}
 		else {
-			adapterIds = Collections.emptyList();
-			this.adapters = null;
+			this.adapterIds = Collections.emptyList();
+			adapters = null;
 		}
 	}
 

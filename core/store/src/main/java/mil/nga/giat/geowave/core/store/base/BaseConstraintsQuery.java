@@ -118,7 +118,7 @@ class BaseConstraintsQuery extends
 	public DistributableQueryFilter getServerFilter(
 			DataStoreOptions options ) {
 		//TODO GEOWAVE-1018 is options necessary?  is this correct?
-		if (base.distributableFilters == null && base.distributableFilters.isEmpty()){
+		if (base.distributableFilters == null || base.distributableFilters.isEmpty()){
 			return null;
 		}
 		else if (base.distributableFilters.size() > 1) {
