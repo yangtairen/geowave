@@ -220,10 +220,22 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 						authorizations));
 	}
 
-	@SuppressWarnings("unchecked")
 	protected T getObject(
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId,
+			final String... authorizations ) {
+		return internalGetObject(
+				primaryId,
+				secondaryId,
+				true,
+				authorizations);
+	}
+
+	@SuppressWarnings("unchecked")
+	private T internalGetObject(
+			final ByteArrayId primaryId,
+			final ByteArrayId secondaryId,
+			final boolean warnIfNotExists,
 			final String... authorizations ) {
 		final Object cacheResult = getObjectFromCache(
 				primaryId,
@@ -234,13 +246,22 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 		try {
 			if (!operations.indexExists(
 					METADATA_INDEX_ID)) {
+				if (warnIfNotExists) {
+					LOGGER.warn(
+							"Object '" + getCombinedId(
+									primaryId,
+									secondaryId).getString() + "' not found. '" + METADATA_TABLE
+									+ "' table does not exist");
+				}
 				return null;
 			}
 		}
 		catch (final IOException e1) {
-			LOGGER.error(
-					"Unable to check for existence of metadata to get object",
-					e1);
+			if (warnIfNotExists) {
+				LOGGER.error(
+						"Unable to check for existence of metadata to get object",
+						e1);
+			}
 			return null;
 		}
 		final MetadataReader reader = operations.createMetadataReader(
@@ -251,10 +272,12 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 						secondaryId == null ? null : secondaryId.getBytes(),
 						authorizations))) {
 			if (!it.hasNext()) {
-				LOGGER.warn(
-						"Object '" + getCombinedId(
-								primaryId,
-								secondaryId).getString() + "' not found");
+				if (warnIfNotExists) {
+					LOGGER.warn(
+							"Object '" + getCombinedId(
+									primaryId,
+									secondaryId).getString() + "' not found");
+				}
 				return null;
 			}
 			final GeoWaveMetadata entry = it.next();
@@ -262,11 +285,13 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 					entry);
 		}
 		catch (final IOException e) {
-			LOGGER.error(
-					"Unable to find object '" + getCombinedId(
-							primaryId,
-							secondaryId).getString() + "'",
-					e);
+			if (warnIfNotExists) {
+				LOGGER.warn(
+						"Unable to find object '" + getCombinedId(
+								primaryId,
+								secondaryId).getString() + "'",
+						e);
+			}
 		}
 		return null;
 	}
@@ -275,9 +300,10 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 			final ByteArrayId primaryId,
 			final ByteArrayId secondaryId,
 			final String... authorizations ) {
-		return getObject(
+		return internalGetObject(
 				primaryId,
 				secondaryId,
+				false,
 				authorizations) != null;
 	}
 

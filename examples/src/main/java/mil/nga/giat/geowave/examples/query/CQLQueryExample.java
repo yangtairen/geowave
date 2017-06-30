@@ -34,10 +34,10 @@ import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
-import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
+import mil.nga.giat.geowave.datastore.accumulo.cli.config.AccumuloOptions;
 import mil.nga.giat.geowave.datastore.accumulo.minicluster.MiniAccumuloClusterFactory;
-import mil.nga.giat.geowave.datastore.accumulo.operations.BasicAccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 
 /**
  * This class is intended to provide a self-contained, easy-to-follow example of
@@ -120,7 +120,8 @@ public class CQLQueryExample
 			throws IOException,
 			CQLException {
 
-		System.out.println("Executing query, expecting to match two points...");
+		System.out.println(
+				"Executing query, expecting to match two points...");
 
 		try (final CloseableIterator<SimpleFeature> iterator = dataStore.query(
 				new QueryOptions(
@@ -132,7 +133,8 @@ public class CQLQueryExample
 						index))) {
 
 			while (iterator.hasNext()) {
-				System.out.println("Query match: " + iterator.next().getID());
+				System.out.println(
+						"Query match: " + iterator.next().getID());
 			}
 		}
 
@@ -158,13 +160,16 @@ public class CQLQueryExample
 
 		accumulo.start();
 
+		final AccumuloOptions options = new AccumuloOptions();
 		dataStore = new AccumuloDataStore(
-				new BasicAccumuloOperations(
+				new AccumuloOperations(
 						accumulo.getZooKeepers(),
 						accumulo.getInstanceName(),
 						ACCUMULO_USER,
 						ACCUMULO_PASSWORD,
-						TABLE_NAMESPACE));
+						TABLE_NAMESPACE,
+						options),
+				options);
 	}
 
 	private static void ingestCannedData()
@@ -172,28 +177,34 @@ public class CQLQueryExample
 
 		final List<SimpleFeature> points = new ArrayList<>();
 
-		System.out.println("Building SimpleFeatures from canned data set...");
+		System.out.println(
+				"Building SimpleFeatures from canned data set...");
 
 		for (final Entry<String, Coordinate> entry : cannedData.entrySet()) {
-			System.out.println("Added point: " + entry.getKey());
-			points.add(buildSimpleFeature(
-					entry.getKey(),
-					entry.getValue()));
+			System.out.println(
+					"Added point: " + entry.getKey());
+			points.add(
+					buildSimpleFeature(
+							entry.getKey(),
+							entry.getValue()));
 		}
 
-		System.out.println("Ingesting canned data...");
+		System.out.println(
+				"Ingesting canned data...");
 
 		try (IndexWriter indexWriter = dataStore.createWriter(
 				ADAPTER,
 				index)) {
 			for (final SimpleFeature sf : points) {
 				//
-				indexWriter.write(sf);
+				indexWriter.write(
+						sf);
 
 			}
 		}
 
-		System.out.println("Ingest complete.");
+		System.out.println(
+				"Ingest complete.");
 	}
 
 	private static void cleanup()
@@ -204,7 +215,8 @@ public class CQLQueryExample
 			accumulo.stop();
 		}
 		finally {
-			FileUtils.deleteDirectory(tempAccumuloDir);
+			FileUtils.deleteDirectory(
+					tempAccumuloDir);
 		}
 	}
 
@@ -213,22 +225,31 @@ public class CQLQueryExample
 		final String NAME = "PointSimpleFeatureType";
 		final SimpleFeatureTypeBuilder sftBuilder = new SimpleFeatureTypeBuilder();
 		final AttributeTypeBuilder atBuilder = new AttributeTypeBuilder();
-		sftBuilder.setName(NAME);
-		sftBuilder.add(atBuilder.binding(
-				String.class).nillable(
-				false).buildDescriptor(
-				"locationName"));
-		sftBuilder.add(atBuilder.binding(
-				Geometry.class).nillable(
-				false).buildDescriptor(
-				"geometry"));
+		sftBuilder.setName(
+				NAME);
+		sftBuilder.add(
+				atBuilder
+						.binding(
+								String.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"locationName"));
+		sftBuilder.add(
+				atBuilder
+						.binding(
+								Geometry.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"geometry"));
 
 		// TURN ON SECONDARY INDEXING
 		final SimpleFeatureType type = sftBuilder.buildFeatureType();
 		type.getDescriptor(
 				"locationName").getUserData().put(
-				TextSecondaryIndexConfiguration.INDEX_KEY,
-				Boolean.TRUE);
+						TextSecondaryIndexConfiguration.INDEX_KEY,
+						Boolean.TRUE);
 		return type;
 	}
 
@@ -243,9 +264,11 @@ public class CQLQueryExample
 				locationName);
 		builder.set(
 				"geometry",
-				GeometryUtils.GEOMETRY_FACTORY.createPoint(coordinate));
+				GeometryUtils.GEOMETRY_FACTORY.createPoint(
+						coordinate));
 
-		return builder.buildFeature(locationName);
+		return builder.buildFeature(
+				locationName);
 	}
 
 }

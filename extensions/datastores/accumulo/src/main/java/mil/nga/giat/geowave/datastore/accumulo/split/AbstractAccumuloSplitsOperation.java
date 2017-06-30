@@ -17,18 +17,19 @@ import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.NullIndex;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.datastore.accumulo.cli.config.AccumuloRequiredOptions;
-import mil.nga.giat.geowave.datastore.accumulo.operations.BasicAccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 
 abstract public class AbstractAccumuloSplitsOperation
 {
-	private static Logger LOGGER = LoggerFactory.getLogger(AbstractAccumuloSplitsOperation.class);
+	private static Logger LOGGER = LoggerFactory.getLogger(
+			AbstractAccumuloSplitsOperation.class);
 
 	private final DataStorePluginOptions storeOptions;
 	private final SplitCommandLineOptions splitOptions;
 
 	public AbstractAccumuloSplitsOperation(
-			DataStorePluginOptions storeOptions,
-			SplitCommandLineOptions splitOptions ) {
+			final DataStorePluginOptions storeOptions,
+			final SplitCommandLineOptions splitOptions ) {
 		this.storeOptions = storeOptions;
 		this.splitOptions = splitOptions;
 	}
@@ -39,8 +40,9 @@ abstract public class AbstractAccumuloSplitsOperation
 		try {
 			final IndexStore indexStore = storeOptions.createIndexStore();
 
-			AccumuloRequiredOptions options = (AccumuloRequiredOptions) storeOptions.getFactoryOptions();
-			BasicAccumuloOperations operations = BasicAccumuloOperations.createOperations(options);
+			final AccumuloRequiredOptions options = (AccumuloRequiredOptions) storeOptions.getFactoryOptions();
+			final AccumuloOperations operations = AccumuloOperations.createOperations(
+					options);
 
 			final Connector connector = operations.getConnector();
 			final String namespace = options.getGeowaveNamespace();
@@ -71,7 +73,8 @@ abstract public class AbstractAccumuloSplitsOperation
 					return false;
 				}
 				if (!retVal) {
-					LOGGER.error("no indices were successfully split, try providing an indexId");
+					LOGGER.error(
+							"no indices were successfully split, try providing an indexId");
 				}
 				return retVal;
 			}
@@ -84,14 +87,17 @@ abstract public class AbstractAccumuloSplitsOperation
 						number);
 			}
 			else {
-				final Index index = indexStore.getIndex(new ByteArrayId(
-						splitOptions.getIndexId()));
+				final Index index = indexStore.getIndex(
+						new ByteArrayId(
+								splitOptions.getIndexId()));
 				if (index == null) {
-					LOGGER.error("index '" + splitOptions.getIndexId() + "' does not exist; unable to create splits");
+					LOGGER.error(
+							"index '" + splitOptions.getIndexId() + "' does not exist; unable to create splits");
 				}
 				if (!(index instanceof PrimaryIndex)) {
-					LOGGER.error("index '" + splitOptions.getIndexId()
-							+ "' is not a primary index; unable to create splits");
+					LOGGER.error(
+							"index '" + splitOptions.getIndexId()
+									+ "' is not a primary index; unable to create splits");
 				}
 				return setSplits(
 						connector,

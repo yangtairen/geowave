@@ -20,12 +20,13 @@ public class ReaderParams
 	private final double[] maxResolutionSubsamplingPerDimension;
 	private final Pair<DataAdapter<?>, Aggregation<?, ?, ?>> aggregation;
 	private final Pair<List<String>, DataAdapter<?>> fieldSubsets;
-	private final boolean isWholeRow;
+	private final boolean isMixedVisibility;
+	private final boolean isServersideAggregation;
 	private final QueryRanges queryRanges;
 	private final DistributableQueryFilter filter;
 	private final Integer limit;
-	private List<MultiDimensionalCoordinateRangesArray> coordinateRanges;
-	private List<MultiDimensionalNumericData> constraints;
+	private final List<MultiDimensionalCoordinateRangesArray> coordinateRanges;
+	private final List<MultiDimensionalNumericData> constraints;
 	private final String[] additionalAuthorizations;
 
 	public ReaderParams(
@@ -34,7 +35,8 @@ public class ReaderParams
 			final double[] maxResolutionSubsamplingPerDimension,
 			final Pair<DataAdapter<?>, Aggregation<?, ?, ?>> aggregation,
 			final Pair<List<String>, DataAdapter<?>> fieldSubsets,
-			final boolean isWholeRow,
+			final boolean isMixedVisibility,
+			final boolean isServersideAggregation,
 			final QueryRanges queryRanges,
 			final DistributableQueryFilter filter,
 			final Integer limit,
@@ -46,7 +48,8 @@ public class ReaderParams
 		this.maxResolutionSubsamplingPerDimension = maxResolutionSubsamplingPerDimension;
 		this.aggregation = aggregation;
 		this.fieldSubsets = fieldSubsets;
-		this.isWholeRow = isWholeRow;
+		this.isMixedVisibility = isMixedVisibility;
+		this.isServersideAggregation = isServersideAggregation;
 		this.queryRanges = queryRanges;
 		this.filter = filter;
 		this.limit = limit;
@@ -83,8 +86,12 @@ public class ReaderParams
 		return fieldSubsets;
 	}
 
-	public boolean isWholeRow() {
-		return isWholeRow;
+	public boolean isMixedVisibility() {
+		return isMixedVisibility;
+	}
+
+	public boolean isServersideAggregation() {
+		return isServersideAggregation;
 	}
 
 	public boolean isAggregation() {

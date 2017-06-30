@@ -39,21 +39,12 @@ public class NativeEntryIteratorWrapper<T> extends
 
 	@Override
 	protected T decodeRow(
-			final Object row,
+			final GeoWaveRow row,
 			final QueryFilter clientFilter,
 			final PrimaryIndex index,
 			final boolean wholeRowEncoding ) {
-		GeoWaveRow entry = null;
-		try {
-			entry = (GeoWaveRow) row;
-		}
-		catch (final ClassCastException e) {
-			LOGGER.error(
-					"Row is not a native geowave row entry.");
-			return null;
-		}
 		return (T) dataStore.decodeRow(
-				entry,
+				row,
 				wholeRowEncoding,
 				clientFilter,
 				null,

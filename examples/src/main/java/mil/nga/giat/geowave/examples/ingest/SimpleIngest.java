@@ -23,17 +23,14 @@ import mil.nga.giat.geowave.core.geotime.ingest.SpatialDimensionalityTypeProvide
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterIndexMappingStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloDataStatisticsStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloIndexStore;
-import mil.nga.giat.geowave.datastore.accumulo.operations.BasicAccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.cli.config.AccumuloOptions;
+import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 
 public class SimpleIngest
 {
 
-	static Logger log = Logger.getLogger(SimpleIngest.class);
+	static Logger log = Logger.getLogger(
+			SimpleIngest.class);
 	public static final String FEATURE_NAME = "GridPoint";
 
 	public static List<SimpleFeature> getGriddedFeatures(
@@ -46,9 +43,10 @@ public class SimpleIngest
 			for (int latitude = -90; latitude <= 90; latitude += 5) {
 				pointBuilder.set(
 						"geometry",
-						GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(
-								longitude,
-								latitude)));
+						GeometryUtils.GEOMETRY_FACTORY.createPoint(
+								new Coordinate(
+										longitude,
+										latitude)));
 				pointBuilder.set(
 						"TimeStamp",
 						new Date());
@@ -61,8 +59,11 @@ public class SimpleIngest
 				// Note since trajectoryID and comment are marked as nillable we
 				// don't need to set them (they default ot null).
 
-				final SimpleFeature sft = pointBuilder.buildFeature(String.valueOf(featureId));
-				feats.add(sft);
+				final SimpleFeature sft = pointBuilder.buildFeature(
+						String.valueOf(
+								featureId));
+				feats.add(
+						sft);
 				featureId++;
 			}
 		}
@@ -79,24 +80,15 @@ public class SimpleIngest
 	 * @return DataStore object for the particular accumulo instance
 	 */
 	protected DataStore getAccumuloGeowaveDataStore(
-			final BasicAccumuloOperations instance ) {
-
+			final AccumuloOperations operations,
+			final AccumuloOptions options ) {
 		// GeoWave persists both the index and data adapter to the same accumulo
 		// namespace as the data. The intent here
 		// is that all data is discoverable without configuration/classes stored
 		// outside of the accumulo instance.
 		return new AccumuloDataStore(
-				new AccumuloIndexStore(
-						instance),
-				new AccumuloAdapterStore(
-						instance),
-				new AccumuloDataStatisticsStore(
-						instance),
-				new AccumuloSecondaryIndexDataStore(
-						instance),
-				new AccumuloAdapterIndexMappingStore(
-						instance),
-				instance);
+				operations,
+				options);
 	}
 
 	/***
@@ -120,20 +112,22 @@ public class SimpleIngest
 	 * @throws AccumuloException
 	 * @throws AccumuloSecurityException
 	 */
-	protected BasicAccumuloOperations getAccumuloOperationsInstance(
+	protected AccumuloOperations getAccumuloOperationsInstance(
 			final String zookeepers,
 			final String accumuloInstance,
 			final String accumuloUser,
 			final String accumuloPass,
-			final String geowaveNamespace )
+			final String geowaveNamespace,
+			final AccumuloOptions options )
 			throws AccumuloException,
 			AccumuloSecurityException {
-		return new BasicAccumuloOperations(
+		return new AccumuloOperations(
 				zookeepers,
 				accumuloInstance,
 				accumuloUser,
 				accumuloPass,
-				geowaveNamespace);
+				geowaveNamespace,
+				options);
 	}
 
 	/***
@@ -200,7 +194,8 @@ public class SimpleIngest
 		// The value you set here will also persist through discovery - so when
 		// people are looking at a dataset they will see the
 		// type names associated with the data.
-		builder.setName(FEATURE_NAME);
+		builder.setName(
+				FEATURE_NAME);
 
 		// The data is persisted in a sparse format, so if data is nullable it
 		// will not take up any space if no values are persisted.
@@ -210,30 +205,54 @@ public class SimpleIngest
 		// as the geometry contains that information. But it's
 		// convienent in many use cases to get a text representation without
 		// having to handle geometries.
-		builder.add(ab.binding(
-				Geometry.class).nillable(
-				false).buildDescriptor(
-				"geometry"));
-		builder.add(ab.binding(
-				Date.class).nillable(
-				true).buildDescriptor(
-				"TimeStamp"));
-		builder.add(ab.binding(
-				Double.class).nillable(
-				false).buildDescriptor(
-				"Latitude"));
-		builder.add(ab.binding(
-				Double.class).nillable(
-				false).buildDescriptor(
-				"Longitude"));
-		builder.add(ab.binding(
-				String.class).nillable(
-				true).buildDescriptor(
-				"TrajectoryID"));
-		builder.add(ab.binding(
-				String.class).nillable(
-				true).buildDescriptor(
-				"Comment"));
+		builder.add(
+				ab
+						.binding(
+								Geometry.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"geometry"));
+		builder.add(
+				ab
+						.binding(
+								Date.class)
+						.nillable(
+								true)
+						.buildDescriptor(
+								"TimeStamp"));
+		builder.add(
+				ab
+						.binding(
+								Double.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"Latitude"));
+		builder.add(
+				ab
+						.binding(
+								Double.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"Longitude"));
+		builder.add(
+				ab
+						.binding(
+								String.class)
+						.nillable(
+								true)
+						.buildDescriptor(
+								"TrajectoryID"));
+		builder.add(
+				ab
+						.binding(
+								String.class)
+						.nillable(
+								true)
+						.buildDescriptor(
+								"Comment"));
 
 		return builder.buildFeatureType();
 	}

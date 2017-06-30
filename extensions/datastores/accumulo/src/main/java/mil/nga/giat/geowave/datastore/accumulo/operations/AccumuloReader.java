@@ -33,7 +33,6 @@ public class AccumuloReader implements
 			final boolean wholeRowEncoding ) {
 		this.scanner = scanner;
 		this.partitionKeyLength = partitionKeyLength;
-		;
 		this.wholeRowEncoding = wholeRowEncoding;
 
 		it = scanner.iterator();

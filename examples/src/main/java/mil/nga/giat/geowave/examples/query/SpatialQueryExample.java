@@ -35,11 +35,11 @@ import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.metadata.AdapterStoreImpl;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
-import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
-import mil.nga.giat.geowave.datastore.accumulo.metadata.AccumuloAdapterStore;
-import mil.nga.giat.geowave.datastore.accumulo.operations.BasicAccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.cli.config.AccumuloOptions;
+import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 
 /**
  * This class is intended to provide a few examples on running Geowave queries
@@ -50,7 +50,8 @@ import mil.nga.giat.geowave.datastore.accumulo.operations.BasicAccumuloOperation
  */
 public class SpatialQueryExample
 {
-	private static Logger log = Logger.getLogger(SpatialQueryExample.class);
+	private static Logger log = Logger.getLogger(
+			SpatialQueryExample.class);
 
 	// We'll use GeoWave's VectorDataStore, which allows to run CQL rich queries
 	private static DataStore dataStore;
@@ -59,18 +60,21 @@ public class SpatialQueryExample
 	private static AdapterStore adapterStore;
 
 	public static void main(
-			String[] args )
+			final String[] args )
 			throws AccumuloSecurityException,
 			AccumuloException,
 			ParseException,
 			CQLException,
 			IOException {
-		SpatialQueryExample example = new SpatialQueryExample();
-		log.info("Setting up datastores");
-		example.setupDataStores();
-		log.info("Running point query examples");
+		final SpatialQueryExample example = new SpatialQueryExample();
+		log.info(
+				"Setting up datastores");
+		SpatialQueryExample.setupDataStores();
+		log.info(
+				"Running point query examples");
 		example.runPointExamples();
-		log.info("Running polygon query examples");
+		log.info(
+				"Running polygon query examples");
 		example.runPolygonExamples();
 	}
 
@@ -78,19 +82,23 @@ public class SpatialQueryExample
 			throws AccumuloSecurityException,
 			AccumuloException {
 		// Initialize VectorDataStore and AccumuloAdapterStore
-		MockInstance instance = new MockInstance();
+		final MockInstance instance = new MockInstance();
 		// For the MockInstance we can user "user" - "password" as our
 		// connection tokens
-		Connector connector = instance.getConnector(
+		final Connector connector = instance.getConnector(
 				"user",
 				new PasswordToken(
 						"password"));
-		BasicAccumuloOperations operations = new BasicAccumuloOperations(
-				connector);
+		final AccumuloOptions options = new AccumuloOptions();
+		final AccumuloOperations operations = new AccumuloOperations(
+				connector,
+				options);
 		dataStore = new AccumuloDataStore(
-				operations);
-		adapterStore = new AccumuloAdapterStore(
-				operations);
+				operations,
+				options);
+		adapterStore = new AdapterStoreImpl(
+				operations,
+				options);
 	}
 
 	/**
@@ -110,26 +118,29 @@ public class SpatialQueryExample
 	}
 
 	private void ingestPointData() {
-		log.info("Ingesting point data");
+		log.info(
+				"Ingesting point data");
 		ingestPointBasicFeature();
 		ingestPointComplexFeature();
-		log.info("Point data ingested");
+		log.info(
+				"Point data ingested");
 	}
 
 	private void ingest(
-			FeatureDataAdapter adapter,
-			PrimaryIndex index,
-			List<SimpleFeature> features ) {
+			final FeatureDataAdapter adapter,
+			final PrimaryIndex index,
+			final List<SimpleFeature> features ) {
 		try (IndexWriter indexWriter = dataStore.createWriter(
 				adapter,
 				index)) {
-			for (SimpleFeature sf : features) {
+			for (final SimpleFeature sf : features) {
 				//
-				indexWriter.write(sf);
+				indexWriter.write(
+						sf);
 
 			}
 		}
-		catch (IOException e) {
+		catch (final IOException e) {
 			log.error(
 					"Could not create writter",
 					e);
@@ -140,61 +151,76 @@ public class SpatialQueryExample
 		// First, we'll build our first kind of SimpleFeature, which we'll call
 		// "basic-feature"
 		// We need the type builder to build the feature type
-		SimpleFeatureTypeBuilder sftBuilder = new SimpleFeatureTypeBuilder();
+		final SimpleFeatureTypeBuilder sftBuilder = new SimpleFeatureTypeBuilder();
 		// AttributeTypeBuilder for the attributes of the SimpleFeature
-		AttributeTypeBuilder attrBuilder = new AttributeTypeBuilder();
+		final AttributeTypeBuilder attrBuilder = new AttributeTypeBuilder();
 		// Here we're setting the SimpleFeature name. Later on, we'll be able to
 		// query GW just by this particular feature.
-		sftBuilder.setName("basic-feature");
+		sftBuilder.setName(
+				"basic-feature");
 		// Add the attributes to the feature
 		// Add the geometry attribute, which is mandatory for GeoWave to be able
 		// to construct an index out of the SimpleFeature
-		sftBuilder.add(attrBuilder.binding(
-				Point.class).nillable(
-				false).buildDescriptor(
-				"geometry"));
+		sftBuilder.add(
+				attrBuilder
+						.binding(
+								Point.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"geometry"));
 		// Add another attribute just to be able to filter by it in CQL
-		sftBuilder.add(attrBuilder.binding(
-				String.class).nillable(
-				false).buildDescriptor(
-				"filter"));
+		sftBuilder.add(
+				attrBuilder
+						.binding(
+								String.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"filter"));
 
 		// Create the SimpleFeatureType
-		SimpleFeatureType sfType = sftBuilder.buildFeatureType();
+		final SimpleFeatureType sfType = sftBuilder.buildFeatureType();
 		// We need the adapter for all our operations with GeoWave
-		FeatureDataAdapter sfAdapter = new FeatureDataAdapter(
+		final FeatureDataAdapter sfAdapter = new FeatureDataAdapter(
 				sfType);
 
 		// Now we build the actual features. We'll create two points.
 		// First point
-		SimpleFeatureBuilder sfBuilder = new SimpleFeatureBuilder(
+		final SimpleFeatureBuilder sfBuilder = new SimpleFeatureBuilder(
 				sfType);
 		sfBuilder.set(
 				"geometry",
-				GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(
-						-80.211181640625,
-						25.848101000701597)));
+				GeometryUtils.GEOMETRY_FACTORY.createPoint(
+						new Coordinate(
+								-80.211181640625,
+								25.848101000701597)));
 		sfBuilder.set(
 				"filter",
 				"Basic-Stadium");
 		// When calling buildFeature, we need to pass an unique id for that
 		// feature, or it will be overwritten.
-		SimpleFeature basicPoint1 = sfBuilder.buildFeature("1");
+		final SimpleFeature basicPoint1 = sfBuilder.buildFeature(
+				"1");
 
 		// Construct the second feature.
 		sfBuilder.set(
 				"geometry",
-				GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(
-						-80.191360,
-						25.777804)));
+				GeometryUtils.GEOMETRY_FACTORY.createPoint(
+						new Coordinate(
+								-80.191360,
+								25.777804)));
 		sfBuilder.set(
 				"filter",
 				"Basic-College");
-		SimpleFeature basicPoint2 = sfBuilder.buildFeature("2");
+		final SimpleFeature basicPoint2 = sfBuilder.buildFeature(
+				"2");
 
-		ArrayList<SimpleFeature> features = new ArrayList<SimpleFeature>();
-		features.add(basicPoint1);
-		features.add(basicPoint2);
+		final ArrayList<SimpleFeature> features = new ArrayList<SimpleFeature>();
+		features.add(
+				basicPoint1);
+		features.add(
+				basicPoint2);
 
 		// Ingest the data. For that purpose, we need the feature adapter,
 		// the index type (the default spatial index is used here),
@@ -212,49 +238,67 @@ public class SpatialQueryExample
 		// First, we'll build our second kind of SimpleFeature, which we'll call
 		// "complex-feature"
 		// We need the type builder to build the feature type
-		SimpleFeatureTypeBuilder sftBuilder = new SimpleFeatureTypeBuilder();
+		final SimpleFeatureTypeBuilder sftBuilder = new SimpleFeatureTypeBuilder();
 		// AttributeTypeBuilder for the attributes of the SimpleFeature
-		AttributeTypeBuilder attrBuilder = new AttributeTypeBuilder();
+		final AttributeTypeBuilder attrBuilder = new AttributeTypeBuilder();
 		// Here we're setting the SimpleFeature name. Later on, we'll be able to
 		// query GW just by this particular feature.
-		sftBuilder.setName("complex-feature");
+		sftBuilder.setName(
+				"complex-feature");
 		// Add the attributes to the feature
 		// Add the geometry attribute, which is mandatory for GeoWave to be able
 		// to construct an index out of the SimpleFeature
-		sftBuilder.add(attrBuilder.binding(
-				Point.class).nillable(
-				false).buildDescriptor(
-				"geometry"));
+		sftBuilder.add(
+				attrBuilder
+						.binding(
+								Point.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"geometry"));
 		// Add another attribute just to be able to filter by it in CQL
-		sftBuilder.add(attrBuilder.binding(
-				String.class).nillable(
-				false).buildDescriptor(
-				"filter"));
+		sftBuilder.add(
+				attrBuilder
+						.binding(
+								String.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"filter"));
 		// Add more attributes to use with CQL filtering later on.
-		sftBuilder.add(attrBuilder.binding(
-				Double.class).nillable(
-				false).buildDescriptor(
-				"latitude"));
-		sftBuilder.add(attrBuilder.binding(
-				Double.class).nillable(
-				false).buildDescriptor(
-				"longitude"));
+		sftBuilder.add(
+				attrBuilder
+						.binding(
+								Double.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"latitude"));
+		sftBuilder.add(
+				attrBuilder
+						.binding(
+								Double.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"longitude"));
 
 		// Create the SimpleFeatureType
-		SimpleFeatureType sfType = sftBuilder.buildFeatureType();
+		final SimpleFeatureType sfType = sftBuilder.buildFeatureType();
 		// We need the adapter for all our operations with GeoWave
-		FeatureDataAdapter sfAdapter = new FeatureDataAdapter(
+		final FeatureDataAdapter sfAdapter = new FeatureDataAdapter(
 				sfType);
 
 		// Now we build the actual features. We'll create two more points.
 		// First point
-		SimpleFeatureBuilder sfBuilder = new SimpleFeatureBuilder(
+		final SimpleFeatureBuilder sfBuilder = new SimpleFeatureBuilder(
 				sfType);
 		sfBuilder.set(
 				"geometry",
-				GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(
-						-80.193388,
-						25.780538)));
+				GeometryUtils.GEOMETRY_FACTORY.createPoint(
+						new Coordinate(
+								-80.193388,
+								25.780538)));
 		sfBuilder.set(
 				"filter",
 				"Complex-Station");
@@ -266,14 +310,16 @@ public class SpatialQueryExample
 				-80.193388);
 		// When calling buildFeature, we need to pass an unique id for that
 		// feature, or it will be overwritten.
-		SimpleFeature basicPoint1 = sfBuilder.buildFeature("1");
+		final SimpleFeature basicPoint1 = sfBuilder.buildFeature(
+				"1");
 
 		// Construct the second feature.
 		sfBuilder.set(
 				"geometry",
-				GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(
-						-118.26713562011719,
-						33.988349152677955)));
+				GeometryUtils.GEOMETRY_FACTORY.createPoint(
+						new Coordinate(
+								-118.26713562011719,
+								33.988349152677955)));
 		sfBuilder.set(
 				"filter",
 				"Complex-LA");
@@ -283,11 +329,14 @@ public class SpatialQueryExample
 		sfBuilder.set(
 				"longitude",
 				-118.26713562011719);
-		SimpleFeature basicPoint2 = sfBuilder.buildFeature("2");
+		final SimpleFeature basicPoint2 = sfBuilder.buildFeature(
+				"2");
 
-		ArrayList<SimpleFeature> features = new ArrayList<SimpleFeature>();
-		features.add(basicPoint1);
-		features.add(basicPoint2);
+		final ArrayList<SimpleFeature> features = new ArrayList<SimpleFeature>();
+		features.add(
+				basicPoint1);
+		features.add(
+				basicPoint2);
 
 		// Ingest the data. For that purpose, we need the feature adapter,
 		// the index type (the default spatial index is used here),
@@ -317,21 +366,24 @@ public class SpatialQueryExample
 	private void pointQueryCase1()
 			throws ParseException,
 			IOException {
-		log.info("Running Point Query Case 1");
+		log.info(
+				"Running Point Query Case 1");
 		// First, we need to obtain the adapter for the SimpleFeature we want to
 		// query.
 		// We'll query basic-feature in this example.
 		// Obtain adapter for our "basic-feature" type
-		ByteArrayId bfAdId = new ByteArrayId(
+		final ByteArrayId bfAdId = new ByteArrayId(
 				"basic-feature");
-		FeatureDataAdapter bfAdapter = (FeatureDataAdapter) adapterStore.getAdapter(bfAdId);
+		final FeatureDataAdapter bfAdapter = (FeatureDataAdapter) adapterStore.getAdapter(
+				bfAdId);
 
 		// Define the geometry to query. We'll find all points that fall inside
 		// that geometry
-		String queryPolygonDefinition = "POLYGON (( " + "-180 -90, " + "-180 90, " + "180 90, " + "180 -90, "
+		final String queryPolygonDefinition = "POLYGON (( " + "-180 -90, " + "-180 90, " + "180 90, " + "180 -90, "
 				+ "-180 -90" + "))";
-		Geometry queryPolygon = new WKTReader(
-				JTSFactoryFinder.getGeometryFactory()).read(queryPolygonDefinition);
+		final Geometry queryPolygon = new WKTReader(
+				JTSFactoryFinder.getGeometryFactory()).read(
+						queryPolygonDefinition);
 
 		// Perform the query.Parameters are
 		/**
@@ -347,9 +399,10 @@ public class SpatialQueryExample
 		final QueryOptions options = new QueryOptions(
 				bfAdapter,
 				new SpatialIndexBuilder().createIndex());
-		options.setAuthorizations(new String[] {
-			"root"
-		});
+		options.setAuthorizations(
+				new String[] {
+					"root"
+				});
 		int count = 0;
 		try (final CloseableIterator<SimpleFeature> iterator = dataStore.query(
 				options,
@@ -357,12 +410,16 @@ public class SpatialQueryExample
 						queryPolygon))) {
 
 			while (iterator.hasNext()) {
-				SimpleFeature sf = iterator.next();
-				log.info("Obtained SimpleFeature " + sf.getName().toString() + " - " + sf.getAttribute("filter"));
+				final SimpleFeature sf = iterator.next();
+				log.info(
+						"Obtained SimpleFeature " + sf.getName().toString() + " - " + sf.getAttribute(
+								"filter"));
 				count++;
-				System.out.println("Query match: " + iterator.next().getID());
+				System.out.println(
+						"Query match: " + iterator.next().getID());
 			}
-			log.info("Should have obtained 2 features. -> " + (count == 2));
+			log.info(
+					"Should have obtained 2 features. -> " + (count == 2));
 		}
 	}
 
@@ -372,23 +429,26 @@ public class SpatialQueryExample
 	private void pointQueryCase2()
 			throws ParseException,
 			IOException {
-		log.info("Running Point Query Case 2");
+		log.info(
+				"Running Point Query Case 2");
 		// First, we need to obtain the adapter for the SimpleFeature we want to
 		// query.
 		// We'll query complex-feature in this example.
 		// Obtain adapter for our "complex-feature" type
-		ByteArrayId bfAdId = new ByteArrayId(
+		final ByteArrayId bfAdId = new ByteArrayId(
 				"complex-feature");
-		FeatureDataAdapter bfAdapter = (FeatureDataAdapter) adapterStore.getAdapter(bfAdId);
+		final FeatureDataAdapter bfAdapter = (FeatureDataAdapter) adapterStore.getAdapter(
+				bfAdId);
 
 		// Define the geometry to query. We'll find all points that fall inside
 		// that geometry.
-		String queryPolygonDefinition = "POLYGON (( " + "-118.50059509277344 33.75688594085081, "
+		final String queryPolygonDefinition = "POLYGON (( " + "-118.50059509277344 33.75688594085081, "
 				+ "-118.50059509277344 34.1521587488017, " + "-117.80502319335938 34.1521587488017, "
 				+ "-117.80502319335938 33.75688594085081, " + "-118.50059509277344 33.75688594085081" + "))";
 
-		Geometry queryPolygon = new WKTReader(
-				JTSFactoryFinder.getGeometryFactory()).read(queryPolygonDefinition);
+		final Geometry queryPolygon = new WKTReader(
+				JTSFactoryFinder.getGeometryFactory()).read(
+						queryPolygonDefinition);
 
 		// Perform the query.Parameters are
 		/**
@@ -414,12 +474,16 @@ public class SpatialQueryExample
 						queryPolygon))) {
 
 			while (iterator.hasNext()) {
-				SimpleFeature sf = iterator.next();
-				log.info("Obtained SimpleFeature " + sf.getName().toString() + " - " + sf.getAttribute("filter"));
+				final SimpleFeature sf = iterator.next();
+				log.info(
+						"Obtained SimpleFeature " + sf.getName().toString() + " - " + sf.getAttribute(
+								"filter"));
 				count++;
-				System.out.println("Query match: " + sf.getID());
+				System.out.println(
+						"Query match: " + sf.getID());
 			}
-			log.info("Should have obtained 1 feature. -> " + (count == 1));
+			log.info(
+					"Should have obtained 1 feature. -> " + (count == 1));
 		}
 	}
 
@@ -430,16 +494,18 @@ public class SpatialQueryExample
 			throws ParseException,
 			CQLException,
 			IOException {
-		log.info("Running Point Query Case 3");
+		log.info(
+				"Running Point Query Case 3");
 		// First, we need to obtain the adapter for the SimpleFeature we want to
 		// query.
 		// We'll query basic-feature in this example.
 		// Obtain adapter for our "basic-feature" type
-		ByteArrayId bfAdId = new ByteArrayId(
+		final ByteArrayId bfAdId = new ByteArrayId(
 				"basic-feature");
-		FeatureDataAdapter bfAdapter = (FeatureDataAdapter) adapterStore.getAdapter(bfAdId);
+		final FeatureDataAdapter bfAdapter = (FeatureDataAdapter) adapterStore.getAdapter(
+				bfAdId);
 
-		String CQLFilter = "filter = 'Basic-Stadium'";
+		final String CQLFilter = "filter = 'Basic-Stadium'";
 		// Perform the query.Parameters are
 		/**
 		 * 1- Adapter previously obtained from the feature name. 2- Default
@@ -470,12 +536,16 @@ public class SpatialQueryExample
 			// filter to match a particular attribute will reduce our result set
 			// size to 1
 			while (iterator.hasNext()) {
-				SimpleFeature sf = iterator.next();
-				log.info("Obtained SimpleFeature " + sf.getName().toString() + " - " + sf.getAttribute("filter"));
+				final SimpleFeature sf = iterator.next();
+				log.info(
+						"Obtained SimpleFeature " + sf.getName().toString() + " - " + sf.getAttribute(
+								"filter"));
 				count++;
-				System.out.println("Query match: " + sf.getID());
+				System.out.println(
+						"Query match: " + sf.getID());
 			}
-			log.info("Should have obtained 1 feature. " + (count == 1));
+			log.info(
+					"Should have obtained 1 feature. " + (count == 1));
 		}
 
 	}
@@ -488,17 +558,19 @@ public class SpatialQueryExample
 			throws ParseException,
 			CQLException,
 			IOException {
-		log.info("Running Point Query Case 4");
+		log.info(
+				"Running Point Query Case 4");
 		// First, we need to obtain the adapter for the SimpleFeature we want to
 		// query.
 		// We'll query complex-feature in this example.
 		// Obtain adapter for our "complex-feature" type
-		ByteArrayId bfAdId = new ByteArrayId(
+		final ByteArrayId bfAdId = new ByteArrayId(
 				"complex-feature");
-		FeatureDataAdapter bfAdapter = (FeatureDataAdapter) adapterStore.getAdapter(bfAdId);
+		final FeatureDataAdapter bfAdapter = (FeatureDataAdapter) adapterStore.getAdapter(
+				bfAdId);
 
 		// This CQL query will yield a single point - Complex-LA
-		String CQLFilter = "latitude > 25 AND longitude < -118";
+		final String CQLFilter = "latitude > 25 AND longitude < -118";
 		// Perform the query.Parameters are
 		/**
 		 * 1- Adapter previously obtained from the feature name. 2- Default
@@ -528,12 +600,16 @@ public class SpatialQueryExample
 			// filter to match a particular attribute will reduce our result set
 			// size to 1
 			while (iterator.hasNext()) {
-				SimpleFeature sf = iterator.next();
-				log.info("Obtained SimpleFeature " + sf.getName().toString() + " - " + sf.getAttribute("filter"));
+				final SimpleFeature sf = iterator.next();
+				log.info(
+						"Obtained SimpleFeature " + sf.getName().toString() + " - " + sf.getAttribute(
+								"filter"));
 				count++;
-				System.out.println("Query match: " + sf.getID());
+				System.out.println(
+						"Query match: " + sf.getID());
 			}
-			log.info("Should have obtained 1 feature. -> " + (count == 1));
+			log.info(
+					"Should have obtained 1 feature. -> " + (count == 1));
 		}
 	}
 
@@ -551,47 +627,58 @@ public class SpatialQueryExample
 
 	private void ingestPolygonFeature()
 			throws ParseException {
-		log.info("Ingesting polygon data");
+		log.info(
+				"Ingesting polygon data");
 		// First, we'll build our third kind of SimpleFeature, which we'll call
 		// "polygon-feature"
 		// We need the type builder to build the feature type
-		SimpleFeatureTypeBuilder sftBuilder = new SimpleFeatureTypeBuilder();
+		final SimpleFeatureTypeBuilder sftBuilder = new SimpleFeatureTypeBuilder();
 		// AttributeTypeBuilder for the attributes of the SimpleFeature
-		AttributeTypeBuilder attrBuilder = new AttributeTypeBuilder();
+		final AttributeTypeBuilder attrBuilder = new AttributeTypeBuilder();
 		// Here we're setting the SimpleFeature name. Later on, we'll be able to
 		// query GW just by this particular feature.
-		sftBuilder.setName("polygon-feature");
+		sftBuilder.setName(
+				"polygon-feature");
 		// Add the attributes to the feature
 		// Add the geometry attribute, which is mandatory for GeoWave to be able
 		// to construct an index out of the SimpleFeature
 		// Will be any arbitrary geometry; in this case, a polygon.
-		sftBuilder.add(attrBuilder.binding(
-				Geometry.class).nillable(
-				false).buildDescriptor(
-				"geometry"));
+		sftBuilder.add(
+				attrBuilder
+						.binding(
+								Geometry.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"geometry"));
 		// Add another attribute just to be able to filter by it in CQL
-		sftBuilder.add(attrBuilder.binding(
-				String.class).nillable(
-				false).buildDescriptor(
-				"filter"));
+		sftBuilder.add(
+				attrBuilder
+						.binding(
+								String.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"filter"));
 
 		// Create the SimpleFeatureType
-		SimpleFeatureType sfType = sftBuilder.buildFeatureType();
+		final SimpleFeatureType sfType = sftBuilder.buildFeatureType();
 		// We need the adapter for all our operations with GeoWave
-		FeatureDataAdapter sfAdapter = new FeatureDataAdapter(
+		final FeatureDataAdapter sfAdapter = new FeatureDataAdapter(
 				sfType);
 
 		// Now we build the actual features. We'll create one polygon.
 		// First point
-		SimpleFeatureBuilder sfBuilder = new SimpleFeatureBuilder(
+		final SimpleFeatureBuilder sfBuilder = new SimpleFeatureBuilder(
 				sfType);
 
 		// For ease of use, we'll create the polygon geometry with WKT format.
-		String polygonDefinition = "POLYGON (( " + "-80.3045654296875 25.852426562716428, "
+		final String polygonDefinition = "POLYGON (( " + "-80.3045654296875 25.852426562716428, "
 				+ "-80.123291015625 25.808545671771615, " + "-80.19195556640625 25.7244467526159, "
 				+ "-80.34233093261719 25.772068899816585, " + "-80.3045654296875 25.852426562716428" + "))";
-		Geometry geom = new WKTReader(
-				JTSFactoryFinder.getGeometryFactory()).read(polygonDefinition);
+		final Geometry geom = new WKTReader(
+				JTSFactoryFinder.getGeometryFactory()).read(
+						polygonDefinition);
 		sfBuilder.set(
 				"geometry",
 				geom);
@@ -600,10 +687,12 @@ public class SpatialQueryExample
 				"Polygon");
 		// When calling buildFeature, we need to pass an unique id for that
 		// feature, or it will be overwritten.
-		SimpleFeature polygon = sfBuilder.buildFeature("1");
+		final SimpleFeature polygon = sfBuilder.buildFeature(
+				"1");
 
-		ArrayList<SimpleFeature> features = new ArrayList<SimpleFeature>();
-		features.add(polygon);
+		final ArrayList<SimpleFeature> features = new ArrayList<SimpleFeature>();
+		features.add(
+				polygon);
 
 		// Ingest the data. For that purpose, we need the feature adapter,
 		// the index type (the default spatial index is used here),
@@ -612,7 +701,8 @@ public class SpatialQueryExample
 				sfAdapter,
 				new SpatialIndexBuilder().createIndex(),
 				features);
-		log.info("Polygon data ingested");
+		log.info(
+				"Polygon data ingested");
 	}
 
 	/**
@@ -621,23 +711,26 @@ public class SpatialQueryExample
 	private void polygonQueryCase1()
 			throws ParseException,
 			IOException {
-		log.info("Running Point Query Case 4");
+		log.info(
+				"Running Point Query Case 4");
 		// First, we need to obtain the adapter for the SimpleFeature we want to
 		// query.
 		// We'll query polygon-feature in this example.
 		// Obtain adapter for our "polygon-feature" type
-		ByteArrayId bfAdId = new ByteArrayId(
+		final ByteArrayId bfAdId = new ByteArrayId(
 				"polygon-feature");
-		FeatureDataAdapter bfAdapter = (FeatureDataAdapter) adapterStore.getAdapter(bfAdId);
+		final FeatureDataAdapter bfAdapter = (FeatureDataAdapter) adapterStore.getAdapter(
+				bfAdId);
 
 		// Define the geometry to query. We'll find all polygons that intersect
 		// with this geometry.
-		String queryPolygonDefinition = "POLYGON (( " + "-80.4037857055664 25.81596330265488, "
+		final String queryPolygonDefinition = "POLYGON (( " + "-80.4037857055664 25.81596330265488, "
 				+ "-80.27915954589844 25.788144792391982, " + "-80.34370422363281 25.8814655232439, "
 				+ "-80.44567108154297 25.896291175546626, " + "-80.4037857055664  25.81596330265488" + "))";
 
-		Geometry queryPolygon = new WKTReader(
-				JTSFactoryFinder.getGeometryFactory()).read(queryPolygonDefinition);
+		final Geometry queryPolygon = new WKTReader(
+				JTSFactoryFinder.getGeometryFactory()).read(
+						queryPolygonDefinition);
 
 		// Perform the query.Parameters are
 		/**
@@ -663,12 +756,16 @@ public class SpatialQueryExample
 						queryPolygon))) {
 
 			while (iterator.hasNext()) {
-				SimpleFeature sf = iterator.next();
-				log.info("Obtained SimpleFeature " + sf.getName().toString() + " - " + sf.getAttribute("filter"));
+				final SimpleFeature sf = iterator.next();
+				log.info(
+						"Obtained SimpleFeature " + sf.getName().toString() + " - " + sf.getAttribute(
+								"filter"));
 				count++;
-				System.out.println("Query match: " + sf.getID());
+				System.out.println(
+						"Query match: " + sf.getID());
 			}
-			log.info("Should have obtained 1 feature. -> " + (count == 1));
+			log.info(
+					"Should have obtained 1 feature. -> " + (count == 1));
 		}
 	}
 }

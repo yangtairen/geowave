@@ -1,11 +1,7 @@
 package mil.nga.giat.geowave.core.store.base;
 
-import java.util.List;
-
 import org.apache.log4j.Logger;
 
-import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinateRangesArray;
-import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
@@ -58,7 +54,9 @@ abstract class AbstractBaseRowQuery<T> extends
 								maxResolutionSubsamplingPerDimension,
 								getAggregation(),
 								getFieldSubsets(),
-								useWholeRowIterator(),
+								isMixedVisibilityRows(),
+								isServerSideAggregation(
+										options),
 								getRanges(),
 								getServerFilter(
 										options),

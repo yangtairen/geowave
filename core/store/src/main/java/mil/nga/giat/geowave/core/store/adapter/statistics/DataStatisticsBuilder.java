@@ -74,7 +74,8 @@ public class DataStatisticsBuilder<T> implements
 			final GeoWaveRow... kv ) {
 		final ByteArrayId visibilityByteArray = new ByteArrayId(
 				visibilityHandler.getVisibility(
-						entry));
+						entry,
+						kv));
 		DataStatistics<T> statistics = statisticsMap.get(
 				visibilityByteArray);
 		if (statistics == null) {

@@ -12,6 +12,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.google.bigtable.repackaged.com.google.api.client.util.store.MemoryDataStoreFactory;
+
 import mil.nga.giat.geowave.core.cli.operations.config.SetCommand;
 import mil.nga.giat.geowave.core.cli.operations.config.options.ConfigOptions;
 import mil.nga.giat.geowave.core.cli.parser.ManualOperationParams;
@@ -28,7 +30,6 @@ import mil.nga.giat.geowave.core.store.cli.config.RemoveIndexGroupCommand;
 import mil.nga.giat.geowave.core.store.cli.config.RemoveStoreCommand;
 import mil.nga.giat.geowave.core.store.cli.remote.options.DataStorePluginOptions;
 import mil.nga.giat.geowave.core.store.cli.remote.options.IndexPluginOptions;
-import mil.nga.giat.geowave.core.store.memory.MemoryDataStoreFactory;
 import mil.nga.giat.geowave.core.store.memory.MemoryRequiredOptions;
 import mil.nga.giat.geowave.core.store.memory.MemoryStoreFactoryFamily;
 
@@ -89,7 +90,7 @@ public class ConfigCacheIT
 
 	@Test
 	public void addStore() {
-		final String storeName = new MemoryDataStoreFactory().getType();
+		final String storeName = new MemoryStoreFactoryFamily().getType();
 
 		final AddStoreCommand command = new AddStoreCommand();
 		command.setParameters("abc");

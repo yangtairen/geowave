@@ -19,12 +19,22 @@ public class CoordinateRangeQuery implements
 	private NumericIndexStrategy indexStrategy;
 	private MultiDimensionalCoordinateRangesArray[] coordinateRanges;
 
+	public CoordinateRangeQuery() {}
+
+	public CoordinateRangeQuery(
+			final NumericIndexStrategy indexStrategy,
+			final MultiDimensionalCoordinateRangesArray[] coordinateRanges ) {
+		this.indexStrategy = indexStrategy;
+		this.coordinateRanges = coordinateRanges;
+	}
+
 	@Override
 	public List<QueryFilter> createFilters(
 			final CommonIndexModel indexModel ) {
-		return Collections.singletonList(new CoordinateRangeQueryFilter(
-				indexStrategy,
-				coordinateRanges));
+		return Collections.singletonList(
+				new CoordinateRangeQueryFilter(
+						indexStrategy,
+						coordinateRanges));
 	}
 
 	@Override
@@ -52,7 +62,8 @@ public class CoordinateRangeQuery implements
 	public void fromBinary(
 			final byte[] bytes ) {
 		final CoordinateRangeQueryFilter filter = new CoordinateRangeQueryFilter();
-		filter.fromBinary(bytes);
+		filter.fromBinary(
+				bytes);
 		indexStrategy = filter.indexStrategy;
 		coordinateRanges = filter.coordinateRanges;
 	}

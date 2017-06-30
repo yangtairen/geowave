@@ -14,21 +14,25 @@ import mil.nga.giat.geowave.adapter.vector.GeotoolsFeatureDataAdapter;
 import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.datastore.accumulo.operations.BasicAccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.cli.config.AccumuloOptions;
+import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 
 public class SimpleIngestProducerConsumer extends
 		SimpleIngest
 {
 
-	private static Logger log = Logger.getLogger(SimpleIngestProducerConsumer.class);
+	private static Logger log = Logger.getLogger(
+			SimpleIngestProducerConsumer.class);
 	private final FeatureCollection features = new FeatureCollection();
 
 	public static void main(
 			final String[] args ) {
 
 		if ((args == null) || (args.length == 0)) {
-			log.error("Invalid arguments, expected: dataStoreOptions");
-			System.exit(1);
+			log.error(
+					"Invalid arguments, expected: dataStoreOptions");
+			System.exit(
+					1);
 		}
 
 		final SimpleIngestProducerConsumer si = new SimpleIngestProducerConsumer();
@@ -37,32 +41,39 @@ public class SimpleIngestProducerConsumer extends
 		String instance = null;
 
 		if (args.length != 5) {
-			log
-					.error("Invalid arguments, expected: zookeepers, accumuloInstance, accumuloUser, accumuloPass, geowaveNamespace");
-			System.exit(1);
+			log.error(
+					"Invalid arguments, expected: zookeepers, accumuloInstance, accumuloUser, accumuloPass, geowaveNamespace");
+			System.exit(
+					1);
 		}
 		namespace = args[5];
 		instance = args[2];
+		final AccumuloOptions options = new AccumuloOptions();
 		try {
-			final BasicAccumuloOperations bao = si.getAccumuloOperationsInstance(
+			final AccumuloOperations bao = si.getAccumuloOperationsInstance(
 					args[1],
 					args[2],
 					args[3],
 					args[4],
-					args[5]);
-			geowaveDataStore = si.getAccumuloGeowaveDataStore(bao);
+					args[5],
+					options);
+			geowaveDataStore = si.getAccumuloGeowaveDataStore(
+					bao,
+					options);
 		}
 		catch (final Exception e) {
 			log.error(
 					"Error creating BasicAccumuloOperations",
 					e);
-			System.exit(1);
+			System.exit(
+					1);
 		}
 
-		si.generateGrid(geowaveDataStore);
+		si.generateGrid(
+				geowaveDataStore);
 
-		System.out
-				.println("Finished ingesting data to namespace: " + namespace + " at datastore instance: " + instance);
+		System.out.println(
+				"Finished ingesting data to namespace: " + namespace + " at datastore instance: " + instance);
 
 	}
 
@@ -83,7 +94,8 @@ public class SimpleIngestProducerConsumer extends
 
 		// This is an adapter, that is needed to describe how to persist the
 		// data type passed
-		final GeotoolsFeatureDataAdapter adapter = createDataAdapter(point);
+		final GeotoolsFeatureDataAdapter adapter = createDataAdapter(
+				point);
 
 		// This describes how to index the data
 		final PrimaryIndex index = createSpatialIndex();
@@ -97,7 +109,8 @@ public class SimpleIngestProducerConsumer extends
 								index)) {
 							while (features.hasNext()) {
 								final SimpleFeature sft = features.next();
-								writer.write(sft);
+								writer.write(
+										sft);
 							}
 						}
 						catch (final IOException e) {
@@ -116,7 +129,8 @@ public class SimpleIngestProducerConsumer extends
 		for (final SimpleFeature sft : getGriddedFeatures(
 				pointBuilder,
 				-10000)) {
-			features.add(sft);
+			features.add(
+					sft);
 		}
 		features.ingestCompleted = true;
 		try {
@@ -139,7 +153,8 @@ public class SimpleIngestProducerConsumer extends
 		public void add(
 				final SimpleFeature sft ) {
 			try {
-				queue.put(sft);
+				queue.put(
+						sft);
 			}
 			catch (final InterruptedException e) {
 				log.error(
@@ -168,7 +183,8 @@ public class SimpleIngestProducerConsumer extends
 
 		@Override
 		public void remove() {
-			log.error("Remove called, method not implemented");
+			log.error(
+					"Remove called, method not implemented");
 		}
 	}
 }

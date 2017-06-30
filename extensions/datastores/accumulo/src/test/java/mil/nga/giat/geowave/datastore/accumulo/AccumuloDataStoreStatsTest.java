@@ -108,16 +108,20 @@ public class AccumuloDataStoreStatsTest
 		}
 		AccumuloOptions options = new AccumuloOptions();
 		accumuloOperations = new AccumuloOperations(
-				mockConnector,options);
+				mockConnector,
+				options);
 
 		indexStore = new IndexStoreImpl(
-				accumuloOperations,options);
+				accumuloOperations,
+				options);
 
 		adapterStore = new AdapterStoreImpl(
-				accumuloOperations,options);
+				accumuloOperations,
+				options);
 
 		statsStore = new DataStatisticsStoreImpl(
-				accumuloOperations,options);
+				accumuloOperations,
+				options);
 
 		secondaryIndexDataStore = new AccumuloSecondaryIndexDataStore(
 				accumuloOperations,
@@ -129,7 +133,8 @@ public class AccumuloDataStoreStatsTest
 				statsStore,
 				secondaryIndexDataStore,
 				new AdapterIndexMappingStoreImpl(
-						accumuloOperations,options),
+						accumuloOperations,
+						options),
 				accumuloOperations,
 				accumuloOptions);
 	}
@@ -375,7 +380,8 @@ public class AccumuloDataStoreStatsTest
 		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
-				"aaa","bbb");
+				"aaa",
+				"bbb");
 		assertEquals(
 				3,
 				countStats.getCount());
@@ -414,11 +420,11 @@ public class AccumuloDataStoreStatsTest
 					count);
 		}
 
-
 		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
-				"aaa","bbb");
+				"aaa",
+				"bbb");
 
 		assertEquals(
 				2,
@@ -430,7 +436,6 @@ public class AccumuloDataStoreStatsTest
 		assertEquals(
 				1,
 				countStats.getCount());
-		//TODO there is a count of -1 with bbb that shouldn't be in the stats
 		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,

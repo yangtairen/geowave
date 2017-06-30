@@ -242,7 +242,6 @@ public class SecondaryIndexIT
 
 		// test delete
 		final Query deleteQuery = new DataIdQuery(
-				dataAdapter.getAdapterId(),
 				new ByteArrayId(
 						expectedDataId));
 		final QueryOptions queryOptions = new QueryOptions(

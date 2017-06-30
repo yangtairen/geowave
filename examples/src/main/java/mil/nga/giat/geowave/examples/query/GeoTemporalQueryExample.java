@@ -39,22 +39,23 @@ import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.QueryOptions;
-import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.AccumuloDataStore;
+import mil.nga.giat.geowave.datastore.accumulo.cli.config.AccumuloOptions;
 import mil.nga.giat.geowave.datastore.accumulo.minicluster.MiniAccumuloClusterFactory;
-import mil.nga.giat.geowave.datastore.accumulo.operations.BasicAccumuloOperations;
+import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 
 /**
  * This class is intended to provide a self-contained, easy-to-follow example of
  * a few GeoTools queries against GeoWave using Spatial Temporal Data.
- * 
+ *
  * For simplicity, a MiniAccumuloCluster is spun up and a few points from the DC
  * area are ingested (Washington Monument, White House, FedEx Field). Two
  * queries are executed against this data set.
  */
 public class GeoTemporalQueryExample
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(GeoTemporalQueryExample.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(
+			GeoTemporalQueryExample.class);
 
 	private static File tempAccumuloDir;
 	private static MiniAccumuloClusterImpl accumulo;
@@ -131,13 +132,16 @@ public class GeoTemporalQueryExample
 
 		accumulo.start();
 
+		final AccumuloOptions options = new AccumuloOptions();
 		dataStore = new AccumuloDataStore(
-				new BasicAccumuloOperations(
+				new AccumuloOperations(
 						accumulo.getZooKeepers(),
 						accumulo.getInstanceName(),
 						ACCUMULO_USER,
 						ACCUMULO_PASSWORD,
-						TABLE_NAMESPACE));
+						TABLE_NAMESPACE,
+						options),
+				options);
 
 	}
 
@@ -146,50 +150,72 @@ public class GeoTemporalQueryExample
 
 		final List<SimpleFeature> points = new ArrayList<>();
 
-		System.out.println("Building SimpleFeatures from canned data set...");
+		System.out.println(
+				"Building SimpleFeatures from canned data set...");
 
 		try {
-			points.add(buildSimpleFeature(
-					"Washington Monument 1",
-					washingtonMonument,
-					DateUtilities.parseISO("2005-05-15T20:32:56Z"),
-					DateUtilities.parseISO("2005-05-15T21:32:56Z")));
+			points.add(
+					buildSimpleFeature(
+							"Washington Monument 1",
+							washingtonMonument,
+							DateUtilities.parseISO(
+									"2005-05-15T20:32:56Z"),
+							DateUtilities.parseISO(
+									"2005-05-15T21:32:56Z")));
 
-			points.add(buildSimpleFeature(
-					"Washington Monument 2",
-					washingtonMonument,
-					DateUtilities.parseISO("2005-05-17T20:32:56Z"),
-					DateUtilities.parseISO("2005-05-17T21:32:56Z")));
+			points.add(
+					buildSimpleFeature(
+							"Washington Monument 2",
+							washingtonMonument,
+							DateUtilities.parseISO(
+									"2005-05-17T20:32:56Z"),
+							DateUtilities.parseISO(
+									"2005-05-17T21:32:56Z")));
 
-			points.add(buildSimpleFeature(
-					"White House 1",
-					whiteHouse,
-					DateUtilities.parseISO("2005-05-17T20:32:56Z"),
-					DateUtilities.parseISO("2005-05-17T21:32:56Z")));
+			points.add(
+					buildSimpleFeature(
+							"White House 1",
+							whiteHouse,
+							DateUtilities.parseISO(
+									"2005-05-17T20:32:56Z"),
+							DateUtilities.parseISO(
+									"2005-05-17T21:32:56Z")));
 
-			points.add(buildSimpleFeature(
-					"White House 2",
-					whiteHouse,
-					DateUtilities.parseISO("2005-05-17T19:32:56Z"),
-					DateUtilities.parseISO("2005-05-17T20:45:56Z")));
+			points.add(
+					buildSimpleFeature(
+							"White House 2",
+							whiteHouse,
+							DateUtilities.parseISO(
+									"2005-05-17T19:32:56Z"),
+							DateUtilities.parseISO(
+									"2005-05-17T20:45:56Z")));
 
-			points.add(buildSimpleFeature(
-					"Fedex 1",
-					fedexField,
-					DateUtilities.parseISO("2005-05-17T20:32:56Z"),
-					DateUtilities.parseISO("2005-05-17T21:32:56Z")));
+			points.add(
+					buildSimpleFeature(
+							"Fedex 1",
+							fedexField,
+							DateUtilities.parseISO(
+									"2005-05-17T20:32:56Z"),
+							DateUtilities.parseISO(
+									"2005-05-17T21:32:56Z")));
 
-			points.add(buildSimpleFeature(
-					"Fedex 2",
-					fedexField,
-					DateUtilities.parseISO("2005-05-18T19:32:56Z"),
-					DateUtilities.parseISO("2005-05-18T20:45:56Z")));
+			points.add(
+					buildSimpleFeature(
+							"Fedex 2",
+							fedexField,
+							DateUtilities.parseISO(
+									"2005-05-18T19:32:56Z"),
+							DateUtilities.parseISO(
+									"2005-05-18T20:45:56Z")));
 
-			points.add(buildSimpleFeature(
-					"White House 3",
-					whiteHouse,
-					DateUtilities.parseISO("2005-05-19T19:32:56Z"),
-					DateUtilities.parseISO("2005-05-19T20:45:56Z")));
+			points.add(
+					buildSimpleFeature(
+							"White House 3",
+							whiteHouse,
+							DateUtilities.parseISO(
+									"2005-05-19T19:32:56Z"),
+							DateUtilities.parseISO(
+									"2005-05-19T20:45:56Z")));
 
 		}
 		catch (final Exception ex) {
@@ -198,19 +224,22 @@ public class GeoTemporalQueryExample
 					ex);
 		}
 
-		System.out.println("Ingesting canned data...");
+		System.out.println(
+				"Ingesting canned data...");
 
 		try (IndexWriter indexWriter = dataStore.createWriter(
 				adapter,
 				index)) {
 			for (final SimpleFeature sf : points) {
 				//
-				indexWriter.write(sf);
+				indexWriter.write(
+						sf);
 
 			}
 		}
 
-		System.out.println("Ingest complete.");
+		System.out.println(
+				"Ingest complete.");
 	}
 
 	private void executePolygonAndTimeRangeQuery()
@@ -237,25 +266,30 @@ public class GeoTemporalQueryExample
 		// the centroid moves closer the poles.
 
 		final SpatialTemporalQuery query = new SpatialTemporalQuery(
-				DateUtilities.parseISO("2005-05-17T19:32:56Z"),
-				DateUtilities.parseISO("2005-05-17T22:32:56Z"),
+				DateUtilities.parseISO(
+						"2005-05-17T19:32:56Z"),
+				DateUtilities.parseISO(
+						"2005-05-17T22:32:56Z"),
 				mil.nga.giat.geowave.adapter.vector.utils.GeometryUtils.buffer(
 						GeoWaveGTDataStore.DEFAULT_CRS,
-						GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(
-								-77.03521,
-								38.8895)),
+						GeometryUtils.GEOMETRY_FACTORY.createPoint(
+								new Coordinate(
+										-77.03521,
+										38.8895)),
 						"meter",
 						13700).getKey(),
 				CompareOperation.CONTAINS);
 
-		System.out.println("Executing query, expecting to match three points...");
+		System.out.println(
+				"Executing query, expecting to match three points...");
 
 		final CloseableIterator<SimpleFeature> iterator = dataStore.query(
 				new QueryOptions(),
 				query);
 
 		while (iterator.hasNext()) {
-			System.out.println("Query match: " + iterator.next().getID());
+			System.out.println(
+					"Query match: " + iterator.next().getID());
 		}
 
 		iterator.close();
@@ -263,25 +297,31 @@ public class GeoTemporalQueryExample
 		final TemporalConstraints tempotalIndexConstraints = new TemporalConstraints(
 				Arrays.asList(
 						new TemporalRange(
-								DateUtilities.parseISO("2005-05-17T19:32:56Z"),
-								DateUtilities.parseISO("2005-05-17T22:32:56Z")),
+								DateUtilities.parseISO(
+										"2005-05-17T19:32:56Z"),
+								DateUtilities.parseISO(
+										"2005-05-17T22:32:56Z")),
 						new TemporalRange(
-								DateUtilities.parseISO("2005-05-19T19:32:56Z"),
-								DateUtilities.parseISO("2005-05-19T22:32:56Z"))),
+								DateUtilities.parseISO(
+										"2005-05-19T19:32:56Z"),
+								DateUtilities.parseISO(
+										"2005-05-19T22:32:56Z"))),
 				"ignored"); // the name is not used in this case
 
 		final SpatialTemporalQuery query2 = new SpatialTemporalQuery(
 				tempotalIndexConstraints,
 				mil.nga.giat.geowave.adapter.vector.utils.GeometryUtils.buffer(
 						GeoWaveGTDataStore.DEFAULT_CRS,
-						GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(
-								-77.03521,
-								38.8895)),
+						GeometryUtils.GEOMETRY_FACTORY.createPoint(
+								new Coordinate(
+										-77.03521,
+										38.8895)),
 						"meter",
 						13700).getKey(),
 				CompareOperation.CONTAINS);
 
-		System.out.println("Executing query # 2 with multiple time ranges, expecting to match four points...");
+		System.out.println(
+				"Executing query # 2 with multiple time ranges, expecting to match four points...");
 
 		final CloseableIterator<SimpleFeature> iterator2 = dataStore.query(
 				new QueryOptions(
@@ -290,7 +330,8 @@ public class GeoTemporalQueryExample
 				query2);
 
 		while (iterator2.hasNext()) {
-			System.out.println("Query match: " + iterator2.next().getID());
+			System.out.println(
+					"Query match: " + iterator2.next().getID());
 		}
 
 		iterator2.close();
@@ -304,7 +345,8 @@ public class GeoTemporalQueryExample
 			accumulo.stop();
 		}
 		finally {
-			FileUtils.deleteDirectory(tempAccumuloDir);
+			FileUtils.deleteDirectory(
+					tempAccumuloDir);
 		}
 	}
 
@@ -313,23 +355,40 @@ public class GeoTemporalQueryExample
 		final String NAME = "PointSimpleFeatureType";
 		final SimpleFeatureTypeBuilder sftBuilder = new SimpleFeatureTypeBuilder();
 		final AttributeTypeBuilder atBuilder = new AttributeTypeBuilder();
-		sftBuilder.setName(NAME);
-		sftBuilder.add(atBuilder.binding(
-				String.class).nillable(
-				false).buildDescriptor(
-				"locationName"));
-		sftBuilder.add(atBuilder.binding(
-				Geometry.class).nillable(
-				false).buildDescriptor(
-				"geometry"));
-		sftBuilder.add(atBuilder.binding(
-				Date.class).nillable(
-				false).buildDescriptor(
-				"startTime"));
-		sftBuilder.add(atBuilder.binding(
-				Date.class).nillable(
-				false).buildDescriptor(
-				"endTime"));
+		sftBuilder.setName(
+				NAME);
+		sftBuilder.add(
+				atBuilder
+						.binding(
+								String.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"locationName"));
+		sftBuilder.add(
+				atBuilder
+						.binding(
+								Geometry.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"geometry"));
+		sftBuilder.add(
+				atBuilder
+						.binding(
+								Date.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"startTime"));
+		sftBuilder.add(
+				atBuilder
+						.binding(
+								Date.class)
+						.nillable(
+								false)
+						.buildDescriptor(
+								"endTime"));
 
 		return sftBuilder.buildFeatureType();
 	}
@@ -347,7 +406,8 @@ public class GeoTemporalQueryExample
 				locationName);
 		builder.set(
 				"geometry",
-				GeometryUtils.GEOMETRY_FACTORY.createPoint(coordinate));
+				GeometryUtils.GEOMETRY_FACTORY.createPoint(
+						coordinate));
 		builder.set(
 				"startTime",
 				startTime);
@@ -355,6 +415,7 @@ public class GeoTemporalQueryExample
 				"endTime",
 				endTime);
 
-		return builder.buildFeature(locationName);
+		return builder.buildFeature(
+				locationName);
 	}
 }

@@ -18,18 +18,15 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.data.visibility.DifferingFieldVisibilityEntryCount;
-import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.filter.FilterList;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.operations.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.operations.Reader;
-import mil.nga.giat.geowave.core.store.query.FilteredIndexQuery;
 import mil.nga.giat.geowave.core.store.util.NativeEntryIteratorWrapper;
 
 abstract class BaseFilteredIndexQuery extends
-		BaseQuery implements
-		FilteredIndexQuery
+		BaseQuery
 {
 	protected List<QueryFilter> clientFilters;
 	private final static Logger LOGGER = Logger.getLogger(
@@ -58,17 +55,42 @@ abstract class BaseFilteredIndexQuery extends
 		return clientFilters;
 	}
 
-	@Override
-	public void setClientFilters(
-			final List<QueryFilter> clientFilters ) {
-		this.clientFilters = clientFilters;
-	}
-
 	@SuppressWarnings("rawtypes")
 	public CloseableIterator<Object> query(
 			final DataStoreOperations datastoreOperations,
 			final DataStoreOptions options,
 			final AdapterStore adapterStore,
+			final double[] maxResolutionSubsamplingPerDimension,
+			final Integer limit ) {
+		final Reader reader = getReader(
+				datastoreOperations,
+				options,
+				maxResolutionSubsamplingPerDimension,
+				limit);
+		if (reader == null) {
+			return new CloseableIterator.Empty<Object>();
+		}
+		Iterator it = initIterator(
+				options,
+				adapterStore,
+				reader,
+				maxResolutionSubsamplingPerDimension,
+				!isCommonIndexAggregation());
+		if ((limit != null) && (limit > 0)) {
+			it = Iterators.limit(
+					it,
+					limit);
+		}
+		return new CloseableIteratorWrapper(
+				new ReaderClosableWrapper(
+						reader),
+				it);
+	}
+
+	@Override
+	protected Reader getReader(
+			final DataStoreOperations datastoreOperations,
+			final DataStoreOptions options,
 			final double[] maxResolutionSubsamplingPerDimension,
 			final Integer limit ) {
 		boolean exists = false;
@@ -85,30 +107,14 @@ abstract class BaseFilteredIndexQuery extends
 			LOGGER.warn(
 					"Table does not exist " + StringUtils.stringFromBinary(
 							index.getId().getBytes()));
-			return new CloseableIterator.Empty();
+			return null;
 		}
 
-		final Reader reader = getReader(
+		return super.getReader(
 				datastoreOperations,
 				options,
 				maxResolutionSubsamplingPerDimension,
 				limit);
-
-		Iterator it = initIterator(
-				options,
-				adapterStore,
-				reader,
-				maxResolutionSubsamplingPerDimension,
-				!isCommonIndexAggregation());
-		if ((limit != null) && (limit > 0)) {
-			it = Iterators.limit(
-					it,
-					limit);
-		}
-		return new CloseableIteratorWrapper(
-				new ReaderClosableWrapper(
-						reader),
-				it);
 	}
 
 	protected Iterator initIterator(

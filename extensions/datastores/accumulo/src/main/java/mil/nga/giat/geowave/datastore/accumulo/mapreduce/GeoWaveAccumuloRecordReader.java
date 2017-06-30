@@ -88,7 +88,13 @@ public class GeoWaveAccumuloRecordReader<T> extends
 									rangeQueryOptions.getMaxResolutionSubsamplingPerDimension(),
 									rangeQueryOptions.getAggregation(),
 									rangeQueryOptions.getFieldIdsAdapterPair(),
+									// TODO GEOWAVE-1018 should we always use
+									// whole row encoding or check the stats for
+									// mixed visibilities, probably check stats,
+									// although might be passed through
+									// configuration
 									true,
+									false,
 									new QueryRanges(
 											new ByteArrayRange(
 													new ByteArrayId(

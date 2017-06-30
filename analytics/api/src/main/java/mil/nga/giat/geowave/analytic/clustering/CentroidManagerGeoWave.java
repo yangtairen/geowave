@@ -302,7 +302,6 @@ public class CentroidManagerGeoWave<T> implements
 								adapterId,
 								index.getId()),
 						new DataIdQuery(
-								adapterId,
 								new ByteArrayId(
 										StringUtils.stringToBinary(dataId))));
 			}
@@ -434,7 +433,6 @@ public class CentroidManagerGeoWave<T> implements
 						adapterId,
 						index.getId()),
 				new DataIdQuery(
-						adapterId,
 						new ByteArrayId(
 								StringUtils.stringToBinary(dataId))))) {
 			if (it.hasNext()) {

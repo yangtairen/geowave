@@ -26,6 +26,7 @@ import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.adapter.AbstractAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.base.BaseDataStoreUtils;
 import mil.nga.giat.geowave.core.store.data.CommonIndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
@@ -33,7 +34,6 @@ import mil.nga.giat.geowave.core.store.flatten.FlattenedUnreadData;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.core.store.query.ConstraintsQuery;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
@@ -254,13 +254,19 @@ public class AggregationIterator extends
 
 			final String contraintsStr = options.get(
 					CONSTRAINTS_OPTION_NAME);
-			final byte[] constraintsBytes = ByteArrayUtils.byteArrayFromString(
-					contraintsStr);
-			final List constraints = PersistenceUtils.fromBinary(
-					constraintsBytes);
+			final List constraints;
+			if (contraintsStr == null) {
+				constraints = null;
+			}
+			else {
+				final byte[] constraintsBytes = ByteArrayUtils.byteArrayFromString(
+						contraintsStr);
+				constraints = PersistenceUtils.fromBinary(
+						constraintsBytes);
+			}
 			final String maxDecomp = options.get(
 					MAX_DECOMPOSITION_OPTION_NAME);
-			Integer maxDecompInt = ConstraintsQuery.MAX_RANGE_DECOMPOSITION;
+			Integer maxDecompInt = BaseDataStoreUtils.MAX_RANGE_DECOMPOSITION;
 			if (maxDecomp != null) {
 				try {
 					maxDecompInt = Integer.parseInt(

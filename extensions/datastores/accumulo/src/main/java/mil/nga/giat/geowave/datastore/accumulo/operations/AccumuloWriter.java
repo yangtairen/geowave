@@ -105,7 +105,7 @@ public class AccumuloWriter implements
 		write(rowToMutation(row));
 	}
 
-	private static Mutation rowToMutation(
+	public static Mutation rowToMutation(
 			final GeoWaveRow row ) {
 		final Mutation mutation = new Mutation(GeoWaveKey.getCompositeId(row));
 		for (final GeoWaveValue value : row.getFieldValues()) {
@@ -129,8 +129,6 @@ public class AccumuloWriter implements
 								value.getValue()));
 			}
 		}
-
 		return mutation;
 	}
-
 }

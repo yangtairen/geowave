@@ -59,7 +59,7 @@ public class MergingEntryIterator<T> extends
 	}
 
 	@Override
-	protected Object getNextEncodedResult() {
+	protected GeoWaveRow getNextEncodedResult() {
 
 		// Get next result from scanner
 		// We may have already peeked at it
@@ -68,7 +68,7 @@ public class MergingEntryIterator<T> extends
 			nextResult = peekedValue;
 		}
 		else {
-			nextResult = (GeoWaveRow) scannerIt.next();
+			nextResult = scannerIt.next();
 		}
 		peekedValue = null;
 
@@ -86,12 +86,11 @@ public class MergingEntryIterator<T> extends
 
 			// Peek ahead to see if it needs to be merged with the next result
 			while (scannerIt.hasNext()) {
-				peekedValue = (GeoWaveRow) scannerIt.next();
+				peekedValue = scannerIt.next();
 
 				if (DataStoreUtils.rowIdsMatch(
 						nextResult,
 						peekedValue)) {
-
 					resultsToMerge.add(
 							peekedValue);
 					peekedValue = null;

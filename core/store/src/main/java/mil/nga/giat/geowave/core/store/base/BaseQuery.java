@@ -78,7 +78,9 @@ abstract class BaseQuery
 						maxResolutionSubsamplingPerDimension,
 						getAggregation(),
 						getFieldSubsets(),
-						useWholeRowIterator(),
+						isMixedVisibilityRows(),
+						isServerSideAggregation(
+								options),
 						getRanges(),
 						getServerFilter(
 								options),
@@ -86,6 +88,16 @@ abstract class BaseQuery
 						getCoordinateRanges(),
 						getConstraints(),
 						getAdditionalAuthorizations()));
+	}
+
+	public boolean isServerSideAggregation(
+			final DataStoreOptions options ) {
+		return ((options != null) && options.isServerSideLibraryEnabled() && isAggregation());
+	}
+
+	public boolean isAggregation() {
+		final Pair<DataAdapter<?>, Aggregation<?, ?, ?>> aggregation = getAggregation();
+		return ((aggregation != null) && (aggregation.getRight() != null));
 	}
 
 	public List<MultiDimensionalCoordinateRangesArray> getCoordinateRanges() {
@@ -106,7 +118,7 @@ abstract class BaseQuery
 		return fieldIdsAdapterPair;
 	}
 
-	protected boolean useWholeRowIterator() {
+	protected boolean isMixedVisibilityRows() {
 		return (visibilityCounts == null) || visibilityCounts.isAnyEntryDifferingFieldVisiblity();
 	}
 

@@ -843,7 +843,7 @@ public class AccumuloOperations implements
 					"Unable to create table '" + qName + "'",
 					e);
 		}
-		return false;
+		return true;
 	}
 
 	public static AccumuloOperations createOperations(
@@ -1072,7 +1072,7 @@ public class AccumuloOperations implements
 				scanner);
 		IteratorSetting iteratorSettings = null;
 		if (params.isAggregation()) {
-			if (params.isWholeRow()) {
+			if (params.isMixedVisibility()) {
 				iteratorSettings = new IteratorSetting(
 						QueryFilterIterator.QUERY_ITERATOR_PRIORITY,
 						QueryFilterIterator.QUERY_ITERATOR_NAME,
@@ -1103,11 +1103,13 @@ public class AccumuloOperations implements
 								(PersistenceUtils.toBinary(
 										aggr.getParameters()))));
 			}
-			iteratorSettings.addOption(
-					AggregationIterator.CONSTRAINTS_OPTION_NAME,
-					ByteArrayUtils.byteArrayToString(
-							(PersistenceUtils.toBinary(
-									params.getConstraints()))));
+			if ((params.getConstraints() != null) && !params.getConstraints().isEmpty()) {
+				iteratorSettings.addOption(
+						AggregationIterator.CONSTRAINTS_OPTION_NAME,
+						ByteArrayUtils.byteArrayToString(
+								(PersistenceUtils.toBinary(
+										params.getConstraints()))));
+			}
 			iteratorSettings.addOption(
 					AggregationIterator.INDEX_STRATEGY_OPTION_NAME,
 					ByteArrayUtils.byteArrayToString(
@@ -1133,7 +1135,7 @@ public class AccumuloOperations implements
 		if ((params.getFilter() != null) && options.isServerSideLibraryEnabled()) {
 			usingDistributableFilter = true;
 			if (iteratorSettings == null) {
-				if (params.isWholeRow()) {
+				if (params.isMixedVisibility()) {
 					iteratorSettings = new IteratorSetting(
 							QueryFilterIterator.QUERY_ITERATOR_PRIORITY,
 							QueryFilterIterator.QUERY_ITERATOR_NAME,
@@ -1165,7 +1167,7 @@ public class AccumuloOperations implements
 								params.getIndex().getIndexStrategy().getPartitionKeyLength()));
 			}
 		}
-		else if ((iteratorSettings == null) && params.isWholeRow()) {
+		else if ((iteratorSettings == null) && params.isMixedVisibility()) {
 			// we have to at least use a whole row iterator
 			iteratorSettings = new IteratorSetting(
 					QueryFilterIterator.QUERY_ITERATOR_PRIORITY,
@@ -1190,7 +1192,7 @@ public class AccumuloOperations implements
 			final ReaderParams params,
 			final ScannerBase scanner ) {
 		final List<MultiDimensionalCoordinateRangesArray> coords = params.getCoordinateRanges();
-		if (!coords.isEmpty()) {
+		if ((coords != null) && !coords.isEmpty()) {
 			final IteratorSetting iteratorSetting = new IteratorSetting(
 					NumericIndexStrategyFilterIterator.IDX_FILTER_ITERATOR_PRIORITY,
 					NumericIndexStrategyFilterIterator.IDX_FILTER_ITERATOR_NAME,
@@ -1231,7 +1233,7 @@ public class AccumuloOperations implements
 				iteratorSetting.addOption(
 						AttributeSubsettingIterator.WHOLE_ROW_ENCODED_KEY,
 						Boolean.toString(
-								params.isWholeRow()));
+								params.isMixedVisibility()));
 				scanner.addScanIterator(
 						iteratorSetting);
 			}
@@ -1244,7 +1246,7 @@ public class AccumuloOperations implements
 		addFieldSubsettingToIterator(
 				params,
 				scanner);
-		if (params.isWholeRow()) {
+		if (params.isMixedVisibility()) {
 			// we have to at least use a whole row iterator
 			final IteratorSetting iteratorSettings = new IteratorSetting(
 					QueryFilterIterator.QUERY_ITERATOR_PRIORITY,
@@ -1267,7 +1269,7 @@ public class AccumuloOperations implements
 		return new AccumuloReader(
 				scanner,
 				params.getIndex().getIndexStrategy().getPartitionKeyLength(),
-				params.isWholeRow());
+				params.isMixedVisibility() && !params.isServersideAggregation());
 	}
 
 	@Override

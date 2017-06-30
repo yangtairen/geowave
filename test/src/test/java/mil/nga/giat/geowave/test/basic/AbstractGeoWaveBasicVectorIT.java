@@ -213,7 +213,6 @@ abstract public class AbstractGeoWaveBasicVectorIT extends
 							adapterId,
 							index.getId()),
 					new DataIdQuery(
-							adapterId,
 							dataId))) {
 
 				success = !hasAtLeastOne(
@@ -222,7 +221,6 @@ abstract public class AbstractGeoWaveBasicVectorIT extends
 										adapterId,
 										index.getId()),
 								new DataIdQuery(
-										adapterId,
 										dataId)));
 			}
 		}

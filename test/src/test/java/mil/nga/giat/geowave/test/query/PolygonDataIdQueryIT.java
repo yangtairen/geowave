@@ -63,7 +63,6 @@ public class PolygonDataIdQueryIT extends
 						dataAdapter,
 						TestUtils.DEFAULT_SPATIAL_INDEX),
 				new DataIdQuery(
-						dataAdapter.getAdapterId(),
 						new ByteArrayId(
 								StringUtils.stringToBinary(DATA_ID))));
 		int numResults = 0;

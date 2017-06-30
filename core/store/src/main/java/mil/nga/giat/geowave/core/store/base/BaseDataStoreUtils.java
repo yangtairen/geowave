@@ -6,23 +6,128 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.InsertionIds;
+import mil.nga.giat.geowave.core.store.adapter.AdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.adapter.WritableDataAdapter;
 import mil.nga.giat.geowave.core.store.base.IntermediaryWriteEntryInfo.FieldInfo;
+import mil.nga.giat.geowave.core.store.data.DataWriter;
+import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
+import mil.nga.giat.geowave.core.store.data.VisibilityWriter;
+import mil.nga.giat.geowave.core.store.data.field.FieldVisibilityHandler;
+import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskedPairComparator;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
+import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 
-class BaseDataStoreUtils
+public class BaseDataStoreUtils
 {
+	private final static Logger LOGGER = Logger.getLogger(
+			BaseDataStoreUtils.class);
+	public static final int MAX_RANGE_DECOMPOSITION = 2000;
+	public static final int AGGREGATION_RANGE_DECOMPOSITION = 10;
+
+	public static <T> GeoWaveRow[] getGeoWaveRows(
+			final T entry,
+			final WritableDataAdapter<T> adapter,
+			final PrimaryIndex index,
+			final VisibilityWriter<T> customFieldVisibilityWriter ) {
+		return getWriteInfo(
+				entry,
+				adapter,
+				index,
+				customFieldVisibilityWriter).getRows();
+	}
+
+	protected static <T> IntermediaryWriteEntryInfo getWriteInfo(
+			final T entry,
+			final WritableDataAdapter<T> adapter,
+			final PrimaryIndex index,
+			final VisibilityWriter<T> customFieldVisibilityWriter ) {
+		final CommonIndexModel indexModel = index.getIndexModel();
+
+		final AdapterPersistenceEncoding encodedData = adapter.encode(
+				entry,
+				indexModel);
+		final InsertionIds insertionIds = encodedData.getInsertionIds(
+				index);
+		final PersistentDataset extendedData = encodedData.getAdapterExtendedData();
+		final PersistentDataset indexedData = encodedData.getCommonData();
+		final List<PersistentValue> extendedValues = extendedData.getValues();
+		final List<PersistentValue> commonValues = indexedData.getValues();
+
+		List<FieldInfo<?>> fieldInfoList = new ArrayList<FieldInfo<?>>();
+
+		final byte[] dataId = adapter.getDataId(
+				entry).getBytes();
+		final byte[] adapterId = adapter.getAdapterId().getBytes();
+		if (!insertionIds.isEmpty()) {
+			for (final PersistentValue fieldValue : commonValues) {
+				final FieldInfo<?> fieldInfo = getFieldInfo(
+						indexModel,
+						fieldValue,
+						entry,
+						customFieldVisibilityWriter);
+				if (fieldInfo != null) {
+					fieldInfoList.add(
+							fieldInfo);
+				}
+			}
+			for (final PersistentValue<?> fieldValue : extendedValues) {
+				if (fieldValue.getValue() != null) {
+					final FieldInfo<?> fieldInfo = getFieldInfo(
+							adapter,
+							fieldValue,
+							entry,
+							customFieldVisibilityWriter);
+					if (fieldInfo != null) {
+						fieldInfoList.add(
+								fieldInfo);
+					}
+				}
+			}
+		}
+		else {
+			LOGGER.warn(
+					"Indexing failed to produce insertion ids; entry [" + adapter.getDataId(
+							entry).getString() + "] not saved.");
+		}
+
+		fieldInfoList = BaseDataStoreUtils.composeFlattenedFields(
+				fieldInfoList,
+				index.getIndexModel(),
+				adapter);
+		// TODO GEOWAVE-1018 need to figure out the correct way to do this for
+		// all data stores
+		byte[] uniqueDataId;
+		// if ((adapter instanceof RowMergingDataAdapter) &&
+		// (((RowMergingDataAdapter) adapter).getTransform() != null)) {
+		// uniqueDataId = DataStoreUtils.ensureUniqueId(
+		// dataId,
+		// false).getBytes();
+		// }
+		// else {
+		uniqueDataId = dataId;
+		// }
+
+		return new IntermediaryWriteEntryInfo(
+				uniqueDataId,
+				adapterId,
+				insertionIds,
+				fieldInfoList);
+	}
 
 	/**
 	 * This method combines all FieldInfos that share a common visibility into a
@@ -31,7 +136,7 @@ class BaseDataStoreUtils
 	 * @param originalList
 	 * @return a new list of composite FieldInfos
 	 */
-	public static <T> List<FieldInfo<?>> composeFlattenedFields(
+	private static <T> List<FieldInfo<?>> composeFlattenedFields(
 			final List<FieldInfo<?>> originalList,
 			final CommonIndexModel model,
 			final WritableDataAdapter<?> writableAdapter ) {
@@ -132,5 +237,39 @@ class BaseDataStoreUtils
 					composite);
 		}
 		return retVal;
+	}
+
+	private static <T> FieldInfo<?> getFieldInfo(
+			final DataWriter dataWriter,
+			final PersistentValue<?> fieldValue,
+			final T entry,
+			final VisibilityWriter<T> customFieldVisibilityWriter ) {
+		final FieldWriter fieldWriter = dataWriter.getWriter(
+				fieldValue.getId());
+		final FieldVisibilityHandler<T, Object> customVisibilityHandler = customFieldVisibilityWriter
+				.getFieldVisibilityHandler(
+						fieldValue.getId());
+		if (fieldWriter != null) {
+			final Object value = fieldValue.getValue();
+			return new FieldInfo(
+					fieldValue,
+					fieldWriter.writeField(
+							value),
+					DataStoreUtils.mergeVisibilities(
+							customVisibilityHandler.getVisibility(
+									entry,
+									fieldValue.getId(),
+									value),
+							fieldWriter.getVisibility(
+									entry,
+									fieldValue.getId(),
+									value)));
+		}
+		else if (fieldValue.getValue() != null) {
+			LOGGER.warn(
+					"Data writer of class " + dataWriter.getClass() + " does not support field for "
+							+ fieldValue.getValue());
+		}
+		return null;
 	}
 }
