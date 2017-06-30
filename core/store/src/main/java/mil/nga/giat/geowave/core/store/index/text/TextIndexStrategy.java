@@ -58,17 +58,15 @@ public class TextIndexStrategy implements
 	public InsertionIds getInsertionIds(
 			final String indexedData ) {
 		return new InsertionIds(
-				Collections.singletonList(
-						new ByteArrayId(
-								indexedData)));
+				Collections.singletonList(new ByteArrayId(
+						indexedData)));
 	}
 
 	@Override
 	public InsertionIds getInsertionIds(
 			final String indexedData,
 			final int maxEstimatedDuplicateIds ) {
-		return getInsertionIds(
-				indexedData);
+		return getInsertionIds(indexedData);
 	}
 
 	@Override

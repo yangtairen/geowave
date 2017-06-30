@@ -34,8 +34,7 @@ public class CalculateStatCommand extends
 		Command
 {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(
-			CalculateStatCommand.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CalculateStatCommand.class);
 
 	@Parameter(description = "<store name> <adapterId> <statId>")
 	private List<String> parameters = new ArrayList<String>();
@@ -54,8 +53,7 @@ public class CalculateStatCommand extends
 					"Requires arguments: <store name> <adapterId> <statId>");
 		}
 
-		statId = parameters.get(
-				2);
+		statId = parameters.get(2);
 
 		super.run(
 				params,
@@ -78,14 +76,13 @@ public class CalculateStatCommand extends
 			boolean isFirstTime = true;
 			for (final PrimaryIndex index : mappingStore.getIndicesForAdapter(
 					adapter.getAdapterId()).getIndices(
-							indexStore)) {
+					indexStore)) {
 
 				@SuppressWarnings({
 					"rawtypes",
 					"unchecked"
 				})
-				final
-				DataStoreStatisticsProvider provider = new DataStoreStatisticsProvider(
+				final DataStoreStatisticsProvider provider = new DataStoreStatisticsProvider(
 						adapter,
 						index,
 						isFirstTime) {
@@ -139,11 +136,8 @@ public class CalculateStatCommand extends
 			final String adapterId,
 			final String statId ) {
 		parameters = new ArrayList<String>();
-		parameters.add(
-				storeName);
-		parameters.add(
-				adapterId);
-		parameters.add(
-				statId);
+		parameters.add(storeName);
+		parameters.add(adapterId);
+		parameters.add(statId);
 	}
 }

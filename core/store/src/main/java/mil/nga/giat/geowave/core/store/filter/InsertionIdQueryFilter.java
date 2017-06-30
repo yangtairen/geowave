@@ -31,12 +31,14 @@ public class InsertionIdQueryFilter implements
 			final IndexedPersistenceEncoding persistenceEncoding ) {
 		return Objects.deepEquals(
 				partitionKey,
-				persistenceEncoding.getInsertionPartitionKey() != null
-						? persistenceEncoding.getInsertionPartitionKey().getBytes() : new byte[] {})
+				persistenceEncoding.getInsertionPartitionKey() != null ? persistenceEncoding
+						.getInsertionPartitionKey()
+						.getBytes() : new byte[] {})
 				&& Objects.deepEquals(
 						sortKey,
-						persistenceEncoding.getInsertionSortKey() != null
-								? persistenceEncoding.getInsertionSortKey().getBytes() : new byte[] {})
+						persistenceEncoding.getInsertionSortKey() != null ? persistenceEncoding
+								.getInsertionSortKey()
+								.getBytes() : new byte[] {})
 				&& Objects.deepEquals(
 						dataId,
 						persistenceEncoding.getDataId() != null ? persistenceEncoding.getDataId().getBytes()
@@ -45,37 +47,26 @@ public class InsertionIdQueryFilter implements
 
 	@Override
 	public byte[] toBinary() {
-		final ByteBuffer buf = ByteBuffer.allocate(
-				12 + partitionKey.length + sortKey.length + dataId.length);
-		buf.putInt(
-				partitionKey.length);
-		buf.put(
-				partitionKey);
-		buf.putInt(
-				sortKey.length);
-		buf.put(
-				sortKey);
-		buf.putInt(
-				dataId.length);
-		buf.put(
-				dataId);
+		final ByteBuffer buf = ByteBuffer.allocate(12 + partitionKey.length + sortKey.length + dataId.length);
+		buf.putInt(partitionKey.length);
+		buf.put(partitionKey);
+		buf.putInt(sortKey.length);
+		buf.put(sortKey);
+		buf.putInt(dataId.length);
+		buf.put(dataId);
 		return buf.array();
 	}
 
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buf = ByteBuffer.wrap(
-				bytes);
+		final ByteBuffer buf = ByteBuffer.wrap(bytes);
 		partitionKey = new byte[buf.getInt()];
-		buf.get(
-				partitionKey);
+		buf.get(partitionKey);
 		sortKey = new byte[buf.getInt()];
-		buf.get(
-				sortKey);
+		buf.get(sortKey);
 		dataId = new byte[buf.getInt()];
-		buf.get(
-				dataId);
+		buf.get(dataId);
 	}
 
 }

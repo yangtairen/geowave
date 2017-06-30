@@ -20,8 +20,7 @@ public abstract class BaseSecondaryIndexDataStore implements
 		Closeable
 {
 
-	private final static Logger LOGGER = Logger.getLogger(
-			BaseSecondaryIndexDataStore.class);
+	private final static Logger LOGGER = Logger.getLogger(BaseSecondaryIndexDataStore.class);
 	protected final Map<String, Writer> writerCache = new HashMap<>();
 	protected final static byte[] EMPTY_VALUE = new byte[0];
 
@@ -38,18 +37,16 @@ public abstract class BaseSecondaryIndexDataStore implements
 			final ByteArrayId primarySortKey,
 			final ByteArrayId attributeVisibility ) {
 		try {
-			final Writer writer = getWriter(
-					secondaryIndexId);
+			final Writer writer = getWriter(secondaryIndexId);
 			if (writer != null) {
-				writer.write(
-						buildJoinMutation(
-								indexedAttributeValue.getBytes(),
-								adapterId.getBytes(),
-								indexedAttributeFieldId.getBytes(),
-								primaryIndexId.getBytes(),
-								primaryPartitionKey.getBytes(),
-								primarySortKey.getBytes(),
-								attributeVisibility.getBytes()));
+				writer.write(buildJoinMutation(
+						indexedAttributeValue.getBytes(),
+						adapterId.getBytes(),
+						indexedAttributeFieldId.getBytes(),
+						primaryIndexId.getBytes(),
+						primaryPartitionKey.getBytes(),
+						primarySortKey.getBytes(),
+						attributeVisibility.getBytes()));
 			}
 		}
 		catch (final Exception e) {
@@ -68,19 +65,17 @@ public abstract class BaseSecondaryIndexDataStore implements
 			final ByteArrayId dataId,
 			final GeoWaveValue... values ) {
 		try {
-			final Writer writer = getWriter(
-					secondaryIndexId);
+			final Writer writer = getWriter(secondaryIndexId);
 			if (writer != null) {
 				for (final GeoWaveValue v : values) {
-					writer.write(
-							buildMutation(
-									indexedAttributeValue.getBytes(),
-									adapterId.getBytes(),
-									indexedAttributeFieldId.getBytes(),
-									dataId.getBytes(),
-									v.getFieldMask(),
-									v.getValue(),
-									v.getVisibility()));
+					writer.write(buildMutation(
+							indexedAttributeValue.getBytes(),
+							adapterId.getBytes(),
+							indexedAttributeFieldId.getBytes(),
+							dataId.getBytes(),
+							v.getFieldMask(),
+							v.getValue(),
+							v.getVisibility()));
 				}
 			}
 		}
@@ -98,8 +93,7 @@ public abstract class BaseSecondaryIndexDataStore implements
 			filter = null;
 		}
 		else if (constraints.size() == 1) {
-			filter = constraints.get(
-					0);
+			filter = constraints.get(0);
 		}
 		else {
 			filter = new DistributableFilterList(
@@ -119,16 +113,14 @@ public abstract class BaseSecondaryIndexDataStore implements
 			final ByteArrayId primaryIndexRowId,
 			final ByteArrayId attributeVisibility ) {
 		try {
-			final Writer writer = getWriter(
-					secondaryIndexId);
+			final Writer writer = getWriter(secondaryIndexId);
 			if (writer != null) {
-				writer.write(
-						buildJoinDeleteMutation(
-								indexedAttributeValue.getBytes(),
-								adapterId.getBytes(),
-								indexedAttributeFieldId.getBytes(),
-								primaryIndexId.getBytes(),
-								primaryIndexRowId.getBytes()));
+				writer.write(buildJoinDeleteMutation(
+						indexedAttributeValue.getBytes(),
+						adapterId.getBytes(),
+						indexedAttributeFieldId.getBytes(),
+						primaryIndexId.getBytes(),
+						primaryIndexRowId.getBytes()));
 			}
 		}
 		catch (final Exception e) {
@@ -147,17 +139,15 @@ public abstract class BaseSecondaryIndexDataStore implements
 			final ByteArrayId dataId,
 			final GeoWaveValue... values ) {
 		try {
-			final Writer writer = getWriter(
-					secondaryIndexId);
+			final Writer writer = getWriter(secondaryIndexId);
 			if (writer != null) {
 				for (final GeoWaveValue v : values) {
-					writer.write(
-							buildFullDeleteMutation(
-									indexedAttributeValue.getBytes(),
-									adapterId.getBytes(),
-									indexedAttributeFieldId.getBytes(),
-									dataId.getBytes(),
-									v.getFieldMask()));
+					writer.write(buildFullDeleteMutation(
+							indexedAttributeValue.getBytes(),
+							adapterId.getBytes(),
+							indexedAttributeFieldId.getBytes(),
+							dataId.getBytes(),
+							v.getFieldMask()));
 				}
 			}
 		}

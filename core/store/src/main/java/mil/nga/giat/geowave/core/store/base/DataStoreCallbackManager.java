@@ -57,7 +57,8 @@ class DataStoreCallbackManager
 				callbackList.add(new StatsCompositionTool<T>(
 						statsProvider,
 						statsStore,
-						index,writableAdapter));
+						index,
+						writableAdapter));
 			}
 			if (captureAdapterStats && writableAdapter instanceof SecondaryIndexDataAdapter<?>) {
 				callbackList.add(new SecondaryIndexDataManager<T>(
@@ -92,7 +93,8 @@ class DataStoreCallbackManager
 				callbackList.add(new StatsCompositionTool<T>(
 						statsProvider,
 						statsStore,
-						index,writableAdapter));
+						index,
+						writableAdapter));
 			}
 			if (captureAdapterStats && writableAdapter instanceof SecondaryIndexDataAdapter<?>) {
 				callbackList.add(new SecondaryIndexDataManager<T>(

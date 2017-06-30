@@ -66,8 +66,7 @@ import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 public class BaseDataStore<R extends GeoWaveRow> implements
 		DataStore
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			BaseDataStore.class);
+	private final static Logger LOGGER = Logger.getLogger(BaseDataStore.class);
 
 	protected static final String ALT_INDEX_TABLE = "_GEOWAVE_ALT_INDEX";
 
@@ -99,19 +98,15 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 
 	public void store(
 			final PrimaryIndex index ) {
-		if (baseOptions.isPersistIndex() && !indexStore.indexExists(
-				index.getId())) {
-			indexStore.addIndex(
-					index);
+		if (baseOptions.isPersistIndex() && !indexStore.indexExists(index.getId())) {
+			indexStore.addIndex(index);
 		}
 	}
 
 	protected synchronized void store(
 			final DataAdapter<?> adapter ) {
-		if (baseOptions.isPersistAdapter() && !adapterStore.adapterExists(
-				adapter.getAdapterId())) {
-			adapterStore.addAdapter(
-					adapter);
+		if (baseOptions.isPersistAdapter() && !adapterStore.adapterExists(adapter.getAdapterId())) {
+			adapterStore.addAdapter(adapter);
 		}
 	}
 
@@ -120,13 +115,11 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 			final WritableDataAdapter<T> adapter,
 			final PrimaryIndex... indices )
 			throws MismatchedIndexToAdapterMapping {
-		store(
-				adapter);
+		store(adapter);
 
-		indexMappingStore.addAdapterIndexMapping(
-				new AdapterToIndexMapping(
-						adapter.getAdapterId(),
-						indices));
+		indexMappingStore.addAdapterIndexMapping(new AdapterToIndexMapping(
+				adapter.getAdapterId(),
+				indices));
 
 		final IndexWriter<T>[] writers = new IndexWriter[indices.length];
 
@@ -137,13 +130,11 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 					secondaryIndexDataStore,
 					i == 0);
 
-			callbackManager.setPersistStats(
-					baseOptions.isPersistDataStatistics());
+			callbackManager.setPersistStats(baseOptions.isPersistDataStatistics());
 
 			final List<IngestCallback<T>> callbacks = new ArrayList<IngestCallback<T>>();
 
-			store(
-					index);
+			store(index);
 
 			final String indexName = index.getId().getString();
 
@@ -156,10 +147,9 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 							index.getId());
 				}
 			}
-			callbacks.add(
-					callbackManager.getIngestCallback(
-							adapter,
-							index));
+			callbacks.add(callbackManager.getIngestCallback(
+					adapter,
+					index));
 
 			initOnIndexWriterCreate(
 					adapter,
@@ -191,9 +181,9 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 	/*
 	 * Since this general-purpose method crosses multiple adapters, the type of
 	 * result cannot be assumed.
-	 *
+	 * 
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * mil.nga.giat.geowave.core.store.DataStore#query(mil.nga.giat.geowave.
 	 * core.store.query.QueryOptions,
@@ -214,8 +204,7 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 		MemoryAdapterStore tempAdapterStore;
 		try {
 			tempAdapterStore = new MemoryAdapterStore(
-					sanitizedQueryOptions.getAdaptersArray(
-							adapterStore));
+					sanitizedQueryOptions.getAdaptersArray(adapterStore));
 
 			for (final Pair<PrimaryIndex, List<DataAdapter<Object>>> indexAdapterPair : sanitizedQueryOptions
 					.getAdaptersWithMinimalSetOfIndices(
@@ -225,43 +214,38 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 				final List<ByteArrayId> adapterIdsToQuery = new ArrayList<>();
 				for (final DataAdapter<Object> adapter : indexAdapterPair.getRight()) {
 					if (sanitizedQuery instanceof InsertionIdQuery) {
-						sanitizedQueryOptions.setLimit(
-								-1);
-						results.add(
-								queryInsertionId(
-										adapter,
-										indexAdapterPair.getLeft(),
-										(InsertionIdQuery) sanitizedQuery,
-										filter,
-										sanitizedQueryOptions,
-										tempAdapterStore));
+						sanitizedQueryOptions.setLimit(-1);
+						results.add(queryInsertionId(
+								adapter,
+								indexAdapterPair.getLeft(),
+								(InsertionIdQuery) sanitizedQuery,
+								filter,
+								sanitizedQueryOptions,
+								tempAdapterStore));
 						continue;
 					}
 					else if (sanitizedQuery instanceof PrefixIdQuery) {
 						final PrefixIdQuery prefixIdQuery = (PrefixIdQuery) sanitizedQuery;
-						results.add(
-								queryRowPrefix(
-										indexAdapterPair.getLeft(),
-										prefixIdQuery.getRowPrefix(),
-										sanitizedQueryOptions,
-										tempAdapterStore,
-										adapterIdsToQuery));
+						results.add(queryRowPrefix(
+								indexAdapterPair.getLeft(),
+								prefixIdQuery.getRowPrefix(),
+								sanitizedQueryOptions,
+								tempAdapterStore,
+								adapterIdsToQuery));
 						continue;
 					}
-					adapterIdsToQuery.add(
-							adapter.getAdapterId());
+					adapterIdsToQuery.add(adapter.getAdapterId());
 				}
 				// supports querying multiple adapters in a single index
 				// in one query instance (one scanner) for efficiency
 				if (adapterIdsToQuery.size() > 0) {
-					results.add(
-							queryConstraints(
-									adapterIdsToQuery,
-									indexAdapterPair.getLeft(),
-									sanitizedQuery,
-									filter,
-									sanitizedQueryOptions,
-									tempAdapterStore));
+					results.add(queryConstraints(
+							adapterIdsToQuery,
+							indexAdapterPair.getLeft(),
+							sanitizedQuery,
+							filter,
+							sanitizedQueryOptions,
+							tempAdapterStore));
 				}
 			}
 
@@ -281,9 +265,8 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 						}
 					}
 				},
-				Iterators.concat(
-						new CastIterator<T>(
-								results.iterator())));
+				Iterators.concat(new CastIterator<T>(
+						results.iterator())));
 	}
 
 	@Override
@@ -336,25 +319,20 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 						index.getId(),
 						queryOptions.getAuthorizations());
 
-				altIdxDeleter = baseOptions.isUseAltIndex() && baseOperations.indexExists(
+				altIdxDeleter = baseOptions.isUseAltIndex() && baseOperations.indexExists(new ByteArrayId(
+						altIdxTableName)) ? baseOperations.createDeleter(
 						new ByteArrayId(
-								altIdxTableName))
-										? baseOperations.createDeleter(
-												new ByteArrayId(
-														altIdxTableName),
-												queryOptions.getAuthorizations())
-										: null;
+								altIdxTableName),
+						queryOptions.getAuthorizations()) : null;
 
 				for (final DataAdapter<Object> adapter : indexAdapterPair.getRight()) {
 
 					final DataStoreCallbackManager callbackCache = new DataStoreCallbackManager(
 							statisticsStore,
 							secondaryIndexDataStore,
-							queriedAdapters.add(
-									adapter.getAdapterId()));
+							queriedAdapters.add(adapter.getAdapterId()));
 
-					callbackCache.setPersistStats(
-							baseOptions.isPersistDataStatistics());
+					callbackCache.setPersistStats(baseOptions.isPersistDataStatistics());
 
 					if (query instanceof EverythingQuery) {
 						deleteEntries(
@@ -373,8 +351,8 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 							callbackCache.getDeleteCallback(
 									(WritableDataAdapter<Object>) adapter,
 									index).entryDeleted(
-											entry,
-											row);
+									entry,
+									row);
 							try {
 								internalIdxDeleter.delete(
 										row,
@@ -389,20 +367,16 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 								LOGGER.error(
 										"Failed deletion",
 										e);
-								aOk.set(
-										false);
+								aOk.set(false);
 							}
 						}
 					};
 
 					CloseableIterator<?> dataIt = null;
-					queryOptions.setScanCallback(
-							callback);
-					final List<ByteArrayId> adapterIds = Collections.singletonList(
-							adapter.getAdapterId());
+					queryOptions.setScanCallback(callback);
+					final List<ByteArrayId> adapterIds = Collections.singletonList(adapter.getAdapterId());
 					if (query instanceof InsertionIdQuery) {
-						queryOptions.setLimit(
-								-1);
+						queryOptions.setLimit(-1);
 						dataIt = queryInsertionId(
 								adapter,
 								index,
@@ -478,8 +452,7 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 			throws IOException {
 		final String altIdxTableName = index.getId().getString() + ALT_INDEX_TABLE;
 
-		try (final CloseableIterator<DataStatistics<?>> it = statisticsStore.getDataStatistics(
-				adapter.getAdapterId())) {
+		try (final CloseableIterator<DataStatistics<?>> it = statisticsStore.getDataStatistics(adapter.getAdapterId())) {
 
 			while (it.hasNext()) {
 				final DataStatistics<?> stats = it.next();
@@ -497,9 +470,8 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 				index.getId(),
 				adapter.getAdapterId(),
 				additionalAuthorizations);
-		if (baseOptions.isUseAltIndex() && baseOperations.indexExists(
-				new ByteArrayId(
-						altIdxTableName))) {
+		if (baseOptions.isUseAltIndex() && baseOperations.indexExists(new ByteArrayId(
+				altIdxTableName))) {
 			baseOperations.deleteAll(
 					new ByteArrayId(
 							altIdxTableName),
@@ -527,8 +499,7 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 			final DedupeFilter dedupeFilter,
 			final QueryOptions queryOptions ) {
 		return queryConstraints(
-				Collections.singletonList(
-						adapter.getAdapterId()),
+				Collections.singletonList(adapter.getAdapterId()),
 				index,
 				new DataIdQuery(
 						dataIds),
@@ -615,8 +586,7 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 		final DifferingFieldVisibilityEntryCount visibilityCounts = DifferingFieldVisibilityEntryCount
 				.getVisibilityCounts(
 						index,
-						Collections.singletonList(
-								adapter.getAdapterId()),
+						Collections.singletonList(adapter.getAdapterId()),
 						statisticsStore,
 						sanitizedQueryOptions.getAuthorizations());
 
@@ -664,11 +634,10 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 			final DataAdapter<T> adapter,
 			final ByteArrayId primaryIndexId ) {
 		try {
-			callbacks.add(
-					new AltIndexCallback<T>(
-							indexName,
-							(WritableDataAdapter<T>) adapter,
-							primaryIndexId));
+			callbacks.add(new AltIndexCallback<T>(
+					indexName,
+					(WritableDataAdapter<T>) adapter,
+					primaryIndexId));
 
 		}
 		catch (final Exception e) {
@@ -700,34 +669,29 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 					altIdxTableName);
 			this.primaryIndexId = primaryIndexId;
 			try {
-				if (baseOperations.indexExists(
-						new ByteArrayId(
-								indexName))) {
-					if (!baseOperations.indexExists(
-							new ByteArrayId(
-									altIdxTableName))) {
+				if (baseOperations.indexExists(new ByteArrayId(
+						indexName))) {
+					if (!baseOperations.indexExists(new ByteArrayId(
+							altIdxTableName))) {
 						throw new IllegalArgumentException(
 								"Requested alternate index table does not exist.");
 					}
 				}
 				else {
 					// index table does not exist yet
-					if (baseOperations.indexExists(
-							new ByteArrayId(
-									altIdxTableName))) {
+					if (baseOperations.indexExists(new ByteArrayId(
+							altIdxTableName))) {
 						baseOperations.deleteAll(
 								new ByteArrayId(
 										altIdxTableName),
 								null);
-						LOGGER.warn(
-								"Deleting current alternate index table [" + altIdxTableName
-										+ "] as main table does not yet exist.");
+						LOGGER.warn("Deleting current alternate index table [" + altIdxTableName
+								+ "] as main table does not yet exist.");
 					}
 				}
 			}
 			catch (final IOException e) {
-				LOGGER.error(
-						"Exception checking for index " + indexName + ": " + e);
+				LOGGER.error("Exception checking for index " + indexName + ": " + e);
 			}
 		}
 
@@ -736,8 +700,7 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 				final T entry,
 				final GeoWaveRow... geowaveRows ) {
 			for (final GeoWaveRow geowaveRow : geowaveRows) {
-				final ByteArrayId dataId = adapter.getDataId(
-						entry);
+				final ByteArrayId dataId = adapter.getDataId(entry);
 				if ((dataId != null) && (dataId.getBytes() != null) && (dataId.getBytes().length > 0)) {
 					secondaryIndexDataStore.storeJoinEntry(
 							altIndexId,
@@ -775,8 +738,7 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 				geowaveRow.getAdapterId());
 
 		if ((adapter == null) && (adapterStore == null)) {
-			LOGGER.error(
-					"Could not decode row from iterator. Either adapter or adapter store must be non-null.");
+			LOGGER.error("Could not decode row from iterator. Either adapter or adapter store must be non-null.");
 			return null;
 		}
 		final IntermediaryReadEntryInfo decodePackage = new IntermediaryReadEntryInfo(
@@ -787,17 +749,14 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 				adapter,
 				adapterId,
 				adapterStore)) {
-			LOGGER.error(
-					"Could not retrieve adapter from adapter store.");
+			LOGGER.error("Could not retrieve adapter from adapter store.");
 			return null;
 		}
 
 		// Verify the adapter matches the data
 		if (!decodePackage.isAdapterVerified()) {
-			if (!decodePackage.verifyAdapter(
-					adapterId)) {
-				LOGGER.error(
-						"Adapter verify failed: adapter does not match data.");
+			if (!decodePackage.verifyAdapter(adapterId)) {
+				LOGGER.error("Adapter verify failed: adapter does not match data.");
 				return null;
 			}
 		}
@@ -856,10 +815,8 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 					.getReader(
 							fieldId);
 			if (indexFieldReader != null) {
-				final CommonIndexValue indexValue = indexFieldReader.readField(
-						fieldInfo.getValue());
-				indexValue.setVisibility(
-						value.getVisibility());
+				final CommonIndexValue indexValue = indexFieldReader.readField(fieldInfo.getValue());
+				indexValue.setVisibility(value.getVisibility());
 				final PersistentValue<CommonIndexValue> val = new PersistentValue<CommonIndexValue>(
 						fieldId,
 						indexValue);
@@ -870,8 +827,7 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 				final FieldReader<?> extFieldReader = decodePackage.getDataAdapter().getReader(
 						fieldId);
 				if (extFieldReader != null) {
-					final Object objValue = extFieldReader.readField(
-							fieldInfo.getValue());
+					final Object objValue = extFieldReader.readField(fieldInfo.getValue());
 					final PersistentValue<Object> val = new PersistentValue<Object>(
 							fieldId,
 							objValue);
@@ -880,8 +836,7 @@ public class BaseDataStore<R extends GeoWaveRow> implements
 							val);
 				}
 				else {
-					LOGGER.error(
-							"field reader not found for data entry, the value may be ignored");
+					LOGGER.error("field reader not found for data entry, the value may be ignored");
 					decodePackage.getUnknownData().addValue(
 							new PersistentValue<byte[]>(
 									fieldId,

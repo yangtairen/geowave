@@ -70,15 +70,13 @@ public class AdapterIndexMappingStoreImpl extends
 					mapping.getAdapterId(),
 					null,
 					null);
-			if (!oldMapping.equals(
-					mapping)) {
+			if (!oldMapping.equals(mapping)) {
 				throw new MismatchedIndexToAdapterMapping(
 						oldMapping);
 			}
 		}
 		else {
-			addObject(
-					mapping);
+			addObject(mapping);
 		}
 
 	}

@@ -78,8 +78,7 @@ public class FeatureCountMinSketchStatistics extends
 
 	@Override
 	public String getFieldName() {
-		return decomposeNameFromId(
-				getStatisticsId());
+		return decomposeNameFromId(getStatisticsId());
 	}
 
 	@Override
@@ -95,8 +94,7 @@ public class FeatureCountMinSketchStatistics extends
 
 	public long count(
 			final String item ) {
-		return sketch.estimateCount(
-				item);
+		return sketch.estimateCount(item);
 	}
 
 	@Override
@@ -119,35 +117,27 @@ public class FeatureCountMinSketchStatistics extends
 
 	@Override
 	public byte[] toBinary() {
-		final byte[] data = CountMinSketch.serialize(
-				sketch);
-		final ByteBuffer buffer = super.binaryBuffer(
-				4 + data.length);
-		buffer.putInt(
-				data.length);
-		buffer.put(
-				data);
+		final byte[] data = CountMinSketch.serialize(sketch);
+		final ByteBuffer buffer = super.binaryBuffer(4 + data.length);
+		buffer.putInt(data.length);
+		buffer.put(data);
 		return buffer.array();
 	}
 
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buffer = super.binaryBuffer(
-				bytes);
+		final ByteBuffer buffer = super.binaryBuffer(bytes);
 		final byte[] data = new byte[buffer.getInt()];
-		buffer.get(
-				data);
-		sketch = CountMinSketch.deserialize(
-				data);
+		buffer.get(data);
+		sketch = CountMinSketch.deserialize(data);
 	}
 
 	@Override
 	public void entryIngested(
 			final SimpleFeature entry,
 			final GeoWaveRow... rows ) {
-		final Object o = entry.getAttribute(
-				getFieldName());
+		final Object o = entry.getAttribute(getFieldName());
 		if (o == null) {
 			return;
 		}
@@ -161,15 +151,14 @@ public class FeatureCountMinSketchStatistics extends
 		final StringBuffer buffer = new StringBuffer();
 		buffer.append(
 				"sketch[adapter=").append(
-						super.getDataAdapterId().getString());
+				super.getDataAdapterId().getString());
 		buffer.append(
 				", field=").append(
-						getFieldName());
+				getFieldName());
 		buffer.append(
 				", size=").append(
-						sketch.size());
-		buffer.append(
-				"]");
+				sketch.size());
+		buffer.append("]");
 		return buffer.toString();
 	}
 

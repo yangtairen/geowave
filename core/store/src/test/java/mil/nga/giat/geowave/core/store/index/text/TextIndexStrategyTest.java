@@ -17,32 +17,26 @@ public class TextIndexStrategyTest
 
 	@Test
 	public void testInsertions() {
-		final InsertionIds insertionIds = strategy.getInsertionIds(
-				value);
-		Assert.assertTrue(
-				insertionIds.getCompositeInsertionIds().contains(
-						new ByteArrayId(
-								value)));
-		Assert.assertTrue(
-				insertionIds.getCompositeInsertionIds().size() == 1);
+		final InsertionIds insertionIds = strategy.getInsertionIds(value);
+		Assert.assertTrue(insertionIds.getCompositeInsertionIds().contains(
+				new ByteArrayId(
+						value)));
+		Assert.assertTrue(insertionIds.getCompositeInsertionIds().size() == 1);
 	}
 
 	@Test
 	public void testEquals() {
-		final QueryRanges ranges = strategy.getQueryRanges(
-				new TextQueryConstraint(
-						fieldId,
-						value,
-						false));
-		Assert.assertTrue(
-				ranges.getCompositeQueryRanges().size() == 1);
-		Assert.assertTrue(
-				ranges.getCompositeQueryRanges().get(
-						0).equals(
-								new ByteArrayRange(
-										new ByteArrayId(
-												value),
-										new ByteArrayId(
-												value))));
+		final QueryRanges ranges = strategy.getQueryRanges(new TextQueryConstraint(
+				fieldId,
+				value,
+				false));
+		Assert.assertTrue(ranges.getCompositeQueryRanges().size() == 1);
+		Assert.assertTrue(ranges.getCompositeQueryRanges().get(
+				0).equals(
+				new ByteArrayRange(
+						new ByteArrayId(
+								value),
+						new ByteArrayId(
+								value))));
 	}
 }

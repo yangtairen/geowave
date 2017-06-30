@@ -25,8 +25,7 @@ import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 public class CQLQueryFilter implements
 		DistributableQueryFilter
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			CQLQueryFilter.class);
+	private final static Logger LOGGER = Logger.getLogger(CQLQueryFilter.class);
 	private GeotoolsFeatureDataAdapter adapter;
 	private Filter filter;
 
@@ -40,9 +39,7 @@ public class CQLQueryFilter implements
 		try {
 			// We do not have a way to transform a filter directly from one to
 			// another.
-			this.filter = FilterToCQLTool.toFilter(
-					FilterToCQLTool.toCQL(
-							filter));
+			this.filter = FilterToCQLTool.toFilter(FilterToCQLTool.toCQL(filter));
 		}
 		catch (final CQLException e) {
 			LOGGER.trace(
@@ -69,8 +66,7 @@ public class CQLQueryFilter implements
 							.getAdapterExtendedData();
 					if (existingExtValues != null) {
 						for (final PersistentValue<Object> val : existingExtValues.getValues()) {
-							adapterExtendedValues.addValue(
-									val);
+							adapterExtendedValues.addValue(val);
 						}
 					}
 				}
@@ -99,8 +95,7 @@ public class CQLQueryFilter implements
 				if (feature == null) {
 					return false;
 				}
-				return filter.evaluate(
-						feature);
+				return filter.evaluate(feature);
 			}
 		}
 		return true;
@@ -110,33 +105,24 @@ public class CQLQueryFilter implements
 	public byte[] toBinary() {
 		byte[] filterBytes;
 		if (filter == null) {
-			LOGGER.warn(
-					"CQL filter is null");
+			LOGGER.warn("CQL filter is null");
 			filterBytes = new byte[] {};
 		}
 		else {
-			filterBytes = StringUtils.stringToBinary(
-					FilterToCQLTool.toCQL(
-							filter));
+			filterBytes = StringUtils.stringToBinary(FilterToCQLTool.toCQL(filter));
 		}
 		byte[] adapterBytes;
 		if (adapter != null) {
-			adapterBytes = PersistenceUtils.toBinary(
-					adapter);
+			adapterBytes = PersistenceUtils.toBinary(adapter);
 		}
 		else {
-			LOGGER.warn(
-					"Feature Data Adapter is null");
+			LOGGER.warn("Feature Data Adapter is null");
 			adapterBytes = new byte[] {};
 		}
-		final ByteBuffer buf = ByteBuffer.allocate(
-				filterBytes.length + adapterBytes.length + 4);
-		buf.putInt(
-				filterBytes.length);
-		buf.put(
-				filterBytes);
-		buf.put(
-				adapterBytes);
+		final ByteBuffer buf = ByteBuffer.allocate(filterBytes.length + adapterBytes.length + 4);
+		buf.putInt(filterBytes.length);
+		buf.put(filterBytes);
+		buf.put(adapterBytes);
 		return buf.array();
 	}
 
@@ -151,19 +137,15 @@ public class CQLQueryFilter implements
 					"Unable to initialize GeoTools class loader",
 					e);
 		}
-		final ByteBuffer buf = ByteBuffer.wrap(
-				bytes);
+		final ByteBuffer buf = ByteBuffer.wrap(bytes);
 		final int filterBytesLength = buf.getInt();
 		final int adapterBytesLength = bytes.length - filterBytesLength - 4;
 		if (filterBytesLength > 0) {
 			final byte[] filterBytes = new byte[filterBytesLength];
-			buf.get(
-					filterBytes);
-			final String cql = StringUtils.stringFromBinary(
-					filterBytes);
+			buf.get(filterBytes);
+			final String cql = StringUtils.stringFromBinary(filterBytes);
 			try {
-				filter = ECQL.toFilter(
-						cql);
+				filter = ECQL.toFilter(cql);
 			}
 			catch (final Exception e) {
 				throw new IllegalArgumentException(
@@ -172,15 +154,13 @@ public class CQLQueryFilter implements
 			}
 		}
 		else {
-			LOGGER.warn(
-					"CQL filter is empty bytes");
+			LOGGER.warn("CQL filter is empty bytes");
 			filter = null;
 		}
 
 		if (adapterBytesLength > 0) {
 			final byte[] adapterBytes = new byte[adapterBytesLength];
-			buf.get(
-					adapterBytes);
+			buf.get(adapterBytes);
 
 			try {
 				adapter = PersistenceUtils.fromBinary(
@@ -193,8 +173,7 @@ public class CQLQueryFilter implements
 			}
 		}
 		else {
-			LOGGER.warn(
-					"Feature Data Adapter is empty bytes");
+			LOGGER.warn("Feature Data Adapter is empty bytes");
 			adapter = null;
 		}
 	}

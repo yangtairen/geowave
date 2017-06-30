@@ -45,8 +45,7 @@ public class LocalIngestRunData implements
 		// NOTE: This should be thread-safe because the adapterCache is never
 		// added to after this point. It's a static list.
 		adapterCache = new MemoryAdapterStore(
-				adapters.toArray(
-						new WritableDataAdapter[adapters.size()]));
+				adapters.toArray(new WritableDataAdapter[adapters.size()]));
 		indexWriterPool = new GenericKeyedObjectPool<>(
 				new IndexWriterFactory());
 		indexCache = new MemoryIndexStore();
@@ -54,23 +53,19 @@ public class LocalIngestRunData implements
 
 	public WritableDataAdapter<?> getDataAdapter(
 			final GeoWaveData<?> data ) {
-		return data.getAdapter(
-				adapterCache);
+		return data.getAdapter(adapterCache);
 	}
 
 	public void addAdapter(
 			final WritableDataAdapter<?> adapter ) {
-		adapterCache.addAdapter(
-				adapter);
+		adapterCache.addAdapter(adapter);
 	}
 
 	public void addIndices(
 			final List<PrimaryIndex> indices ) {
 		for (final PrimaryIndex index : indices) {
-			if (!indexCache.indexExists(
-					index.getId())) {
-				indexCache.addIndex(
-						index);
+			if (!indexCache.indexExists(index.getId())) {
+				indexCache.addIndex(index);
 			}
 		}
 	}
@@ -87,8 +82,7 @@ public class LocalIngestRunData implements
 	public IndexWriter getIndexWriter(
 			final AdapterToIndexMapping mapping )
 			throws Exception {
-		return indexWriterPool.borrowObject(
-				mapping);
+		return indexWriterPool.borrowObject(mapping);
 	}
 
 	/**
@@ -133,10 +127,8 @@ public class LocalIngestRunData implements
 				final AdapterToIndexMapping mapping )
 				throws Exception {
 			return dataStore.createWriter(
-					(WritableDataAdapter<?>) adapterCache.getAdapter(
-							mapping.getAdapterId()),
-					mapping.getIndices(
-							indexCache));
+					(WritableDataAdapter<?>) adapterCache.getAdapter(mapping.getAdapterId()),
+					mapping.getIndices(indexCache));
 		}
 
 		@Override

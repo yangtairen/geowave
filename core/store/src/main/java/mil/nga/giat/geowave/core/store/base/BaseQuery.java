@@ -27,8 +27,7 @@ import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
  */
 abstract class BaseQuery
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			BaseQuery.class);
+	private final static Logger LOGGER = Logger.getLogger(BaseQuery.class);
 
 	protected final BaseDataStore dataStore;
 	protected List<ByteArrayId> adapterIds;
@@ -71,23 +70,20 @@ abstract class BaseQuery
 			final DataStoreOptions options,
 			final double[] maxResolutionSubsamplingPerDimension,
 			final Integer limit ) {
-		return operations.createReader(
-				new ReaderParams(
-						index,
-						adapterIds,
-						maxResolutionSubsamplingPerDimension,
-						getAggregation(),
-						getFieldSubsets(),
-						isMixedVisibilityRows(),
-						isServerSideAggregation(
-								options),
-						getRanges(),
-						getServerFilter(
-								options),
-						limit,
-						getCoordinateRanges(),
-						getConstraints(),
-						getAdditionalAuthorizations()));
+		return operations.createReader(new ReaderParams(
+				index,
+				adapterIds,
+				maxResolutionSubsamplingPerDimension,
+				getAggregation(),
+				getFieldSubsets(),
+				isMixedVisibilityRows(),
+				isServerSideAggregation(options),
+				getRanges(),
+				getServerFilter(options),
+				limit,
+				getCoordinateRanges(),
+				getConstraints(),
+				getAdditionalAuthorizations()));
 	}
 
 	public boolean isServerSideAggregation(

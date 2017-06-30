@@ -592,7 +592,10 @@ public class FeatureDataAdapter extends
 			CommonIndexModel indexModel,
 			DataAdapter<SimpleFeature> adapter,
 			final ByteArrayId statisticsId ) {
-		return statsManager.getVisibilityHandler(indexModel, adapter, statisticsId);
+		return statsManager.getVisibilityHandler(
+				indexModel,
+				adapter,
+				statisticsId);
 	}
 
 	@Override

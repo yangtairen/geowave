@@ -27,11 +27,10 @@ public class RowHistogramDataStaticticsTest
 			final long bottom,
 			final long top ) {
 		final InsertionIds insertionIds = new InsertionIds(
-				Arrays.asList(
-						new ByteArrayId(
-								String.format(
-										"\12%6h",
-										bottom + (r.nextDouble() * (top - bottom))) + "20030f89")));
+				Arrays.asList(new ByteArrayId(
+						String.format(
+								"\12%6h",
+								bottom + (r.nextDouble() * (top - bottom))) + "20030f89")));
 		return GeoWaveKeyImpl.createKeys(
 				insertionIds,
 				new byte[] {},
@@ -64,9 +63,9 @@ public class RowHistogramDataStaticticsTest
 	public void testIngest() {
 		for (long i = 0; i < 10000; i++) {
 			final GeoWaveRow row = new GeoWaveRowImpl(
-							genKey(
-									0,
-									100000),
+					genKey(
+							0,
+							100000),
 					new GeoWaveValue[] {});
 			stats1.entryIngested(
 					1,
@@ -80,24 +79,19 @@ public class RowHistogramDataStaticticsTest
 			final byte[] half = genKey(
 					i,
 					i + 1).getSortKey();
-			final double diff = Math.abs(
-					stats1.cdf(
-							half)
-							- stats2.cdf(
-									half));
+			final double diff = Math.abs(stats1.cdf(half) - stats2.cdf(half));
 			assertTrue(
 					"iteration " + i + " = " + diff,
 					diff < 0.02);
 		}
 
-		System.out.println(
-				"-------------------------");
+		System.out.println("-------------------------");
 
 		for (long j = 10000; j < 20000; j++) {
 			final GeoWaveRow row = new GeoWaveRowImpl(
 					genKey(
-									100000,
-									200000),
+							100000,
+							200000),
 					new GeoWaveValue[] {});
 			stats1.entryIngested(
 					1,
@@ -111,11 +105,7 @@ public class RowHistogramDataStaticticsTest
 			final byte[] half = genKey(
 					i,
 					i + 1).getSortKey();
-			final double diff = Math.abs(
-					stats1.cdf(
-							half)
-							- stats2.cdf(
-									half));
+			final double diff = Math.abs(stats1.cdf(half) - stats2.cdf(half));
 			assertTrue(
 					"iteration " + i + " = " + diff,
 					diff < 0.02);
@@ -124,22 +114,14 @@ public class RowHistogramDataStaticticsTest
 		final byte[] nearfull = genKey(
 				79998,
 				89999).getSortKey();
-		double diff = Math.abs(
-				stats1.cdf(
-						nearfull)
-						- stats2.cdf(
-								nearfull));
+		double diff = Math.abs(stats1.cdf(nearfull) - stats2.cdf(nearfull));
 		assertTrue(
 				"nearfull = " + diff,
 				diff < 0.02);
 		final byte[] nearempty = genKey(
 				9998,
 				9999).getSortKey();
-		diff = Math.abs(
-				stats1.cdf(
-						nearempty)
-						- stats2.cdf(
-								nearempty));
+		diff = Math.abs(stats1.cdf(nearempty) - stats2.cdf(nearempty));
 		assertTrue(
 				"nearempty = " + diff,
 				diff < 0.02);

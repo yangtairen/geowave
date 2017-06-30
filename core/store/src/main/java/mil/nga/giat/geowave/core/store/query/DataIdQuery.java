@@ -19,8 +19,7 @@ public class DataIdQuery implements
 
 	public DataIdQuery(
 			final ByteArrayId dataId ) {
-		dataIds = Collections.singletonList(
-				dataId);
+		dataIds = Collections.singletonList(dataId);
 	}
 
 	public DataIdQuery(
@@ -37,9 +36,8 @@ public class DataIdQuery implements
 	public List<QueryFilter> createFilters(
 			final CommonIndexModel indexModel ) {
 		final List<QueryFilter> filters = new ArrayList<QueryFilter>();
-		filters.add(
-				new DataIdQueryFilter(
-						dataIds));
+		filters.add(new DataIdQueryFilter(
+				dataIds));
 		return filters;
 	}
 

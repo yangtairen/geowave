@@ -42,28 +42,24 @@ public class GeometryUtilsTest
 
 		final GeometryFactory gf = new GeometryFactory();
 
-		point2D = gf.createPoint(
-				new Coordinate(
-						1,
-						2));
+		point2D = gf.createPoint(new Coordinate(
+				1,
+				2));
 
-		point3D = gf.createPoint(
-				new Coordinate(
-						1,
-						2,
-						3));
+		point3D = gf.createPoint(new Coordinate(
+				1,
+				2,
+				3));
 	}
 
 	@Test
 	public void test2DGeometryBinaryConversion() {
 
 		// convert 2D point to binary representation
-		final byte[] bytes = GeometryUtils.geometryToBinary(
-				point2D);
+		final byte[] bytes = GeometryUtils.geometryToBinary(point2D);
 
 		// load the converted 2D geometry
-		final Geometry convGeo = GeometryUtils.geometryFromBinary(
-				bytes);
+		final Geometry convGeo = GeometryUtils.geometryFromBinary(bytes);
 
 		// get the coordinates for each version
 		final Coordinate origCoords = point2D.getCoordinates()[0];
@@ -77,22 +73,17 @@ public class GeometryUtilsTest
 				origCoords.y,
 				convCoords.y);
 
-		Assert.assertTrue(
-				Double.isNaN(
-						convCoords.getOrdinate(
-								Coordinate.Z)));
+		Assert.assertTrue(Double.isNaN(convCoords.getOrdinate(Coordinate.Z)));
 	}
 
 	@Test
 	public void test3DGeometryBinaryConversion() {
 
 		// convert 3D point to binary representation
-		final byte[] bytes = GeometryUtils.geometryToBinary(
-				point3D);
+		final byte[] bytes = GeometryUtils.geometryToBinary(point3D);
 
 		// load the converted 3D geometry
-		final Geometry convGeo = GeometryUtils.geometryFromBinary(
-				bytes);
+		final Geometry convGeo = GeometryUtils.geometryFromBinary(bytes);
 
 		// get the coordinates for each version
 		final Coordinate origCoords = point3D.getCoordinates()[0];
@@ -115,84 +106,76 @@ public class GeometryUtilsTest
 	public void testConstraintGeneration() {
 
 		final GeometryFactory gf = new GeometryFactory();
-		final Geometry multiPolygon = gf.createMultiPolygon(
-				new Polygon[] {
-					gf.createPolygon(
-							new Coordinate[] {
-								new Coordinate(
-										20.0,
-										30),
-								new Coordinate(
-										20,
-										40),
-								new Coordinate(
-										10,
-										40),
-								new Coordinate(
-										10,
-										30),
-								new Coordinate(
-										20,
-										30)
-							}),
-					gf.createPolygon(
-							new Coordinate[] {
-								new Coordinate(
-										-9,
-										-2),
-								new Coordinate(
-										-9,
-										-1),
-								new Coordinate(
-										-8,
-										-1),
-								new Coordinate(
-										-8,
-										-2),
-								new Coordinate(
-										-9,
-										-2)
-							})
-				});
-		final Constraints constraints = GeometryUtils.basicConstraintsFromGeometry(
-				multiPolygon);
-		final List<MultiDimensionalNumericData> results = constraints.getIndexConstraints(
-				new ExampleNumericIndexStrategy());
+		final Geometry multiPolygon = gf.createMultiPolygon(new Polygon[] {
+			gf.createPolygon(new Coordinate[] {
+				new Coordinate(
+						20.0,
+						30),
+				new Coordinate(
+						20,
+						40),
+				new Coordinate(
+						10,
+						40),
+				new Coordinate(
+						10,
+						30),
+				new Coordinate(
+						20,
+						30)
+			}),
+			gf.createPolygon(new Coordinate[] {
+				new Coordinate(
+						-9,
+						-2),
+				new Coordinate(
+						-9,
+						-1),
+				new Coordinate(
+						-8,
+						-1),
+				new Coordinate(
+						-8,
+						-2),
+				new Coordinate(
+						-9,
+						-2)
+			})
+		});
+		final Constraints constraints = GeometryUtils.basicConstraintsFromGeometry(multiPolygon);
+		final List<MultiDimensionalNumericData> results = constraints
+				.getIndexConstraints(new ExampleNumericIndexStrategy());
 		assertEquals(
 				2,
 				results.size());
-		assertTrue(
-				Arrays.equals(
-						new double[] {
-							10,
-							30
-						},
-						results.get(
-								0).getMinValuesPerDimension()));
-		assertTrue(
-				Arrays.equals(
-						new double[] {
-							20,
-							40
-						},
-						results.get(
-								0).getMaxValuesPerDimension()));
-		assertTrue(
-				Arrays.equals(
-						new double[] {
-							-9,
-							-2
-						},
-						results.get(
-								1).getMinValuesPerDimension()));
-		assertTrue(
-				Arrays.equals(
-						new double[] {
-							-8,
-							-1
-						},
-						results.get(
-								1).getMaxValuesPerDimension()));
+		assertTrue(Arrays.equals(
+				new double[] {
+					10,
+					30
+				},
+				results.get(
+						0).getMinValuesPerDimension()));
+		assertTrue(Arrays.equals(
+				new double[] {
+					20,
+					40
+				},
+				results.get(
+						0).getMaxValuesPerDimension()));
+		assertTrue(Arrays.equals(
+				new double[] {
+					-9,
+					-2
+				},
+				results.get(
+						1).getMinValuesPerDimension()));
+		assertTrue(Arrays.equals(
+				new double[] {
+					-8,
+					-1
+				},
+				results.get(
+						1).getMaxValuesPerDimension()));
 
 	}
 

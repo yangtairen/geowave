@@ -19,8 +19,7 @@ public class GeometryAdapter implements
 {
 	public final static ByteArrayId DEFAULT_GEOMETRY_FIELD_ID = new ByteArrayId(
 			ByteArrayUtils.combineArrays(
-					StringUtils.stringToBinary(
-							"geom"),
+					StringUtils.stringToBinary("geom"),
 					new byte[] {
 						0,
 						0
@@ -31,16 +30,14 @@ public class GeometryAdapter implements
 	@Override
 	public byte[] writeField(
 			final GeometryWrapper geometry ) {
-		return GeometryUtils.geometryToBinary(
-				geometry.getGeometry());
+		return GeometryUtils.geometryToBinary(geometry.getGeometry());
 	}
 
 	@Override
 	public GeometryWrapper readField(
 			final byte[] fieldData ) {
 		return new GeometryWrapper(
-				GeometryUtils.geometryFromBinary(
-						fieldData));
+				GeometryUtils.geometryFromBinary(fieldData));
 	}
 
 	@Override

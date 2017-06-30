@@ -25,8 +25,7 @@ public class FeatureHyperLogLogStatistics extends
 		AbstractDataStatistics<SimpleFeature> implements
 		FeatureStatistic
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			FeatureHyperLogLogStatistics.class);
+	private final static Logger LOGGER = Logger.getLogger(FeatureHyperLogLogStatistics.class);
 	public static final String STATS_TYPE = "ATT_HYPERLLP";
 
 	private HyperLogLogPlus loglog;
@@ -67,8 +66,7 @@ public class FeatureHyperLogLogStatistics extends
 
 	@Override
 	public String getFieldName() {
-		return decomposeNameFromId(
-				getStatisticsId());
+		return decomposeNameFromId(getStatisticsId());
 	}
 
 	@Override
@@ -88,8 +86,7 @@ public class FeatureHyperLogLogStatistics extends
 			final Mergeable mergeable ) {
 		if (mergeable instanceof FeatureHyperLogLogStatistics) {
 			try {
-				loglog = (HyperLogLogPlus) ((FeatureHyperLogLogStatistics) mergeable).loglog.merge(
-						loglog);
+				loglog = (HyperLogLogPlus) ((FeatureHyperLogLogStatistics) mergeable).loglog.merge(loglog);
 			}
 			catch (final CardinalityMergeException e) {
 				throw new RuntimeException(
@@ -106,12 +103,9 @@ public class FeatureHyperLogLogStatistics extends
 		try {
 			final byte[] data = loglog.getBytes();
 
-			final ByteBuffer buffer = super.binaryBuffer(
-					4 + data.length);
-			buffer.putInt(
-					data.length);
-			buffer.put(
-					data);
+			final ByteBuffer buffer = super.binaryBuffer(4 + data.length);
+			buffer.putInt(data.length);
+			buffer.put(data);
 			return buffer.array();
 		}
 		catch (final IOException e) {
@@ -125,14 +119,11 @@ public class FeatureHyperLogLogStatistics extends
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buffer = super.binaryBuffer(
-				bytes);
+		final ByteBuffer buffer = super.binaryBuffer(bytes);
 		final byte[] data = new byte[buffer.getInt()];
-		buffer.get(
-				data);
+		buffer.get(data);
 		try {
-			loglog = HyperLogLogPlus.Builder.build(
-					data);
+			loglog = HyperLogLogPlus.Builder.build(data);
 		}
 		catch (final IOException e) {
 			LOGGER.error(
@@ -145,13 +136,11 @@ public class FeatureHyperLogLogStatistics extends
 	public void entryIngested(
 			final SimpleFeature entry,
 			final GeoWaveRow... rows ) {
-		final Object o = entry.getAttribute(
-				getFieldName());
+		final Object o = entry.getAttribute(getFieldName());
 		if (o == null) {
 			return;
 		}
-		loglog.offer(
-				o.toString());
+		loglog.offer(o.toString());
 	}
 
 	@Override
@@ -159,15 +148,14 @@ public class FeatureHyperLogLogStatistics extends
 		final StringBuffer buffer = new StringBuffer();
 		buffer.append(
 				"hyperloglog[adapter=").append(
-						super.getDataAdapterId().getString());
+				super.getDataAdapterId().getString());
 		buffer.append(
 				", field=").append(
-						getFieldName());
+				getFieldName());
 		buffer.append(
 				", cardinality=").append(
-						loglog.cardinality());
-		buffer.append(
-				"]");
+				loglog.cardinality());
+		buffer.append("]");
 		return buffer.toString();
 	}
 

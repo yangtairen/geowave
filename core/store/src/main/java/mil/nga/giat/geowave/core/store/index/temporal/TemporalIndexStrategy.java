@@ -36,8 +36,7 @@ public class TemporalIndexStrategy implements
 
 	public static final byte[] toIndexByte(
 			final Date date ) {
-		return Lexicoders.LONG.toByteArray(
-				date.getTime());
+		return Lexicoders.LONG.toByteArray(date.getTime());
 	}
 
 	@Override
@@ -57,26 +56,22 @@ public class TemporalIndexStrategy implements
 			final TemporalQueryConstraint indexedRange,
 			final int maxEstimatedRangeDecomposition,
 			final IndexMetaData... hints ) {
-		return getQueryRanges(
-				indexedRange);
+		return getQueryRanges(indexedRange);
 	}
 
 	@Override
 	public InsertionIds getInsertionIds(
 			final Date indexedData ) {
 		return new InsertionIds(
-				Collections.singletonList(
-						new ByteArrayId(
-								toIndexByte(
-										indexedData))));
+				Collections.singletonList(new ByteArrayId(
+						toIndexByte(indexedData))));
 	}
 
 	@Override
 	public InsertionIds getInsertionIds(
 			final Date indexedData,
 			final int maxEstimatedDuplicateIds ) {
-		return getInsertionIds(
-				indexedData);
+		return getInsertionIds(indexedData);
 	}
 
 	@Override
@@ -84,8 +79,7 @@ public class TemporalIndexStrategy implements
 			final ByteArrayId partitionKey,
 			final ByteArrayId sortKey ) {
 		return new Date(
-				Lexicoders.LONG.fromByteArray(
-						sortKey.getBytes()));
+				Lexicoders.LONG.fromByteArray(sortKey.getBytes()));
 	}
 
 }

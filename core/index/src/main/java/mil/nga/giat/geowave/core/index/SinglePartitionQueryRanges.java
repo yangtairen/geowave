@@ -31,8 +31,7 @@ public class SinglePartitionQueryRanges
 
 	public SinglePartitionQueryRanges(
 			final ByteArrayRange singleSortKeyRange ) {
-		sortKeyRanges = Collections.singletonList(
-				singleSortKeyRange);
+		sortKeyRanges = Collections.singletonList(singleSortKeyRange);
 		partitionKey = null;
 	}
 

@@ -9,8 +9,7 @@ import mil.nga.giat.geowave.core.store.operations.Reader;
 class ReaderClosableWrapper implements
 		Closeable
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			ReaderClosableWrapper.class);
+	private final static Logger LOGGER = Logger.getLogger(ReaderClosableWrapper.class);
 	private final Reader reader;
 
 	public ReaderClosableWrapper(

@@ -70,12 +70,10 @@ public class ChooseBestMatchIndexQueryStrategyTest
 
 		final Map<ByteArrayId, DataStatistics<SimpleFeature>> statsMap = new HashMap<ByteArrayId, DataStatistics<SimpleFeature>>();
 		statsMap.put(
-				RowRangeHistogramStatistics.composeId(
-						spatialIndex.getId()),
+				RowRangeHistogramStatistics.composeId(spatialIndex.getId()),
 				rangeStats);
 		statsMap.put(
-				RowRangeHistogramStatistics.composeId(
-						temporalindex.getId()),
+				RowRangeHistogramStatistics.composeId(temporalindex.getId()),
 				rangeTempStats);
 
 		final ChooseBestMatchIndexQueryStrategy strategy = new ChooseBestMatchIndexQueryStrategy();
@@ -107,10 +105,7 @@ public class ChooseBestMatchIndexQueryStrategyTest
 						true));
 
 		final Constraints constraints = new Constraints(
-				Arrays.asList(
-						cs2a)).merge(
-								Collections.singletonList(
-										cs1));
+				Arrays.asList(cs2a)).merge(Collections.singletonList(cs1));
 
 		final BasicQuery query = new BasicQuery(
 				constraints);
@@ -118,8 +113,7 @@ public class ChooseBestMatchIndexQueryStrategyTest
 		final NumericIndexStrategy temporalIndexStrategy = new SpatialTemporalIndexBuilder()
 				.createIndex()
 				.getIndexStrategy();
-		final List<MultiDimensionalNumericData> tempConstraints = query.getIndexConstraints(
-				temporalIndexStrategy);
+		final List<MultiDimensionalNumericData> tempConstraints = query.getIndexConstraints(temporalIndexStrategy);
 
 		final QueryRanges temporalRanges = DataStoreUtils.constraintsToQueryRanges(
 				tempConstraints,
@@ -161,8 +155,7 @@ public class ChooseBestMatchIndexQueryStrategyTest
 		}
 
 		final NumericIndexStrategy indexStrategy = new SpatialTemporalIndexBuilder().createIndex().getIndexStrategy();
-		final List<MultiDimensionalNumericData> spatialConstraints = query.getIndexConstraints(
-				indexStrategy);
+		final List<MultiDimensionalNumericData> spatialConstraints = query.getIndexConstraints(indexStrategy);
 
 		final QueryRanges spatialRanges = DataStoreUtils.constraintsToQueryRanges(
 				spatialConstraints,
@@ -192,13 +185,11 @@ public class ChooseBestMatchIndexQueryStrategyTest
 				statsMap,
 				query,
 				strategy);
-		assertTrue(
-				it.hasNext());
+		assertTrue(it.hasNext());
 		assertEquals(
 				spatialIndex.getId(),
 				it.next().getId());
-		assertFalse(
-				it.hasNext());
+		assertFalse(it.hasNext());
 
 	}
 
@@ -207,52 +198,52 @@ public class ChooseBestMatchIndexQueryStrategyTest
 	 * temporalindex = new SpatialTemporalIndexBuilder().createIndex(); final
 	 * ChooseBestMatchIndexQueryStrategy strategy = new
 	 * ChooseBestMatchIndexQueryStrategy();
-	 *
+	 * 
 	 * final ConstraintSet cs1 = new ConstraintSet(); cs1.addConstraint(
 	 * LatitudeDefinition.class, new ConstraintData( new ConstrainedIndexValue(
 	 * 0.3, 0.5), true));
-	 *
+	 * 
 	 * cs1.addConstraint( LongitudeDefinition.class, new ConstraintData( new
 	 * ConstrainedIndexValue( 0.4, 0.7), true));
-	 *
+	 * 
 	 * final ConstraintSet cs2a = new ConstraintSet(); cs2a.addConstraint(
 	 * TimeDefinition.class, new ConstraintData( new ConstrainedIndexValue( 0.1,
 	 * 0.2), true));
-	 *
+	 * 
 	 * final Constraints constraints = new Constraints(
 	 * Arrays.asList(cs2a)).merge(Collections.singletonList(cs1));
-	 *
+	 * 
 	 * final BasicQuery query = new BasicQuery( constraints);
-	 *
+	 * 
 	 * final Iterator<Index<?, ?>> it = getIndices( new HashMap<ByteArrayId,
 	 * DataStatistics<SimpleFeature>>(), query, strategy);
 	 * assertTrue(it.hasNext()); assertEquals( temporalindex.getId(),
 	 * it.next().getId()); assertFalse(it.hasNext());
-	 *
+	 * 
 	 * }
-	 *
+	 * 
 	 * @Test public void testChooseSpatialWithoutStats() { final PrimaryIndex
 	 * spatialIndex = new SpatialIndexBuilder().createIndex(); final
 	 * ChooseBestMatchIndexQueryStrategy strategy = new
 	 * ChooseBestMatchIndexQueryStrategy();
-	 *
+	 * 
 	 * final ConstraintSet cs1 = new ConstraintSet(); cs1.addConstraint(
 	 * LatitudeDefinition.class, new ConstraintData( new ConstrainedIndexValue(
 	 * 0.3, 0.5), true));
-	 *
+	 * 
 	 * cs1.addConstraint( LongitudeDefinition.class, new ConstraintData( new
 	 * ConstrainedIndexValue( 0.4, 0.7), true));
-	 *
+	 * 
 	 * final Constraints constraints = new Constraints(
 	 * Collections.singletonList(cs1));
-	 *
+	 * 
 	 * final BasicQuery query = new BasicQuery( constraints);
-	 *
+	 * 
 	 * final Iterator<Index<?, ?>> it = getIndices( new HashMap<ByteArrayId,
 	 * DataStatistics<SimpleFeature>>(), query, strategy);
 	 * assertTrue(it.hasNext()); assertEquals( spatialIndex.getId(),
 	 * it.next().getId()); assertFalse(it.hasNext());
-	 *
+	 * 
 	 * }
 	 */
 

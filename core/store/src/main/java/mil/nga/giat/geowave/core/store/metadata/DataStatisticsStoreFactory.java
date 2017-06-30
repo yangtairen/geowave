@@ -22,8 +22,7 @@ public class DataStatisticsStoreFactory extends
 	public DataStatisticsStore createStore(
 			final StoreFactoryOptions options ) {
 		return new DataStatisticsStoreImpl(
-				helper.createOperations(
-						options),
+				helper.createOperations(options),
 				options.getStoreOptions());
 	}
 }

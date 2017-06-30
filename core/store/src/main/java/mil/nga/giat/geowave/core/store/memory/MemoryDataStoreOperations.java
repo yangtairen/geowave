@@ -44,12 +44,11 @@ import mil.nga.giat.geowave.core.store.operations.Writer;
 public class MemoryDataStoreOperations implements
 		DataStoreOperations
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			MemoryDataStoreOperations.class);
-	private final Map<ByteArrayId, TreeSet<MemoryStoreEntry>> storeData = Collections.synchronizedMap(
-			new HashMap<ByteArrayId, TreeSet<MemoryStoreEntry>>());
-	private final Map<MetadataType, TreeSet<MemoryMetadataEntry>> metadataStore = Collections.synchronizedMap(
-			new HashMap<MetadataType, TreeSet<MemoryMetadataEntry>>());
+	private final static Logger LOGGER = Logger.getLogger(MemoryDataStoreOperations.class);
+	private final Map<ByteArrayId, TreeSet<MemoryStoreEntry>> storeData = Collections
+			.synchronizedMap(new HashMap<ByteArrayId, TreeSet<MemoryStoreEntry>>());
+	private final Map<MetadataType, TreeSet<MemoryMetadataEntry>> metadataStore = Collections
+			.synchronizedMap(new HashMap<MetadataType, TreeSet<MemoryMetadataEntry>>());
 
 	public MemoryDataStoreOperations() {}
 
@@ -57,8 +56,7 @@ public class MemoryDataStoreOperations implements
 	public boolean indexExists(
 			final ByteArrayId indexId )
 			throws IOException {
-		return storeData.containsKey(
-				indexId);
+		return storeData.containsKey(indexId);
 	}
 
 	@Override
@@ -103,8 +101,7 @@ public class MemoryDataStoreOperations implements
 
 	protected TreeSet<MemoryStoreEntry> getRowsForIndex(
 			final ByteArrayId id ) {
-		TreeSet<MemoryStoreEntry> set = storeData.get(
-				id);
+		TreeSet<MemoryStoreEntry> set = storeData.get(id);
 		if (set == null) {
 			set = new TreeSet<MemoryStoreEntry>();
 			storeData.put(
@@ -117,16 +114,14 @@ public class MemoryDataStoreOperations implements
 	@Override
 	public Reader createReader(
 			final ReaderParams readerParams ) {
-		final TreeSet<MemoryStoreEntry> internalData = storeData.get(
-				readerParams.getIndex().getId());
+		final TreeSet<MemoryStoreEntry> internalData = storeData.get(readerParams.getIndex().getId());
 		int counter = 0;
 		List<MemoryStoreEntry> retVal = new ArrayList<>();
 		final Collection<SinglePartitionQueryRanges> partitionRanges = readerParams
 				.getQueryRanges()
 				.getPartitionQueryRanges();
 		if ((partitionRanges == null) || partitionRanges.isEmpty()) {
-			retVal.addAll(
-					internalData);
+			retVal.addAll(internalData);
 			// remove unauthorized
 			final Iterator<MemoryStoreEntry> it = retVal.iterator();
 			while (it.hasNext()) {
@@ -163,9 +158,9 @@ public class MemoryDataStoreOperations implements
 										p.getPartitionKey(),
 										r.getStart()),
 								true).headSet(
-										new MemoryStoreEntry(
-												p.getPartitionKey(),
-												r.getEndAsNextPrefix()));
+								new MemoryStoreEntry(
+										p.getPartitionKey(),
+										r.getEndAsNextPrefix()));
 					}
 					// remove unauthorized
 					final Iterator<MemoryStoreEntry> it = set.iterator();
@@ -180,15 +175,13 @@ public class MemoryDataStoreOperations implements
 							&& ((counter + set.size()) > readerParams.getLimit())) {
 						final List<MemoryStoreEntry> subset = new ArrayList<>(
 								set);
-						retVal.addAll(
-								subset.subList(
-										0,
-										readerParams.getLimit() - counter));
+						retVal.addAll(subset.subList(
+								0,
+								readerParams.getLimit() - counter));
 						break;
 					}
 					else {
-						retVal.addAll(
-								set);
+						retVal.addAll(set);
 						counter += set.size();
 						if ((readerParams.getLimit() > 0) && (counter >= readerParams.getLimit())) {
 							break;
@@ -271,34 +264,28 @@ public class MemoryDataStoreOperations implements
 		public void write(
 				final GeoWaveRow[] rows ) {
 			for (final GeoWaveRow r : rows) {
-				write(
-						r);
+				write(r);
 			}
 		}
 
 		@Override
 		public void write(
 				final GeoWaveRow row ) {
-			TreeSet<MemoryStoreEntry> rowTreeSet = storeData.get(
-					indexId);
+			TreeSet<MemoryStoreEntry> rowTreeSet = storeData.get(indexId);
 			if (rowTreeSet == null) {
 				rowTreeSet = new TreeSet<>();
 				storeData.put(
 						indexId,
 						rowTreeSet);
 			}
-			if (rowTreeSet.contains(
-					new MemoryStoreEntry(
-							row))) {
-				rowTreeSet.remove(
-						new MemoryStoreEntry(
-								row));
+			if (rowTreeSet.contains(new MemoryStoreEntry(
+					row))) {
+				rowTreeSet.remove(new MemoryStoreEntry(
+						row));
 			}
-			if (!rowTreeSet.add(
-					new MemoryStoreEntry(
-							row))) {
-				LOGGER.warn(
-						"Unable to add new entry");
+			if (!rowTreeSet.add(new MemoryStoreEntry(
+					row))) {
+				LOGGER.warn("Unable to add new entry");
 			}
 		}
 	}
@@ -329,13 +316,10 @@ public class MemoryDataStoreOperations implements
 			if (isAuthorized(
 					entry,
 					authorizations)) {
-				final TreeSet<MemoryStoreEntry> rowTreeSet = storeData.get(
-						indexId);
+				final TreeSet<MemoryStoreEntry> rowTreeSet = storeData.get(indexId);
 				if (rowTreeSet != null) {
-					if (!rowTreeSet.remove(
-							entry)) {
-						LOGGER.warn(
-								"Unable to remove entry");
+					if (!rowTreeSet.remove(entry)) {
+						LOGGER.warn("Unable to remove entry");
 					}
 				}
 			}
@@ -417,7 +401,7 @@ public class MemoryDataStoreOperations implements
 
 	@Override
 	public MetadataDeleter createMetadataDeleter(
-			final MetadataType metadataType) {
+			final MetadataType metadataType ) {
 		return new MyMetadataDeleter(
 				metadataType);
 	}
@@ -436,8 +420,7 @@ public class MemoryDataStoreOperations implements
 		@Override
 		public CloseableIterator<GeoWaveMetadata> query(
 				final MetadataQuery query ) {
-			final TreeSet<MemoryMetadataEntry> typeStore = metadataStore.get(
-					type);
+			final TreeSet<MemoryMetadataEntry> typeStore = metadataStore.get(type);
 			if (typeStore == null) {
 				return new CloseableIterator.Empty<GeoWaveMetadata>();
 			}
@@ -450,10 +433,8 @@ public class MemoryDataStoreOperations implements
 									null)),
 					new MemoryMetadataEntry(
 							new GeoWaveMetadata(
-									getNextPrefix(
-											query.getPrimaryId()),
-									getNextPrefix(
-											query.getSecondaryId()),
+									getNextPrefix(query.getPrimaryId()),
+									getNextPrefix(query.getSecondaryId()),
 									// this should be sufficient
 									new byte[] {
 										(byte) 0xFF,
@@ -533,26 +514,21 @@ public class MemoryDataStoreOperations implements
 		public void write(
 				final GeoWaveMetadata metadata ) {
 
-			TreeSet<MemoryMetadataEntry> typeStore = metadataStore.get(
-					type);
+			TreeSet<MemoryMetadataEntry> typeStore = metadataStore.get(type);
 			if (typeStore == null) {
 				typeStore = new TreeSet<>();
 				metadataStore.put(
 						type,
 						typeStore);
 			}
-			if (typeStore.contains(
-					new MemoryMetadataEntry(
-							metadata))) {
-				typeStore.remove(
-						new MemoryMetadataEntry(
-								metadata));
+			if (typeStore.contains(new MemoryMetadataEntry(
+					metadata))) {
+				typeStore.remove(new MemoryMetadataEntry(
+						metadata));
 			}
-			if (!typeStore.add(
-					new MemoryMetadataEntry(
-							metadata))) {
-				LOGGER.warn(
-						"Unable to add new metadata");
+			if (!typeStore.add(new MemoryMetadataEntry(
+					metadata))) {
+				LOGGER.warn("Unable to add new metadata");
 			}
 
 		}
@@ -575,8 +551,7 @@ public class MemoryDataStoreOperations implements
 		@Override
 		public boolean delete(
 				final MetadataQuery query ) {
-			try (CloseableIterator<GeoWaveMetadata> it = query(
-					query)) {
+			try (CloseableIterator<GeoWaveMetadata> it = query(query)) {
 				while (it.hasNext()) {
 					it.next();
 					it.remove();

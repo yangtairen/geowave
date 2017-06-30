@@ -28,8 +28,7 @@ public class DataStatisticsStoreImpl extends
 		AbstractGeoWavePersistence<DataStatistics<?>> implements
 		DataStatisticsStore
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			DataStatisticsStoreImpl.class);
+	private final static Logger LOGGER = Logger.getLogger(DataStatisticsStoreImpl.class);
 	// this is fairly arbitrary at the moment because it is the only custom
 	// iterator added
 	private static final int STATS_COMBINER_PRIORITY = 10;
@@ -50,8 +49,7 @@ public class DataStatisticsStoreImpl extends
 			final DataStatistics<?> statistics ) {
 		// because we're using the combiner, we should simply be able to add the
 		// object
-		addObject(
-				statistics);
+		addObject(statistics);
 
 		// TODO if we do allow caching after we add a statistic to Accumulo we
 		// do need to make sure we update our cache, but for now we aren't using
@@ -112,16 +110,13 @@ public class DataStatisticsStoreImpl extends
 	@Override
 	protected DataStatistics<?> entryToValue(
 			final GeoWaveMetadata entry ) {
-		final DataStatistics<?> stats = super.entryToValue(
-				entry);
+		final DataStatistics<?> stats = super.entryToValue(entry);
 		if (stats != null) {
-			stats.setDataAdapterId(
-					new ByteArrayId(
-							entry.getSecondaryId()));
+			stats.setDataAdapterId(new ByteArrayId(
+					entry.getSecondaryId()));
 			final byte[] visibility = entry.getVisibility();
 			if (visibility != null) {
-				stats.setVisibility(
-						visibility);
+				stats.setVisibility(visibility);
 			}
 		}
 		return stats;
@@ -145,15 +140,13 @@ public class DataStatisticsStoreImpl extends
 		removeStatistics(
 				statistics.getDataAdapterId(),
 				statistics.getStatisticsId());
-		addObject(
-				statistics);
+		addObject(statistics);
 	}
 
 	@Override
 	public CloseableIterator<DataStatistics<?>> getAllDataStatistics(
 			final String... authorizations ) {
-		return getObjects(
-				authorizations);
+		return getObjects(authorizations);
 	}
 
 	@Override

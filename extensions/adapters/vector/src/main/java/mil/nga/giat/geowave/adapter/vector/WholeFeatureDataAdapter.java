@@ -51,8 +51,7 @@ public class WholeFeatureDataAdapter extends
 		GeotoolsFeatureDataAdapter,
 		StatisticsProvider<SimpleFeature>
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			WholeFeatureDataAdapter.class);
+	private final static Logger LOGGER = Logger.getLogger(WholeFeatureDataAdapter.class);
 	protected SimpleFeatureType featureType;
 	private ByteArrayId adapterId;
 	private SimpleFeatureBuilder b;
@@ -71,8 +70,7 @@ public class WholeFeatureDataAdapter extends
 				featureType);
 		this.featureType = featureType;
 		adapterId = new ByteArrayId(
-				StringUtils.stringToBinary(
-						featureType.getTypeName()));
+				StringUtils.stringToBinary(featureType.getTypeName()));
 		statsManager = new StatsManager(
 				this,
 				featureType,
@@ -96,8 +94,7 @@ public class WholeFeatureDataAdapter extends
 	public ByteArrayId getDataId(
 			final SimpleFeature entry ) {
 		return new ByteArrayId(
-				StringUtils.stringToBinary(
-						entry.getID()));
+				StringUtils.stringToBinary(entry.getID()));
 	}
 
 	@Override
@@ -130,41 +127,34 @@ public class WholeFeatureDataAdapter extends
 		if ((typeObj != null) && (typeObj instanceof SimpleFeatureType)) {
 			final SimpleFeatureType internalType = (SimpleFeatureType) typeObj;
 
-			nativeFieldHandlers = typeToFieldHandlers(
-					(SimpleFeatureType) typeObj);
+			nativeFieldHandlers = typeToFieldHandlers((SimpleFeatureType) typeObj);
 			final List<IndexFieldHandler<SimpleFeature, ? extends CommonIndexValue, Object>> defaultHandlers = new ArrayList<IndexFieldHandler<SimpleFeature, ? extends CommonIndexValue, Object>>();
-			final IndexFieldHandler<SimpleFeature, Time, Object> timeHandler = getTimeRangeHandler(
-					internalType);
+			final IndexFieldHandler<SimpleFeature, Time, Object> timeHandler = getTimeRangeHandler(internalType);
 			if (timeHandler != null) {
-				defaultHandlers.add(
-						timeHandler);
+				defaultHandlers.add(timeHandler);
 			}
 
-			defaultHandlers.add(
-					new FeatureGeometryHandler(
-							internalType.getGeometryDescriptor(),
-							fieldVisiblityHandler));
+			defaultHandlers.add(new FeatureGeometryHandler(
+					internalType.getGeometryDescriptor(),
+					fieldVisiblityHandler));
 			return defaultHandlers;
 		}
 		// LOGGER.warn("Simple Feature Type could not be used for handling the
 		// indexed data");
-		return super.getDefaultTypeMatchingHandlers(
-				featureType);
+		return super.getDefaultTypeMatchingHandlers(featureType);
 	}
 
 	private static List<NativeFieldHandler<SimpleFeature, Object>> typeToFieldHandlers(
 			final SimpleFeatureType type ) {
 		final List<NativeFieldHandler<SimpleFeature, Object>> nativeHandlers = new ArrayList<NativeFieldHandler<SimpleFeature, Object>>();
-		nativeHandlers.add(
-				new WholeFeatureHandler(
-						type));
+		nativeHandlers.add(new WholeFeatureHandler(
+				type));
 		return nativeHandlers;
 	}
 
 	private IndexFieldHandler<SimpleFeature, Time, Object> getTimeRangeHandler(
 			final SimpleFeatureType featureType ) {
-		final TimeDescriptors timeDescriptors = inferTimeAttributeDescriptor(
-				featureType);
+		final TimeDescriptors timeDescriptors = inferTimeAttributeDescriptor(featureType);
 		if ((timeDescriptors.getStartRange() != null) && (timeDescriptors.getEndRange() != null)) {
 			return (new FeatureTimeRangeHandler(
 					new FeatureAttributeHandler(
@@ -194,8 +184,7 @@ public class WholeFeatureDataAdapter extends
 		// Up the meta-data so that it is clear and visible any inference that
 		// has occurred here. Also, this is critical to
 		// serialization/deserialization
-		config.updateType(
-				persistType);
+		config.updateType(persistType);
 		return timeDescriptors;
 	}
 
@@ -206,8 +195,7 @@ public class WholeFeatureDataAdapter extends
 
 	@Override
 	public synchronized TimeDescriptors getTimeDescriptors() {
-		return inferTimeAttributeDescriptor(
-				featureType);
+		return inferTimeAttributeDescriptor(featureType);
 	}
 
 	@Override
@@ -245,19 +233,16 @@ public class WholeFeatureDataAdapter extends
 		final SimpleFeatureBuilder bldr = getBuilder();
 		for (final byte[] f : bytes) {
 			if (f != null) {
-				final FieldReader reader = FieldUtils.getDefaultReaderForClass(
-						featureType.getType(
-								i).getBinding());
+				final FieldReader reader = FieldUtils.getDefaultReaderForClass(featureType.getType(
+						i).getBinding());
 
 				bldr.set(
 						i,
-						reader.readField(
-								f));
+						reader.readField(f));
 			}
 			i++;
 		}
-		return bldr.buildFeature(
-				data.getDataId().getString());
+		return bldr.buildFeature(data.getDataId().getString());
 	}
 
 	private synchronized SimpleFeatureBuilder getBuilder() {
@@ -273,32 +258,27 @@ public class WholeFeatureDataAdapter extends
 			final SimpleFeature entry,
 			final CommonIndexModel indexModel ) {
 		final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
-		extendedData.addValue(
-				new PersistentValue<Object>(
-						new ByteArrayId(
-								""),
-						entry.getAttributes().toArray(
-								new Object[] {})));
+		extendedData.addValue(new PersistentValue<Object>(
+				new ByteArrayId(
+						""),
+				entry.getAttributes().toArray(
+						new Object[] {})));
 		final AdapterPersistenceEncoding encoding = super.encode(
 				entry,
 				indexModel);
 		return new WholeFeatureAdapterEncoding(
 				getAdapterId(),
-				getDataId(
-						entry),
+				getDataId(entry),
 				encoding.getCommonData(),
 				extendedData);
 	}
 
 	@Override
 	protected byte[] defaultTypeDataToBinary() {
-		final String encodedType = DataUtilities.encodeType(
-				featureType);
+		final String encodedType = DataUtilities.encodeType(featureType);
 		final String typeName = featureType.getTypeName();
-		final byte[] typeNameBytes = StringUtils.stringToBinary(
-				typeName);
-		final byte[] encodedTypeBytes = StringUtils.stringToBinary(
-				encodedType);
+		final byte[] typeNameBytes = StringUtils.stringToBinary(typeName);
+		final byte[] encodedTypeBytes = StringUtils.stringToBinary(encodedType);
 
 		byte[] attrBytes = new byte[0];
 
@@ -312,12 +292,10 @@ public class WholeFeatureDataAdapter extends
 		userDataConfiguration.addConfigurations(
 				typeName,
 				new SimpleFeaturePrimaryIndexConfiguration());
-		userDataConfiguration.configureFromType(
-				featureType);
+		userDataConfiguration.configureFromType(featureType);
 
 		try {
-			attrBytes = StringUtils.stringToBinary(
-					userDataConfiguration.asJsonString());
+			attrBytes = StringUtils.stringToBinary(userDataConfiguration.asJsonString());
 		}
 		catch (final IOException e) {
 			LOGGER.error(
@@ -325,37 +303,26 @@ public class WholeFeatureDataAdapter extends
 					e);
 		}
 
-		final ByteBuffer buf = ByteBuffer.allocate(
-				encodedTypeBytes.length + typeNameBytes.length + adapterId.getBytes().length + attrBytes.length + 24);
+		final ByteBuffer buf = ByteBuffer.allocate(encodedTypeBytes.length + typeNameBytes.length
+				+ adapterId.getBytes().length + attrBytes.length + 24);
 
-		buf.putInt(
-				0); // a signal for the new version
-		buf.putInt(
-				typeNameBytes.length);
-		buf.putInt(
-				0); // old visibility (backward compatibility)
-		buf.putInt(
-				attrBytes.length);
-		buf.putInt(
-				encodedTypeBytes.length);
-		buf.putInt(
-				adapterId.getBytes().length);
-		buf.put(
-				typeNameBytes);
-		buf.put(
-				attrBytes);
-		buf.put(
-				encodedTypeBytes);
-		buf.put(
-				adapterId.getBytes());
+		buf.putInt(0); // a signal for the new version
+		buf.putInt(typeNameBytes.length);
+		buf.putInt(0); // old visibility (backward compatibility)
+		buf.putInt(attrBytes.length);
+		buf.putInt(encodedTypeBytes.length);
+		buf.putInt(adapterId.getBytes().length);
+		buf.put(typeNameBytes);
+		buf.put(attrBytes);
+		buf.put(encodedTypeBytes);
+		buf.put(adapterId.getBytes());
 		return buf.array();
 	}
 
 	@Override
 	protected Object defaultTypeDataFromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buf = ByteBuffer.wrap(
-				bytes);
+		final ByteBuffer buf = ByteBuffer.wrap(bytes);
 		final int initialBytes = buf.getInt();
 		// temporary hack for backward compatibility
 		final boolean skipConfig = (initialBytes > 0);
@@ -364,24 +331,17 @@ public class WholeFeatureDataAdapter extends
 		final byte[] attrBytes = skipConfig ? new byte[0] : new byte[buf.getInt()];
 		final byte[] encodedTypeBytes = new byte[buf.getInt()];
 		final byte[] adapterIdBytes = new byte[buf.getInt()];
-		buf.get(
-				typeNameBytes);
-		buf.get(
-				visibilityManagementClassNameBytes); // ignore...old release
-		buf.get(
-				attrBytes);
-		buf.get(
-				encodedTypeBytes);
-		buf.get(
-				adapterIdBytes);
+		buf.get(typeNameBytes);
+		buf.get(visibilityManagementClassNameBytes); // ignore...old release
+		buf.get(attrBytes);
+		buf.get(encodedTypeBytes);
+		buf.get(adapterIdBytes);
 		adapterId = new ByteArrayId(
 				adapterIdBytes);
 
-		final String typeName = StringUtils.stringFromBinary(
-				typeNameBytes);
+		final String typeName = StringUtils.stringFromBinary(typeNameBytes);
 
-		final String encodedType = StringUtils.stringFromBinary(
-				encodedTypeBytes);
+		final String encodedType = StringUtils.stringFromBinary(encodedTypeBytes);
 		try {
 			final SimpleFeatureType myType = DataUtilities.createType(
 					typeName,
@@ -411,8 +371,7 @@ public class WholeFeatureDataAdapter extends
 						featureType));
 		try {
 			userDataConfiguration.fromJsonString(
-					StringUtils.stringFromBinary(
-							attrBytes),
+					StringUtils.stringFromBinary(attrBytes),
 					featureType);
 
 		}

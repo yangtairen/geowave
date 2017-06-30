@@ -55,24 +55,20 @@ public class NumericFieldIndexStrategy implements
 			final Number indexedData ) {
 		return new InsertionIds(
 				null,
-				Collections.singletonList(
-						new ByteArrayId(
-								toIndexByte(
-										indexedData))));
+				Collections.singletonList(new ByteArrayId(
+						toIndexByte(indexedData))));
 	}
 
 	@Override
 	public InsertionIds getInsertionIds(
 			final Number indexedData,
 			final int maxEstimatedDuplicateIds ) {
-		return getInsertionIds(
-				indexedData);
+		return getInsertionIds(indexedData);
 	}
 
 	public static final byte[] toIndexByte(
 			final Number number ) {
-		return Lexicoders.DOUBLE.toByteArray(
-				number.doubleValue());
+		return Lexicoders.DOUBLE.toByteArray(number.doubleValue());
 	}
 
 	@Override
@@ -84,8 +80,7 @@ public class NumericFieldIndexStrategy implements
 	public Number getRangeForId(
 			final ByteArrayId partitionKey,
 			final ByteArrayId sortKey ) {
-		return Lexicoders.DOUBLE.fromByteArray(
-				sortKey.getBytes());
+		return Lexicoders.DOUBLE.fromByteArray(sortKey.getBytes());
 	}
 
 }

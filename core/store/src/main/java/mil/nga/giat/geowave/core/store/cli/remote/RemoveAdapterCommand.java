@@ -28,8 +28,7 @@ public class RemoveAdapterCommand extends
 		DefaultOperation implements
 		Command
 {
-	private final static Logger LOGGER = LoggerFactory.getLogger(
-			RemoveAdapterCommand.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(RemoveAdapterCommand.class);
 
 	@Parameter(description = "<store name> <adapterId>")
 	private List<String> parameters = new ArrayList<String>();
@@ -46,10 +45,8 @@ public class RemoveAdapterCommand extends
 					"Requires arguments: <store name> <adapterId>");
 		}
 
-		final String inputStoreName = parameters.get(
-				0);
-		final String adapterId = parameters.get(
-				1);
+		final String inputStoreName = parameters.get(0);
+		final String adapterId = parameters.get(1);
 
 		// Attempt to load store.
 		final File configFile = (File) params.getContext().get(
@@ -59,20 +56,17 @@ public class RemoveAdapterCommand extends
 		if (inputStoreOptions == null) {
 			final StoreLoader inputStoreLoader = new StoreLoader(
 					inputStoreName);
-			if (!inputStoreLoader.loadFromConfig(
-					configFile)) {
+			if (!inputStoreLoader.loadFromConfig(configFile)) {
 				throw new ParameterException(
 						"Cannot find store name: " + inputStoreLoader.getStoreName());
 			}
 			inputStoreOptions = inputStoreLoader.getDataStorePlugin();
 		}
 
-		LOGGER.info(
-				"Deleting everything in store: " + inputStoreName + " with adapter id: " + adapterId);
+		LOGGER.info("Deleting everything in store: " + inputStoreName + " with adapter id: " + adapterId);
 		final QueryOptions options = new QueryOptions();
-		options.setAdapterId(
-				new ByteArrayId(
-						adapterId));
+		options.setAdapterId(new ByteArrayId(
+				adapterId));
 		inputStoreOptions.createDataStore().delete(
 				options,
 				new EverythingQuery());
@@ -87,10 +81,8 @@ public class RemoveAdapterCommand extends
 			final String storeName,
 			final String adapterId ) {
 		parameters = new ArrayList<String>();
-		parameters.add(
-				storeName);
-		parameters.add(
-				adapterId);
+		parameters.add(storeName);
+		parameters.add(adapterId);
 	}
 
 	public DataStorePluginOptions getInputStoreOptions() {

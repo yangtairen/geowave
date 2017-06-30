@@ -175,7 +175,7 @@ public class RowRangeHistogramStatistics<T> extends
 	@Override
 	public void entryIngested(
 			final T entry,
-			final GeoWaveRow... kvs) {
+			final GeoWaveRow... kvs ) {
 		for (final GeoWaveRow kv : kvs) {
 			final byte[] idBytes = kv.getSortKey();
 			add(ByteUtils.toDouble(idBytes));

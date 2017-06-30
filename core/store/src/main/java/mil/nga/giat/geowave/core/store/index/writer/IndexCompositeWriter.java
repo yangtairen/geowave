@@ -37,10 +37,8 @@ public class IndexCompositeWriter<T> implements
 		final List<SinglePartitionInsertionIds> ids = new ArrayList<SinglePartitionInsertionIds>();
 
 		for (final IndexWriter<T> indexWriter : writers) {
-			final InsertionIds i = indexWriter.write(
-					entry);
-			ids.addAll(
-					i.getPartitionKeys());
+			final InsertionIds i = indexWriter.write(entry);
+			ids.addAll(i.getPartitionKeys());
 		}
 		return new InsertionIds(
 				ids);
@@ -55,8 +53,7 @@ public class IndexCompositeWriter<T> implements
 			final InsertionIds i = indexWriter.write(
 					entry,
 					fieldVisibilityWriter);
-			ids.addAll(
-					i.getPartitionKeys());
+			ids.addAll(i.getPartitionKeys());
 		}
 		return new InsertionIds(
 				ids);
@@ -66,12 +63,9 @@ public class IndexCompositeWriter<T> implements
 	public PrimaryIndex[] getIndices() {
 		final List<PrimaryIndex> ids = new ArrayList<PrimaryIndex>();
 		for (final IndexWriter<T> indexWriter : writers) {
-			ids.addAll(
-					Arrays.asList(
-							indexWriter.getIndices()));
+			ids.addAll(Arrays.asList(indexWriter.getIndices()));
 		}
-		return ids.toArray(
-				new PrimaryIndex[ids.size()]);
+		return ids.toArray(new PrimaryIndex[ids.size()]);
 	}
 
 	@Override

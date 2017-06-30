@@ -23,8 +23,7 @@ import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 class BaseIndexWriter<T> implements
 		IndexWriter<T>
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			BaseIndexWriter.class);
+	private final static Logger LOGGER = Logger.getLogger(BaseIndexWriter.class);
 
 	protected final PrimaryIndex index;
 	protected final DataStoreOperations operations;
@@ -90,8 +89,7 @@ class BaseIndexWriter<T> implements
 				return new InsertionIds();
 			}
 			final GeoWaveRow[] rows = entryInfo.getRows();
-			writer.write(
-					rows);
+			writer.write(rows);
 			callback.entryIngested(
 					entry,
 					rows);
@@ -139,11 +137,9 @@ class BaseIndexWriter<T> implements
 				if ((field.getVisibility() != null) && (field.getVisibility().length > 0)) {
 					if (!operations.insureAuthorizations(
 							null,
-							StringUtils.stringFromBinary(
-									field.getVisibility()))) {
-						LOGGER.error(
-								"Unable to set authorizations for ingested visibility '" + StringUtils.stringFromBinary(
-										field.getVisibility()) + "'");
+							StringUtils.stringFromBinary(field.getVisibility()))) {
+						LOGGER.error("Unable to set authorizations for ingested visibility '"
+								+ StringUtils.stringFromBinary(field.getVisibility()) + "'");
 					}
 
 				}

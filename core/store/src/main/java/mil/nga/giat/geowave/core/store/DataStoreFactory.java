@@ -24,8 +24,7 @@ public class DataStoreFactory extends
 	@Override
 	public DataStore createStore(
 			final StoreFactoryOptions factoryOptions ) {
-		final DataStoreOperations operations = helper.createOperations(
-				factoryOptions);
+		final DataStoreOperations operations = helper.createOperations(factoryOptions);
 		final DataStoreOptions options = factoryOptions.getStoreOptions();
 		return new BaseDataStore<>(
 				new IndexStoreImpl(

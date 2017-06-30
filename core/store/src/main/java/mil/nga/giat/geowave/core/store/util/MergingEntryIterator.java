@@ -30,8 +30,7 @@ import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 public class MergingEntryIterator<T> extends
 		NativeEntryIteratorWrapper<T>
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			NativeEntryIteratorWrapper.class);
+	private final static Logger LOGGER = Logger.getLogger(NativeEntryIteratorWrapper.class);
 
 	private final Map<ByteArrayId, RowMergingDataAdapter> mergingAdapters;
 	private final Map<ByteArrayId, RowTransform> transforms;
@@ -74,15 +73,13 @@ public class MergingEntryIterator<T> extends
 
 		final ByteArrayId adapterId = new ByteArrayId(
 				nextResult.getAdapterId());
-		final RowMergingDataAdapter mergingAdapter = mergingAdapters.get(
-				adapterId);
+		final RowMergingDataAdapter mergingAdapter = mergingAdapters.get(adapterId);
 
 		final ArrayList<GeoWaveRow> resultsToMerge = new ArrayList<GeoWaveRow>();
 
 		if ((mergingAdapter != null) && (mergingAdapter.getTransform() != null)) {
 
-			resultsToMerge.add(
-					nextResult);
+			resultsToMerge.add(nextResult);
 
 			// Peek ahead to see if it needs to be merged with the next result
 			while (scannerIt.hasNext()) {
@@ -91,8 +88,7 @@ public class MergingEntryIterator<T> extends
 				if (DataStoreUtils.rowIdsMatch(
 						nextResult,
 						peekedValue)) {
-					resultsToMerge.add(
-							peekedValue);
+					resultsToMerge.add(peekedValue);
 					peekedValue = null;
 				}
 				else {
@@ -118,12 +114,10 @@ public class MergingEntryIterator<T> extends
 			return null;
 		}
 		else if (resultsToMerge.size() == 1) {
-			final GeoWaveRow row = resultsToMerge.get(
-					0);
+			final GeoWaveRow row = resultsToMerge.get(0);
 			return new GeoWaveRowImpl(
 					new GeoWaveKeyImpl(
-							DataStoreUtils.removeUniqueId(
-									row.getDataId()),
+							DataStoreUtils.removeUniqueId(row.getDataId()),
 							row.getAdapterId(),
 							row.getPartitionKey(),
 							row.getSortKey(),
@@ -139,14 +133,10 @@ public class MergingEntryIterator<T> extends
 							final GeoWaveRow row1,
 							final GeoWaveRow row2 ) {
 
-						final ByteBuffer buf1 = ByteBuffer.wrap(
-								row1.getDataId());
-						final ByteBuffer buf2 = ByteBuffer.wrap(
-								row2.getDataId());
-						buf1.position(
-								(buf1.remaining() - DataStoreUtils.UNIQUE_ADDED_BYTES) + 1);
-						buf2.position(
-								(buf2.remaining() - DataStoreUtils.UNIQUE_ADDED_BYTES) + 1);
+						final ByteBuffer buf1 = ByteBuffer.wrap(row1.getDataId());
+						final ByteBuffer buf2 = ByteBuffer.wrap(row2.getDataId());
+						buf1.position((buf1.remaining() - DataStoreUtils.UNIQUE_ADDED_BYTES) + 1);
+						buf2.position((buf2.remaining() - DataStoreUtils.UNIQUE_ADDED_BYTES) + 1);
 
 						final long ts1 = buf1.getLong();
 						final long ts2 = buf2.getLong();
@@ -176,15 +166,12 @@ public class MergingEntryIterator<T> extends
 			final GeoWaveRow row,
 			final GeoWaveRow rowToMerge ) {
 
-		RowTransform transform = transforms.get(
-				mergingAdapter.getAdapterId());
+		RowTransform transform = transforms.get(mergingAdapter.getAdapterId());
 		if (transform == null) {
 			transform = mergingAdapter.getTransform();
 			// set strategy
 			try {
-				transform.initOptions(
-						mergingAdapter.getOptions(
-								null));
+				transform.initOptions(mergingAdapter.getOptions(null));
 			}
 			catch (final IOException e) {
 				LOGGER.error(
@@ -209,20 +196,18 @@ public class MergingEntryIterator<T> extends
 						value.getFieldMask()),
 				value.getValue());
 
-		mergeable.merge(
-				transform.getRowAsMergeableObject(
-						new ByteArrayId(
-								rowToMerge.getAdapterId()),
-						new ByteArrayId(
-								valueToMerge.getFieldMask()),
-						valueToMerge.getValue()));
+		mergeable.merge(transform.getRowAsMergeableObject(
+				new ByteArrayId(
+						rowToMerge.getAdapterId()),
+				new ByteArrayId(
+						valueToMerge.getFieldMask()),
+				valueToMerge.getValue()));
 		// the assumption is that row and rowToMerge have the same keys, field
 		// mask, and visibility
 		// this should be a valid assumption
 		return new GeoWaveRowImpl(
 				new GeoWaveKeyImpl(
-						DataStoreUtils.removeUniqueId(
-								row.getDataId()),
+						DataStoreUtils.removeUniqueId(row.getDataId()),
 						row.getAdapterId(),
 						row.getPartitionKey(),
 						row.getSortKey(),
@@ -231,8 +216,7 @@ public class MergingEntryIterator<T> extends
 					new GeoWaveValueImpl(
 							value.getFieldMask(),
 							value.getVisibility(),
-							transform.getBinaryFromMergedObject(
-									mergeable))
+							transform.getBinaryFromMergedObject(mergeable))
 				});
 
 	}

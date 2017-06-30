@@ -29,8 +29,7 @@ abstract class BaseFilteredIndexQuery extends
 		BaseQuery
 {
 	protected List<QueryFilter> clientFilters;
-	private final static Logger LOGGER = Logger.getLogger(
-			BaseFilteredIndexQuery.class);
+	private final static Logger LOGGER = Logger.getLogger(BaseFilteredIndexQuery.class);
 	protected final ScanCallback<?, ?> scanCallback;
 
 	public BaseFilteredIndexQuery(
@@ -95,8 +94,7 @@ abstract class BaseFilteredIndexQuery extends
 			final Integer limit ) {
 		boolean exists = false;
 		try {
-			exists = datastoreOperations.indexExists(
-					index.getId());
+			exists = datastoreOperations.indexExists(index.getId());
 		}
 		catch (final IOException e) {
 			LOGGER.error(
@@ -104,9 +102,7 @@ abstract class BaseFilteredIndexQuery extends
 					e);
 		}
 		if (!exists) {
-			LOGGER.warn(
-					"Table does not exist " + StringUtils.stringFromBinary(
-							index.getId().getBytes()));
+			LOGGER.warn("Table does not exist " + StringUtils.stringFromBinary(index.getId().getBytes()));
 			return null;
 		}
 
@@ -130,8 +126,7 @@ abstract class BaseFilteredIndexQuery extends
 				adapterStore,
 				index,
 				reader,
-				getClientFilter(
-						options),
+				getClientFilter(options),
 				scanCallback,
 				decodePersistenceEncoding);
 	}
@@ -139,12 +134,10 @@ abstract class BaseFilteredIndexQuery extends
 	@Override
 	protected QueryFilter getClientFilter(
 			final DataStoreOptions options ) {
-		final List<QueryFilter> internalClientFilters = getClientFiltersList(
-				options);
-		return internalClientFilters.isEmpty() ? null : internalClientFilters.size() == 1 ? internalClientFilters.get(
-				0)
-				: new FilterList<QueryFilter>(
-						internalClientFilters);
+		final List<QueryFilter> internalClientFilters = getClientFiltersList(options);
+		return internalClientFilters.isEmpty() ? null : internalClientFilters.size() == 1 ? internalClientFilters
+				.get(0) : new FilterList<QueryFilter>(
+				internalClientFilters);
 	}
 
 	protected List<QueryFilter> getClientFiltersList(

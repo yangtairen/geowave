@@ -76,7 +76,7 @@ public class RowRangeDataStatistics<T> extends
 	public void entryIngested(
 			final T entry,
 			final GeoWaveRow... kvs ) {
-		//TODO we should have a statistic that is a range per partition
+		// TODO we should have a statistic that is a range per partition
 		for (final GeoWaveRow kv : kvs) {
 			byte[] sortKey = kv.getSortKey();
 			min = compare(

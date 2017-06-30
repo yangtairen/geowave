@@ -95,7 +95,7 @@ public interface SecondaryIndexDataStore
 			ByteArrayId adapterId,
 			ByteArrayId indexedAttributeFieldId,
 			ByteArrayId dataId,
-			GeoWaveValue... originalFields  );
+			GeoWaveValue... originalFields );
 
 	public void flush();
 

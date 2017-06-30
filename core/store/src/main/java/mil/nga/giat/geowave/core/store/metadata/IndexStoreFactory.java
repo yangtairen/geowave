@@ -23,8 +23,7 @@ public class IndexStoreFactory extends
 	public IndexStore createStore(
 			final StoreFactoryOptions options ) {
 		return new IndexStoreImpl(
-				helper.createOperations(
-						options),
+				helper.createOperations(options),
 				options.getStoreOptions());
 	}
 

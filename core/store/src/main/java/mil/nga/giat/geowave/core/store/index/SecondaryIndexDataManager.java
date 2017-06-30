@@ -51,8 +51,7 @@ public class SecondaryIndexDataManager<T> implements
 			final boolean delete,
 			final GeoWaveRow... kvs ) {
 		// loop secondary indices for adapter
-		final InsertionIds primaryIndexInsertionIds = DataStoreUtils.keysToInsertionIds(
-				kvs);
+		final InsertionIds primaryIndexInsertionIds = DataStoreUtils.keysToInsertionIds(kvs);
 		for (final SecondaryIndex<T> secondaryIndex : adapter.getSupportedSecondaryIndices()) {
 			final ByteArrayId indexedAttributeFieldId = secondaryIndex.getFieldId();
 			final int position = adapter.getPositionOfOrderedField(
@@ -64,9 +63,8 @@ public class SecondaryIndexDataManager<T> implements
 			for (final GeoWaveValue v : kvs[0].getFieldValues()) {
 				if (BitmaskUtils.getFieldPositions(
 						v.getFieldMask()).contains(
-								position)) {
-					final byte[] fieldSubsetBitmask = BitmaskUtils.generateCompositeBitmask(
-							position);
+						position)) {
+					final byte[] fieldSubsetBitmask = BitmaskUtils.generateCompositeBitmask(position);
 
 					final byte[] byteValue = BitmaskUtils.constructNewValue(
 							v.getValue(),
@@ -74,7 +72,7 @@ public class SecondaryIndexDataManager<T> implements
 							fieldSubsetBitmask);
 					fieldValue = adapter.getReader(
 							indexedAttributeFieldId).readField(
-									byteValue);
+							byteValue);
 					visibility = v.getVisibility();
 					break;
 				}
@@ -103,7 +101,7 @@ public class SecondaryIndexDataManager<T> implements
 									new ByteArrayId(
 											visibility));
 						}
-						else{
+						else {
 							secondaryIndexStore.deleteJoinEntry(
 									secondaryIndex.getId(),
 									insertionId,
@@ -140,11 +138,10 @@ public class SecondaryIndexDataManager<T> implements
 								}
 								fieldMask = newBitmask;
 							}
-							subsetValues.add(
-									new GeoWaveValueImpl(
-											fieldMask,
-											value.getVisibility(),
-											byteValue));
+							subsetValues.add(new GeoWaveValueImpl(
+									fieldMask,
+									value.getVisibility(),
+									byteValue));
 						}
 						secondaryIndexStore.storeEntry(
 								secondaryIndex.getId(),
@@ -152,8 +149,7 @@ public class SecondaryIndexDataManager<T> implements
 								adapter.getAdapterId(),
 								indexedAttributeFieldId,
 								dataId,
-								subsetValues.toArray(
-										new GeoWaveValue[] {}));
+								subsetValues.toArray(new GeoWaveValue[] {}));
 						break;
 					case FULL:
 						// assume multiple rows are duplicates, so just take the

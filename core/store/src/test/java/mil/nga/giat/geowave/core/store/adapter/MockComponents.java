@@ -59,34 +59,33 @@ public class MockComponents
 					Lists.newArrayList());
 			this.id = id;
 			final List<IndexFieldHandler<Integer, TestIndexFieldType, Object>> handlers = new ArrayList<IndexFieldHandler<Integer, TestIndexFieldType, Object>>();
-			handlers.add(
-					new IndexFieldHandler<Integer, TestIndexFieldType, Object>() {
+			handlers.add(new IndexFieldHandler<Integer, TestIndexFieldType, Object>() {
 
-						@Override
-						public ByteArrayId[] getNativeFieldIds() {
-							return new ByteArrayId[] {
-								INTEGER
-							};
-						}
+				@Override
+				public ByteArrayId[] getNativeFieldIds() {
+					return new ByteArrayId[] {
+						INTEGER
+					};
+				}
 
-						@Override
-						public TestIndexFieldType toIndexValue(
-								final Integer row ) {
-							return new TestIndexFieldType(
-									row);
-						}
+				@Override
+				public TestIndexFieldType toIndexValue(
+						final Integer row ) {
+					return new TestIndexFieldType(
+							row);
+				}
 
-						@Override
-						public PersistentValue<Object>[] toNativeValues(
-								final TestIndexFieldType indexValue ) {
-							return new PersistentValue[] {
-								new PersistentValue<Integer>(
-										INTEGER,
-										indexValue.indexValue)
-							};
-						}
+				@Override
+				public PersistentValue<Object>[] toNativeValues(
+						final TestIndexFieldType indexValue ) {
+					return new PersistentValue[] {
+						new PersistentValue<Integer>(
+								INTEGER,
+								indexValue.indexValue)
+					};
+				}
 
-					});
+			});
 			super.init(
 					handlers,
 					null);
@@ -152,15 +151,11 @@ public class MockComponents
 		@Override
 		public FieldReader getReader(
 				final ByteArrayId fieldId ) {
-			if (fieldId.equals(
-					INTEGER)) {
-				return FieldUtils.getDefaultReaderForClass(
-						Integer.class);
+			if (fieldId.equals(INTEGER)) {
+				return FieldUtils.getDefaultReaderForClass(Integer.class);
 			}
-			else if (fieldId.equals(
-					ID)) {
-				return FieldUtils.getDefaultReaderForClass(
-						String.class);
+			else if (fieldId.equals(ID)) {
+				return FieldUtils.getDefaultReaderForClass(String.class);
 			}
 			return null;
 		}
@@ -172,15 +167,11 @@ public class MockComponents
 		@Override
 		public FieldWriter getWriter(
 				final ByteArrayId fieldId ) {
-			if (fieldId.equals(
-					INTEGER)) {
-				return FieldUtils.getDefaultWriterForClass(
-						Integer.class);
+			if (fieldId.equals(INTEGER)) {
+				return FieldUtils.getDefaultWriterForClass(Integer.class);
 			}
-			else if (fieldId.equals(
-					ID)) {
-				return FieldUtils.getDefaultWriterForClass(
-						String.class);
+			else if (fieldId.equals(ID)) {
+				return FieldUtils.getDefaultWriterForClass(String.class);
 			}
 			return null;
 		}
@@ -243,18 +234,15 @@ public class MockComponents
 				final ByteArrayId fieldId ) {
 			int i = 0;
 			for (final NumericDimensionField<? extends CommonIndexValue> dimensionField : model.getDimensions()) {
-				if (fieldId.equals(
-						dimensionField.getFieldId())) {
+				if (fieldId.equals(dimensionField.getFieldId())) {
 					return i;
 				}
 				i++;
 			}
-			if (fieldId.equals(
-					INTEGER)) {
+			if (fieldId.equals(INTEGER)) {
 				return i;
 			}
-			else if (fieldId.equals(
-					ID)) {
+			else if (fieldId.equals(ID)) {
 				return i + 1;
 			}
 			return -1;
@@ -386,8 +374,7 @@ public class MockComponents
 			String sNewRow = new String();
 			final char[] newDigit = new char[1];
 			for (int i = 0; i < numDigits; i++) {
-				final char digit = sRow.charAt(
-						i);
+				final char digit = sRow.charAt(i);
 				switch (digit) {
 					case '0':
 						newDigit[0] = '1';
@@ -420,13 +407,11 @@ public class MockComponents
 						newDigit[0] = '0';
 						break;
 				}
-				sNewRow = sNewRow.concat(
-						new String(
-								newDigit));
+				sNewRow = sNewRow.concat(new String(
+						newDigit));
 			}
 			return new TestIndexFieldType(
-					Integer.decode(
-							sNewRow));
+					Integer.decode(sNewRow));
 		}
 
 		// toNativeValues decrements each digit in the value.
@@ -440,8 +425,7 @@ public class MockComponents
 			String sNewRow = new String();
 			final char[] newDigit = new char[1];
 			for (int i = 0; i < numDigits; i++) {
-				final char digit = sRow.charAt(
-						i);
+				final char digit = sRow.charAt(i);
 				switch (digit) {
 					case '0':
 						newDigit[0] = '9';
@@ -474,12 +458,10 @@ public class MockComponents
 						newDigit[0] = '8';
 						break;
 				}
-				sNewRow = sNewRow.concat(
-						new String(
-								newDigit));
+				sNewRow = sNewRow.concat(new String(
+						newDigit));
 			}
-			final Integer newValue = Integer.decode(
-					sNewRow);
+			final Integer newValue = Integer.decode(sNewRow);
 
 			return new PersistentValue[] {
 				new PersistentValue<Object>(
@@ -657,10 +639,9 @@ public class MockComponents
 				final MultiDimensionalNumericData indexedData ) {
 			final List<ByteArrayId> ids = new ArrayList<ByteArrayId>();
 			for (final NumericData data : indexedData.getDataPerDimension()) {
-				ids.add(
-						new ByteArrayId(
-								Double.toString(
-										data.getCentroid()).getBytes()));
+				ids.add(new ByteArrayId(
+						Double.toString(
+								data.getCentroid()).getBytes()));
 			}
 			return new InsertionIds(
 					ids);
@@ -670,8 +651,7 @@ public class MockComponents
 		public InsertionIds getInsertionIds(
 				final MultiDimensionalNumericData indexedData,
 				final int maxEstimatedDuplicateIds ) {
-			return this.getInsertionIds(
-					indexedData);
+			return this.getInsertionIds(indexedData);
 		}
 
 		@Override
@@ -701,8 +681,7 @@ public class MockComponents
 		public MultiDimensionalCoordinateRanges[] getCoordinateRangesPerDimension(
 				final MultiDimensionalNumericData dataRange,
 				final IndexMetaData... hints ) {
-			final CoordinateRange[][] coordinateRangesPerDimension = new CoordinateRange[dataRange
-					.getDimensionCount()][];
+			final CoordinateRange[][] coordinateRangesPerDimension = new CoordinateRange[dataRange.getDimensionCount()][];
 			for (int d = 0; d < coordinateRangesPerDimension.length; d++) {
 				coordinateRangesPerDimension[d] = new CoordinateRange[1];
 				coordinateRangesPerDimension[d][0] = new CoordinateRange(
@@ -754,9 +733,8 @@ public class MockComponents
 					new byte[] {},
 					new Coordinate[] {
 						new Coordinate(
-								(long) Double.parseDouble(
-										new String(
-												partitionKey.getBytes())),
+								(long) Double.parseDouble(new String(
+										sortKey.getBytes())),
 								new byte[] {})
 					});
 		}
@@ -853,9 +831,8 @@ public class MockComponents
 		public TestIndexFieldType readField(
 				final byte[] fieldData ) {
 			return new TestIndexFieldType(
-					Integer.parseInt(
-							new String(
-									fieldData)));
+					Integer.parseInt(new String(
+							fieldData)));
 		}
 	}
 }

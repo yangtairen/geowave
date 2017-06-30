@@ -21,36 +21,27 @@ public class TemporalIndexStrategyTest
 
 	@Test
 	public void testInsertions() {
-		final InsertionIds insertionIds = strategy.getInsertionIds(
-				date);
-		Assert.assertTrue(
-				insertionIds.getSize() == 1);
-		Assert.assertTrue(
-				insertionIds.getCompositeInsertionIds().contains(
-						new ByteArrayId(
-								Lexicoders.LONG.toByteArray(
-										date.getTime()))));
+		final InsertionIds insertionIds = strategy.getInsertionIds(date);
+		Assert.assertTrue(insertionIds.getSize() == 1);
+		Assert.assertTrue(insertionIds.getCompositeInsertionIds().contains(
+				new ByteArrayId(
+						Lexicoders.LONG.toByteArray(date.getTime()))));
 	}
 
 	@Test
 	public void testDateRange() {
-		final QueryRanges ranges = strategy.getQueryRanges(
-				new TemporalQueryConstraint(
-						fieldId,
-						date,
-						date));
-		Assert.assertTrue(
-				ranges.getCompositeQueryRanges().size() == 1);
-		Assert.assertTrue(
-				ranges.getCompositeQueryRanges().get(
-						0).equals(
-								new ByteArrayRange(
-										new ByteArrayId(
-												Lexicoders.LONG.toByteArray(
-														date.getTime())),
-										new ByteArrayId(
-												Lexicoders.LONG.toByteArray(
-														date.getTime())))));
+		final QueryRanges ranges = strategy.getQueryRanges(new TemporalQueryConstraint(
+				fieldId,
+				date,
+				date));
+		Assert.assertTrue(ranges.getCompositeQueryRanges().size() == 1);
+		Assert.assertTrue(ranges.getCompositeQueryRanges().get(
+				0).equals(
+				new ByteArrayRange(
+						new ByteArrayId(
+								Lexicoders.LONG.toByteArray(date.getTime())),
+						new ByteArrayId(
+								Lexicoders.LONG.toByteArray(date.getTime())))));
 	}
 
 }

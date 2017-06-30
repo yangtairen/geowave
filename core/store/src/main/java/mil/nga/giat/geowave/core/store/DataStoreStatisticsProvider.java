@@ -34,8 +34,8 @@ public class DataStoreStatisticsProvider<T> implements
 
 	@Override
 	public ByteArrayId[] getSupportedStatisticsIds() {
-		final ByteArrayId[] idsFromAdapter = ((adapter instanceof StatisticsProvider) && includeAdapterStats)
-				? ((StatisticsProvider) adapter).getSupportedStatisticsIds() : new ByteArrayId[0];
+		final ByteArrayId[] idsFromAdapter = ((adapter instanceof StatisticsProvider) && includeAdapterStats) ? ((StatisticsProvider) adapter)
+				.getSupportedStatisticsIds() : new ByteArrayId[0];
 		final ByteArrayId[] newSet = Arrays.copyOf(
 				idsFromAdapter,
 				idsFromAdapter.length + 5);
@@ -50,39 +50,34 @@ public class DataStoreStatisticsProvider<T> implements
 	@Override
 	public DataStatistics<T> createDataStatistics(
 			final ByteArrayId statisticsId ) {
-		if (statisticsId.equals(
-				RowRangeDataStatistics.STATS_ID)) {
+		if (statisticsId.equals(RowRangeDataStatistics.STATS_ID)) {
 			return new RowRangeDataStatistics(
 					index.getId());
 		}
-		if (statisticsId.equals(
-				RowRangeHistogramStatistics.STATS_ID)) {
+		if (statisticsId.equals(RowRangeHistogramStatistics.STATS_ID)) {
 			return new RowRangeHistogramStatistics(
 					adapter.getAdapterId(),
 					index.getId(),
 					1024);
 		}
-		if (statisticsId.equals(
-				IndexMetaDataSet.STATS_ID)) {
+		if (statisticsId.equals(IndexMetaDataSet.STATS_ID)) {
 			return new IndexMetaDataSet(
 					adapter.getAdapterId(),
 					index.getId(),
 					index.getIndexStrategy());
 		}
-		if (statisticsId.equals(
-				DifferingFieldVisibilityEntryCount.STATS_ID)) {
+		if (statisticsId.equals(DifferingFieldVisibilityEntryCount.STATS_ID)) {
 			return new DifferingFieldVisibilityEntryCount<>(
 					adapter.getAdapterId(),
 					index.getId());
 		}
-		if (statisticsId.equals(
-				DuplicateEntryCount.STATS_ID)) {
+		if (statisticsId.equals(DuplicateEntryCount.STATS_ID)) {
 			return new DuplicateEntryCount<>(
 					adapter.getAdapterId(),
 					index.getId());
 		}
-		return (adapter instanceof StatisticsProvider) ? ((StatisticsProvider) adapter).createDataStatistics(
-				statisticsId) : null;
+		return (adapter instanceof StatisticsProvider) ? ((StatisticsProvider) adapter)
+				.createDataStatistics(statisticsId) : null;
 	}
 
 	@Override

@@ -23,8 +23,7 @@ public class AdapterStoreFactory extends
 	public AdapterStore createStore(
 			final StoreFactoryOptions options ) {
 		return new AdapterStoreImpl(
-				helper.createOperations(
-						options),
+				helper.createOperations(options),
 				options.getStoreOptions());
 	}
 

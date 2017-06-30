@@ -53,8 +53,7 @@ class IntermediaryReadEntryInfo<T>
 			return false;
 		}
 
-		this.adapterVerified = adapterId.equals(
-				dataAdapter.getAdapterId());
+		this.adapterVerified = adapterId.equals(dataAdapter.getAdapterId());
 
 		return this.adapterVerified;
 	}
@@ -77,8 +76,7 @@ class IntermediaryReadEntryInfo<T>
 
 		// Try to retrieve the adapter from the store
 		if (setDataAdapter(
-				(DataAdapter<T>) adapterStore.getAdapter(
-						adapterId),
+				(DataAdapter<T>) adapterStore.getAdapter(adapterId),
 				true)) {
 			return true;
 		}

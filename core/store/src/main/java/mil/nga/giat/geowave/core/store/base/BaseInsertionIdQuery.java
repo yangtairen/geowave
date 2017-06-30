@@ -34,8 +34,7 @@ class BaseInsertionIdQuery<T> extends
 			final String[] authorizations ) {
 		super(
 				dataStore,
-				Collections.<ByteArrayId> singletonList(
-						adapter.getAdapterId()),
+				Collections.<ByteArrayId> singletonList(adapter.getAdapterId()),
 				index,
 				query,
 				dedupeFilter,
@@ -48,8 +47,7 @@ class BaseInsertionIdQuery<T> extends
 				authorizations);
 		this.ranges = new InsertionIds(
 				query.getPartitionKey(),
-				Lists.newArrayList(
-						query.getSortKey())).asQueryRanges();
+				Lists.newArrayList(query.getSortKey())).asQueryRanges();
 	}
 
 	@Override

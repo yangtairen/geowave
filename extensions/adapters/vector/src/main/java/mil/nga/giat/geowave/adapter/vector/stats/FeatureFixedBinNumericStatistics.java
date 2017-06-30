@@ -82,8 +82,7 @@ public class FeatureFixedBinNumericStatistics extends
 
 	@Override
 	public String getFieldName() {
-		return decomposeNameFromId(
-				getStatisticsId());
+		return decomposeNameFromId(getStatisticsId());
 	}
 
 	@Override
@@ -97,8 +96,7 @@ public class FeatureFixedBinNumericStatistics extends
 	public void entryIngested(
 			final SimpleFeature entry,
 			final GeoWaveRow... rows ) {
-		final Object o = entry.getAttribute(
-				getFieldName());
+		final Object o = entry.getAttribute(getFieldName());
 		if (o == null) {
 			return;
 		}

@@ -22,7 +22,7 @@ public class IngestCallbackList<T> implements
 	@Override
 	public void entryIngested(
 			final T entry,
-			GeoWaveRow...kvs ) {
+			GeoWaveRow... kvs ) {
 		for (final IngestCallback<T> callback : callbacks) {
 			callback.entryIngested(
 					entry,

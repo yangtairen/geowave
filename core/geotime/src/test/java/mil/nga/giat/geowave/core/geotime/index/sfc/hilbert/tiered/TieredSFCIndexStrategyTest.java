@@ -399,7 +399,8 @@ public class TieredSFCIndexStrategyTest
 		// different bin
 		indexedData = new BasicNumericDataset(
 				dataPerDimension3);
-		final List<ByteArrayId> ids3 = strategy.getInsertionIds(indexedData).getCompositeInsertionIds();
+		final List<ByteArrayId> ids3 = strategy.getInsertionIds(
+				indexedData).getCompositeInsertionIds();
 		assertEquals(
 				1,
 				ids3.size());

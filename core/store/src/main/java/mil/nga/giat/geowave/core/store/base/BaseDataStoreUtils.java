@@ -34,8 +34,7 @@ import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 
 public class BaseDataStoreUtils
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			BaseDataStoreUtils.class);
+	private final static Logger LOGGER = Logger.getLogger(BaseDataStoreUtils.class);
 	public static final int MAX_RANGE_DECOMPOSITION = 2000;
 	public static final int AGGREGATION_RANGE_DECOMPOSITION = 10;
 
@@ -61,8 +60,7 @@ public class BaseDataStoreUtils
 		final AdapterPersistenceEncoding encodedData = adapter.encode(
 				entry,
 				indexModel);
-		final InsertionIds insertionIds = encodedData.getInsertionIds(
-				index);
+		final InsertionIds insertionIds = encodedData.getInsertionIds(index);
 		final PersistentDataset extendedData = encodedData.getAdapterExtendedData();
 		final PersistentDataset indexedData = encodedData.getCommonData();
 		final List<PersistentValue> extendedValues = extendedData.getValues();
@@ -81,8 +79,7 @@ public class BaseDataStoreUtils
 						entry,
 						customFieldVisibilityWriter);
 				if (fieldInfo != null) {
-					fieldInfoList.add(
-							fieldInfo);
+					fieldInfoList.add(fieldInfo);
 				}
 			}
 			for (final PersistentValue<?> fieldValue : extendedValues) {
@@ -93,16 +90,14 @@ public class BaseDataStoreUtils
 							entry,
 							customFieldVisibilityWriter);
 					if (fieldInfo != null) {
-						fieldInfoList.add(
-								fieldInfo);
+						fieldInfoList.add(fieldInfo);
 					}
 				}
 			}
 		}
 		else {
-			LOGGER.warn(
-					"Indexing failed to produce insertion ids; entry [" + adapter.getDataId(
-							entry).getString() + "] not saved.");
+			LOGGER.warn("Indexing failed to produce insertion ids; entry [" + adapter.getDataId(
+					entry).getString() + "] not saved.");
 		}
 
 		fieldInfoList = BaseDataStoreUtils.composeFlattenedFields(
@@ -156,22 +151,18 @@ public class BaseDataStoreUtils
 			}
 			final ByteArrayId currViz = new ByteArrayId(
 					fieldInfo.getVisibility());
-			if (vizToFieldMap.containsKey(
-					currViz)) {
+			if (vizToFieldMap.containsKey(currViz)) {
 				sharedVisibility = true;
-				final List<Pair<Integer, FieldInfo<?>>> listForViz = vizToFieldMap.get(
-						currViz);
-				listForViz.add(
-						new ImmutablePair<Integer, FieldInfo<?>>(
-								fieldPosition,
-								fieldInfo));
+				final List<Pair<Integer, FieldInfo<?>>> listForViz = vizToFieldMap.get(currViz);
+				listForViz.add(new ImmutablePair<Integer, FieldInfo<?>>(
+						fieldPosition,
+						fieldInfo));
 			}
 			else {
 				final List<Pair<Integer, FieldInfo<?>>> listForViz = new ArrayList<>();
-				listForViz.add(
-						new ImmutablePair<Integer, FieldInfo<?>>(
-								fieldPosition,
-								fieldInfo));
+				listForViz.add(new ImmutablePair<Integer, FieldInfo<?>>(
+						fieldPosition,
+						fieldInfo));
 				vizToFieldMap.put(
 						currViz,
 						listForViz);
@@ -182,17 +173,14 @@ public class BaseDataStoreUtils
 			final List<FieldInfo<?>> bitmaskedFieldInfos = new ArrayList<>();
 			for (final List<Pair<Integer, FieldInfo<?>>> list : vizToFieldMap.values()) {
 				// every list must have exactly one element
-				final Pair<Integer, FieldInfo<?>> fieldInfo = list.get(
-						0);
-				bitmaskedFieldInfos.add(
-						new FieldInfo<>(
-								new PersistentValue<Object>(
-										new ByteArrayId(
-												BitmaskUtils.generateCompositeBitmask(
-														fieldInfo.getLeft())),
-										fieldInfo.getRight().getDataValue().getValue()),
-								fieldInfo.getRight().getWrittenValue(),
-								fieldInfo.getRight().getVisibility()));
+				final Pair<Integer, FieldInfo<?>> fieldInfo = list.get(0);
+				bitmaskedFieldInfos.add(new FieldInfo<>(
+						new PersistentValue<Object>(
+								new ByteArrayId(
+										BitmaskUtils.generateCompositeBitmask(fieldInfo.getLeft())),
+								fieldInfo.getRight().getDataValue().getValue()),
+						fieldInfo.getRight().getWrittenValue(),
+						fieldInfo.getRight().getVisibility()));
 			}
 			return bitmaskedFieldInfos;
 		}
@@ -206,26 +194,18 @@ public class BaseDataStoreUtils
 					new BitmaskedPairComparator());
 			for (final Pair<Integer, FieldInfo<?>> fieldInfoPair : fieldInfoList) {
 				final FieldInfo<?> fieldInfo = fieldInfoPair.getRight();
-				final ByteBuffer fieldInfoBytes = ByteBuffer.allocate(
-						4 + fieldInfo.getWrittenValue().length);
-				fieldPositions.add(
-						fieldInfoPair.getLeft());
-				fieldInfoBytes.putInt(
-						fieldInfo.getWrittenValue().length);
-				fieldInfoBytes.put(
-						fieldInfo.getWrittenValue());
-				fieldInfoBytesList.add(
-						fieldInfoBytes.array());
+				final ByteBuffer fieldInfoBytes = ByteBuffer.allocate(4 + fieldInfo.getWrittenValue().length);
+				fieldPositions.add(fieldInfoPair.getLeft());
+				fieldInfoBytes.putInt(fieldInfo.getWrittenValue().length);
+				fieldInfoBytes.put(fieldInfo.getWrittenValue());
+				fieldInfoBytesList.add(fieldInfoBytes.array());
 				totalLength += fieldInfoBytes.array().length;
 			}
-			final ByteBuffer allFields = ByteBuffer.allocate(
-					totalLength);
+			final ByteBuffer allFields = ByteBuffer.allocate(totalLength);
 			for (final byte[] bytes : fieldInfoBytesList) {
-				allFields.put(
-						bytes);
+				allFields.put(bytes);
 			}
-			final byte[] compositeBitmask = BitmaskUtils.generateCompositeBitmask(
-					fieldPositions);
+			final byte[] compositeBitmask = BitmaskUtils.generateCompositeBitmask(fieldPositions);
 			final FieldInfo<?> composite = new FieldInfo<T>(
 					new PersistentValue<T>(
 							new ByteArrayId(
@@ -233,8 +213,7 @@ public class BaseDataStoreUtils
 							null), // unnecessary
 					allFields.array(),
 					entry.getKey().getBytes());
-			retVal.add(
-					composite);
+			retVal.add(composite);
 		}
 		return retVal;
 	}
@@ -244,17 +223,14 @@ public class BaseDataStoreUtils
 			final PersistentValue<?> fieldValue,
 			final T entry,
 			final VisibilityWriter<T> customFieldVisibilityWriter ) {
-		final FieldWriter fieldWriter = dataWriter.getWriter(
-				fieldValue.getId());
+		final FieldWriter fieldWriter = dataWriter.getWriter(fieldValue.getId());
 		final FieldVisibilityHandler<T, Object> customVisibilityHandler = customFieldVisibilityWriter
-				.getFieldVisibilityHandler(
-						fieldValue.getId());
+				.getFieldVisibilityHandler(fieldValue.getId());
 		if (fieldWriter != null) {
 			final Object value = fieldValue.getValue();
 			return new FieldInfo(
 					fieldValue,
-					fieldWriter.writeField(
-							value),
+					fieldWriter.writeField(value),
 					DataStoreUtils.mergeVisibilities(
 							customVisibilityHandler.getVisibility(
 									entry,
@@ -266,9 +242,8 @@ public class BaseDataStoreUtils
 									value)));
 		}
 		else if (fieldValue.getValue() != null) {
-			LOGGER.warn(
-					"Data writer of class " + dataWriter.getClass() + " does not support field for "
-							+ fieldValue.getValue());
+			LOGGER.warn("Data writer of class " + dataWriter.getClass() + " does not support field for "
+					+ fieldValue.getValue());
 		}
 		return null;
 	}

@@ -93,7 +93,7 @@ public class SecondaryIndexStoreImpl implements
 	@Override
 	public void removeAll() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

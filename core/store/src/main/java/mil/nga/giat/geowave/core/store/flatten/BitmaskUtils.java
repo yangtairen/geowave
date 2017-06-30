@@ -104,7 +104,8 @@ public class BitmaskUtils
 			currentByte++;
 		}
 		return fieldPositions;
-	}	
+	}
+
 	/**
 	 * Iterates the set (true) bits within the given composite bitmask and
 	 * generates a list of field positions.
@@ -154,7 +155,7 @@ public class BitmaskUtils
 		for (final ByteArrayId fieldId : fieldIds) {
 			fieldPositions.add(adapterAssociatedWithFieldIds.getPositionOfOrderedField(
 					indexModel,
-							fieldId));
+					fieldId));
 		}
 		return generateCompositeBitmask(fieldPositions);
 	}

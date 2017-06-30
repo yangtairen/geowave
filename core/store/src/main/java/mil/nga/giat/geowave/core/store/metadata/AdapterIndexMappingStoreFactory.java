@@ -23,8 +23,7 @@ public class AdapterIndexMappingStoreFactory extends
 	public AdapterIndexMappingStore createStore(
 			final StoreFactoryOptions options ) {
 		return new AdapterIndexMappingStoreImpl(
-				helper.createOperations(
-						options),
+				helper.createOperations(options),
 				options.getStoreOptions());
 	}
 

@@ -44,11 +44,10 @@ public class InsertionIdQuery implements
 	public List<QueryFilter> createFilters(
 			final CommonIndexModel indexModel ) {
 		final List<QueryFilter> filters = new ArrayList<QueryFilter>();
-		filters.add(
-				new InsertionIdQueryFilter(
-						partitionKey,
-						sortKey,
-						dataId));
+		filters.add(new InsertionIdQueryFilter(
+				partitionKey,
+				sortKey,
+				dataId));
 		return filters;
 	}
 

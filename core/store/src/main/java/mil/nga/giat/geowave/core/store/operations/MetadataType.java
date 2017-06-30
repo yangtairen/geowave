@@ -4,5 +4,5 @@ public enum MetadataType {
 	ADAPTER,
 	AIM,
 	INDEX,
-	STATS,		
+	STATS,
 }

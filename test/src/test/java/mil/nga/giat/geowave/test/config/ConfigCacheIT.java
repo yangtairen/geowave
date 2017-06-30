@@ -12,8 +12,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.bigtable.repackaged.com.google.api.client.util.store.MemoryDataStoreFactory;
-
 import mil.nga.giat.geowave.core.cli.operations.config.SetCommand;
 import mil.nga.giat.geowave.core.cli.operations.config.options.ConfigOptions;
 import mil.nga.giat.geowave.core.cli.parser.ManualOperationParams;

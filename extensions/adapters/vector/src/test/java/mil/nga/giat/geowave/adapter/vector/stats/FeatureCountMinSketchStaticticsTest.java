@@ -100,11 +100,9 @@ public class FeatureCountMinSketchStaticticsTest
 				"pid");
 
 		for (int i = 0; i < 10000; i++) {
-			stat.entryIngested(
-					create());
+			stat.entryIngested(create());
 		}
-		stat.entryIngested(
-				create("barney"));
+		stat.entryIngested(create("barney"));
 
 		final FeatureCountMinSketchStatistics stat2 = new FeatureCountMinSketchStatistics(
 				new ByteArrayId(
@@ -112,14 +110,11 @@ public class FeatureCountMinSketchStaticticsTest
 				"pid");
 
 		for (int i = 0; i < 10000; i++) {
-			stat2.entryIngested(
-					create());
+			stat2.entryIngested(create());
 		}
 
-		stat2.entryIngested(
-				create("global"));
-		stat2.entryIngested(
-				create("fred"));
+		stat2.entryIngested(create("global"));
+		stat2.entryIngested(create("fred"));
 
 		assertTrue(stat2.count("global") > 0);
 		assertTrue(stat2.count("fred") > 0);

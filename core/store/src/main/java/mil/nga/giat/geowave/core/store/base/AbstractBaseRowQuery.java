@@ -20,8 +20,7 @@ import mil.nga.giat.geowave.core.store.util.NativeEntryIteratorWrapper;
 abstract class AbstractBaseRowQuery<T> extends
 		BaseQuery
 {
-	private static final Logger LOGGER = Logger.getLogger(
-			AbstractBaseRowQuery.class);
+	private static final Logger LOGGER = Logger.getLogger(AbstractBaseRowQuery.class);
 	protected final ScanCallback<T, ?> scanCallback;
 
 	public AbstractBaseRowQuery(
@@ -47,25 +46,21 @@ abstract class AbstractBaseRowQuery<T> extends
 				dataStore,
 				adapterStore,
 				index,
-				operations.createReader(
-						new ReaderParams(
-								index,
-								adapterIds,
-								maxResolutionSubsamplingPerDimension,
-								getAggregation(),
-								getFieldSubsets(),
-								isMixedVisibilityRows(),
-								isServerSideAggregation(
-										options),
-								getRanges(),
-								getServerFilter(
-										options),
-								getScannerLimit(),
-								getCoordinateRanges(),
-								getConstraints(),
-								getAdditionalAuthorizations())),
-				getClientFilter(
-						options),
+				operations.createReader(new ReaderParams(
+						index,
+						adapterIds,
+						maxResolutionSubsamplingPerDimension,
+						getAggregation(),
+						getFieldSubsets(),
+						isMixedVisibilityRows(),
+						isServerSideAggregation(options),
+						getRanges(),
+						getServerFilter(options),
+						getScannerLimit(),
+						getCoordinateRanges(),
+						getConstraints(),
+						getAdditionalAuthorizations())),
+				getClientFilter(options),
 				scanCallback,
 				!isCommonIndexAggregation());
 	}

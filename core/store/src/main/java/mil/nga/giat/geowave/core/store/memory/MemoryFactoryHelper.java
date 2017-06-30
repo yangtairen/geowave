@@ -12,8 +12,8 @@ public class MemoryFactoryHelper implements
 		StoreFactoryHelper
 {
 
+	private static final Map<String, DataStoreOperations> STORE_CACHE = new HashMap<String, DataStoreOperations>();
 
-	private static final Map<String,DataStoreOperations> STORE_CACHE = new HashMap<String,DataStoreOperations>();
 	/**
 	 * Return the default options instance. This is actually a method that
 	 * should be implemented by the individual factories, but is placed here
@@ -28,7 +28,7 @@ public class MemoryFactoryHelper implements
 	@Override
 	public DataStoreOperations createOperations(
 			StoreFactoryOptions options ) {
-		
+
 		return new MemoryDataStoreOperations();
 	}
 }

@@ -51,30 +51,23 @@ public class TemporalRangeTest extends
 				"geostuff",
 				"geometry:Geometry:srid=4326,pop:java.lang.Long,pid:String,when:Date");
 
-		dataStore.createSchema(
-				type);
+		dataStore.createSchema(type);
 	}
 
 	@Test
 	public void test()
 			throws ParseException,
 			IOException {
-		final Calendar gmt = Calendar.getInstance(
-				TimeZone.getTimeZone(
-						"GMT"));
-		final Calendar local = Calendar.getInstance(
-				TimeZone.getTimeZone(
-						"EDT"));
-		local.setTimeInMillis(
-				gmt.getTimeInMillis());
+		final Calendar gmt = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		final Calendar local = Calendar.getInstance(TimeZone.getTimeZone("EDT"));
+		local.setTimeInMillis(gmt.getTimeInMillis());
 		final TemporalRange rGmt = new TemporalRange(
 				gmt.getTime(),
 				gmt.getTime());
 		final TemporalRange rLocal = new TemporalRange(
 				local.getTime(),
 				local.getTime());
-		rGmt.fromBinary(
-				rGmt.toBinary());
+		rGmt.fromBinary(rGmt.toBinary());
 		assertEquals(
 				gmt.getTime(),
 				rGmt.getEndTime());
@@ -93,32 +86,27 @@ public class TemporalRangeTest extends
 		final SimpleFeature newFeature = writer.next();
 		newFeature.setAttribute(
 				"pop",
-				Long.valueOf(
-						77));
+				Long.valueOf(77));
 		newFeature.setAttribute(
 				"pid",
 				UUID.randomUUID().toString());
 		newFeature.setAttribute(
 				"when",
-				DateUtilities.parseISO(
-						"2005-05-19T19:32:56-04:00"));
+				DateUtilities.parseISO("2005-05-19T19:32:56-04:00"));
 		newFeature.setAttribute(
 				"geometry",
-				factory.createPoint(
-						new Coordinate(
-								43.454,
-								28.232)));
+				factory.createPoint(new Coordinate(
+						43.454,
+						28.232)));
 
 		final FeatureTimeRangeStatistics stats = new FeatureTimeRangeStatistics(
 				new ByteArrayId(
 						"a"),
 				"when");
-		stats.entryIngested(
-				newFeature);
+		stats.entryIngested(newFeature);
 
 		assertEquals(
-				DateUtilities.parseISO(
-						"2005-05-19T23:32:56Z"),
+				DateUtilities.parseISO("2005-05-19T23:32:56Z"),
 				stats.asTemporalRange().getStartTime());
 	}
 

@@ -24,8 +24,7 @@ public class DataIdQueryFilter implements
 	public boolean accept(
 			final CommonIndexModel indexModel,
 			final IndexedPersistenceEncoding persistenceEncoding ) {
-		return dataIds.contains(
-				persistenceEncoding.getDataId());
+		return dataIds.contains(persistenceEncoding.getDataId());
 	}
 
 	@Override
@@ -34,16 +33,12 @@ public class DataIdQueryFilter implements
 		for (ByteArrayId id : dataIds) {
 			size += (id.getBytes().length + 4);
 		}
-		final ByteBuffer buf = ByteBuffer.allocate(
-				size);
-		buf.putInt(
-				dataIds.size());
+		final ByteBuffer buf = ByteBuffer.allocate(size);
+		buf.putInt(dataIds.size());
 		for (final ByteArrayId id : dataIds) {
 			final byte[] idBytes = id.getBytes();
-			buf.putInt(
-					idBytes.length);
-			buf.put(
-					idBytes);
+			buf.putInt(idBytes.length);
+			buf.put(idBytes);
 		}
 		return buf.array();
 	}
@@ -51,19 +46,16 @@ public class DataIdQueryFilter implements
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buf = ByteBuffer.wrap(
-				bytes);
+		final ByteBuffer buf = ByteBuffer.wrap(bytes);
 		final int size = buf.getInt();
 		dataIds = new ArrayList<ByteArrayId>(
 				size);
 		for (int i = 0; i < size; i++) {
 			final int bsize = buf.getInt();
 			final byte[] dataIdBytes = new byte[bsize];
-			buf.get(
-					dataIdBytes);
-			dataIds.add(
-					new ByteArrayId(
-							dataIdBytes));
+			buf.get(dataIdBytes);
+			dataIds.add(new ByteArrayId(
+					dataIdBytes));
 		}
 	}
 

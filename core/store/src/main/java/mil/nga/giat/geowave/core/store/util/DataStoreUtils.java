@@ -41,8 +41,7 @@ import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
  */
 public class DataStoreUtils
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			DataStoreUtils.class);
+	private final static Logger LOGGER = Logger.getLogger(DataStoreUtils.class);
 
 	// we append a 0 byte, 8 bytes of timestamp, and 16 bytes of UUID
 	public final static int UNIQUE_ADDED_BYTES = 1 + 8 + 16;
@@ -60,10 +59,8 @@ public class DataStoreUtils
 			final CommonIndexModel model ) {
 		final List<ByteArrayId> dimensionFieldIds = new ArrayList<>();
 		for (final NumericDimensionField<? extends CommonIndexValue> dimension : model.getDimensions()) {
-			if (!dimensionFieldIds.contains(
-					dimension.getFieldId())) {
-				dimensionFieldIds.add(
-						dimension.getFieldId());
+			if (!dimensionFieldIds.contains(dimension.getFieldId())) {
+				dimensionFieldIds.add(dimension.getFieldId());
 			}
 		}
 		return dimensionFieldIds;
@@ -73,9 +70,8 @@ public class DataStoreUtils
 			final PrimaryIndex index,
 			final Map<ByteArrayId, DataStatistics<T>> stats,
 			final QueryRanges queryRanges ) {
-		final RowRangeHistogramStatistics rangeStats = (RowRangeHistogramStatistics) stats.get(
-				RowRangeHistogramStatistics.composeId(
-						index.getId()));
+		final RowRangeHistogramStatistics rangeStats = (RowRangeHistogramStatistics) stats
+				.get(RowRangeHistogramStatistics.composeId(index.getId()));
 		if (rangeStats == null) {
 			return Long.MAX_VALUE - 1;
 		}
@@ -96,24 +92,21 @@ public class DataStoreUtils
 		for (final GeoWaveKey key : geoWaveKeys) {
 			final ByteArrayId partitionKey = new ByteArrayId(
 					key.getPartitionKey());
-			List<ByteArrayId> sortKeys = sortKeysPerPartition.get(
-					partitionKey);
+			List<ByteArrayId> sortKeys = sortKeysPerPartition.get(partitionKey);
 			if (sortKeys == null) {
 				sortKeys = new ArrayList<>();
 				sortKeysPerPartition.put(
 						partitionKey,
 						sortKeys);
 			}
-			sortKeys.add(
-					new ByteArrayId(
-							key.getSortKey()));
+			sortKeys.add(new ByteArrayId(
+					key.getSortKey()));
 		}
 		final Set<SinglePartitionInsertionIds> insertionIds = new HashSet<>();
 		for (final Entry<ByteArrayId, List<ByteArrayId>> e : sortKeysPerPartition.entrySet()) {
-			insertionIds.add(
-					new SinglePartitionInsertionIds(
-							e.getKey(),
-							e.getValue()));
+			insertionIds.add(new SinglePartitionInsertionIds(
+					e.getKey(),
+					e.getValue()));
 		}
 		return new InsertionIds(
 				insertionIds);
@@ -145,16 +138,13 @@ public class DataStoreUtils
 		}
 
 		return Arrays.equals(
-				removeUniqueId(
-						rowId1.getDataId()),
-				removeUniqueId(
-						rowId2.getDataId()));
+				removeUniqueId(rowId1.getDataId()),
+				removeUniqueId(rowId2.getDataId()));
 	}
 
 	public static byte[] removeUniqueId(
 			byte[] dataId ) {
-		if ((dataId.length < UNIQUE_ADDED_BYTES)
-				|| (dataId[dataId.length - UNIQUE_ADDED_BYTES] != UNIQUE_ID_DELIMITER)) {
+		if ((dataId.length < UNIQUE_ADDED_BYTES) || (dataId[dataId.length - UNIQUE_ADDED_BYTES] != UNIQUE_ID_DELIMITER)) {
 			return dataId;
 		}
 
@@ -190,16 +180,13 @@ public class DataStoreUtils
 			final byte[] commonVisibility,
 			final int maxFieldPosition ) {
 		final List<FlattenedFieldInfo> fieldInfoList = new ArrayList<FlattenedFieldInfo>();
-		final List<Integer> fieldPositions = BitmaskUtils.getFieldPositions(
-				bitmask);
+		final List<Integer> fieldPositions = BitmaskUtils.getFieldPositions(bitmask);
 
 		final boolean sharedVisibility = fieldPositions.size() > 1;
 		if (sharedVisibility) {
-			final ByteBuffer input = ByteBuffer.wrap(
-					flattenedValue);
+			final ByteBuffer input = ByteBuffer.wrap(flattenedValue);
 			for (int i = 0; i < fieldPositions.size(); i++) {
-				final Integer fieldPosition = fieldPositions.get(
-						i);
+				final Integer fieldPosition = fieldPositions.get(i);
 				if ((maxFieldPosition > -1) && (fieldPosition > maxFieldPosition)) {
 					return new FlattenedDataSet(
 							fieldInfoList,
@@ -210,20 +197,16 @@ public class DataStoreUtils
 				}
 				final int fieldLength = input.getInt();
 				final byte[] fieldValueBytes = new byte[fieldLength];
-				input.get(
-						fieldValueBytes);
-				fieldInfoList.add(
-						new FlattenedFieldInfo(
-								fieldPosition,
-								fieldValueBytes));
+				input.get(fieldValueBytes);
+				fieldInfoList.add(new FlattenedFieldInfo(
+						fieldPosition,
+						fieldValueBytes));
 			}
 		}
 		else {
-			fieldInfoList.add(
-					new FlattenedFieldInfo(
-							fieldPositions.get(
-									0),
-							flattenedValue));
+			fieldInfoList.add(new FlattenedFieldInfo(
+					fieldPositions.get(0),
+					flattenedValue));
 
 		}
 		return new FlattenedDataSet(
@@ -244,32 +227,28 @@ public class DataStoreUtils
 			final List<QueryRanges> ranges = new ArrayList<>(
 					constraints.size());
 			for (final MultiDimensionalNumericData nd : constraints) {
-				ranges.add(
-						indexStrategy.getQueryRanges(
-								nd,
-								maxRanges,
-								hints));
+				ranges.add(indexStrategy.getQueryRanges(
+						nd,
+						maxRanges,
+						hints));
 			}
 			return ranges.size() > 1 ? new QueryRanges(
-					ranges)
-					: ranges.get(
-							0);
+					ranges) : ranges.get(0);
 		}
 	}
 
 	public static String getQualifiedTableName(
 			final String tableNamespace,
 			final String unqualifiedTableName ) {
-		return ((tableNamespace == null) || tableNamespace.isEmpty()) ? unqualifiedTableName
-				: tableNamespace + "_" + unqualifiedTableName;
+		return ((tableNamespace == null) || tableNamespace.isEmpty()) ? unqualifiedTableName : tableNamespace + "_"
+				+ unqualifiedTableName;
 	}
 
 	public static ByteArrayId ensureUniqueId(
 			final byte[] id,
 			final boolean hasMetadata ) {
 
-		final ByteBuffer buf = ByteBuffer.allocate(
-				id.length + UNIQUE_ADDED_BYTES);
+		final ByteBuffer buf = ByteBuffer.allocate(id.length + UNIQUE_ADDED_BYTES);
 
 		byte[] metadata = null;
 		byte[] dataId;
@@ -280,21 +259,16 @@ public class DataStoreUtils
 					metadataStartIdx,
 					id.length);
 
-			final ByteBuffer lengthsBuf = ByteBuffer.wrap(
-					lengths);
+			final ByteBuffer lengthsBuf = ByteBuffer.wrap(lengths);
 			final int adapterIdLength = lengthsBuf.getInt();
 			int dataIdLength = lengthsBuf.getInt();
 			dataIdLength += UNIQUE_ADDED_BYTES;
 			final int duplicates = lengthsBuf.getInt();
 
-			final ByteBuffer newLengths = ByteBuffer.allocate(
-					12);
-			newLengths.putInt(
-					adapterIdLength);
-			newLengths.putInt(
-					dataIdLength);
-			newLengths.putInt(
-					duplicates);
+			final ByteBuffer newLengths = ByteBuffer.allocate(12);
+			newLengths.putInt(adapterIdLength);
+			newLengths.putInt(dataIdLength);
+			newLengths.putInt(duplicates);
 			newLengths.rewind();
 			metadata = newLengths.array();
 			dataId = Arrays.copyOfRange(
@@ -306,34 +280,26 @@ public class DataStoreUtils
 			dataId = id;
 		}
 
-		buf.put(
-				dataId);
+		buf.put(dataId);
 
 		final long timestamp = System.currentTimeMillis();
-		buf.put(
-				new byte[] {
-					UNIQUE_ID_DELIMITER
-				});
+		buf.put(new byte[] {
+			UNIQUE_ID_DELIMITER
+		});
 		final UUID uuid = UUID.randomUUID();
-		buf.putLong(
-				timestamp);
-		buf.putLong(
-				uuid.getLeastSignificantBits());
-		buf.putLong(
-				uuid.getMostSignificantBits());
+		buf.putLong(timestamp);
+		buf.putLong(uuid.getLeastSignificantBits());
+		buf.putLong(uuid.getMostSignificantBits());
 		if (hasMetadata) {
-			buf.put(
-					metadata);
+			buf.put(metadata);
 		}
 
 		return new ByteArrayId(
 				buf.array());
 	}
 
-	private static final byte[] BEG_AND_BYTE = "&".getBytes(
-			StringUtils.GEOWAVE_CHAR_SET);
-	private static final byte[] END_AND_BYTE = ")".getBytes(
-			StringUtils.GEOWAVE_CHAR_SET);
+	private static final byte[] BEG_AND_BYTE = "&".getBytes(StringUtils.GEOWAVE_CHAR_SET);
+	private static final byte[] END_AND_BYTE = ")".getBytes(StringUtils.GEOWAVE_CHAR_SET);
 
 	public static byte[] mergeVisibilities(
 			final byte vis1[],
@@ -345,20 +311,13 @@ public class DataStoreUtils
 			return vis1;
 		}
 
-		final ByteBuffer buffer = ByteBuffer.allocate(
-				vis1.length + 3 + vis2.length);
-		buffer.putChar(
-				'(');
-		buffer.put(
-				vis1);
-		buffer.putChar(
-				')');
-		buffer.put(
-				BEG_AND_BYTE);
-		buffer.put(
-				vis2);
-		buffer.put(
-				END_AND_BYTE);
+		final ByteBuffer buffer = ByteBuffer.allocate(vis1.length + 3 + vis2.length);
+		buffer.putChar('(');
+		buffer.put(vis1);
+		buffer.putChar(')');
+		buffer.put(BEG_AND_BYTE);
+		buffer.put(vis2);
+		buffer.put(END_AND_BYTE);
 		return buffer.array();
 	}
 }

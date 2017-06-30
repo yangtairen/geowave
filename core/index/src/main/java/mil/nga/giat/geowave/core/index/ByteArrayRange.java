@@ -146,7 +146,8 @@ public class ByteArrayRange implements
 	public static final Collection<ByteArrayRange> mergeIntersections(
 			final Collection<ByteArrayRange> ranges,
 			final MergeOperation op ) {
-		List<ByteArrayRange> rangeList = new ArrayList<>(ranges);
+		List<ByteArrayRange> rangeList = new ArrayList<>(
+				ranges);
 		// sort order so the first range can consume following ranges
 		Collections.<ByteArrayRange> sort(rangeList);
 		final List<ByteArrayRange> result = new ArrayList<ByteArrayRange>();

@@ -31,6 +31,6 @@ abstract public class StoreFactoryOptions
 		return new DataStorePluginOptions(
 				this);
 	}
-	
+
 	public abstract DataStoreOptions getStoreOptions();
 }

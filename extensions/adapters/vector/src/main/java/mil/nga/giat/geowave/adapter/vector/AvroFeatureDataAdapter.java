@@ -64,31 +64,26 @@ public class AvroFeatureDataAdapter extends
 		final List<NativeFieldHandler<SimpleFeature, Object>> nativeHandlers = new ArrayList<NativeFieldHandler<SimpleFeature, Object>>(
 				1);
 
-		nativeHandlers.add(
-				new AvroFeatureAttributeHandler());
+		nativeHandlers.add(new AvroFeatureAttributeHandler());
 		return nativeHandlers;
 	}
 
 	@Override
 	public FieldReader<Object> getReader(
 			final ByteArrayId fieldId ) {
-		if (fieldId.equals(
-				AvroFeatureAttributeHandler.FIELD_ID)) {
+		if (fieldId.equals(AvroFeatureAttributeHandler.FIELD_ID)) {
 			return new AvroFeatureReader();
 		}
-		return super.getReader(
-				fieldId);
+		return super.getReader(fieldId);
 	}
 
 	@Override
 	public FieldWriter<SimpleFeature, Object> getWriter(
 			final ByteArrayId fieldId ) {
-		if (fieldId.equals(
-				AvroFeatureAttributeHandler.FIELD_ID)) {
+		if (fieldId.equals(AvroFeatureAttributeHandler.FIELD_ID)) {
 			return new AvroFeatureWriter();
 		}
-		return super.getWriter(
-				fieldId);
+		return super.getWriter(fieldId);
 	}
 
 	@Override
@@ -96,10 +91,8 @@ public class AvroFeatureDataAdapter extends
 			final CommonIndexModel model,
 			final ByteArrayId fieldId ) {
 
-		if (fieldId.equals(
-				AvroFeatureAttributeHandler.FIELD_ID)) {
-			final List<ByteArrayId> dimensionFieldIds = getDimensionFieldIds(
-					model);
+		if (fieldId.equals(AvroFeatureAttributeHandler.FIELD_ID)) {
+			final List<ByteArrayId> dimensionFieldIds = getDimensionFieldIds(model);
 			return dimensionFieldIds.size();
 		}
 		return super.getPositionOfOrderedField(
@@ -111,11 +104,9 @@ public class AvroFeatureDataAdapter extends
 	public ByteArrayId getFieldIdForPosition(
 			final CommonIndexModel model,
 			final int position ) {
-		final List<ByteArrayId> dimensionFieldIds = getDimensionFieldIds(
-				model);
+		final List<ByteArrayId> dimensionFieldIds = getDimensionFieldIds(model);
 		if (position < dimensionFieldIds.size()) {
-			return dimensionFieldIds.get(
-					position);
+			return dimensionFieldIds.get(position);
 		}
 		else if (position == dimensionFieldIds.size()) {
 			return AvroFeatureAttributeHandler.FIELD_ID;

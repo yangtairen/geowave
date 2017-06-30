@@ -95,43 +95,36 @@ public class QueryOptions implements
 			final ByteArrayId adapterId,
 			final ByteArrayId indexId ) {
 		adapters = null;
-		adapterIds = adapterId == null ? Collections.<ByteArrayId> emptyList() : Collections.singletonList(
-				adapterId);
+		adapterIds = adapterId == null ? Collections.<ByteArrayId> emptyList() : Collections.singletonList(adapterId);
 		this.indexId = indexId;
 	}
 
 	public QueryOptions(
 			final DataAdapter<?> adapter ) {
-		setAdapter(
-				adapter);
+		setAdapter(adapter);
 	}
 
 	public QueryOptions(
 			final PrimaryIndex index ) {
-		setIndex(
-				index);
+		setIndex(index);
 	}
 
 	public QueryOptions(
 			final DataAdapter<?> adapter,
 			final PrimaryIndex index ) {
-		setAdapter(
-				adapter);
-		setIndex(
-				index);
+		setAdapter(adapter);
+		setIndex(index);
 	}
 
 	public QueryOptions(
 			final List<DataAdapter<?>> adapters ) {
-		setAdapters(
-				adapters);
+		setAdapters(adapters);
 	}
 
 	public QueryOptions(
 			final DataAdapter<?> adapter,
 			final String[] authorizations ) {
-		setAdapter(
-				adapter);
+		setAdapter(adapter);
 		this.authorizations = authorizations;
 	}
 
@@ -139,10 +132,8 @@ public class QueryOptions implements
 			final DataAdapter<?> adapter,
 			final PrimaryIndex index,
 			final String[] authorizations ) {
-		setAdapter(
-				adapter);
-		setIndex(
-				index);
+		setAdapter(adapter);
+		setIndex(index);
 		this.authorizations = authorizations;
 	}
 
@@ -176,12 +167,9 @@ public class QueryOptions implements
 			final ScanCallback<?, ?> scanCallback,
 			final String[] authorizations ) {
 		super();
-		setAdapter(
-				adapter);
-		setIndex(
-				index);
-		setLimit(
-				limit);
+		setAdapter(adapter);
+		setIndex(index);
+		setLimit(limit);
 		this.scanCallback = scanCallback;
 		this.authorizations = authorizations;
 	}
@@ -229,10 +217,8 @@ public class QueryOptions implements
 	public void setAdapter(
 			final DataAdapter<?> adapter ) {
 		if (adapter != null) {
-			adapters = Collections.<DataAdapter<Object>> singletonList(
-					(DataAdapter<Object>) adapter);
-			adapterIds = Collections.singletonList(
-					adapter.getAdapterId());
+			adapters = Collections.<DataAdapter<Object>> singletonList((DataAdapter<Object>) adapter);
+			adapterIds = Collections.singletonList(adapter.getAdapterId());
 		}
 		else {
 			adapterIds = Collections.emptyList();
@@ -243,8 +229,7 @@ public class QueryOptions implements
 
 	public void setAdapterId(
 			final ByteArrayId adapterId ) {
-		adapterIds = Arrays.asList(
-				adapterId);
+		adapterIds = Arrays.asList(adapterId);
 	}
 
 	public void setAdapterIds(
@@ -376,11 +361,10 @@ public class QueryOptions implements
 			final AdapterIndexMappingStore adapterIndexMappingStore,
 			final IndexStore indexStore )
 			throws IOException {
-		return combineByIndex(
-				compileIndicesForAdapters(
-						adapterStore,
-						adapterIndexMappingStore,
-						indexStore));
+		return combineByIndex(compileIndicesForAdapters(
+				adapterStore,
+				adapterIndexMappingStore,
+				indexStore));
 	}
 
 	/**
@@ -405,11 +389,10 @@ public class QueryOptions implements
 			final AdapterIndexMappingStore adapterIndexMappingStore,
 			final IndexStore indexStore )
 			throws IOException {
-		return reduceIndicesAndGroupByIndex(
-				compileIndicesForAdapters(
-						adapterStore,
-						adapterIndexMappingStore,
-						indexStore));
+		return reduceIndicesAndGroupByIndex(compileIndicesForAdapters(
+				adapterStore,
+				adapterIndexMappingStore,
+				indexStore));
 	}
 
 	private List<Pair<PrimaryIndex, DataAdapter<Object>>> compileIndicesForAdapters(
@@ -421,11 +404,9 @@ public class QueryOptions implements
 			if ((adapters == null) || adapters.isEmpty()) {
 				adapters = new ArrayList<DataAdapter<Object>>();
 				for (final ByteArrayId id : adapterIds) {
-					final DataAdapter<Object> adapter = (DataAdapter<Object>) adapterStore.getAdapter(
-							id);
+					final DataAdapter<Object> adapter = (DataAdapter<Object>) adapterStore.getAdapter(id);
 					if (adapter != null) {
-						adapters.add(
-								adapter);
+						adapters.add(adapter);
 					}
 				}
 			}
@@ -434,42 +415,34 @@ public class QueryOptions implements
 			adapters = new ArrayList<DataAdapter<Object>>();
 			try (CloseableIterator<DataAdapter<?>> it = adapterStore.getAdapters()) {
 				while (it.hasNext()) {
-					adapters.add(
-							(DataAdapter<Object>) it.next());
+					adapters.add((DataAdapter<Object>) it.next());
 				}
 			}
 		}
 		final List<Pair<PrimaryIndex, DataAdapter<Object>>> result = new ArrayList<Pair<PrimaryIndex, DataAdapter<Object>>>();
 		for (final DataAdapter<Object> adapter : adapters) {
-			final AdapterToIndexMapping indices = adapterIndexMappingStore.getIndicesForAdapter(
-					adapter.getAdapterId());
+			final AdapterToIndexMapping indices = adapterIndexMappingStore.getIndicesForAdapter(adapter.getAdapterId());
 			if (index != null) {
-				result.add(
-						Pair.of(
-								index,
-								adapter));
+				result.add(Pair.of(
+						index,
+						adapter));
 			}
-			else if ((indexId != null) && indices.contains(
-					indexId)) {
+			else if ((indexId != null) && indices.contains(indexId)) {
 				if (index == null) {
-					index = (PrimaryIndex) indexStore.getIndex(
-							indexId);
-					result.add(
-							Pair.of(
-									index,
-									adapter));
+					index = (PrimaryIndex) indexStore.getIndex(indexId);
+					result.add(Pair.of(
+							index,
+							adapter));
 				}
 			}
 			else if (indices.isNotEmpty()) {
 				for (final ByteArrayId id : indices.getIndexIds()) {
-					final PrimaryIndex index = (PrimaryIndex) indexStore.getIndex(
-							id);
+					final PrimaryIndex index = (PrimaryIndex) indexStore.getIndex(id);
 					// this could happen if persistent was turned off
 					if (index != null) {
-						result.add(
-								Pair.of(
-										index,
-										adapter));
+						result.add(Pair.of(
+								index,
+								adapter));
 					}
 				}
 			}
@@ -483,11 +456,9 @@ public class QueryOptions implements
 			if ((adapters == null) || adapters.isEmpty()) {
 				adapters = new ArrayList<DataAdapter<Object>>();
 				for (final ByteArrayId id : adapterIds) {
-					final DataAdapter<Object> adapter = (DataAdapter<Object>) adapterStore.getAdapter(
-							id);
+					final DataAdapter<Object> adapter = (DataAdapter<Object>) adapterStore.getAdapter(id);
 					if (adapter != null) {
-						adapters.add(
-								adapter);
+						adapters.add(adapter);
 					}
 				}
 			}
@@ -504,27 +475,22 @@ public class QueryOptions implements
 			if ((adapters == null) || adapters.isEmpty()) {
 				adapters = new ArrayList<DataAdapter<Object>>();
 				for (final ByteArrayId id : adapterIds) {
-					final DataAdapter<Object> adapter = (DataAdapter<Object>) adapterStore.getAdapter(
-							id);
+					final DataAdapter<Object> adapter = (DataAdapter<Object>) adapterStore.getAdapter(id);
 					if (adapter != null) {
-						adapters.add(
-								adapter);
+						adapters.add(adapter);
 					}
 				}
 			}
-			return adapters.toArray(
-					new DataAdapter[adapters.size()]);
+			return adapters.toArray(new DataAdapter[adapters.size()]);
 
 		}
 		final List<DataAdapter> list = new ArrayList<DataAdapter>();
 		try (CloseableIterator<DataAdapter<?>> it = adapterStore.getAdapters()) {
 			while (it.hasNext()) {
-				list.add(
-						it.next());
+				list.add(it.next());
 			}
 		}
-		return list.toArray(
-				new DataAdapter[list.size()]);
+		return list.toArray(new DataAdapter[list.size()]);
 	}
 
 	public List<ByteArrayId> getAdapterIds(
@@ -532,17 +498,14 @@ public class QueryOptions implements
 			throws IOException {
 		final List<ByteArrayId> ids = new ArrayList<ByteArrayId>();
 		if ((adapterIds == null) || adapterIds.isEmpty()) {
-			try (CloseableIterator<DataAdapter<?>> it = getAdapters(
-					adapterStore)) {
+			try (CloseableIterator<DataAdapter<?>> it = getAdapters(adapterStore)) {
 				while (it.hasNext()) {
-					ids.add(
-							it.next().getAdapterId());
+					ids.add(it.next().getAdapterId());
 				}
 			}
 		}
 		else {
-			ids.addAll(
-					adapterIds);
+			ids.addAll(adapterIds);
 		}
 		return ids;
 	}
@@ -574,8 +537,7 @@ public class QueryOptions implements
 	@Override
 	public byte[] toBinary() {
 
-		final byte[] authBytes = StringUtils.stringsToBinary(
-				getAuthorizations());
+		final byte[] authBytes = StringUtils.stringsToBinary(getAuthorizations());
 		int iSize = 4;
 		if (indexId != null) {
 			iSize += indexId.getBytes().length;
@@ -590,8 +552,7 @@ public class QueryOptions implements
 
 		byte[] adapterBytes = new byte[0];
 		if ((fieldIdsAdapterPair != null) && (fieldIdsAdapterPair.getRight() != null)) {
-			adapterBytes = PersistenceUtils.toBinary(
-					fieldIdsAdapterPair.getRight());
+			adapterBytes = PersistenceUtils.toBinary(fieldIdsAdapterPair.getRight());
 		}
 
 		byte[] fieldIdsBytes = new byte[0];
@@ -600,50 +561,37 @@ public class QueryOptions implements
 			final String fieldIdsString = org.apache.commons.lang3.StringUtils.join(
 					fieldIdsAdapterPair.getLeft(),
 					',');
-			fieldIdsBytes = StringUtils.stringToBinary(
-					fieldIdsString.toString());
+			fieldIdsBytes = StringUtils.stringToBinary(fieldIdsString.toString());
 		}
 
-		final ByteBuffer buf = ByteBuffer.allocate(
-				24 + authBytes.length + aSize + iSize + adapterBytes.length + fieldIdsBytes.length);
-		buf.putInt(
-				adapterBytes.length);
+		final ByteBuffer buf = ByteBuffer.allocate(24 + authBytes.length + aSize + iSize + adapterBytes.length
+				+ fieldIdsBytes.length);
+		buf.putInt(adapterBytes.length);
 		if (adapterBytes.length > 0) {
-			buf.put(
-					adapterBytes);
+			buf.put(adapterBytes);
 		}
-		buf.putInt(
-				fieldIdsBytes.length);
+		buf.putInt(fieldIdsBytes.length);
 		if (fieldIdsBytes.length > 0) {
-			buf.put(
-					fieldIdsBytes);
+			buf.put(fieldIdsBytes);
 		}
 
-		buf.putInt(
-				authBytes.length);
-		buf.put(
-				authBytes);
+		buf.putInt(authBytes.length);
+		buf.put(authBytes);
 
 		if (indexId != null) {
-			buf.putInt(
-					indexId.getBytes().length);
-			buf.put(
-					indexId.getBytes());
+			buf.putInt(indexId.getBytes().length);
+			buf.put(indexId.getBytes());
 		}
 		else {
-			buf.putInt(
-					0);
+			buf.putInt(0);
 		}
 
-		buf.putInt(
-				adapterIds == null ? 0 : adapterIds.size());
+		buf.putInt(adapterIds == null ? 0 : adapterIds.size());
 		if ((adapterIds != null) && !adapterIds.isEmpty()) {
 			for (final ByteArrayId id : adapterIds) {
 				final byte[] idBytes = id.getBytes();
-				buf.putInt(
-						idBytes.length);
-				buf.put(
-						idBytes);
+				buf.putInt(idBytes.length);
+				buf.put(idBytes);
 			}
 		}
 
@@ -654,14 +602,12 @@ public class QueryOptions implements
 	public void fromBinary(
 			final byte[] bytes ) {
 
-		final ByteBuffer buf = ByteBuffer.wrap(
-				bytes);
+		final ByteBuffer buf = ByteBuffer.wrap(bytes);
 		final int adapterBytesLength = buf.getInt();
 		AbstractDataAdapter<?> dataAdapter = null;
 		if (adapterBytesLength > 0) {
 			final byte[] adapterBytes = new byte[adapterBytesLength];
-			buf.get(
-					adapterBytes);
+			buf.get(adapterBytes);
 			dataAdapter = PersistenceUtils.fromBinary(
 					adapterBytes,
 					AbstractDataAdapter.class);
@@ -670,12 +616,10 @@ public class QueryOptions implements
 		List<String> fieldIds = null;
 		if (fieldIdsLength > 0) {
 			final byte[] fieldIdsBytes = new byte[fieldIdsLength];
-			buf.get(
-					fieldIdsBytes);
-			fieldIds = Arrays.asList(
-					StringUtils.stringFromBinary(
-							fieldIdsBytes).split(
-									","));
+			buf.get(fieldIdsBytes);
+			fieldIds = Arrays.asList(StringUtils.stringFromBinary(
+					fieldIdsBytes).split(
+					","));
 		}
 		if ((dataAdapter != null) && (fieldIds != null)) {
 			setFieldIds(
@@ -684,19 +628,16 @@ public class QueryOptions implements
 		}
 
 		final byte[] authBytes = new byte[buf.getInt()];
-		buf.get(
-				authBytes);
+		buf.get(authBytes);
 
-		authorizations = StringUtils.stringsFromBinary(
-				authBytes);
+		authorizations = StringUtils.stringsFromBinary(authBytes);
 
 		indexId = null;
 		final int size = buf.getInt();
 
 		if (size > 0) {
 			final byte[] idBytes = new byte[size];
-			buf.get(
-					idBytes);
+			buf.get(idBytes);
 			indexId = new ByteArrayId(
 					idBytes);
 		}
@@ -706,11 +647,9 @@ public class QueryOptions implements
 		while (count > 0) {
 			final int l = buf.getInt();
 			final byte[] idBytes = new byte[l];
-			buf.get(
-					idBytes);
-			adapterIds.add(
-					new ByteArrayId(
-							idBytes));
+			buf.get(idBytes);
+			adapterIds.add(new ByteArrayId(
+					idBytes));
 			count--;
 		}
 
@@ -730,8 +669,8 @@ public class QueryOptions implements
 
 	@Override
 	public String toString() {
-		return "QueryOptions [adapterId=" + adapterIds + ", limit=" + limit + ", authorizations=" + Arrays.toString(
-				authorizations) + "]";
+		return "QueryOptions [adapterId=" + adapterIds + ", limit=" + limit + ", authorizations="
+				+ Arrays.toString(authorizations) + "]";
 	}
 
 	@Override
@@ -739,12 +678,10 @@ public class QueryOptions implements
 		final int prime = 31;
 		int result = 1;
 		result = (prime * result) + ((adapterIds == null) ? 0 : adapterIds.hashCode());
-		result = (prime * result) + Arrays.hashCode(
-				authorizations);
+		result = (prime * result) + Arrays.hashCode(authorizations);
 		result = (prime * result) + ((indexId == null) ? 0 : indexId.hashCode());
 		result = (prime * result) + ((limit == null) ? 0 : limit.hashCode());
-		result = (prime * result) + Arrays.hashCode(
-				maxResolutionSubsamplingPerDimension);
+		result = (prime * result) + Arrays.hashCode(maxResolutionSubsamplingPerDimension);
 		return result;
 	}
 
@@ -766,8 +703,7 @@ public class QueryOptions implements
 				return false;
 			}
 		}
-		else if (!adapterIds.equals(
-				other.adapterIds)) {
+		else if (!adapterIds.equals(other.adapterIds)) {
 			return false;
 		}
 		if (!Arrays.equals(
@@ -780,8 +716,7 @@ public class QueryOptions implements
 				return false;
 			}
 		}
-		else if (!indexId.equals(
-				other.indexId)) {
+		else if (!indexId.equals(other.indexId)) {
 			return false;
 		}
 		if (limit == null) {
@@ -789,8 +724,7 @@ public class QueryOptions implements
 				return false;
 			}
 		}
-		else if (!limit.equals(
-				other.limit)) {
+		else if (!limit.equals(other.limit)) {
 			return false;
 		}
 		if (!Arrays.equals(
@@ -821,29 +755,25 @@ public class QueryOptions implements
 	private List<Pair<PrimaryIndex, List<DataAdapter<Object>>>> combineByIndex(
 			final List<Pair<PrimaryIndex, DataAdapter<Object>>> input ) {
 		final List<Pair<PrimaryIndex, List<DataAdapter<Object>>>> result = new ArrayList<Pair<PrimaryIndex, List<DataAdapter<Object>>>>();
-		sortInPlace(
-				input);
+		sortInPlace(input);
 		List<DataAdapter<Object>> adapterSet = new ArrayList<DataAdapter<Object>>();
 		Pair<PrimaryIndex, DataAdapter<Object>> last = null;
 		for (final Pair<PrimaryIndex, DataAdapter<Object>> item : input) {
 			if ((last != null) && !last.getKey().getId().equals(
 					item.getKey().getId())) {
-				result.add(
-						Pair.of(
-								last.getLeft(),
-								adapterSet));
+				result.add(Pair.of(
+						last.getLeft(),
+						adapterSet));
 				adapterSet = new ArrayList<DataAdapter<Object>>();
 
 			}
-			adapterSet.add(
-					item.getValue());
+			adapterSet.add(item.getValue());
 			last = item;
 		}
 		if (last != null) {
-			result.add(
-					Pair.of(
-							last.getLeft(),
-							adapterSet));
+			result.add(Pair.of(
+					last.getLeft(),
+					adapterSet));
 		}
 		return result;
 	}
@@ -852,17 +782,13 @@ public class QueryOptions implements
 			final List<Pair<PrimaryIndex, DataAdapter<Object>>> input ) {
 		final List<Pair<PrimaryIndex, DataAdapter<Object>>> result = new ArrayList<Pair<PrimaryIndex, DataAdapter<Object>>>();
 		// sort by index to eliminate the amount of indices returned
-		sortInPlace(
-				input);
+		sortInPlace(input);
 		final Set<DataAdapter<Object>> adapterSet = new HashSet<DataAdapter<Object>>();
 		for (final Pair<PrimaryIndex, DataAdapter<Object>> item : input) {
-			if (adapterSet.add(
-					item.getRight())) {
-				result.add(
-						item);
+			if (adapterSet.add(item.getRight())) {
+				result.add(item);
 			}
 		}
-		return combineByIndex(
-				result);
+		return combineByIndex(result);
 	}
 }

@@ -73,7 +73,7 @@ public class GeoWaveInputKey extends
 		}
 		if (o instanceof GeoWaveInputKey) {
 			final GeoWaveInputKey other = (GeoWaveInputKey) o;
-			final int dataIdCompare =  WritableComparator.compareBytes(
+			final int dataIdCompare = WritableComparator.compareBytes(
 					dataId.getBytes(),
 					0,
 					dataId.getBytes().length,
@@ -83,24 +83,24 @@ public class GeoWaveInputKey extends
 			if (dataIdCompare != 0) {
 				return dataIdCompare;
 			}
-			if (partitionKey != null){
+			if (partitionKey != null) {
 				int partitionKeyCompare = partitionKey.compareTo(other.partitionKey);
 
 				if (partitionKeyCompare != 0) {
 					return partitionKeyCompare;
 				}
 			}
-			else if (other.partitionKey != null){
+			else if (other.partitionKey != null) {
 				return 1;
 			}
-			if (sortKey != null){
+			if (sortKey != null) {
 				int sortKeyCompare = sortKey.compareTo(other.sortKey);
 
 				if (sortKeyCompare != 0) {
 					return sortKeyCompare;
 				}
 			}
-			else if (other.sortKey != null){
+			else if (other.sortKey != null) {
 				return 1;
 			}
 		}

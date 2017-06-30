@@ -63,14 +63,10 @@ public class GeoWaveKeyImpl implements
 		final byte[] partitionKey = new byte[length - 12 - adapterIdLength - dataIdLength - sortKey.length];
 		final byte[] adapterId = new byte[adapterIdLength];
 		final byte[] dataId = new byte[dataIdLength];
-		buf.get(
-				partitionKey);
-		buf.get(
-				sortKey);
-		buf.get(
-				adapterId);
-		buf.get(
-				dataId);
+		buf.get(partitionKey);
+		buf.get(sortKey);
+		buf.get(adapterId);
+		buf.get(dataId);
 
 		this.dataId = dataId;
 		this.adapterId = adapterId;
@@ -116,8 +112,7 @@ public class GeoWaveKeyImpl implements
 		if (compositeInsertionId != null) {
 			return compositeInsertionId;
 		}
-		compositeInsertionId = GeoWaveKey.getCompositeId(
-				this);
+		compositeInsertionId = GeoWaveKey.getCompositeId(this);
 		return compositeInsertionId;
 	}
 

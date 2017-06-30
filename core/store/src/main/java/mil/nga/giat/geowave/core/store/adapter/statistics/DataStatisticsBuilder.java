@@ -44,16 +44,13 @@ public class DataStatisticsBuilder<T> implements
 				visibilityHandler.getVisibility(
 						entry,
 						kvs));
-		DataStatistics<T> statistics = statisticsMap.get(
-				visibility);
+		DataStatistics<T> statistics = statisticsMap.get(visibility);
 		if (statistics == null) {
-			statistics = statisticsProvider.createDataStatistics(
-					statisticsId);
+			statistics = statisticsProvider.createDataStatistics(statisticsId);
 			if (statistics == null) {
 				return;
 			}
-			statistics.setVisibility(
-					visibility.getBytes());
+			statistics.setVisibility(visibility.getBytes());
 			statisticsMap.put(
 					visibility,
 					statistics);
@@ -76,13 +73,10 @@ public class DataStatisticsBuilder<T> implements
 				visibilityHandler.getVisibility(
 						entry,
 						kv));
-		DataStatistics<T> statistics = statisticsMap.get(
-				visibilityByteArray);
+		DataStatistics<T> statistics = statisticsMap.get(visibilityByteArray);
 		if (statistics == null) {
-			statistics = statisticsProvider.createDataStatistics(
-					statisticsId);
-			statistics.setVisibility(
-					visibilityByteArray.getBytes());
+			statistics = statisticsProvider.createDataStatistics(statisticsId);
+			statistics.setVisibility(visibilityByteArray.getBytes());
 			statisticsMap.put(
 					visibilityByteArray,
 					statistics);
@@ -102,16 +96,13 @@ public class DataStatisticsBuilder<T> implements
 				visibilityHandler.getVisibility(
 						entry,
 						kv));
-		DataStatistics<T> statistics = statisticsMap.get(
-				visibility);
+		DataStatistics<T> statistics = statisticsMap.get(visibility);
 		if (statistics == null) {
-			statistics = statisticsProvider.createDataStatistics(
-					statisticsId);
+			statistics = statisticsProvider.createDataStatistics(statisticsId);
 			if (statistics == null) {
 				return;
 			}
-			statistics.setVisibility(
-					visibility.getBytes());
+			statistics.setVisibility(visibility.getBytes());
 			statisticsMap.put(
 					visibility,
 					statistics);
