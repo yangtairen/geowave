@@ -109,16 +109,14 @@ public class FitToIndexGridCoverage implements
 	public GridGeometry getOverviewGridGeometry(
 			final int index )
 			throws IndexOutOfBoundsException {
-		return gridCoverage.getOverviewGridGeometry(
-				index);
+		return gridCoverage.getOverviewGridGeometry(index);
 	}
 
 	@Override
 	public GridCoverage getOverview(
 			final int index )
 			throws IndexOutOfBoundsException {
-		return gridCoverage.getOverview(
-				index);
+		return gridCoverage.getOverview(index);
 	}
 
 	@Override
@@ -162,8 +160,7 @@ public class FitToIndexGridCoverage implements
 			final DirectPosition point )
 			throws PointOutsideCoverageException,
 			CannotEvaluateException {
-		return gridCoverage.evaluate(
-				point);
+		return gridCoverage.evaluate(point);
 	}
 
 	@Override
@@ -235,8 +232,7 @@ public class FitToIndexGridCoverage implements
 	public SampleDimension getSampleDimension(
 			final int index )
 			throws IndexOutOfBoundsException {
-		return gridCoverage.getSampleDimension(
-				index);
+		return gridCoverage.getSampleDimension(index);
 	}
 
 	@Override

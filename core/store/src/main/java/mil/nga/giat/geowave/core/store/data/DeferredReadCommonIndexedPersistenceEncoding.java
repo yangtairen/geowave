@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.datastore.accumulo.encoding;
+package mil.nga.giat.geowave.core.store.data;
 
 import java.util.List;
 
@@ -19,13 +19,13 @@ import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
  *
  * @since 0.9.1
  */
-public class AccumuloCommonIndexedPersistenceEncoding extends
+public class DeferredReadCommonIndexedPersistenceEncoding extends
 		AbstractAdapterPersistenceEncoding
 {
 
 	private final FlattenedUnreadData unreadData;
 
-	public AccumuloCommonIndexedPersistenceEncoding(
+	public DeferredReadCommonIndexedPersistenceEncoding(
 			final ByteArrayId adapterId,
 			final ByteArrayId dataId,
 			final ByteArrayId partitionKey,
@@ -57,14 +57,11 @@ public class AccumuloCommonIndexedPersistenceEncoding extends
 				final ByteArrayId fieldId = adapter.getFieldIdForPosition(
 						model,
 						field.getFieldPosition());
-				final FieldReader<Object> reader = adapter.getReader(
-						fieldId);
-				final Object value = reader.readField(
-						field.getValue());
-				adapterExtendedData.addValue(
-						new PersistentValue<Object>(
-								fieldId,
-								value));
+				final FieldReader<Object> reader = adapter.getReader(fieldId);
+				final Object value = reader.readField(field.getValue());
+				adapterExtendedData.addValue(new PersistentValue<Object>(
+						fieldId,
+						value));
 			}
 		}
 	}

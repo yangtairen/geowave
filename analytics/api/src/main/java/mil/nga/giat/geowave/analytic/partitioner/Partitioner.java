@@ -126,12 +126,9 @@ public interface Partitioner<T> extends
 
 		@Override
 		public String toString() {
-			return "PartitionData [partitionKey=" + Hex.encodeHexString(
-					partitionKey.getBytes()) + ", sortKey="
-					+ Hex.encodeHexString(
-							sortKey.getBytes())
-					+ ", groupId=" + (groupId == null ? "null" : groupId.getString()) + ", isPrimary=" + isPrimary
-					+ "]";
+			return "PartitionData [partitionKey=" + Hex.encodeHexString(partitionKey.getBytes()) + ", sortKey="
+					+ Hex.encodeHexString(sortKey.getBytes()) + ", groupId="
+					+ (groupId == null ? "null" : groupId.getString()) + ", isPrimary=" + isPrimary + "]";
 		}
 
 		@Override
@@ -161,8 +158,7 @@ public interface Partitioner<T> extends
 					return false;
 				}
 			}
-			else if (!partitionKey.equals(
-					other.partitionKey)) {
+			else if (!partitionKey.equals(other.partitionKey)) {
 				return false;
 			}
 			if (sortKey == null) {
@@ -170,8 +166,7 @@ public interface Partitioner<T> extends
 					return false;
 				}
 			}
-			else if (!sortKey.equals(
-					other.sortKey)) {
+			else if (!sortKey.equals(other.sortKey)) {
 				return false;
 			}
 			return true;
@@ -183,22 +178,19 @@ public interface Partitioner<T> extends
 				throws IOException {
 			final int partitionKeySize = dInput.readInt();
 			final byte[] partitionKeyBytes = new byte[partitionKeySize];
-			dInput.readFully(
-					partitionKeyBytes);
+			dInput.readFully(partitionKeyBytes);
 			partitionKey = new ByteArrayId(
 					partitionKeyBytes);
 			final int sortKeySize = dInput.readInt();
 			final byte[] sortKeyBytes = new byte[sortKeySize];
-			dInput.readFully(
-					sortKeyBytes);
+			dInput.readFully(sortKeyBytes);
 			sortKey = new ByteArrayId(
 					sortKeyBytes);
 
 			final int groupIdSize = dInput.readInt();
 			if (groupIdSize > 0) {
 				final byte[] groupIdIdBytes = new byte[groupIdSize];
-				dInput.readFully(
-						groupIdIdBytes);
+				dInput.readFully(groupIdIdBytes);
 				groupId = new ByteArrayId(
 						groupIdIdBytes);
 			}
@@ -211,29 +203,21 @@ public interface Partitioner<T> extends
 				final DataOutput dOutput )
 				throws IOException {
 			final byte[] outputPartitionKey = partitionKey.getBytes();
-			dOutput.writeInt(
-					outputPartitionKey.length);
-			dOutput.write(
-					outputPartitionKey);
+			dOutput.writeInt(outputPartitionKey.length);
+			dOutput.write(outputPartitionKey);
 			final byte[] outputSortKey = sortKey.getBytes();
-			dOutput.writeInt(
-					outputSortKey.length);
-			dOutput.write(
-					outputSortKey);
+			dOutput.writeInt(outputSortKey.length);
+			dOutput.write(outputSortKey);
 			if (groupId != null) {
 				final byte[] groupOutputId = groupId.getBytes();
-				dOutput.writeInt(
-						groupOutputId.length);
-				dOutput.write(
-						groupOutputId);
+				dOutput.writeInt(groupOutputId.length);
+				dOutput.write(groupOutputId);
 			}
 			else {
-				dOutput.writeInt(
-						0);
+				dOutput.writeInt(0);
 			}
 
-			dOutput.writeBoolean(
-					isPrimary);
+			dOutput.writeBoolean(isPrimary);
 
 		}
 

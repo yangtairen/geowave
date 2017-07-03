@@ -52,12 +52,9 @@ public class NumericIndexStrategyFilterIterator implements
 					"Arguments must be set for " + NumericIndexStrategyFilterIterator.class.getName());
 		}
 		try {
-			if (options.containsKey(
-					INDEX_STRATEGY_KEY)) {
-				final String idxStrategyStr = options.get(
-						INDEX_STRATEGY_KEY);
-				final byte[] idxStrategyBytes = ByteArrayUtils.byteArrayFromString(
-						idxStrategyStr);
+			if (options.containsKey(INDEX_STRATEGY_KEY)) {
+				final String idxStrategyStr = options.get(INDEX_STRATEGY_KEY);
+				final byte[] idxStrategyBytes = ByteArrayUtils.byteArrayFromString(idxStrategyStr);
 				indexStrategy = PersistenceUtils.fromBinary(
 						idxStrategyBytes,
 						NumericIndexStrategy.class);
@@ -68,17 +65,12 @@ public class NumericIndexStrategyFilterIterator implements
 						"'" + INDEX_STRATEGY_KEY + "' must be set for "
 								+ NumericIndexStrategyFilterIterator.class.getName());
 			}
-			if (options.containsKey(
-					COORDINATE_RANGE_KEY)) {
-				final String coordRangeStr = options.get(
-						COORDINATE_RANGE_KEY);
-				final byte[] coordRangeBytes = ByteArrayUtils.byteArrayFromString(
-						coordRangeStr);
+			if (options.containsKey(COORDINATE_RANGE_KEY)) {
+				final String coordRangeStr = options.get(COORDINATE_RANGE_KEY);
+				final byte[] coordRangeBytes = ByteArrayUtils.byteArrayFromString(coordRangeStr);
 				final ArrayOfArrays arrays = new ArrayOfArrays();
-				arrays.fromBinary(
-						coordRangeBytes);
-				rangeCache = RangeLookupFactory.createMultiRangeLookup(
-						arrays.getCoordinateArrays());
+				arrays.fromBinary(coordRangeBytes);
+				rangeCache = RangeLookupFactory.createMultiRangeLookup(arrays.getCoordinateArrays());
 			}
 			else {
 				throw new IllegalArgumentException(
@@ -134,8 +126,7 @@ public class NumericIndexStrategyFilterIterator implements
 		final NumericIndexStrategyFilterIterator iterator = new NumericIndexStrategyFilterIterator();
 		iterator.indexStrategy = indexStrategy;
 		iterator.rangeCache = rangeCache;
-		iterator.source = source.deepCopy(
-				env);
+		iterator.source = source.deepCopy(env);
 		return iterator;
 	}
 
@@ -143,8 +134,7 @@ public class NumericIndexStrategyFilterIterator implements
 		topKey = null;
 		topValue = null;
 		while (source.hasTop()) {
-			if (inBounds(
-					source.getTopKey())) {
+			if (inBounds(source.getTopKey())) {
 				topKey = source.getTopKey();
 				topValue = source.getTopValue();
 				return;
@@ -163,8 +153,7 @@ public class NumericIndexStrategyFilterIterator implements
 
 	private boolean inBounds(
 			final Key k ) {
-		k.getRow(
-				row);
+		k.getRow(row);
 		final GeoWaveKeyImpl key = new GeoWaveKeyImpl(
 				row.getBytes(),
 				partitionKeyLength);
@@ -173,7 +162,6 @@ public class NumericIndexStrategyFilterIterator implements
 						key.getPartitionKey()),
 				new ByteArrayId(
 						key.getSortKey()));
-		return rangeCache.inBounds(
-				coordinates);
+		return rangeCache.inBounds(coordinates);
 	}
 }

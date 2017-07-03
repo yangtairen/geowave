@@ -43,8 +43,7 @@ public class GeoWaveAccumuloRecordReader<T> extends
 		GeoWaveRecordReader<T>
 {
 
-	protected static final Logger LOGGER = Logger.getLogger(
-			GeoWaveAccumuloRecordReader.class);
+	protected static final Logger LOGGER = Logger.getLogger(GeoWaveAccumuloRecordReader.class);
 	protected Key currentAccumuloKey = null;
 	protected AccumuloOperations accumuloOperations;
 
@@ -71,8 +70,7 @@ public class GeoWaveAccumuloRecordReader<T> extends
 			final List<QueryFilter> queryFilters,
 			final QueryOptions rangeQueryOptions ) {
 
-		final QueryFilter singleFilter = queryFilters.isEmpty() ? null : queryFilters.size() == 1 ? queryFilters.get(
-				0)
+		final QueryFilter singleFilter = (queryFilters == null || queryFilters.isEmpty()) ? null : queryFilters.size() == 1 ? queryFilters.get(0)
 				: new FilterList<QueryFilter>(
 						queryFilters);
 		try {
@@ -80,32 +78,30 @@ public class GeoWaveAccumuloRecordReader<T> extends
 					dataStore,
 					adapterStore,
 					i,
-					accumuloOperations.createReader(
-							new ReaderParams(
-									i,
-									rangeQueryOptions.getAdapterIds(
-											adapterStore),
-									rangeQueryOptions.getMaxResolutionSubsamplingPerDimension(),
-									rangeQueryOptions.getAggregation(),
-									rangeQueryOptions.getFieldIdsAdapterPair(),
-									// TODO GEOWAVE-1018 should we always use
-									// whole row encoding or check the stats for
-									// mixed visibilities, probably check stats,
-									// although might be passed through
-									// configuration
-									true,
-									false,
-									new QueryRanges(
-											new ByteArrayRange(
-													new ByteArrayId(
-															range.getStartKey()),
-													new ByteArrayId(
-															range.getEndKey()))),
-									null,
-									queryOptions.getLimit(),
-									null,
-									null,
-									rangeQueryOptions.getAuthorizations())),
+					accumuloOperations.createReader(new ReaderParams(
+							i,
+							rangeQueryOptions.getAdapterIds(adapterStore),
+							rangeQueryOptions.getMaxResolutionSubsamplingPerDimension(),
+							rangeQueryOptions.getAggregation(),
+							rangeQueryOptions.getFieldIdsAdapterPair(),
+							// TODO GEOWAVE-1018 should we always use
+							// whole row encoding or check the stats for
+							// mixed visibilities, probably check stats,
+							// although might be passed through
+							// configuration
+							true,
+							false,
+							new QueryRanges(
+									new ByteArrayRange(
+											new ByteArrayId(
+													range.getStartKey()),
+											new ByteArrayId(
+													range.getEndKey()))),
+							null,
+							queryOptions.getLimit(),
+							null,
+							null,
+							rangeQueryOptions.getAuthorizations())),
 					singleFilter,
 					null,
 					true);
@@ -132,19 +128,15 @@ public class GeoWaveAccumuloRecordReader<T> extends
 					if (currentGeoWaveKey == null) {
 						currentAccumuloKey = null;
 					}
-					else if ((currentGeoWaveKey.getPartitionKey() != null)
-							|| (currentGeoWaveKey.getSortKey() != null)) {
+					else if ((currentGeoWaveKey.getPartitionKey() != null) || (currentGeoWaveKey.getSortKey() != null)) {
 						// just use the concatenation of partition and sort keys
 						// for progress
 						currentAccumuloKey = new Key(
 								new Text(
 										new SinglePartitionInsertionIds(
 												currentGeoWaveKey.getPartitionKey(),
-												currentGeoWaveKey.getSortKey())
-														.getCompositeInsertionIds()
-														.get(
-																0)
-														.getBytes()));
+												currentGeoWaveKey.getSortKey()).getCompositeInsertionIds().get(
+												0).getBytes()));
 					}
 					currentValue = entry.getValue();
 				}
@@ -163,17 +155,14 @@ public class GeoWaveAccumuloRecordReader<T> extends
 		if (currentGeoWaveRangeIndexPair == null) {
 			return 0.0f;
 		}
-		final ProgressPerRange progress = progressPerRange.get(
-				currentGeoWaveRangeIndexPair);
+		final ProgressPerRange progress = progressPerRange.get(currentGeoWaveRangeIndexPair);
 		if (progress == null) {
 			return getProgressForRange(
-					AccumuloSplitsProvider.unwrapRange(
-							currentGeoWaveRangeIndexPair.getRange()),
+					AccumuloSplitsProvider.unwrapRange(currentGeoWaveRangeIndexPair.getRange()),
 					currentAccumuloKey);
 		}
 		return getOverallProgress(
-				AccumuloSplitsProvider.unwrapRange(
-						currentGeoWaveRangeIndexPair.getRange()),
+				AccumuloSplitsProvider.unwrapRange(currentGeoWaveRangeIndexPair.getRange()),
 				currentAccumuloKey,
 				progress);
 	}
@@ -185,8 +174,7 @@ public class GeoWaveAccumuloRecordReader<T> extends
 		final float rangeProgress = getProgressForRange(
 				range,
 				currentKey);
-		return progress.getOverallProgress(
-				rangeProgress);
+		return progress.getOverallProgress(rangeProgress);
 	}
 
 	private static float getProgressForRange(
@@ -211,9 +199,8 @@ public class GeoWaveAccumuloRecordReader<T> extends
 						position.getBackingArray(),
 						maxDepth));
 		return (float) (positionBI.subtract(
-				startBI).doubleValue()
-				/ endBI.subtract(
-						startBI).doubleValue());
+				startBI).doubleValue() / endBI.subtract(
+				startBI).doubleValue());
 	}
 
 	private static float getProgressForRange(

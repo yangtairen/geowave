@@ -14,7 +14,9 @@ import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -55,9 +57,10 @@ import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputKey;
 
 public class KMeansDistortionMapReduceTest
 {
-	private static final String TEST_NAMESPACE = "test";
 	MapDriver<GeoWaveInputKey, ObjectWritable, Text, CountofDoubleWritable> mapDriver;
 	ReduceDriver<Text, CountofDoubleWritable, GeoWaveOutputKey, DistortionEntry> reduceDriver;
+	@Rule
+	public TestName name = new TestName();
 
 	final String batchId = "b1";
 
@@ -128,7 +131,8 @@ public class KMeansDistortionMapReduceTest
 				new MemoryStoreFactoryFamily());
 		pluginOptions.selectPlugin("memory");
 		MemoryRequiredOptions opts = (MemoryRequiredOptions) pluginOptions.getFactoryOptions();
-		opts.setGeowaveNamespace(TEST_NAMESPACE);
+		final String namespace = "test_" + getClass().getName() + "_" + name.getMethodName();
+		opts.setGeowaveNamespace(namespace);
 		PersistableStore store = new PersistableStore(
 				pluginOptions);
 

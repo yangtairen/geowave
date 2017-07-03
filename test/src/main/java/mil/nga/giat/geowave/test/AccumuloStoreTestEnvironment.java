@@ -41,8 +41,7 @@ public class AccumuloStoreTestEnvironment extends
 		return singletonInstance;
 	}
 
-	private final static Logger LOGGER = Logger.getLogger(
-			AccumuloStoreTestEnvironment.class);
+	private final static Logger LOGGER = Logger.getLogger(AccumuloStoreTestEnvironment.class);
 	protected static final String DEFAULT_MINI_ACCUMULO_PASSWORD = "Ge0wave";
 	protected static final String HADOOP_WINDOWS_UTIL = "winutils.exe";
 	protected static final String HADOOP_DLL = "hadoop.dll";
@@ -62,38 +61,22 @@ public class AccumuloStoreTestEnvironment extends
 	@Override
 	public void setup() {
 
-		if (!TestUtils.isSet(
-				zookeeper)) {
-			zookeeper = System.getProperty(
-					ZookeeperTestEnvironment.ZK_PROPERTY_NAME);
+		if (!TestUtils.isSet(zookeeper)) {
+			zookeeper = System.getProperty(ZookeeperTestEnvironment.ZK_PROPERTY_NAME);
 
-			if (!TestUtils.isSet(
-					zookeeper)) {
+			if (!TestUtils.isSet(zookeeper)) {
 				zookeeper = ZookeeperTestEnvironment.getInstance().getZookeeper();
-				LOGGER.debug(
-						"Using local zookeeper URL: " + zookeeper);
+				LOGGER.debug("Using local zookeeper URL: " + zookeeper);
 			}
 		}
 
-		if (!TestUtils.isSet(
-				accumuloInstance)
-				|| !TestUtils.isSet(
-						accumuloUser)
-				|| !TestUtils.isSet(
-						accumuloPassword)) {
+		if (!TestUtils.isSet(accumuloInstance) || !TestUtils.isSet(accumuloUser) || !TestUtils.isSet(accumuloPassword)) {
 
-			accumuloInstance = System.getProperty(
-					"instance");
-			accumuloUser = System.getProperty(
-					"username");
-			accumuloPassword = System.getProperty(
-					"password");
-			if (!TestUtils.isSet(
-					accumuloInstance)
-					|| !TestUtils.isSet(
-							accumuloUser)
-					|| !TestUtils.isSet(
-							accumuloPassword)) {
+			accumuloInstance = System.getProperty("instance");
+			accumuloUser = System.getProperty("username");
+			accumuloPassword = System.getProperty("password");
+			if (!TestUtils.isSet(accumuloInstance) || !TestUtils.isSet(accumuloUser)
+					|| !TestUtils.isSet(accumuloPassword)) {
 				try {
 					if (!TEMP_DIR.exists()) {
 						if (!TEMP_DIR.mkdirs()) {
@@ -105,19 +88,14 @@ public class AccumuloStoreTestEnvironment extends
 					final MiniAccumuloConfigImpl config = new MiniAccumuloConfigImpl(
 							TEMP_DIR,
 							DEFAULT_MINI_ACCUMULO_PASSWORD);
-					config.setZooKeeperPort(
-							Integer.parseInt(
-									zookeeper.split(
-											":")[1]));
-					config.setNumTservers(
-							2);
+					config.setZooKeeperPort(Integer.parseInt(zookeeper.split(":")[1]));
+					config.setNumTservers(2);
 
 					miniAccumulo = MiniAccumuloClusterFactory.newAccumuloCluster(
 							config,
 							AccumuloStoreTestEnvironment.class);
 
-					startMiniAccumulo(
-							config);
+					startMiniAccumulo(config);
 					accumuloUser = "root";
 					accumuloInstance = miniAccumulo.getInstanceName();
 					accumuloPassword = DEFAULT_MINI_ACCUMULO_PASSWORD;
@@ -126,14 +104,12 @@ public class AccumuloStoreTestEnvironment extends
 					LOGGER.warn(
 							"Unable to start mini accumulo instance",
 							e);
-					LOGGER.info(
-							"Check '" + TEMP_DIR.getAbsolutePath() + File.separator + "logs' for more info");
+					LOGGER.info("Check '" + TEMP_DIR.getAbsolutePath() + File.separator + "logs' for more info");
 					if (SystemUtils.IS_OS_WINDOWS) {
-						LOGGER.warn(
-								"For windows, make sure that Cygwin is installed and set a CYGPATH environment variable to %CYGWIN_HOME%/bin/cygpath to successfully run a mini accumulo cluster");
+						LOGGER
+								.warn("For windows, make sure that Cygwin is installed and set a CYGPATH environment variable to %CYGWIN_HOME%/bin/cygpath to successfully run a mini accumulo cluster");
 					}
-					Assert.fail(
-							"Unable to start mini accumulo instance: '" + e.getLocalizedMessage() + "'");
+					Assert.fail("Unable to start mini accumulo instance: '" + e.getLocalizedMessage() + "'");
 				}
 			}
 		}
@@ -145,12 +121,9 @@ public class AccumuloStoreTestEnvironment extends
 			InterruptedException {
 
 		final LinkedList<String> jvmArgs = new LinkedList<>();
-		jvmArgs.add(
-				"-XX:CompressedClassSpaceSize=512m");
-		jvmArgs.add(
-				"-XX:MaxMetaspaceSize=512m");
-		jvmArgs.add(
-				"-Xmx512m");
+		jvmArgs.add("-XX:CompressedClassSpaceSize=512m");
+		jvmArgs.add("-XX:MaxMetaspaceSize=512m");
+		jvmArgs.add("-Xmx512m");
 
 		Runtime.getRuntime().addShutdownHook(
 				new Thread() {
@@ -163,54 +136,42 @@ public class AccumuloStoreTestEnvironment extends
 		siteConfig.put(
 				Property.INSTANCE_ZK_HOST.getKey(),
 				zookeeper);
-		config.setSiteConfig(
-				siteConfig);
+		config.setSiteConfig(siteConfig);
 
 		final LinkedList<String> args = new LinkedList<>();
-		args.add(
-				"--instance-name");
-		args.add(
-				config.getInstanceName());
-		args.add(
-				"--password");
-		args.add(
-				config.getRootPassword());
+		args.add("--instance-name");
+		args.add(config.getInstanceName());
+		args.add("--password");
+		args.add(config.getRootPassword());
 
 		final Process initProcess = miniAccumulo.exec(
 				Initialize.class,
 				jvmArgs,
-				args.toArray(
-						new String[0]));
+				args.toArray(new String[0]));
 
-		cleanup.add(
-				initProcess);
+		cleanup.add(initProcess);
 
 		final int ret = initProcess.waitFor();
 		if (ret != 0) {
 			throw new RuntimeException(
-					"Initialize process returned " + ret + ". Check the logs in " + config.getLogDir()
-							+ " for errors.");
+					"Initialize process returned " + ret + ". Check the logs in " + config.getLogDir() + " for errors.");
 		}
 
-		LOGGER.info(
-				"Starting MAC against instance " + config.getInstanceName() + " and zookeeper(s)  "
-						+ config.getZooKeepers());
+		LOGGER.info("Starting MAC against instance " + config.getInstanceName() + " and zookeeper(s)  "
+				+ config.getZooKeepers());
 
 		for (int i = 0; i < config.getNumTservers(); i++) {
-			cleanup.add(
-					miniAccumulo.exec(
-							TabletServer.class,
-							jvmArgs));
+			cleanup.add(miniAccumulo.exec(
+					TabletServer.class,
+					jvmArgs));
 		}
 
-		cleanup.add(
-				miniAccumulo.exec(
-						Master.class,
-						jvmArgs));
-		cleanup.add(
-				miniAccumulo.exec(
-						SimpleGarbageCollector.class,
-						jvmArgs));
+		cleanup.add(miniAccumulo.exec(
+				Master.class,
+				jvmArgs));
+		cleanup.add(miniAccumulo.exec(
+				SimpleGarbageCollector.class,
+				jvmArgs));
 	}
 
 	@Override
@@ -247,10 +208,8 @@ public class AccumuloStoreTestEnvironment extends
 				// hold on the log files and there is no hook to get
 				// notified when it is completely stopped
 
-				Thread.sleep(
-						2000);
-				FileUtils.deleteDirectory(
-						TEMP_DIR);
+				Thread.sleep(2000);
+				FileUtils.deleteDirectory(TEMP_DIR);
 			}
 			catch (final IOException | InterruptedException e) {
 				LOGGER.warn(
@@ -264,14 +223,10 @@ public class AccumuloStoreTestEnvironment extends
 	protected void initOptions(
 			final StoreFactoryOptions options ) {
 		final AccumuloRequiredOptions accumuloOpts = (AccumuloRequiredOptions) options;
-		accumuloOpts.setUser(
-				accumuloUser);
-		accumuloOpts.setPassword(
-				accumuloPassword);
-		accumuloOpts.setInstance(
-				accumuloInstance);
-		accumuloOpts.setZookeeper(
-				zookeeper);
+		accumuloOpts.setUser(accumuloUser);
+		accumuloOpts.setPassword(accumuloPassword);
+		accumuloOpts.setInstance(accumuloInstance);
+		accumuloOpts.setZookeeper(zookeeper);
 	}
 
 	@Override

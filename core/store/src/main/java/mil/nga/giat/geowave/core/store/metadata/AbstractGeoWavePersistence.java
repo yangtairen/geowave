@@ -323,7 +323,7 @@ public abstract class AbstractGeoWavePersistence<T extends Persistable>
 			addObjectToCache(
 					new ByteArrayId(
 							entry.getPrimaryId()),
-					new ByteArrayId(
+					entry.getSecondaryId() == null ? null : new ByteArrayId(
 							entry.getSecondaryId()),
 					result);
 		}

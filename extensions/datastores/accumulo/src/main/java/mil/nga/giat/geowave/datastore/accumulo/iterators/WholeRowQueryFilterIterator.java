@@ -14,9 +14,9 @@ import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
+import mil.nga.giat.geowave.core.store.data.UnreadFieldDataList;
 import mil.nga.giat.geowave.core.store.flatten.FlattenedUnreadData;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
-import mil.nga.giat.geowave.datastore.accumulo.encoding.AccumuloUnreadDataList;
 
 /**
  * This iterator wraps a DistributableQueryFilter which is deserialized from a
@@ -51,7 +51,7 @@ public class WholeRowQueryFilterIterator extends
 			return queryFilterIterator.applyRowFilter(
 					currentRow,
 					commonData,
-					unreadData.isEmpty() ? null : new AccumuloUnreadDataList(
+					unreadData.isEmpty() ? null : new UnreadFieldDataList(
 							unreadData));
 		}
 		// if the query filter or index model did not get sent to this iterator,

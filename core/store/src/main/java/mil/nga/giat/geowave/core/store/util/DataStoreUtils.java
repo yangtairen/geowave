@@ -25,13 +25,18 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
+import mil.nga.giat.geowave.core.store.data.PersistentDataset;
+import mil.nga.giat.geowave.core.store.data.PersistentValue;
+import mil.nga.giat.geowave.core.store.data.field.FieldReader;
 import mil.nga.giat.geowave.core.store.data.visibility.UnconstrainedVisibilityHandler;
 import mil.nga.giat.geowave.core.store.data.visibility.UniformVisibilityWriter;
 import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveKey;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
 import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
 import mil.nga.giat.geowave.core.store.flatten.FlattenedDataSet;
 import mil.nga.giat.geowave.core.store.flatten.FlattenedFieldInfo;
+import mil.nga.giat.geowave.core.store.flatten.FlattenedUnreadData;
 import mil.nga.giat.geowave.core.store.flatten.FlattenedUnreadDataSingleRow;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
@@ -54,6 +59,41 @@ public class DataStoreUtils
 			new UnconstrainedVisibilityHandler());
 
 	public static final byte[] EMTPY_VISIBILITY = new byte[] {};
+
+	public static FlattenedUnreadData aggregateFieldData(
+			final GeoWaveKey key,
+			final GeoWaveValue value,
+			final PersistentDataset<CommonIndexValue> commonData,
+			final CommonIndexModel model,
+			final List<ByteArrayId> commonIndexFieldIds ) {
+		final byte[] fieldMask = value.getFieldMask();
+		final byte[] valueBytes = value.getValue();
+		final FlattenedDataSet dataSet = DataStoreUtils.decomposeFlattenedFields(
+				fieldMask,
+				valueBytes,
+				value.getVisibility(),
+				commonIndexFieldIds.size() - 1);
+		final List<FlattenedFieldInfo> fieldInfos = dataSet.getFieldsRead();
+
+		for (final FlattenedFieldInfo fieldInfo : fieldInfos) {
+			final int ordinal = fieldInfo.getFieldPosition();
+			if (ordinal < commonIndexFieldIds.size()) {
+				final ByteArrayId commonIndexFieldId = commonIndexFieldIds.get(ordinal);
+				final FieldReader<? extends CommonIndexValue> reader = model.getReader(commonIndexFieldId);
+				if (reader != null) {
+					final CommonIndexValue fieldValue = reader.readField(fieldInfo.getValue());
+					fieldValue.setVisibility(value.getVisibility());
+					commonData.addValue(new PersistentValue<CommonIndexValue>(
+							commonIndexFieldId,
+							fieldValue));
+				}
+				else {
+					LOGGER.error("Could not find reader for common index field: " + commonIndexFieldId.getString());
+				}
+			}
+		}
+		return dataSet.getFieldsDeferred();
+	}
 
 	public static List<ByteArrayId> getUniqueDimensionFields(
 			final CommonIndexModel model ) {

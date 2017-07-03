@@ -19,8 +19,7 @@ import mil.nga.giat.geowave.core.store.operations.Deleter;
 public class AccumuloDeleter implements
 		Deleter
 {
-	private static Logger LOGGER = LoggerFactory.getLogger(
-			AccumuloDeleter.class);
+	private static Logger LOGGER = LoggerFactory.getLogger(AccumuloDeleter.class);
 	private final BatchDeleter deleter;
 	private final boolean isAltIndex;
 
@@ -46,21 +45,15 @@ public class AccumuloDeleter implements
 			final DataAdapter<?> adapter ) {
 		final List<Range> rowRanges = new ArrayList<Range>();
 		if (isAltIndex) {
-			rowRanges.add(
-					Range.exact(
-							new Text(
-									row.getDataId())));
+			rowRanges.add(Range.exact(new Text(
+					row.getDataId())));
 		}
 		else {
-			rowRanges.add(
-					Range.exact(
-							new Text(
-									GeoWaveKey.getCompositeId(
-											row))));
+			rowRanges.add(Range.exact(new Text(
+					GeoWaveKey.getCompositeId(row))));
 		}
 		final BatchDeleter batchDeleter = getDeleter();
-		batchDeleter.setRanges(
-				rowRanges);
+		batchDeleter.setRanges(rowRanges);
 		try {
 			batchDeleter.delete();
 		}

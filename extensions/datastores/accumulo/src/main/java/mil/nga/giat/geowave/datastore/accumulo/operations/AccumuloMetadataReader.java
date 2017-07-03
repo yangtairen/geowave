@@ -30,8 +30,7 @@ import mil.nga.giat.geowave.datastore.accumulo.util.ScannerClosableWrapper;
 public class AccumuloMetadataReader implements
 		MetadataReader
 {
-	private final static Logger LOGGER = LoggerFactory.getLogger(
-			AccumuloMetadataReader.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(AccumuloMetadataReader.class);
 	private static final int STATS_MULTI_VISIBILITY_COMBINER_PRIORITY = 15;
 	private final AccumuloOperations operations;
 	private final DataStoreOptions options;
@@ -57,8 +56,7 @@ public class AccumuloMetadataReader implements
 			final IteratorSetting[] settings = getScanSettings();
 			if ((settings != null) && (settings.length > 0)) {
 				for (final IteratorSetting setting : settings) {
-					scanner.addScanIterator(
-							setting);
+					scanner.addScanIterator(setting);
 				}
 			}
 			final String columnFamily = metadataType.name();
@@ -72,24 +70,20 @@ public class AccumuloMetadataReader implements
 									columnQualifier));
 				}
 				else {
-					scanner.fetchColumnFamily(
-							new Text(
-									columnFamily));
+					scanner.fetchColumnFamily(new Text(
+							columnFamily));
 				}
 			}
 			final Collection<Range> ranges = new ArrayList<Range>();
 			if (query.getPrimaryId() != null) {
-				ranges.add(
-						new Range(
-								new Text(
-										query.getPrimaryId())));
+				ranges.add(new Range(
+						new Text(
+								query.getPrimaryId())));
 			}
 			else {
-				ranges.add(
-						new Range());
+				ranges.add(new Range());
 			}
-			scanner.setRanges(
-					ranges);
+			scanner.setRanges(ranges);
 			return new CloseableIteratorWrapper<>(
 					new ScannerClosableWrapper(
 							scanner),
@@ -119,8 +113,7 @@ public class AccumuloMetadataReader implements
 	}
 
 	private IteratorSetting[] getScanSettings() {
-		if (MetadataType.STATS.equals(
-				metadataType) && options.isServerSideLibraryEnabled()) {
+		if (MetadataType.STATS.equals(metadataType) && options.isServerSideLibraryEnabled()) {
 			return getStatsScanSettings();
 		}
 		return null;

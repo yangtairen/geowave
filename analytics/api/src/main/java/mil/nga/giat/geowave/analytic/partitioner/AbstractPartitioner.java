@@ -81,8 +81,7 @@ public abstract class AbstractPartitioner<T> implements
 			final T entry ) {
 		final Set<PartitionData> partitionIdSet = new HashSet<PartitionData>();
 
-		final NumericDataHolder numericData = getNumericData(
-				entry);
+		final NumericDataHolder numericData = getNumericData(entry);
 		if (numericData == null) {
 			return Collections.emptyList();
 		}
@@ -108,8 +107,7 @@ public abstract class AbstractPartitioner<T> implements
 			final T entry,
 			final PartitionDataCallback callback )
 			throws Exception {
-		final NumericDataHolder numericData = getNumericData(
-				entry);
+		final NumericDataHolder numericData = getNumericData(entry);
 		if (numericData == null) {
 			return;
 		}
@@ -117,11 +115,10 @@ public abstract class AbstractPartitioner<T> implements
 				numericData.primary);
 		for (final SinglePartitionInsertionIds partitionInsertionIds : primaryIds.getPartitionKeys()) {
 			for (final ByteArrayId sortKey : partitionInsertionIds.getSortKeys()) {
-				callback.partitionWith(
-						new PartitionData(
-								partitionInsertionIds.getPartitionKey(),
-								sortKey,
-								true));
+				callback.partitionWith(new PartitionData(
+						partitionInsertionIds.getPartitionKey(),
+						sortKey,
+						true));
 			}
 		}
 
@@ -130,11 +127,10 @@ public abstract class AbstractPartitioner<T> implements
 					expansionData);
 			for (final SinglePartitionInsertionIds partitionInsertionIds : expansionIds.getPartitionKeys()) {
 				for (final ByteArrayId sortKey : partitionInsertionIds.getSortKeys()) {
-					callback.partitionWith(
-							new PartitionData(
-									partitionInsertionIds.getPartitionKey(),
-									sortKey,
-									false));
+					callback.partitionWith(new PartitionData(
+							partitionInsertionIds.getPartitionKey(),
+							sortKey,
+							false));
 				}
 			}
 		}
@@ -162,11 +158,10 @@ public abstract class AbstractPartitioner<T> implements
 			final boolean isPrimary ) {
 		for (final SinglePartitionInsertionIds partitionInsertionIds : insertionIds.getPartitionKeys()) {
 			for (final ByteArrayId sortKey : partitionInsertionIds.getSortKeys()) {
-				masterList.add(
-						new PartitionData(
-								partitionInsertionIds.getPartitionKey(),
-								sortKey,
-								isPrimary));
+				masterList.add(new PartitionData(
+						partitionInsertionIds.getPartitionKey(),
+						sortKey,
+						isPrimary));
 			}
 		}
 	}
@@ -177,14 +172,12 @@ public abstract class AbstractPartitioner<T> implements
 				PartitionParameters.Partition.DISTANCE_THRESHOLDS,
 				"0.000001");
 
-		final String distancesArray[] = distances.split(
-				",");
+		final String distancesArray[] = distances.split(",");
 		final double[] distancePerDimension = new double[distancesArray.length];
 		{
 			int i = 0;
 			for (final String eachDistance : distancesArray) {
-				distancePerDimension[i++] = Double.valueOf(
-						eachDistance);
+				distancePerDimension[i++] = Double.valueOf(eachDistance);
 			}
 		}
 		return distancePerDimension;
@@ -195,18 +188,16 @@ public abstract class AbstractPartitioner<T> implements
 			final JobContext context,
 			final Class<?> scope )
 			throws IOException {
-		initialize(
-				new ScopedJobConfiguration(
-						context.getConfiguration(),
-						scope));
+		initialize(new ScopedJobConfiguration(
+				context.getConfiguration(),
+				scope));
 	}
 
 	public void initialize(
 			final ScopedJobConfiguration config )
 			throws IOException {
 
-		distancePerDimension = getDistances(
-				config);
+		distancePerDimension = getDistances(config);
 
 		this.precisionFactor = config.getDouble(
 				Partition.PARTITION_PRECISION,
@@ -275,11 +266,8 @@ public abstract class AbstractPartitioner<T> implements
 			final double distance = distancePerDimensionForIndex[i] * 2.0; // total
 			// width...(radius)
 			// adjust by precision factory (0 to 1.0)
-			dimensionPrecision[i] = (int) (precisionFactor * Math.abs(
-					(int) (Math.log(
-							dimensions[i].getRange() / distance)
-							/ Math.log(
-									2))));
+			dimensionPrecision[i] = (int) (precisionFactor * Math.abs((int) (Math.log(dimensions[i].getRange()
+					/ distance) / Math.log(2))));
 
 			totalRequestedPrecision += dimensionPrecision[i];
 		}
@@ -297,8 +285,7 @@ public abstract class AbstractPartitioner<T> implements
 
 		// Not relevant since this is a single tier strategy.
 		// For now, just setting to a non-zero reasonable value
-		indexStrategy.setMaxEstimatedDuplicateIdsPerDimension(
-				2);
+		indexStrategy.setMaxEstimatedDuplicateIdsPerDimension(2);
 
 		index = new PrimaryIndex(
 				indexStrategy,
@@ -308,31 +295,24 @@ public abstract class AbstractPartitioner<T> implements
 
 	@Override
 	public Collection<ParameterEnum<?>> getParameters() {
-		return Arrays.asList(
-				new ParameterEnum<?>[] {
-					CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS,
-					PartitionParameters.Partition.DISTANCE_THRESHOLDS,
-					Partition.PARTITION_PRECISION
-				});
+		return Arrays.asList(new ParameterEnum<?>[] {
+			CommonParameters.Common.INDEX_MODEL_BUILDER_CLASS,
+			PartitionParameters.Partition.DISTANCE_THRESHOLDS,
+			Partition.PARTITION_PRECISION
+		});
 
 	}
 
 	private void writeObject(
 			final ObjectOutputStream stream )
 			throws IOException {
-		final byte[] indexData = PersistenceUtils.toBinary(
-				this.index);
-		stream.writeInt(
-				indexData.length);
-		stream.write(
-				indexData);
-		stream.writeDouble(
-				precisionFactor);
-		stream.writeInt(
-				distancePerDimension.length);
+		final byte[] indexData = PersistenceUtils.toBinary(this.index);
+		stream.writeInt(indexData.length);
+		stream.write(indexData);
+		stream.writeDouble(precisionFactor);
+		stream.writeInt(distancePerDimension.length);
 		for (final double v : distancePerDimension) {
-			stream.writeDouble(
-					v);
+			stream.writeDouble(v);
 		}
 	}
 
@@ -341,8 +321,7 @@ public abstract class AbstractPartitioner<T> implements
 			throws IOException,
 			ClassNotFoundException {
 		final byte[] indexData = new byte[stream.readInt()];
-		stream.readFully(
-				indexData);
+		stream.readFully(indexData);
 		index = PersistenceUtils.fromBinary(
 				indexData,
 				PrimaryIndex.class);
@@ -357,12 +336,10 @@ public abstract class AbstractPartitioner<T> implements
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = (prime * result) + Arrays.hashCode(
-				distancePerDimension);
+		result = (prime * result) + Arrays.hashCode(distancePerDimension);
 		result = (prime * result) + ((index == null) ? 0 : index.hashCode());
 		long temp;
-		temp = Double.doubleToLongBits(
-				precisionFactor);
+		temp = Double.doubleToLongBits(precisionFactor);
 		result = (prime * result) + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
@@ -390,13 +367,10 @@ public abstract class AbstractPartitioner<T> implements
 				return false;
 			}
 		}
-		else if (!index.equals(
-				other.index)) {
+		else if (!index.equals(other.index)) {
 			return false;
 		}
-		if (Double.doubleToLongBits(
-				precisionFactor) != Double.doubleToLongBits(
-						other.precisionFactor)) {
+		if (Double.doubleToLongBits(precisionFactor) != Double.doubleToLongBits(other.precisionFactor)) {
 			return false;
 		}
 		return true;

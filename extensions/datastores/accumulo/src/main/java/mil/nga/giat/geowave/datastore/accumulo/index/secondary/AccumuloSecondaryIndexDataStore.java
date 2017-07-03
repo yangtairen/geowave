@@ -73,28 +73,28 @@ public class AccumuloSecondaryIndexDataStore extends
 	@Override
 	protected Writer getWriter(
 			final ByteArrayId secondaryIndexId ) {
-//		final String secondaryIndexName = secondaryIndexId.getString();
-//		if (writerCache.containsKey(secondaryIndexName)) {
-//			return writerCache.get(secondaryIndexName);
-//		}
-//		Writer writer = null;
-//		try {
-//			writer = accumuloOperations.createWriter(
-//					secondaryIndexName,
-//					true,
-//					false,
-//					accumuloOptions.isEnableBlockCache(),
-//					null);
-//			writerCache.put(
-//					secondaryIndexName,
-//					writer);
-//		}
-//		catch (final TableNotFoundException e) {
-//			LOGGER.error(
-//					"Error creating writer",
-//					e);
-//		}
-//		return writer;
+		// final String secondaryIndexName = secondaryIndexId.getString();
+		// if (writerCache.containsKey(secondaryIndexName)) {
+		// return writerCache.get(secondaryIndexName);
+		// }
+		// Writer writer = null;
+		// try {
+		// writer = accumuloOperations.createWriter(
+		// secondaryIndexName,
+		// true,
+		// false,
+		// accumuloOptions.isEnableBlockCache(),
+		// null);
+		// writerCache.put(
+		// secondaryIndexName,
+		// writer);
+		// }
+		// catch (final TableNotFoundException e) {
+		// LOGGER.error(
+		// "Error creating writer",
+		// e);
+		// }
+		// return writer;
 		return null;
 	}
 
@@ -107,20 +107,20 @@ public class AccumuloSecondaryIndexDataStore extends
 			final byte[] primaryIndexPartitionKey,
 			final byte[] primaryIndexSortKey,
 			final byte[] attributeVisibility ) {
-//		final Mutation m = new Mutation(
-//				secondaryIndexRowId);
-//		final ColumnVisibility columnVisibility = new ColumnVisibility(
-//				attributeVisibility);
-//		m.put(
-//				SecondaryIndexUtils.constructColumnFamily(
-//						adapterId,
-//						indexedAttributeFieldId),
-//				SecondaryIndexUtils.constructColumnQualifier(
-//						primaryIndexId,
-//						primaryIndexPartitionKey),
-//				columnVisibility,
-//				EMPTY_VALUE);
-//		return m;
+		// final Mutation m = new Mutation(
+		// secondaryIndexRowId);
+		// final ColumnVisibility columnVisibility = new ColumnVisibility(
+		// attributeVisibility);
+		// m.put(
+		// SecondaryIndexUtils.constructColumnFamily(
+		// adapterId,
+		// indexedAttributeFieldId),
+		// SecondaryIndexUtils.constructColumnQualifier(
+		// primaryIndexId,
+		// primaryIndexPartitionKey),
+		// columnVisibility,
+		// EMPTY_VALUE);
+		// return m;
 		return null;
 	}
 
@@ -133,20 +133,20 @@ public class AccumuloSecondaryIndexDataStore extends
 			final byte[] fieldId,
 			final byte[] fieldValue,
 			final byte[] fieldVisibility ) {
-//		final Mutation m = new Mutation(
-//				secondaryIndexRowId);
-//		final ColumnVisibility columnVisibility = new ColumnVisibility(
-//				fieldVisibility);
-//		m.put(
-//				SecondaryIndexUtils.constructColumnFamily(
-//						adapterId,
-//						indexedAttributeFieldId),
-//				SecondaryIndexUtils.constructColumnQualifier(
-//						fieldId,
-//						dataId),
-//				columnVisibility,
-//				fieldValue);
-//		return m;
+		// final Mutation m = new Mutation(
+		// secondaryIndexRowId);
+		// final ColumnVisibility columnVisibility = new ColumnVisibility(
+		// fieldVisibility);
+		// m.put(
+		// SecondaryIndexUtils.constructColumnFamily(
+		// adapterId,
+		// indexedAttributeFieldId),
+		// SecondaryIndexUtils.constructColumnQualifier(
+		// fieldId,
+		// dataId),
+		// columnVisibility,
+		// fieldValue);
+		// return m;
 		return null;
 	}
 
@@ -157,16 +157,16 @@ public class AccumuloSecondaryIndexDataStore extends
 			final byte[] indexedAttributeFieldId,
 			final byte[] primaryIndexId,
 			final byte[] primaryIndexRowId ) {
-//		final Mutation m = new Mutation(
-//				secondaryIndexRowId);
-//		m.putDelete(
-//				SecondaryIndexUtils.constructColumnFamily(
-//						adapterId,
-//						indexedAttributeFieldId),
-//				SecondaryIndexUtils.constructColumnQualifier(
-//						primaryIndexId,
-//						primaryIndexRowId));
-//		return m;
+		// final Mutation m = new Mutation(
+		// secondaryIndexRowId);
+		// m.putDelete(
+		// SecondaryIndexUtils.constructColumnFamily(
+		// adapterId,
+		// indexedAttributeFieldId),
+		// SecondaryIndexUtils.constructColumnQualifier(
+		// primaryIndexId,
+		// primaryIndexRowId));
+		// return m;
 		return null;
 	}
 
@@ -177,16 +177,16 @@ public class AccumuloSecondaryIndexDataStore extends
 			final byte[] indexedAttributeFieldId,
 			final byte[] dataId,
 			final byte[] fieldId ) {
-//		final Mutation m = new Mutation(
-//				secondaryIndexRowId);
-//		m.putDelete(
-//				SecondaryIndexUtils.constructColumnFamily(
-//						adapterId,
-//						indexedAttributeFieldId),
-//				SecondaryIndexUtils.constructColumnQualifier(
-//						fieldId,
-//						dataId));
-//		return m;
+		// final Mutation m = new Mutation(
+		// secondaryIndexRowId);
+		// m.putDelete(
+		// SecondaryIndexUtils.constructColumnFamily(
+		// adapterId,
+		// indexedAttributeFieldId),
+		// SecondaryIndexUtils.constructColumnQualifier(
+		// fieldId,
+		// dataId));
+		// return m;
 		return null;
 	}
 
@@ -248,8 +248,7 @@ public class AccumuloSecondaryIndexDataStore extends
 										}
 									}
 								},
-								(Iterator<T>) Iterators.concat(
-										allResults.iterator()));
+								(Iterator<T>) Iterators.concat(allResults.iterator()));
 					}
 				}
 				catch (final IOException e) {

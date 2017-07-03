@@ -12,7 +12,8 @@ import mil.nga.giat.geowave.test.annotation.GeoWaveTestStore.GeoWaveStoreType;
 public class BigtableStoreTestEnvironment extends
 		StoreTestEnvironment
 {
-	private static final GenericStoreFactory<DataStore> STORE_FACTORY = null;//new BigTableDataStoreFactory();
+	private static final GenericStoreFactory<DataStore> STORE_FACTORY = null;// new
+																				// BigTableDataStoreFactory();
 	private static BigtableStoreTestEnvironment singletonInstance = null;
 
 	public static synchronized BigtableStoreTestEnvironment getInstance() {

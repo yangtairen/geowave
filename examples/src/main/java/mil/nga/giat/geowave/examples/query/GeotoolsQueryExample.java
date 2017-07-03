@@ -154,49 +154,40 @@ public class GeotoolsQueryExample
 
 		final List<SimpleFeature> points = new ArrayList<>();
 
-		System.out.println(
-				"Building SimpleFeatures from canned data set...");
+		System.out.println("Building SimpleFeatures from canned data set...");
 
 		for (final Entry<String, Coordinate> entry : cannedData.entrySet()) {
-			System.out.println(
-					"Added point: " + entry.getKey());
-			points.add(
-					buildSimpleFeature(
-							entry.getKey(),
-							entry.getValue()));
+			System.out.println("Added point: " + entry.getKey());
+			points.add(buildSimpleFeature(
+					entry.getKey(),
+					entry.getValue()));
 		}
 
-		System.out.println(
-				"Ingesting canned data...");
+		System.out.println("Ingesting canned data...");
 
 		try (IndexWriter indexWriter = dataStore.createWriter(
 				ADAPTER,
 				index)) {
 			for (final SimpleFeature sf : points) {
 				//
-				indexWriter.write(
-						sf);
+				indexWriter.write(sf);
 
 			}
 		}
 
-		System.out.println(
-				"Ingest complete.");
+		System.out.println("Ingest complete.");
 	}
 
 	private static void executeBoundingBoxQuery()
 			throws IOException {
 
-		System.out.println(
-				"Constructing bounding box for the area contained by [Baltimore, MD and Richmond, VA.");
+		System.out.println("Constructing bounding box for the area contained by [Baltimore, MD and Richmond, VA.");
 
-		final Geometry boundingBox = GeometryUtils.GEOMETRY_FACTORY.toGeometry(
-				new Envelope(
-						baltimore,
-						richmond));
+		final Geometry boundingBox = GeometryUtils.GEOMETRY_FACTORY.toGeometry(new Envelope(
+				baltimore,
+				richmond));
 
-		System.out.println(
-				"Executing query, expecting to match ALL points...");
+		System.out.println("Executing query, expecting to match ALL points...");
 
 		try (final CloseableIterator<SimpleFeature> iterator = dataStore.query(
 				new QueryOptions(
@@ -206,8 +197,7 @@ public class GeotoolsQueryExample
 						boundingBox))) {
 
 			while (iterator.hasNext()) {
-				System.out.println(
-						"Query match: " + iterator.next().getID());
+				System.out.println("Query match: " + iterator.next().getID());
 			}
 		}
 
@@ -216,35 +206,32 @@ public class GeotoolsQueryExample
 	private static void executePolygonQuery()
 			throws IOException {
 
-		System.out.println(
-				"Constructing polygon for the area contained by [Baltimore, MD; Richmond, VA; Harrisonburg, VA].");
+		System.out
+				.println("Constructing polygon for the area contained by [Baltimore, MD; Richmond, VA; Harrisonburg, VA].");
 
-		final Polygon polygon = GeometryUtils.GEOMETRY_FACTORY.createPolygon(
-				new Coordinate[] {
-					baltimore,
-					richmond,
-					harrisonburg,
-					baltimore
-				});
+		final Polygon polygon = GeometryUtils.GEOMETRY_FACTORY.createPolygon(new Coordinate[] {
+			baltimore,
+			richmond,
+			harrisonburg,
+			baltimore
+		});
 
-		System.out.println(
-				"Executing query, expecting to match ALL points...");
+		System.out.println("Executing query, expecting to match ALL points...");
 
-				/**
-				 * NOTICE: In this query, the adapter is added to the query
-				 * options. If an index has data from more than one adapter, the
-				 * data associated with a specific adapter can be selected.
-				 */
-				try (final CloseableIterator<SimpleFeature> closableIterator = dataStore.query(
-						new QueryOptions(
-								ADAPTER,
-								index),
-						new SpatialQuery(
-								polygon))) {
+		/**
+		 * NOTICE: In this query, the adapter is added to the query options. If
+		 * an index has data from more than one adapter, the data associated
+		 * with a specific adapter can be selected.
+		 */
+		try (final CloseableIterator<SimpleFeature> closableIterator = dataStore.query(
+				new QueryOptions(
+						ADAPTER,
+						index),
+				new SpatialQuery(
+						polygon))) {
 
 			while (closableIterator.hasNext()) {
-				System.out.println(
-						"Query match: " + closableIterator.next().getID());
+				System.out.println("Query match: " + closableIterator.next().getID());
 			}
 		}
 
@@ -258,8 +245,7 @@ public class GeotoolsQueryExample
 			accumulo.stop();
 		}
 		finally {
-			FileUtils.deleteDirectory(
-					tempAccumuloDir);
+			FileUtils.deleteDirectory(tempAccumuloDir);
 		}
 	}
 
@@ -268,24 +254,15 @@ public class GeotoolsQueryExample
 		final String NAME = "PointSimpleFeatureType";
 		final SimpleFeatureTypeBuilder sftBuilder = new SimpleFeatureTypeBuilder();
 		final AttributeTypeBuilder atBuilder = new AttributeTypeBuilder();
-		sftBuilder.setName(
-				NAME);
-		sftBuilder.add(
-				atBuilder
-						.binding(
-								String.class)
-						.nillable(
-								false)
-						.buildDescriptor(
-								"locationName"));
-		sftBuilder.add(
-				atBuilder
-						.binding(
-								Geometry.class)
-						.nillable(
-								false)
-						.buildDescriptor(
-								"geometry"));
+		sftBuilder.setName(NAME);
+		sftBuilder.add(atBuilder.binding(
+				String.class).nillable(
+				false).buildDescriptor(
+				"locationName"));
+		sftBuilder.add(atBuilder.binding(
+				Geometry.class).nillable(
+				false).buildDescriptor(
+				"geometry"));
 
 		return sftBuilder.buildFeatureType();
 	}
@@ -301,11 +278,9 @@ public class GeotoolsQueryExample
 				locationName);
 		builder.set(
 				"geometry",
-				GeometryUtils.GEOMETRY_FACTORY.createPoint(
-						coordinate));
+				GeometryUtils.GEOMETRY_FACTORY.createPoint(coordinate));
 
-		return builder.buildFeature(
-				locationName);
+		return builder.buildFeature(locationName);
 	}
 
 }

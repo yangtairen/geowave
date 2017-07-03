@@ -22,8 +22,7 @@ import mil.nga.giat.geowave.core.store.operations.Writer;
 public class AccumuloWriter implements
 		Writer
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			AccumuloWriter.class);
+	private final static Logger LOGGER = Logger.getLogger(AccumuloWriter.class);
 	private org.apache.accumulo.core.client.BatchWriter batchWriter;
 
 	public AccumuloWriter(
@@ -43,8 +42,7 @@ public class AccumuloWriter implements
 	public void write(
 			final Iterable<Mutation> mutations ) {
 		try {
-			batchWriter.addMutations(
-					mutations);
+			batchWriter.addMutations(mutations);
 		}
 		catch (final MutationsRejectedException e) {
 			LOGGER.error(
@@ -56,8 +54,7 @@ public class AccumuloWriter implements
 	public void write(
 			final Mutation mutation ) {
 		try {
-			batchWriter.addMutation(
-					mutation);
+			batchWriter.addMutation(mutation);
 		}
 		catch (final MutationsRejectedException e) {
 			LOGGER.error(
@@ -94,8 +91,7 @@ public class AccumuloWriter implements
 	public void write(
 			final GeoWaveRow[] rows ) {
 		for (final GeoWaveRow row : rows) {
-			write(
-					row);
+			write(row);
 		}
 	}
 
@@ -107,11 +103,13 @@ public class AccumuloWriter implements
 
 	public static Mutation rowToMutation(
 			final GeoWaveRow row ) {
-		final Mutation mutation = new Mutation(GeoWaveKey.getCompositeId(row));
+		final Mutation mutation = new Mutation(
+				GeoWaveKey.getCompositeId(row));
 		for (final GeoWaveValue value : row.getFieldValues()) {
 			if ((value.getVisibility() != null) && (value.getVisibility().length > 0)) {
 				mutation.put(
-						new Text(row.getAdapterId()),
+						new Text(
+								row.getAdapterId()),
 						new Text(
 								value.getFieldMask()),
 						new ColumnVisibility(

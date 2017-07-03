@@ -20,8 +20,7 @@ import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 public class RasterFootprintStatistics extends
 		AbstractDataStatistics<GridCoverage>
 {
-	private static final Logger LOGGER = Logger.getLogger(
-			RasterFootprintStatistics.class);
+	private static final Logger LOGGER = Logger.getLogger(RasterFootprintStatistics.class);
 	public static final ByteArrayId STATS_ID = new ByteArrayId(
 			"FOOTPRINT");
 	private Geometry footprint;
@@ -44,26 +43,21 @@ public class RasterFootprintStatistics extends
 			bytes = new byte[] {};
 		}
 		else {
-			bytes = new WKBWriter().write(
-					footprint);
+			bytes = new WKBWriter().write(footprint);
 		}
-		final ByteBuffer buf = super.binaryBuffer(
-				bytes.length);
-		buf.put(
-				bytes);
+		final ByteBuffer buf = super.binaryBuffer(bytes.length);
+		buf.put(bytes);
 		return buf.array();
 	}
 
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buf = super.binaryBuffer(
-				bytes);
+		final ByteBuffer buf = super.binaryBuffer(bytes);
 		final byte[] payload = buf.array();
 		if (payload.length > 0) {
 			try {
-				footprint = new WKBReader().read(
-						payload);
+				footprint = new WKBReader().read(payload);
 			}
 			catch (final ParseException e) {
 				LOGGER.warn(

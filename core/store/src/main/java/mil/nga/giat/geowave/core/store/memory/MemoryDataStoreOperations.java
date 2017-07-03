@@ -9,27 +9,41 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.UUID;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.PeekingIterator;
 import com.google.common.primitives.UnsignedBytes;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
+import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.SinglePartitionQueryRanges;
+import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
+import mil.nga.giat.geowave.core.store.data.DeferredReadCommonIndexedPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.data.PersistentDataset;
+import mil.nga.giat.geowave.core.store.data.UnreadFieldDataList;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyImpl;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveMetadata;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveRowImpl;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
+import mil.nga.giat.geowave.core.store.flatten.FlattenedUnreadData;
+import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
+import mil.nga.giat.geowave.core.store.metadata.AbstractGeoWavePersistence;
 import mil.nga.giat.geowave.core.store.operations.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.operations.Deleter;
 import mil.nga.giat.geowave.core.store.operations.MetadataDeleter;
@@ -40,15 +54,16 @@ import mil.nga.giat.geowave.core.store.operations.MetadataWriter;
 import mil.nga.giat.geowave.core.store.operations.Reader;
 import mil.nga.giat.geowave.core.store.operations.ReaderParams;
 import mil.nga.giat.geowave.core.store.operations.Writer;
+import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 
 public class MemoryDataStoreOperations implements
 		DataStoreOperations
 {
 	private final static Logger LOGGER = Logger.getLogger(MemoryDataStoreOperations.class);
-	private final Map<ByteArrayId, TreeSet<MemoryStoreEntry>> storeData = Collections
-			.synchronizedMap(new HashMap<ByteArrayId, TreeSet<MemoryStoreEntry>>());
-	private final Map<MetadataType, TreeSet<MemoryMetadataEntry>> metadataStore = Collections
-			.synchronizedMap(new HashMap<MetadataType, TreeSet<MemoryMetadataEntry>>());
+	private final Map<ByteArrayId, SortedSet<MemoryStoreEntry>> storeData = Collections
+			.synchronizedMap(new HashMap<ByteArrayId, SortedSet<MemoryStoreEntry>>());
+	private final Map<MetadataType, SortedSet<MemoryMetadataEntry>> metadataStore = Collections
+			.synchronizedMap(new HashMap<MetadataType, SortedSet<MemoryMetadataEntry>>());
 
 	public MemoryDataStoreOperations() {}
 
@@ -56,6 +71,9 @@ public class MemoryDataStoreOperations implements
 	public boolean indexExists(
 			final ByteArrayId indexId )
 			throws IOException {
+		if (AbstractGeoWavePersistence.METADATA_TABLE.equals(indexId.getString())) {
+			return !metadataStore.isEmpty();
+		}
 		return storeData.containsKey(indexId);
 	}
 
@@ -99,11 +117,11 @@ public class MemoryDataStoreOperations implements
 				authorizations);
 	}
 
-	protected TreeSet<MemoryStoreEntry> getRowsForIndex(
+	protected SortedSet<MemoryStoreEntry> getRowsForIndex(
 			final ByteArrayId id ) {
-		TreeSet<MemoryStoreEntry> set = storeData.get(id);
+		SortedSet<MemoryStoreEntry> set = storeData.get(id);
 		if (set == null) {
-			set = new TreeSet<MemoryStoreEntry>();
+			set = Collections.synchronizedSortedSet(new TreeSet<MemoryStoreEntry>());
 			storeData.put(
 					id,
 					set);
@@ -114,7 +132,7 @@ public class MemoryDataStoreOperations implements
 	@Override
 	public Reader createReader(
 			final ReaderParams readerParams ) {
-		final TreeSet<MemoryStoreEntry> internalData = storeData.get(readerParams.getIndex().getId());
+		final SortedSet<MemoryStoreEntry> internalData = storeData.get(readerParams.getIndex().getId());
 		int counter = 0;
 		List<MemoryStoreEntry> retVal = new ArrayList<>();
 		final Collection<SinglePartitionQueryRanges> partitionRanges = readerParams
@@ -156,8 +174,7 @@ public class MemoryDataStoreOperations implements
 						set = internalData.tailSet(
 								new MemoryStoreEntry(
 										p.getPartitionKey(),
-										r.getStart()),
-								true).headSet(
+										r.getStart())).headSet(
 								new MemoryStoreEntry(
 										p.getPartitionKey(),
 										r.getEndAsNextPrefix()));
@@ -191,7 +208,44 @@ public class MemoryDataStoreOperations implements
 			}
 		}
 		return new MyIndexReader(
-				retVal.iterator());
+				Iterators.filter(
+						retVal.iterator(),
+						new Predicate<MemoryStoreEntry>() {
+							@Override
+							public boolean apply(
+									final MemoryStoreEntry input ) {
+								if (readerParams.getFilter() != null) {
+									final PersistentDataset<CommonIndexValue> commonData = new PersistentDataset<>();
+									final List<FlattenedUnreadData> unreadData = new ArrayList<>();
+									final List<ByteArrayId> commonIndexFieldIds = DataStoreUtils
+											.getUniqueDimensionFields(readerParams.getIndex().getIndexModel());
+									for (final GeoWaveValue v : input.getRow().getFieldValues()) {
+										unreadData.add(DataStoreUtils.aggregateFieldData(
+												input.getRow(),
+												v,
+												commonData,
+												readerParams.getIndex().getIndexModel(),
+												commonIndexFieldIds));
+									}
+									return readerParams.getFilter().accept(
+											readerParams.getIndex().getIndexModel(),
+											new DeferredReadCommonIndexedPersistenceEncoding(
+													new ByteArrayId(
+															input.getRow().getAdapterId()),
+													new ByteArrayId(
+															input.getRow().getDataId()),
+													new ByteArrayId(
+															input.getRow().getPartitionKey()),
+													new ByteArrayId(
+															input.getRow().getSortKey()),
+													input.getRow().getNumberOfDuplicates(),
+													commonData,
+													unreadData.isEmpty() ? null : new UnreadFieldDataList(
+															unreadData)));
+								}
+								return true;
+							}
+						}));
 	}
 
 	private boolean isAuthorized(
@@ -271,7 +325,7 @@ public class MemoryDataStoreOperations implements
 		@Override
 		public void write(
 				final GeoWaveRow row ) {
-			TreeSet<MemoryStoreEntry> rowTreeSet = storeData.get(indexId);
+			SortedSet<MemoryStoreEntry> rowTreeSet = storeData.get(indexId);
 			if (rowTreeSet == null) {
 				rowTreeSet = new TreeSet<>();
 				storeData.put(
@@ -316,7 +370,7 @@ public class MemoryDataStoreOperations implements
 			if (isAuthorized(
 					entry,
 					authorizations)) {
-				final TreeSet<MemoryStoreEntry> rowTreeSet = storeData.get(indexId);
+				final SortedSet<MemoryStoreEntry> rowTreeSet = storeData.get(indexId);
 				if (rowTreeSet != null) {
 					if (!rowTreeSet.remove(entry)) {
 						LOGGER.warn("Unable to remove entry");
@@ -417,10 +471,14 @@ public class MemoryDataStoreOperations implements
 			this.type = type;
 		}
 
+		@SuppressWarnings({
+			"rawtypes",
+			"unchecked"
+		})
 		@Override
 		public CloseableIterator<GeoWaveMetadata> query(
 				final MetadataQuery query ) {
-			final TreeSet<MemoryMetadataEntry> typeStore = metadataStore.get(type);
+			final SortedSet<MemoryMetadataEntry> typeStore = metadataStore.get(type);
 			if (typeStore == null) {
 				return new CloseableIterator.Empty<GeoWaveMetadata>();
 			}
@@ -430,7 +488,8 @@ public class MemoryDataStoreOperations implements
 									query.getPrimaryId(),
 									query.getSecondaryId(),
 									null,
-									null)),
+									null),
+							null),
 					new MemoryMetadataEntry(
 							new GeoWaveMetadata(
 									getNextPrefix(query.getPrimaryId()),
@@ -450,7 +509,16 @@ public class MemoryDataStoreOperations implements
 										(byte) 0xFF,
 										(byte) 0xFF,
 										(byte) 0xFF
-									})));
+									}),
+							new byte[] {
+								(byte) 0xFF,
+								(byte) 0xFF,
+								(byte) 0xFF,
+								(byte) 0xFF,
+								(byte) 0xFF,
+								(byte) 0xFF,
+								(byte) 0xFF
+							}));
 			Iterator<MemoryMetadataEntry> it = set.iterator();
 			if ((query.getAuthorizations() != null) && (query.getAuthorizations().length > 0)) {
 				it = Iterators.filter(
@@ -465,19 +533,107 @@ public class MemoryDataStoreOperations implements
 							}
 						});
 			}
+			final Iterator<GeoWaveMetadata> itTransformed = Iterators.transform(
+					it,
+					new Function<MemoryMetadataEntry, GeoWaveMetadata>() {
+						@Override
+						public GeoWaveMetadata apply(
+								final MemoryMetadataEntry input ) {
+							return input.metadata;
+						}
+					});
+			if (MetadataType.STATS.equals(type)) {
+				return new CloseableIterator.Wrapper(
+						new Iterator<GeoWaveMetadata>() {
+							final PeekingIterator<GeoWaveMetadata> peekingIt = Iterators.peekingIterator(itTransformed);
+
+							@Override
+							public boolean hasNext() {
+								return peekingIt.hasNext();
+							}
+
+							@Override
+							public GeoWaveMetadata next() {
+								DataStatistics currentStat = null;
+								GeoWaveMetadata currentMetadata = null;
+								byte[] vis = null;
+								while (peekingIt.hasNext()) {
+									currentMetadata = peekingIt.next();
+									vis = currentMetadata.getVisibility();
+									if (!peekingIt.hasNext()) {
+										break;
+									}
+									final GeoWaveMetadata next = peekingIt.peek();
+									if (Objects.deepEquals(
+											currentMetadata.getPrimaryId(),
+											next.getPrimaryId()) && Objects.deepEquals(
+											currentMetadata.getSecondaryId(),
+											next.getSecondaryId())) {
+										if (currentStat == null) {
+											currentStat = PersistenceUtils.fromBinary(
+													currentMetadata.getValue(),
+													DataStatistics.class);
+										}
+										currentStat.merge(PersistenceUtils.fromBinary(
+												next.getValue(),
+												DataStatistics.class));
+										vis = combineVisibilities(
+												vis,
+												next.getVisibility());
+									}
+									else {
+										break;
+									}
+								}
+								if (currentStat == null) {
+									return currentMetadata;
+								}
+								return new GeoWaveMetadata(
+										currentMetadata.getPrimaryId(),
+										currentMetadata.getSecondaryId(),
+										vis,
+										PersistenceUtils.toBinary(currentStat));
+							}
+						});
+			}
 			return new CloseableIterator.Wrapper(
-					it);
+					itTransformed);
 		}
 
+	}
+
+	private static final byte[] AMPRISAND = StringUtils.stringToBinary("&");
+
+	private static byte[] combineVisibilities(
+			final byte[] vis1,
+			final byte[] vis2 ) {
+		if ((vis1 == null) || (vis1.length == 0)) {
+			return vis2;
+		}
+		if ((vis2 == null) || (vis2.length == 0)) {
+			return vis1;
+		}
+		return ArrayUtils.addAll(
+				ArrayUtils.addAll(
+						vis1,
+						AMPRISAND),
+				vis2);
 	}
 
 	private static byte[] getNextPrefix(
 			final byte[] bytes ) {
 		if (bytes == null) {
-			// TODO investigate if this is the right thing to do, its the
-			// equivalent of the last position from getNextPrefix() but it
-			// seems wrong
-			return new byte[0];
+			// this is simply for memory data store test purposes and is just an
+			// attempt to go to the end of the memory datastore table
+			return new byte[] {
+				(byte) 0xFF,
+				(byte) 0xFF,
+				(byte) 0xFF,
+				(byte) 0xFF,
+				(byte) 0xFF,
+				(byte) 0xFF,
+				(byte) 0xFF,
+			};
 		}
 		return new ByteArrayId(
 				bytes).getNextPrefix();
@@ -513,8 +669,7 @@ public class MemoryDataStoreOperations implements
 		@Override
 		public void write(
 				final GeoWaveMetadata metadata ) {
-
-			TreeSet<MemoryMetadataEntry> typeStore = metadataStore.get(type);
+			SortedSet<MemoryMetadataEntry> typeStore = metadataStore.get(type);
 			if (typeStore == null) {
 				typeStore = new TreeSet<>();
 				metadataStore.put(
@@ -573,10 +728,21 @@ public class MemoryDataStoreOperations implements
 			Comparable<MemoryMetadataEntry>
 	{
 		private final GeoWaveMetadata metadata;
+		// this is just to allow storing duplicates in the treemap
+		private final byte[] uuidBytes;
 
 		public MemoryMetadataEntry(
 				final GeoWaveMetadata metadata ) {
+			this(
+					metadata,
+					UUID.randomUUID().toString().getBytes());
+		}
+
+		public MemoryMetadataEntry(
+				final GeoWaveMetadata metadata,
+				final byte[] uuidBytes ) {
 			this.metadata = metadata;
+			this.uuidBytes = uuidBytes;
 		}
 
 		public GeoWaveMetadata getMetadata() {
@@ -606,7 +772,10 @@ public class MemoryDataStoreOperations implements
 			if (visibilityCompare != 0) {
 				return visibilityCompare;
 			}
-			return 0;
+			// this is just to allow storing duplicates in the treemap
+			return lexyWithNullHandling.compare(
+					uuidBytes,
+					other.uuidBytes);
 
 		}
 	}

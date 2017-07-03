@@ -24,8 +24,7 @@ import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyImpl;
 public class PersistentDataFormatter implements
 		Formatter
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(
-			PersistentDataFormatter.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(PersistentDataFormatter.class);
 
 	public PersistentDataFormatter() {
 		super();
@@ -49,9 +48,7 @@ public class PersistentDataFormatter implements
 					final Date date,
 					final StringBuffer toAppendTo,
 					final FieldPosition fieldPosition ) {
-				toAppendTo.append(
-						Long.toString(
-								date.getTime()));
+				toAppendTo.append(Long.toString(date.getTime()));
 				return toAppendTo;
 			}
 
@@ -60,8 +57,7 @@ public class PersistentDataFormatter implements
 					final String source,
 					final ParsePosition pos ) {
 				return new Date(
-						Long.parseLong(
-								source));
+						Long.parseLong(source));
 			}
 
 		}
@@ -71,16 +67,14 @@ public class PersistentDataFormatter implements
 	public void initialize(
 			final Iterable<Entry<Key, Value>> scanner,
 			final boolean printTimestamps ) {
-		checkState(
-				false);
+		checkState(false);
 		si = scanner.iterator();
 		doTimestamps = printTimestamps;
 	}
 
 	@Override
 	public boolean hasNext() {
-		checkState(
-				true);
+		checkState(true);
 		return si.hasNext();
 	}
 
@@ -92,14 +86,12 @@ public class PersistentDataFormatter implements
 			timestampFormat = formatter.get();
 		}
 
-		return next(
-				timestampFormat);
+		return next(timestampFormat);
 	}
 
 	protected String next(
 			final DateFormat timestampFormat ) {
-		checkState(
-				true);
+		checkState(true);
 		return formatEntry(
 				si.next(),
 				timestampFormat);
@@ -107,8 +99,7 @@ public class PersistentDataFormatter implements
 
 	@Override
 	public void remove() {
-		checkState(
-				true);
+		checkState(true);
 		si.remove();
 	}
 
@@ -166,64 +157,59 @@ public class PersistentDataFormatter implements
 		insertionIdBytes = rowId.getSortKey();
 
 		for (final byte b : insertionIdBytes) {
-			sbInsertion.append(
-					String.format(
-							"%02x",
-							b));
+			sbInsertion.append(String.format(
+					"%02x",
+					b));
 		}
 
 		final Text insertionIdText = new Text(
 				sbInsertion.toString());
 		final Text adapterIdText = new Text(
-				StringUtils.stringFromBinary(
-						rowId.getAdapterId()));
+				StringUtils.stringFromBinary(rowId.getAdapterId()));
 		final Text dataIdText = new Text(
-				StringUtils.stringFromBinary(
-						rowId.getDataId()));
+				StringUtils.stringFromBinary(rowId.getDataId()));
 		final Text duplicatesText = new Text(
-				Integer.toString(
-						rowId.getNumberOfDuplicates()));
+				Integer.toString(rowId.getNumberOfDuplicates()));
 
 		// append insertion Id
 		appendText(
 				sb,
 				insertionIdText).append(
-						" ");
+				" ");
 
 		// append adapterId
 		appendText(
 				sb,
 				adapterIdText).append(
-						" ");
+				" ");
 
 		// append dataId
 		appendText(
 				sb,
 				dataIdText).append(
-						" ");
+				" ");
 
 		// append numberOfDuplicates
 		appendText(
 				sb,
 				duplicatesText).append(
-						" ");
+				" ");
 
 		// append column family
 		appendText(
 				sb,
 				key.getColumnFamily()).append(
-						":");
+				":");
 
 		// append column qualifier
 		appendText(
 				sb,
 				key.getColumnQualifier()).append(
-						" ");
+				" ");
 
 		// append visibility expression
-		sb.append(
-				new ColumnVisibility(
-						key.getColumnVisibility()));
+		sb.append(new ColumnVisibility(
+				key.getColumnVisibility()));
 
 		// append timestamp
 		if (timestampFormat != null) {
@@ -231,16 +217,14 @@ public class PersistentDataFormatter implements
 					entry.getKey().getTimestamp());
 			sb.append(
 					" ").append(
-							timestampFormat.format(
-									tmpDate.get()));
+					timestampFormat.format(tmpDate.get()));
 		}
 
 		final Value value = entry.getValue();
 
 		// append value
 		if ((value != null) && (value.getSize() > 0)) {
-			sb.append(
-					"\t");
+			sb.append("\t");
 			appendValue(
 					sb,
 					value);
@@ -267,8 +251,7 @@ public class PersistentDataFormatter implements
 			final Persistable persistable = PersistenceUtils.fromBinary(
 					value.get(),
 					Persistable.class);
-			sb.append(
-					persistable.toString());
+			sb.append(persistable.toString());
 		}
 		catch (final Exception ex) {
 			LOGGER.info(
@@ -291,19 +274,17 @@ public class PersistentDataFormatter implements
 		for (int i = 0; i < len; i++) {
 			final int c = 0xff & ba[offset + i];
 			if (c == '\\') {
-				sb.append(
-						"\\\\");
+				sb.append("\\\\");
 			}
 			else if ((c >= 32) && (c <= 126)) {
-				sb.append(
-						(char) c);
+				sb.append((char) c);
 			}
 			else {
 				sb.append(
 						"\\x").append(
-								String.format(
-										"%02X",
-										c));
+						String.format(
+								"%02X",
+								c));
 			}
 		}
 	}

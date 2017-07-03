@@ -51,17 +51,13 @@ public class OSMConversionRunner extends
 
 		final OSMIngestCommandArgs ingestArgs = new OSMIngestCommandArgs();
 		final DataStorePluginOptions opts = new DataStorePluginOptions();
-		opts.selectPlugin(
-				new AccumuloStoreFactoryFamily().getType());
+		opts.selectPlugin(new AccumuloStoreFactoryFamily().getType());
 
 		final OperationParser parser = new OperationParser();
-		parser.addAdditionalObject(
-				ingestArgs);
-		parser.addAdditionalObject(
-				opts);
+		parser.addAdditionalObject(ingestArgs);
+		parser.addAdditionalObject(opts);
 
-		final CommandLineOperationParams params = parser.parse(
-				args);
+		final CommandLineOperationParams params = parser.parse(args);
 		if (params.getSuccessCode() == 0) {
 			final OSMConversionRunner runner = new OSMConversionRunner(
 					ingestArgs,
@@ -70,14 +66,11 @@ public class OSMConversionRunner extends
 					new Configuration(),
 					runner,
 					args);
-			System.exit(
-					res);
+			System.exit(res);
 		}
 
-		System.out.println(
-				params.getSuccessMessage());
-		System.exit(
-				params.getSuccessCode());
+		System.out.println(params.getSuccessMessage());
+		System.exit(params.getSuccessCode());
 	}
 
 	public OSMConversionRunner(
@@ -106,8 +99,7 @@ public class OSMConversionRunner extends
 		final Job job = Job.getInstance(
 				conf,
 				ingestOptions.getJobName() + "NodeConversion");
-		job.setJarByClass(
-				OSMConversionRunner.class);
+		job.setJarByClass(OSMConversionRunner.class);
 
 		job.getConfiguration().set(
 				"osm_mapping",
@@ -136,7 +128,7 @@ public class OSMConversionRunner extends
 				job,
 				new ClientConfiguration().withInstance(
 						accumuloOptions.getInstance()).withZkHosts(
-								accumuloOptions.getZookeeper()));
+						accumuloOptions.getZookeeper()));
 		AbstractInputFormat.setScanAuthorizations(
 				job,
 				new Authorizations(
@@ -149,14 +141,12 @@ public class OSMConversionRunner extends
 		InputFormatBase.addIterator(
 				job,
 				is);
-		job.setInputFormatClass(
-				AccumuloInputFormat.class);
+		job.setInputFormatClass(AccumuloInputFormat.class);
 		final Range r = new Range();
 		// final ArrayList<Pair<Text, Text>> columns = new ArrayList<>();
 		InputFormatBase.setRanges(
 				job,
-				Arrays.asList(
-						r));
+				Arrays.asList(r));
 
 		// output format
 		GeoWaveOutputFormat.setStoreOptions(
@@ -173,8 +163,7 @@ public class OSMConversionRunner extends
 						options),
 				options);
 		for (final FeatureDataAdapter fda : FeatureDefinitionSet.featureAdapters.values()) {
-			as.addAdapter(
-					fda);
+			as.addAdapter(fda);
 			GeoWaveOutputFormat.addDataAdapter(
 					job.getConfiguration(),
 					fda);
@@ -186,26 +175,19 @@ public class OSMConversionRunner extends
 				primaryIndex);
 		job.getConfiguration().set(
 				AbstractMapReduceIngest.PRIMARY_INDEX_IDS_KEY,
-				StringUtils.stringFromBinary(
-						primaryIndex.getId().getBytes()));
+				StringUtils.stringFromBinary(primaryIndex.getId().getBytes()));
 
-		job.setOutputFormatClass(
-				GeoWaveOutputFormat.class);
-		job.setMapOutputKeyClass(
-				GeoWaveOutputKey.class);
-		job.setMapOutputValueClass(
-				SimpleFeature.class);
+		job.setOutputFormatClass(GeoWaveOutputFormat.class);
+		job.setMapOutputKeyClass(GeoWaveOutputKey.class);
+		job.setMapOutputValueClass(SimpleFeature.class);
 
 		// mappper
 
-		job.setMapperClass(
-				OSMConversionMapper.class);
+		job.setMapperClass(OSMConversionMapper.class);
 
 		// reducer
-		job.setNumReduceTasks(
-				0);
+		job.setNumReduceTasks(0);
 
-		return job.waitForCompletion(
-				true) ? 0 : -1;
+		return job.waitForCompletion(true) ? 0 : -1;
 	}
 }

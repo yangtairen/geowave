@@ -57,18 +57,16 @@ public class AccumuloKeyValuePairGenerator<T>
 				visibilityWriter);
 		if ((rows != null) && (rows.length > 0)) {
 			for (final GeoWaveRow row : rows) {
-				final Mutation m = AccumuloWriter.rowToMutation(
-						row);
+				final Mutation m = AccumuloWriter.rowToMutation(row);
 				for (final ColumnUpdate cu : m.getUpdates()) {
-					keyValuePairs.add(
-							new KeyValue(
-									new Key(
-											m.getRow(),
-											cu.getColumnFamily(),
-											cu.getColumnQualifier(),
-											cu.getColumnVisibility(),
-											cu.getTimestamp()),
-									cu.getValue()));
+					keyValuePairs.add(new KeyValue(
+							new Key(
+									m.getRow(),
+									cu.getColumnFamily(),
+									cu.getColumnQualifier(),
+									cu.getColumnVisibility(),
+									cu.getTimestamp()),
+							cu.getValue()));
 				}
 			}
 		}

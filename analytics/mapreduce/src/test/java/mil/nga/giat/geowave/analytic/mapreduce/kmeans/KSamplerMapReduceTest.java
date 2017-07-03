@@ -15,7 +15,9 @@ import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.slf4j.Logger;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -46,10 +48,11 @@ import mil.nga.giat.geowave.mapreduce.output.GeoWaveOutputKey;
 
 public class KSamplerMapReduceTest
 {
-	private static final String TEST_NAMESPACE = "test";
 	MapDriver<GeoWaveInputKey, ObjectWritable, GeoWaveInputKey, ObjectWritable> mapDriver;
 	ReduceDriver<GeoWaveInputKey, ObjectWritable, GeoWaveOutputKey, TestObject> reduceDriver;
 	final TestObjectDataAdapter testObjectAapter = new TestObjectDataAdapter();
+	@Rule
+	public TestName name = new TestName();
 
 	private static final List<Object> capturedObjects = new ArrayList<Object>();
 
@@ -115,7 +118,8 @@ public class KSamplerMapReduceTest
 				new MemoryStoreFactoryFamily());
 		pluginOptions.selectPlugin("memory");
 		MemoryRequiredOptions opts = (MemoryRequiredOptions) pluginOptions.getFactoryOptions();
-		opts.setGeowaveNamespace(TEST_NAMESPACE);
+		final String namespace = "test_" + getClass().getName() + "_" + name.getMethodName();
+		opts.setGeowaveNamespace(namespace);
 		PersistableStore store = new PersistableStore(
 				pluginOptions);
 

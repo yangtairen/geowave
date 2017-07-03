@@ -14,8 +14,7 @@ import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 public class AccumuloFactoryHelper implements
 		StoreFactoryHelper
 {
-	private final static Logger LOGGER = LoggerFactory.getLogger(
-			AccumuloFactoryHelper.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(AccumuloFactoryHelper.class);
 
 	@Override
 	public StoreFactoryOptions createOptionsInstance() {
@@ -26,8 +25,7 @@ public class AccumuloFactoryHelper implements
 	public DataStoreOperations createOperations(
 			final StoreFactoryOptions options ) {
 		try {
-			return AccumuloOperations.createOperations(
-					(AccumuloRequiredOptions) options);
+			return AccumuloOperations.createOperations((AccumuloRequiredOptions) options);
 		}
 		catch (AccumuloException | AccumuloSecurityException e) {
 			LOGGER.error(

@@ -31,11 +31,9 @@ public class AccumuloSecondaryIndexDataStoreFactory extends
 		}
 		final AccumuloRequiredOptions opts = (AccumuloRequiredOptions) options;
 		if (opts.getStoreOptions() == null) {
-			opts.setStoreOptions(
-					new AccumuloOptions());
+			opts.setStoreOptions(new AccumuloOptions());
 		}
-		final DataStoreOperations accumuloOperations = helper.createOperations(
-				opts);
+		final DataStoreOperations accumuloOperations = helper.createOperations(opts);
 		return new AccumuloSecondaryIndexDataStore(
 				(AccumuloOperations) accumuloOperations,
 				(AccumuloOptions) opts.getStoreOptions());

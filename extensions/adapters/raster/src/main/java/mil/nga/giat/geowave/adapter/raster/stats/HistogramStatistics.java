@@ -40,8 +40,7 @@ import mil.nga.giat.geowave.core.store.entities.GeoWaveRow;
 public class HistogramStatistics extends
 		AbstractDataStatistics<GridCoverage>
 {
-	private static final Logger LOGGER = Logger.getLogger(
-			HistogramStatistics.class);
+	private static final Logger LOGGER = Logger.getLogger(HistogramStatistics.class);
 	public static final ByteArrayId STATS_ID = new ByteArrayId(
 			"HISTOGRAM");
 
@@ -70,8 +69,7 @@ public class HistogramStatistics extends
 			byte[] keyBytes;
 			byte[] valueBytes = new byte[] {};
 			if (entry.getKey() != null) {
-				keyBytes = PersistenceUtils.toBinary(
-						entry.getKey());
+				keyBytes = PersistenceUtils.toBinary(entry.getKey());
 			}
 			else {
 				keyBytes = new byte[] {};
@@ -81,8 +79,7 @@ public class HistogramStatistics extends
 				try {
 					oos = new ObjectOutputStream(
 							baos);
-					oos.writeObject(
-							entry.getValue());
+					oos.writeObject(entry.getValue());
 					oos.close();
 					baos.close();
 					valueBytes = baos.toByteArray();
@@ -96,34 +93,22 @@ public class HistogramStatistics extends
 			// 8 for key and value lengths as ints
 
 			final int entryBytes = 8 + keyBytes.length + valueBytes.length;
-			final ByteBuffer buf = ByteBuffer.allocate(
-					entryBytes);
-			buf.putInt(
-					keyBytes.length);
-			buf.put(
-					keyBytes);
-			buf.putInt(
-					valueBytes.length);
-			buf.put(
-					valueBytes);
-			perEntryBinary.add(
-					buf.array());
+			final ByteBuffer buf = ByteBuffer.allocate(entryBytes);
+			buf.putInt(keyBytes.length);
+			buf.put(keyBytes);
+			buf.putInt(valueBytes.length);
+			buf.put(valueBytes);
+			perEntryBinary.add(buf.array());
 			totalBytes += entryBytes;
 		}
-		final byte[] configBinary = PersistenceUtils.toBinary(
-				histogramConfig);
+		final byte[] configBinary = PersistenceUtils.toBinary(histogramConfig);
 		totalBytes += (configBinary.length + 4);
-		final ByteBuffer buf = super.binaryBuffer(
-				totalBytes);
-		buf.putInt(
-				configBinary.length);
-		buf.put(
-				configBinary);
-		buf.putInt(
-				perEntryBinary.size());
+		final ByteBuffer buf = super.binaryBuffer(totalBytes);
+		buf.putInt(configBinary.length);
+		buf.put(configBinary);
+		buf.putInt(perEntryBinary.size());
 		for (final byte[] entryBinary : perEntryBinary) {
-			buf.put(
-					entryBinary);
+			buf.put(entryBinary);
 		}
 		return buf.array();
 	}
@@ -131,11 +116,9 @@ public class HistogramStatistics extends
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buf = super.binaryBuffer(
-				bytes);
+		final ByteBuffer buf = super.binaryBuffer(bytes);
 		final byte[] configBinary = new byte[buf.getInt()];
-		buf.get(
-				configBinary);
+		buf.get(configBinary);
 		histogramConfig = PersistenceUtils.fromBinary(
 				configBinary,
 				HistogramConfig.class);
@@ -145,8 +128,7 @@ public class HistogramStatistics extends
 			Resolution key = null;
 			if (keyLength > 0) {
 				final byte[] keyBytes = new byte[keyLength];
-				buf.get(
-						keyBytes);
+				buf.get(keyBytes);
 				key = PersistenceUtils.fromBinary(
 						keyBytes,
 						Resolution.class);
@@ -156,8 +138,7 @@ public class HistogramStatistics extends
 			if (valueLength > 0) {
 
 				final byte[] valueBytes = new byte[valueLength];
-				buf.get(
-						valueBytes);
+				buf.get(valueBytes);
 				ObjectInputStream ois;
 				try {
 					ois = new ObjectInputStream(
@@ -210,8 +191,7 @@ public class HistogramStatistics extends
 		if (footprint instanceof GeometryCollection) {
 			final GeometryCollection collection = (GeometryCollection) footprint;
 			for (int g = 0; g < collection.getNumGeometries(); g++) {
-				final Geometry geom = collection.getGeometryN(
-						g);
+				final Geometry geom = collection.getGeometryN(g);
 				if (geom instanceof Polygon) {
 					mergePoly(
 							originalCoverage,
@@ -233,35 +213,33 @@ public class HistogramStatistics extends
 			final Polygon poly,
 			final Resolution resolution ) {
 		final CoverageProcessor processor = CoverageProcessor.getInstance();
-		final AbstractOperation op = (AbstractOperation) processor.getOperation(
-				"Histogram");
+		final AbstractOperation op = (AbstractOperation) processor.getOperation("Histogram");
 		final ParameterValueGroup params = op.getParameters();
 		params.parameter(
 				"Source").setValue(
-						originalCoverage);
+				originalCoverage);
 		params.parameter(
 				BaseStatisticsOperationJAI.ROI.getName().getCode()).setValue(
-						poly);
+				poly);
 		params.parameter(
 				"lowValue").setValue(
-						histogramConfig.getLowValues());
+				histogramConfig.getLowValues());
 		params.parameter(
 				"highValue").setValue(
-						histogramConfig.getHighValues());
+				histogramConfig.getHighValues());
 		params.parameter(
 				"numBins").setValue(
-						histogramConfig.getNumBins());
+				histogramConfig.getNumBins());
 		try {
 
 			final GridCoverage2D coverage = (GridCoverage2D) op.doOperation(
 					params,
 					null);
-			final javax.media.jai.Histogram histogram = (javax.media.jai.Histogram) coverage.getProperty(
-					Histogram.GT_SYNTHETIC_PROPERTY_HISTOGRAM);
+			final javax.media.jai.Histogram histogram = (javax.media.jai.Histogram) coverage
+					.getProperty(Histogram.GT_SYNTHETIC_PROPERTY_HISTOGRAM);
 
 			javax.media.jai.Histogram mergedHistogram;
-			final javax.media.jai.Histogram resolutionHistogram = histograms.get(
-					resolution);
+			final javax.media.jai.Histogram resolutionHistogram = histograms.get(resolution);
 			if (resolutionHistogram != null) {
 				mergedHistogram = mergeHistograms(
 						resolutionHistogram,
@@ -280,9 +258,10 @@ public class HistogramStatistics extends
 			// this is simply 'info' because there is a known issue in the
 			// histogram op when the ROI is so small that the resulting cropped
 			// pixel size is 0
-			LOGGER.info(
-					"This is often a non-issue relating to applying an ROI calculation that results in 0 pixels (the error is in calculating stats).",
-					e);
+			LOGGER
+					.info(
+							"This is often a non-issue relating to applying an ROI calculation that results in 0 pixels (the error is in calculating stats).",
+							e);
 		}
 
 	}
@@ -325,8 +304,7 @@ public class HistogramStatistics extends
 			// this is a bit of a hack, but the only way to interact with the
 			// counts in a mutable way is by getting an array of the bin counts
 			// and setting values in the array
-			final int[] bins = histogram.getBins(
-					b);
+			final int[] bins = histogram.getBins(b);
 			for (int i = 0; i < bins.length; i++) {
 				bins[i] = bins1[b][i] + bins2[b][i];
 			}
@@ -340,8 +318,7 @@ public class HistogramStatistics extends
 
 	public javax.media.jai.Histogram getHistogram(
 			final Resolution resolution ) {
-		return histograms.get(
-				resolution);
+		return histograms.get(resolution);
 	}
 
 	@Override
@@ -355,13 +332,10 @@ public class HistogramStatistics extends
 		if ((statistics != null) && (statistics instanceof HistogramStatistics)) {
 			final Set<Resolution> resolutions = new HashSet<Resolution>(
 					getResolutions());
-			resolutions.addAll(
-					((HistogramStatistics) statistics).getResolutions());
+			resolutions.addAll(((HistogramStatistics) statistics).getResolutions());
 			for (final Resolution res : resolutions) {
-				final javax.media.jai.Histogram otherHistogram = ((HistogramStatistics) statistics).getHistogram(
-						res);
-				final javax.media.jai.Histogram thisHistogram = getHistogram(
-						res);
+				final javax.media.jai.Histogram otherHistogram = ((HistogramStatistics) statistics).getHistogram(res);
+				final javax.media.jai.Histogram thisHistogram = getHistogram(res);
 				if (otherHistogram != null) {
 					javax.media.jai.Histogram mergedHistogram;
 					if (thisHistogram != null) {

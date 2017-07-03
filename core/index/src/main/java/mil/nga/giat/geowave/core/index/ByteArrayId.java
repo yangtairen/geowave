@@ -150,7 +150,21 @@ public class ByteArrayId implements
 		if (offset == 0) {
 			// TODO: is this correct? an empty byte array sorts before a single
 			// byte {0xFF}
-			return new byte[0];
+			// return new byte[0];
+
+			// it doesn't seem right, so instead, let's append several 0xFF
+			// bytes
+			return ByteArrayUtils.combineArrays(
+					rowKeyPrefix,
+					new byte[] {
+						(byte) 0xFF,
+						(byte) 0xFF,
+						(byte) 0xFF,
+						(byte) 0xFF,
+						(byte) 0xFF,
+						(byte) 0xFF,
+						(byte) 0xFF
+					});
 		}
 
 		final byte[] newStopRow = Arrays.copyOfRange(

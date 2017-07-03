@@ -36,8 +36,7 @@ import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 
 public class SimpleIngestTest
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			SimpleIngestTest.class);
+	private final static Logger LOGGER = Logger.getLogger(SimpleIngestTest.class);
 
 	final AccumuloOptions accumuloOptions = new AccumuloOptions();
 	final GeometryFactory factory = new GeometryFactory();
@@ -92,24 +91,19 @@ public class SimpleIngestTest
 				accumuloOperations,
 				accumuloOptions);
 
-		accumuloOptions.setCreateTable(
-				true);
-		accumuloOptions.setUseAltIndex(
-				true);
-		accumuloOptions.setPersistDataStatistics(
-				true);
+		accumuloOptions.setCreateTable(true);
+		accumuloOptions.setUseAltIndex(true);
+		accumuloOptions.setPersistDataStatistics(true);
 	}
 
 	protected static Set<Point> getCalcedPointSet() {
 		final Set<Point> calcPoints = new TreeSet<Point>();
 		for (int longitude = -180; longitude <= 180; longitude += 5) {
 			for (int latitude = -90; latitude <= 90; latitude += 5) {
-				final Point p = GeometryUtils.GEOMETRY_FACTORY.createPoint(
-						new Coordinate(
-								longitude,
-								latitude));
-				calcPoints.add(
-						p);
+				final Point p = GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(
+						longitude,
+						latitude));
+				calcPoints.add(p);
 			}
 		}
 		return calcPoints;
@@ -127,8 +121,7 @@ public class SimpleIngestTest
 			if (n instanceof SimpleFeature) {
 				final SimpleFeature gridCell = (SimpleFeature) n;
 				final Point p = (Point) gridCell.getDefaultGeometry();
-				readPoints.add(
-						p);
+				readPoints.add(p);
 			}
 		}
 		return readPoints;
@@ -136,13 +129,10 @@ public class SimpleIngestTest
 
 	protected static void validate(
 			final DataStore ds ) {
-		final Set<Point> readPoints = getStoredPointSet(
-				ds);
+		final Set<Point> readPoints = getStoredPointSet(ds);
 		final Set<Point> calcPoints = getCalcedPointSet();
 
-		Assert.assertTrue(
-				readPoints.equals(
-						calcPoints));
+		Assert.assertTrue(readPoints.equals(calcPoints));
 	}
 
 }

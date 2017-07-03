@@ -19,8 +19,7 @@ import mil.nga.giat.geowave.datastore.accumulo.AccumuloRow;
 public class AccumuloReader implements
 		Reader
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			AccumuloReader.class);
+	private final static Logger LOGGER = Logger.getLogger(AccumuloReader.class);
 	private final ScannerBase scanner;
 	private final Iterator<Entry<Key, Value>> it;
 

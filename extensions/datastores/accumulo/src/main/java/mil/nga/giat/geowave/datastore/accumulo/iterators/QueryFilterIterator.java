@@ -20,24 +20,22 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.data.CommonIndexedPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.data.DeferredReadCommonIndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
-import mil.nga.giat.geowave.core.store.data.PersistentValue;
-import mil.nga.giat.geowave.core.store.data.field.FieldReader;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveKey;
 import mil.nga.giat.geowave.core.store.entities.GeoWaveKeyImpl;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveValue;
+import mil.nga.giat.geowave.core.store.entities.GeoWaveValueImpl;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
-import mil.nga.giat.geowave.core.store.flatten.FlattenedDataSet;
-import mil.nga.giat.geowave.core.store.flatten.FlattenedFieldInfo;
 import mil.nga.giat.geowave.core.store.flatten.FlattenedUnreadData;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
-import mil.nga.giat.geowave.datastore.accumulo.encoding.AccumuloCommonIndexedPersistenceEncoding;
 
 public class QueryFilterIterator extends
 		Filter
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			QueryFilterIterator.class);
+	private final static Logger LOGGER = Logger.getLogger(QueryFilterIterator.class);
 	public static final String QUERY_ITERATOR_NAME = "GEOWAVE_QUERY_FILTER";
 	public static final int QUERY_ITERATOR_PRIORITY = 25;
 	public static final String FILTER = "filter";
@@ -55,49 +53,47 @@ public class QueryFilterIterator extends
 
 	private static void initialize() {
 		try {
-			URL.setURLStreamHandlerFactory(
-					new FsUrlStreamHandlerFactory());
+			URL.setURLStreamHandlerFactory(new FsUrlStreamHandlerFactory());
 		}
 		catch (final Error factoryError) {
 			String type = "";
 			Field f = null;
 			try {
-				f = URL.class.getDeclaredField(
-						"factory");
+				f = URL.class.getDeclaredField("factory");
 			}
 			catch (final NoSuchFieldException e) {
-				LOGGER.error(
-						"URL.setURLStreamHandlerFactory() can only be called once per JVM instance, and currently something has set it to;  additionally unable to discover type of Factory",
-						e);
+				LOGGER
+						.error(
+								"URL.setURLStreamHandlerFactory() can only be called once per JVM instance, and currently something has set it to;  additionally unable to discover type of Factory",
+								e);
 				throw (factoryError);
 			}
 
 			// HP Fortify "Access Specifier Manipulation"
 			// This object is being modified by trusted code,
 			// in a way that is not influenced by user input
-			f.setAccessible(
-					true);
+			f.setAccessible(true);
 			Object o;
 			try {
-				o = f.get(
-						null);
+				o = f.get(null);
 			}
 			catch (final IllegalAccessException e) {
-				LOGGER.error(
-						"URL.setURLStreamHandlerFactory() can only be called once per JVM instance, and currently something has set it to;  additionally unable to discover type of Factory",
-						e);
+				LOGGER
+						.error(
+								"URL.setURLStreamHandlerFactory() can only be called once per JVM instance, and currently something has set it to;  additionally unable to discover type of Factory",
+								e);
 				throw (factoryError);
 			}
 			if (o instanceof FsUrlStreamHandlerFactory) {
-				LOGGER.info(
-						"setURLStreamHandlerFactory already set on this JVM to FsUrlStreamHandlerFactory.  Nothing to do");
+				LOGGER
+						.info("setURLStreamHandlerFactory already set on this JVM to FsUrlStreamHandlerFactory.  Nothing to do");
 				return;
 			}
 			else {
 				type = o.getClass().getCanonicalName();
 			}
-			LOGGER.error(
-					"URL.setURLStreamHandlerFactory() can only be called once per JVM instance, and currently something has set it to: "
+			LOGGER
+					.error("URL.setURLStreamHandlerFactory() can only be called once per JVM instance, and currently something has set it to: "
 							+ type);
 			throw (factoryError);
 		}
@@ -153,8 +149,7 @@ public class QueryFilterIterator extends
 					value,
 					commonData);
 			return applyRowFilter(
-					key.getRow(
-							currentRow),
+					key.getRow(currentRow),
 					commonData,
 					unreadData);
 		}
@@ -163,16 +158,33 @@ public class QueryFilterIterator extends
 		return true;
 	}
 
+	protected FlattenedUnreadData aggregateFieldData(
+			final Key key,
+			final Value value,
+			final PersistentDataset<CommonIndexValue> commonData ) {
+		final GeoWaveKey gwKey = new GeoWaveKeyImpl(
+				key.getRow().copyBytes(),
+				partitionKeyLength);
+		final GeoWaveValue gwValue = new GeoWaveValueImpl(
+				key.getColumnQualifier().getBytes(),
+				key.getColumnVisibilityData().getBackingArray(),
+				value.get());
+		return DataStoreUtils.aggregateFieldData(
+				gwKey,
+				gwValue,
+				commonData,
+				model,
+				commonIndexFieldIds);
+	}
+
 	@Override
 	public SortedKeyValueIterator<Key, Value> deepCopy(
 			final IteratorEnvironment env ) {
 		final QueryFilterIterator iterator = new QueryFilterIterator();
-		iterator.setSource(
-				getSource().deepCopy(
-						env));
+		iterator.setSource(getSource().deepCopy(
+				env));
 		iterator.filter = filter;
-		iterator.commonIndexFieldIds.addAll(
-				commonIndexFieldIds);
+		iterator.commonIndexFieldIds.addAll(commonIndexFieldIds);
 		iterator.model = model;
 		return iterator;
 	}
@@ -181,12 +193,11 @@ public class QueryFilterIterator extends
 			final Text currentRow,
 			final PersistentDataset<CommonIndexValue> commonData,
 			final FlattenedUnreadData unreadData ) {
-		return applyRowFilter(
-				getEncoding(
-						currentRow,
-						partitionKeyLength,
-						commonData,
-						unreadData));
+		return applyRowFilter(getEncoding(
+				currentRow,
+				partitionKeyLength,
+				commonData,
+				unreadData));
 	}
 
 	protected static CommonIndexedPersistenceEncoding getEncoding(
@@ -197,7 +208,7 @@ public class QueryFilterIterator extends
 		final GeoWaveKeyImpl rowId = new GeoWaveKeyImpl(
 				currentRow.copyBytes(),
 				partitionKeyLength);
-		return new AccumuloCommonIndexedPersistenceEncoding(
+		return new DeferredReadCommonIndexedPersistenceEncoding(
 				new ByteArrayId(
 						rowId.getAdapterId()),
 				new ByteArrayId(
@@ -218,46 +229,6 @@ public class QueryFilterIterator extends
 				encoding);
 	}
 
-	protected FlattenedUnreadData aggregateFieldData(
-			final Key key,
-			final Value value,
-			final PersistentDataset<CommonIndexValue> commonData ) {
-		final ByteArrayId colQual = new ByteArrayId(
-				key.getColumnQualifierData().getBackingArray());
-		final byte[] valueBytes = value.get();
-		final FlattenedDataSet dataSet = DataStoreUtils.decomposeFlattenedFields(
-				colQual.getBytes(),
-				valueBytes,
-				key.getColumnVisibilityData().getBackingArray(),
-				commonIndexFieldIds.size() - 1);
-		final List<FlattenedFieldInfo> fieldInfos = dataSet.getFieldsRead();
-
-		for (final FlattenedFieldInfo fieldInfo : fieldInfos) {
-			final int ordinal = fieldInfo.getFieldPosition();
-			if (ordinal < commonIndexFieldIds.size()) {
-				final ByteArrayId commonIndexFieldId = commonIndexFieldIds.get(
-						ordinal);
-				final FieldReader<? extends CommonIndexValue> reader = model.getReader(
-						commonIndexFieldId);
-				if (reader != null) {
-					final CommonIndexValue fieldValue = reader.readField(
-							fieldInfo.getValue());
-					fieldValue.setVisibility(
-							key.getColumnVisibility().getBytes());
-					commonData.addValue(
-							new PersistentValue<CommonIndexValue>(
-									commonIndexFieldId,
-									fieldValue));
-				}
-				else {
-					LOGGER.error(
-							"Could not find reader for common index field: " + commonIndexFieldId.getString());
-				}
-			}
-		}
-		return dataSet.getFieldsDeferred();
-	}
-
 	public boolean isSet() {
 		return (filter != null) && (model != null);
 	}
@@ -268,8 +239,7 @@ public class QueryFilterIterator extends
 			final Map<String, String> options,
 			final IteratorEnvironment env )
 			throws IOException {
-		setOptions(
-				options);
+		setOptions(options);
 		super.init(
 				source,
 				options,
@@ -283,34 +253,24 @@ public class QueryFilterIterator extends
 					"Arguments must be set for " + QueryFilterIterator.class.getName());
 		}
 		try {
-			if (options.containsKey(
-					FILTER)) {
-				final String filterStr = options.get(
-						FILTER);
-				final byte[] filterBytes = ByteArrayUtils.byteArrayFromString(
-						filterStr);
+			if (options.containsKey(FILTER)) {
+				final String filterStr = options.get(FILTER);
+				final byte[] filterBytes = ByteArrayUtils.byteArrayFromString(filterStr);
 				filter = PersistenceUtils.fromBinary(
 						filterBytes,
 						DistributableQueryFilter.class);
 			}
-			if (options.containsKey(
-					MODEL)) {
-				final String modelStr = options.get(
-						MODEL);
-				final byte[] modelBytes = ByteArrayUtils.byteArrayFromString(
-						modelStr);
+			if (options.containsKey(MODEL)) {
+				final String modelStr = options.get(MODEL);
+				final byte[] modelBytes = ByteArrayUtils.byteArrayFromString(modelStr);
 				model = PersistenceUtils.fromBinary(
 						modelBytes,
 						CommonIndexModel.class);
-				commonIndexFieldIds = DataStoreUtils.getUniqueDimensionFields(
-						model);
+				commonIndexFieldIds = DataStoreUtils.getUniqueDimensionFields(model);
 			}
-			if (options.containsKey(
-					PARTITION_KEY_LENGTH)) {
-				final String partitionKeyLengthStr = options.get(
-						PARTITION_KEY_LENGTH);
-				partitionKeyLength = Integer.parseInt(
-						partitionKeyLengthStr);
+			if (options.containsKey(PARTITION_KEY_LENGTH)) {
+				final String partitionKeyLengthStr = options.get(PARTITION_KEY_LENGTH);
+				partitionKeyLength = Integer.parseInt(partitionKeyLengthStr);
 			}
 		}
 		catch (final Exception e) {

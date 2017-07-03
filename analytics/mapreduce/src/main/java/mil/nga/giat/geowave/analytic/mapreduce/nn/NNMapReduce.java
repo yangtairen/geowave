@@ -110,8 +110,7 @@ import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
  */
 public class NNMapReduce
 {
-	protected static final Logger LOGGER = LoggerFactory.getLogger(
-			NNMapReduce.class);
+	protected static final Logger LOGGER = LoggerFactory.getLogger(NNMapReduce.class);
 
 	/**
 	 * Nearest neighbors...take one
@@ -147,8 +146,7 @@ public class NNMapReduce
 							public void partitionWith(
 									final PartitionData partitionData )
 									throws Exception {
-								outputValue.setAdapterId(
-										key.getAdapterId());
+								outputValue.setAdapterId(key.getAdapterId());
 								AdapterWithObjectWritable.fillWritableWithAdapter(
 										serializationTool,
 										outputValue,
@@ -156,8 +154,7 @@ public class NNMapReduce
 										key.getDataId(),
 										partitionData.isPrimary(),
 										unwrappedValue);
-								partitionDataWritable.setPartitionData(
-										partitionData);
+								partitionDataWritable.setPartitionData(partitionData);
 								context.write(
 										partitionDataWritable,
 										outputValue);
@@ -181,15 +178,13 @@ public class NNMapReduce
 				final Mapper<GeoWaveInputKey, Object, PartitionDataWritable, AdapterWithObjectWritable>.Context context )
 				throws IOException,
 				InterruptedException {
-			super.setup(
-					context);
+			super.setup(context);
 			final ScopedJobConfiguration config = new ScopedJobConfiguration(
 					context.getConfiguration(),
 					NNMapReduce.class,
 					LOGGER);
 			serializationTool = new HadoopWritableSerializationTool(
-					GeoWaveInputFormat.getJobContextAdapterStore(
-							context));
+					GeoWaveInputFormat.getJobContextAdapterStore(context));
 			try {
 				partitioner = config.getInstance(
 						PartitionParameters.Partition.PARTITIONER_CLASS,
@@ -245,8 +240,7 @@ public class NNMapReduce
 					maxDistance,
 					key.partitionData);
 
-			processor.setUpperBoundPerPartition(
-					maxNeighbors);
+			processor.setUpperBoundPerPartition(maxNeighbors);
 
 			final PARTITION_SUMMARY summary = createSummary();
 
@@ -268,8 +262,7 @@ public class NNMapReduce
 					summary);
 
 			processor.process(
-					this.createNeighborsListFactory(
-							summary),
+					this.createNeighborsListFactory(summary),
 					new CompleteNotifier<VALUEIN>() {
 						@Override
 						public void complete(
@@ -286,8 +279,7 @@ public class NNMapReduce
 									primaryList,
 									context,
 									summary);
-							processor.remove(
-									id);
+							processor.remove(id);
 						}
 
 					});
@@ -371,8 +363,7 @@ public class NNMapReduce
 					NNMapReduce.LOGGER);
 
 			serializationTool = new HadoopWritableSerializationTool(
-					GeoWaveInputFormat.getJobContextAdapterStore(
-							context));
+					GeoWaveInputFormat.getJobContextAdapterStore(context));
 
 			try {
 				distanceFn = config.getInstance(
@@ -391,8 +382,7 @@ public class NNMapReduce
 					1.0);
 
 			try {
-				LOGGER.info(
-						"Using secondary partitioning");
+				LOGGER.info("Using secondary partitioning");
 				partitioner = config.getInstance(
 						PartitionParameters.Partition.SECONDARY_PARTITIONER_CLASS,
 						Partitioner.class,
@@ -431,10 +421,9 @@ public class NNMapReduce
 			public DistanceProfile<Object> computeProfile(
 					final VALUEIN item1,
 					final VALUEIN item2 ) {
-				singleNotThreadSafeImage.setDistance(
-						distanceFn.measure(
-								item1,
-								item2));
+				singleNotThreadSafeImage.setDistance(distanceFn.measure(
+						item1,
+						item2));
 				return singleNotThreadSafeImage;
 			}
 
@@ -546,8 +535,7 @@ public class NNMapReduce
 				final DataInput input )
 				throws IOException {
 			partitionData = new PartitionData();
-			partitionData.readFields(
-					input);
+			partitionData.readFields(input);
 
 		}
 
@@ -555,8 +543,7 @@ public class NNMapReduce
 		public void write(
 				final DataOutput output )
 				throws IOException {
-			partitionData.write(
-					output);
+			partitionData.write(output);
 		}
 
 		@Override
@@ -604,8 +591,7 @@ public class NNMapReduce
 					return false;
 				}
 			}
-			else if (!partitionData.equals(
-					other.partitionData)) {
+			else if (!partitionData.equals(other.partitionData)) {
 				return false;
 			}
 			return true;
@@ -627,13 +613,12 @@ public class NNMapReduce
 				final Class<?> scope )
 				throws IOException {}
 
-		private static final List<PartitionData> FixedPartition = Collections.singletonList(
-				new PartitionData(
-						new ByteArrayId(
-								new byte[] {}),
-						new ByteArrayId(
-								"1"),
-						true));
+		private static final List<PartitionData> FixedPartition = Collections.singletonList(new PartitionData(
+				new ByteArrayId(
+						new byte[] {}),
+				new ByteArrayId(
+						"1"),
+				true));
 
 		@Override
 		public List<PartitionData> getCubeIdentifiers(
@@ -646,9 +631,7 @@ public class NNMapReduce
 				final T entry,
 				final PartitionDataCallback callback )
 				throws Exception {
-			callback.partitionWith(
-					FixedPartition.get(
-							0));
+			callback.partitionWith(FixedPartition.get(0));
 		}
 
 		@Override

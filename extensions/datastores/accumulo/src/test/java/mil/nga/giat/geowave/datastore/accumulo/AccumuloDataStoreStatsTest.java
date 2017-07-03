@@ -72,8 +72,7 @@ import mil.nga.giat.geowave.datastore.accumulo.operations.AccumuloOperations;
 
 public class AccumuloDataStoreStatsTest
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			AccumuloDataStoreStatsTest.class);
+	private final static Logger LOGGER = Logger.getLogger(AccumuloDataStoreStatsTest.class);
 
 	final AccumuloOptions accumuloOptions = new AccumuloOptions();
 
@@ -180,24 +179,18 @@ public class AccumuloDataStoreStatsTest
 	@Test
 	public void testWithOutAltIndex()
 			throws IOException {
-		accumuloOptions.setCreateTable(
-				true);
-		accumuloOptions.setUseAltIndex(
-				false);
-		accumuloOptions.setPersistDataStatistics(
-				true);
+		accumuloOptions.setCreateTable(true);
+		accumuloOptions.setUseAltIndex(false);
+		accumuloOptions.setPersistDataStatistics(true);
 		runtest();
 	}
 
 	@Test
 	public void testWithAltIndex()
 			throws IOException {
-		accumuloOptions.setCreateTable(
-				true);
-		accumuloOptions.setUseAltIndex(
-				true);
-		accumuloOptions.setPersistDataStatistics(
-				true);
+		accumuloOptions.setCreateTable(true);
+		accumuloOptions.setUseAltIndex(true);
+		accumuloOptions.setPersistDataStatistics(true);
 		runtest();
 	}
 
@@ -207,50 +200,46 @@ public class AccumuloDataStoreStatsTest
 		final PrimaryIndex index = new SpatialDimensionalityTypeProvider().createPrimaryIndex();
 		final WritableDataAdapter<TestGeometry> adapter = new TestGeometryAdapter();
 
-		final Geometry testGeoFilter = factory.createPolygon(
-				new Coordinate[] {
-					new Coordinate(
-							24,
-							33),
-					new Coordinate(
-							28,
-							33),
-					new Coordinate(
-							28,
-							31),
-					new Coordinate(
-							24,
-							31),
-					new Coordinate(
-							24,
-							33)
-				});
+		final Geometry testGeoFilter = factory.createPolygon(new Coordinate[] {
+			new Coordinate(
+					24,
+					33),
+			new Coordinate(
+					28,
+					33),
+			new Coordinate(
+					28,
+					31),
+			new Coordinate(
+					24,
+					31),
+			new Coordinate(
+					24,
+					33)
+		});
 
 		try (IndexWriter<TestGeometry> indexWriter = mockDataStore.createWriter(
 				adapter,
 				index)) {
 			indexWriter.write(
 					new TestGeometry(
-							factory.createPoint(
-									new Coordinate(
-											25,
-											32)),
+							factory.createPoint(new Coordinate(
+									25,
+									32)),
 							"test_pt"),
 					visWriterAAA);
 			indexWriter.write(
 					new TestGeometry(
-							factory.createPoint(
-									new Coordinate(
-											26,
-											32)),
+							factory.createPoint(new Coordinate(
+									26,
+									32)),
 							"test_pt_1"),
 					visWriterAAA);
 			indexWriter.write(
 					new TestGeometry(
-							factory.createPoint(
-									new Coordinate(
-											27,
-											32)),
+							factory.createPoint(new Coordinate(
+									27,
+									32)),
 							"test_pt_2"),
 					visWriterBBB);
 		}
@@ -308,26 +297,23 @@ public class AccumuloDataStoreStatsTest
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"aaa");
-		assertTrue(
-				(bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 26) && (bboxStats.getMinY() == 32)
-						&& (bboxStats.getMaxY() == 32));
+		assertTrue((bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 26) && (bboxStats.getMinY() == 32)
+				&& (bboxStats.getMaxY() == 32));
 
 		bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"bbb");
-		assertTrue(
-				(bboxStats.getMinX() == 27) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
-						&& (bboxStats.getMaxY() == 32));
+		assertTrue((bboxStats.getMinX() == 27) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
+				&& (bboxStats.getMaxY() == 32));
 
 		bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"aaa",
 				"bbb");
-		assertTrue(
-				(bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
-						&& (bboxStats.getMaxY() == 32));
+		assertTrue((bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
+				&& (bboxStats.getMaxY() == 32));
 
 		final AtomicBoolean found = new AtomicBoolean(
 				false);
@@ -342,8 +328,7 @@ public class AccumuloDataStoreStatsTest
 							public void entryScanned(
 									final TestGeometry entry,
 									final GeoWaveRow row ) {
-								found.getAndSet(
-										true);
+								found.getAndSet(true);
 							}
 						},
 						new String[] {
@@ -351,10 +336,8 @@ public class AccumuloDataStoreStatsTest
 						}),
 				new DataIdQuery(
 						new ByteArrayId(
-								"test_pt_2".getBytes(
-										StringUtils.GEOWAVE_CHAR_SET))));
-		assertFalse(
-				found.get());
+								"test_pt_2".getBytes(StringUtils.GEOWAVE_CHAR_SET))));
+		assertFalse(found.get());
 
 		try (CloseableIterator<?> it1 = mockDataStore.query(
 				new QueryOptions(
@@ -396,8 +379,7 @@ public class AccumuloDataStoreStatsTest
 						}),
 				new DataIdQuery(
 						new ByteArrayId(
-								"test_pt".getBytes(
-										StringUtils.GEOWAVE_CHAR_SET))));
+								"test_pt".getBytes(StringUtils.GEOWAVE_CHAR_SET))));
 
 		try (CloseableIterator<?> it1 = mockDataStore.query(
 				new QueryOptions(
@@ -448,51 +430,45 @@ public class AccumuloDataStoreStatsTest
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"aaa");
-		assertTrue(
-				(bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 26) && (bboxStats.getMinY() == 32)
-						&& (bboxStats.getMaxY() == 32));
+		assertTrue((bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 26) && (bboxStats.getMinY() == 32)
+				&& (bboxStats.getMaxY() == 32));
 
 		bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"bbb");
-		assertTrue(
-				(bboxStats.getMinX() == 27) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
-						&& (bboxStats.getMaxY() == 32));
+		assertTrue((bboxStats.getMinX() == 27) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
+				&& (bboxStats.getMaxY() == 32));
 
 		bboxStats = (BoundingBoxDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				BoundingBoxDataStatistics.STATS_ID,
 				"aaa",
 				"bbb");
-		assertTrue(
-				(bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
-						&& (bboxStats.getMaxY() == 32));
+		assertTrue((bboxStats.getMinX() == 25) && (bboxStats.getMaxX() == 27) && (bboxStats.getMinY() == 32)
+				&& (bboxStats.getMaxY() == 32));
 
-		found.set(
-				false);
+		found.set(false);
 
-		assertTrue(
-				mockDataStore.delete(
-						new QueryOptions(
-								adapter,
-								index,
-								-1,
-								new ScanCallback<TestGeometry, GeoWaveRow>() {
+		assertTrue(mockDataStore.delete(
+				new QueryOptions(
+						adapter,
+						index,
+						-1,
+						new ScanCallback<TestGeometry, GeoWaveRow>() {
 
-									@Override
-									public void entryScanned(
-											final TestGeometry entry,
-											final GeoWaveRow row ) {
-										found.getAndSet(
-												true);
-									}
-								},
-								new String[] {
-									"aaa",
-									"bbb"
-								}),
-						new EverythingQuery()));
+							@Override
+							public void entryScanned(
+									final TestGeometry entry,
+									final GeoWaveRow row ) {
+								found.getAndSet(true);
+							}
+						},
+						new String[] {
+							"aaa",
+							"bbb"
+						}),
+				new EverythingQuery()));
 
 		try (CloseableIterator<?> it1 = mockDataStore.query(
 				new QueryOptions(
@@ -518,27 +494,23 @@ public class AccumuloDataStoreStatsTest
 		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID);
-		assertNull(
-				countStats);
+		assertNull(countStats);
 
 		try (IndexWriter<TestGeometry> indexWriter = mockDataStore.createWriter(
 				adapter,
 				index)) {
-			indexWriter.write(
-					new TestGeometry(
-							factory.createPoint(
-									new Coordinate(
-											25,
-											32)),
-							"test_pt_2"));
+			indexWriter.write(new TestGeometry(
+					factory.createPoint(new Coordinate(
+							25,
+							32)),
+					"test_pt_2"));
 		}
 
 		countStats = (CountDataStatistics<?>) statsStore.getDataStatistics(
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
 				"bbb");
-		assertTrue(
-				countStats != null);
+		assertTrue(countStats != null);
 
 		statsStore.removeAllStatistics(
 				adapter.getAdapterId(),
@@ -548,17 +520,14 @@ public class AccumuloDataStoreStatsTest
 				adapter.getAdapterId(),
 				CountDataStatistics.STATS_ID,
 				"bbb");
-		assertNull(
-				countStats);
+		assertNull(countStats);
 
 		final RowRangeDataStatistics<?> rowStats = (RowRangeDataStatistics<?>) statsStore.getDataStatistics(
 				null,
-				RowRangeDataStatistics.getId(
-						index.getId()),
+				RowRangeDataStatistics.getId(index.getId()),
 				"bbb");
 
-		assertTrue(
-				rowStats != null);
+		assertTrue(rowStats != null);
 
 	}
 
@@ -644,10 +613,8 @@ public class AccumuloDataStoreStatsTest
 		private static final List<PersistentIndexFieldHandler<TestGeometry, ? extends CommonIndexValue, Object>> COMMON_FIELD_HANDLER_LIST = new ArrayList<PersistentIndexFieldHandler<TestGeometry, ? extends CommonIndexValue, Object>>();
 
 		static {
-			COMMON_FIELD_HANDLER_LIST.add(
-					GEOM_FIELD_HANDLER);
-			NATIVE_FIELD_HANDLER_LIST.add(
-					ID_FIELD_HANDLER);
+			COMMON_FIELD_HANDLER_LIST.add(GEOM_FIELD_HANDLER);
+			NATIVE_FIELD_HANDLER_LIST.add(ID_FIELD_HANDLER);
 		}
 
 		public TestGeometryAdapter() {
@@ -679,15 +646,11 @@ public class AccumuloDataStoreStatsTest
 		@Override
 		public FieldReader getReader(
 				final ByteArrayId fieldId ) {
-			if (fieldId.equals(
-					GEOM)) {
-				return FieldUtils.getDefaultReaderForClass(
-						Geometry.class);
+			if (fieldId.equals(GEOM)) {
+				return FieldUtils.getDefaultReaderForClass(Geometry.class);
 			}
-			else if (fieldId.equals(
-					ID)) {
-				return FieldUtils.getDefaultReaderForClass(
-						String.class);
+			else if (fieldId.equals(ID)) {
+				return FieldUtils.getDefaultReaderForClass(String.class);
 			}
 			return null;
 		}
@@ -695,15 +658,11 @@ public class AccumuloDataStoreStatsTest
 		@Override
 		public FieldWriter getWriter(
 				final ByteArrayId fieldId ) {
-			if (fieldId.equals(
-					GEOM)) {
-				return FieldUtils.getDefaultWriterForClass(
-						Geometry.class);
+			if (fieldId.equals(GEOM)) {
+				return FieldUtils.getDefaultWriterForClass(Geometry.class);
 			}
-			else if (fieldId.equals(
-					ID)) {
-				return FieldUtils.getDefaultWriterForClass(
-						String.class);
+			else if (fieldId.equals(ID)) {
+				return FieldUtils.getDefaultWriterForClass(String.class);
 			}
 			return null;
 		}
@@ -711,18 +670,15 @@ public class AccumuloDataStoreStatsTest
 		@Override
 		public DataStatistics<TestGeometry> createDataStatistics(
 				final ByteArrayId statisticsId ) {
-			if (BoundingBoxDataStatistics.STATS_ID.equals(
-					statisticsId)) {
+			if (BoundingBoxDataStatistics.STATS_ID.equals(statisticsId)) {
 				return new GeoBoundingBoxStatistics(
 						getAdapterId());
 			}
-			else if (CountDataStatistics.STATS_ID.equals(
-					statisticsId)) {
+			else if (CountDataStatistics.STATS_ID.equals(statisticsId)) {
 				return new CountDataStatistics<TestGeometry>(
 						getAdapterId());
 			}
-			LOGGER.warn(
-					"Unrecognized statistics ID " + statisticsId.getString() + " using count statistic");
+			LOGGER.warn("Unrecognized statistics ID " + statisticsId.getString() + " using count statistic");
 			return new CountDataStatistics<TestGeometry>(
 					getAdapterId(),
 					statisticsId);
@@ -768,18 +724,15 @@ public class AccumuloDataStoreStatsTest
 				final ByteArrayId fieldId ) {
 			int i = 0;
 			for (final NumericDimensionField<? extends CommonIndexValue> dimensionField : model.getDimensions()) {
-				if (fieldId.equals(
-						dimensionField.getFieldId())) {
+				if (fieldId.equals(dimensionField.getFieldId())) {
 					return i;
 				}
 				i++;
 			}
-			if (fieldId.equals(
-					GEOM)) {
+			if (fieldId.equals(GEOM)) {
 				return i;
 			}
-			else if (fieldId.equals(
-					ID)) {
+			else if (fieldId.equals(ID)) {
 				return i + 1;
 			}
 			return -1;

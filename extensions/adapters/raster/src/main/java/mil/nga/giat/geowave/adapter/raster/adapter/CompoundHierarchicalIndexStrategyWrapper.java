@@ -31,8 +31,7 @@ import mil.nga.giat.geowave.core.index.simple.RoundRobinKeyIndexStrategy;
 public class CompoundHierarchicalIndexStrategyWrapper implements
 		HierarchicalNumericIndexStrategy
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			CompoundHierarchicalIndexStrategyWrapper.class);
+	private final static Logger LOGGER = Logger.getLogger(CompoundHierarchicalIndexStrategyWrapper.class);
 	private List<CompoundIndexStrategy> parentStrategies;
 	private HierarchicalNumericIndexStrategy firstHierarchicalStrategy;
 
@@ -60,8 +59,7 @@ public class CompoundHierarchicalIndexStrategyWrapper implements
 			NumericIndexStrategy currentStrategyReplacement = subStrategies[i].getIndexStrategy();
 			for (int j = parentStrategies.size() - 1; j >= 0; j--) {
 				// traverse parents in reverse order
-				final CompoundIndexStrategy parent = parentStrategies.get(
-						j);
+				final CompoundIndexStrategy parent = parentStrategies.get(j);
 				if (parent.getPrimarySubStrategy().equals(
 						currentStrategyToBeReplaced)) {
 					// replace primary
@@ -87,9 +85,7 @@ public class CompoundHierarchicalIndexStrategyWrapper implements
 
 	@Override
 	public byte[] toBinary() {
-		return PersistenceUtils.toBinary(
-				parentStrategies.get(
-						0));
+		return PersistenceUtils.toBinary(parentStrategies.get(0));
 	}
 
 	@Override
@@ -98,8 +94,8 @@ public class CompoundHierarchicalIndexStrategyWrapper implements
 			final IndexMetaData... hints ) {
 		return parentStrategies.get(
 				0).getQueryRanges(
-						indexedRange,
-						hints);
+				indexedRange,
+				hints);
 	}
 
 	@Override
@@ -122,9 +118,9 @@ public class CompoundHierarchicalIndexStrategyWrapper implements
 			final IndexMetaData... hints ) {
 		return parentStrategies.get(
 				0).getQueryRanges(
-						indexedRange,
-						maxEstimatedRangeDecomposition,
-						hints);
+				indexedRange,
+				maxEstimatedRangeDecomposition,
+				hints);
 	}
 
 	@Override
@@ -138,7 +134,7 @@ public class CompoundHierarchicalIndexStrategyWrapper implements
 			final MultiDimensionalNumericData indexedData ) {
 		return parentStrategies.get(
 				0).getInsertionIds(
-						indexedData);
+				indexedData);
 	}
 
 	@Override
@@ -159,8 +155,8 @@ public class CompoundHierarchicalIndexStrategyWrapper implements
 			final int maxEstimatedDuplicateIds ) {
 		return parentStrategies.get(
 				0).getInsertionIds(
-						indexedData,
-						maxEstimatedDuplicateIds);
+				indexedData,
+				maxEstimatedDuplicateIds);
 	}
 
 	@Override
@@ -169,8 +165,8 @@ public class CompoundHierarchicalIndexStrategyWrapper implements
 			final ByteArrayId sortKey ) {
 		return parentStrategies.get(
 				0).getRangeForId(
-						partitionKey,
-						sortKey);
+				partitionKey,
+				sortKey);
 	}
 
 	@Override
@@ -223,15 +219,12 @@ public class CompoundHierarchicalIndexStrategyWrapper implements
 					.getSecondarySubStrategy();
 			// warn if round robin is used
 			if (primaryIndex instanceof RoundRobinKeyIndexStrategy) {
-				LOGGER.warn(
-						"Round Robin partitioning won't work correctly with raster merge strategies");
+				LOGGER.warn("Round Robin partitioning won't work correctly with raster merge strategies");
 			}
 			else if (secondaryIndex instanceof RoundRobinKeyIndexStrategy) {
-				LOGGER.warn(
-						"Round Robin partitioning won't work correctly with raster merge strategies");
+				LOGGER.warn("Round Robin partitioning won't work correctly with raster merge strategies");
 			}
-			final HierarchicalNumericIndexStrategy secondary = findHierarchicalStrategy(
-					secondaryIndex);
+			final HierarchicalNumericIndexStrategy secondary = findHierarchicalStrategy(secondaryIndex);
 			if (secondary != null) {
 				// add it to beginning because we are recursing back from the
 				// leaf strategy up to the parent
@@ -250,8 +243,8 @@ public class CompoundHierarchicalIndexStrategyWrapper implements
 			final ByteArrayId sortKey ) {
 		return parentStrategies.get(
 				0).getCoordinatesPerDimension(
-						partitionKey,
-						sortKey);
+				partitionKey,
+				sortKey);
 	}
 
 	@Override
@@ -260,8 +253,8 @@ public class CompoundHierarchicalIndexStrategyWrapper implements
 			final IndexMetaData... hints ) {
 		return parentStrategies.get(
 				0).getCoordinateRangesPerDimension(
-						dataRange,
-						hints);
+				dataRange,
+				hints);
 	}
 
 	@Override
@@ -269,7 +262,7 @@ public class CompoundHierarchicalIndexStrategyWrapper implements
 			final MultiDimensionalNumericData insertionData ) {
 		return parentStrategies.get(
 				0).getInsertionPartitionKeys(
-						insertionData);
+				insertionData);
 	}
 
 	@Override
@@ -278,7 +271,7 @@ public class CompoundHierarchicalIndexStrategyWrapper implements
 			final IndexMetaData... hints ) {
 		return parentStrategies.get(
 				0).getQueryPartitionKeys(
-						queryData,
-						hints);
+				queryData,
+				hints);
 	}
 }
